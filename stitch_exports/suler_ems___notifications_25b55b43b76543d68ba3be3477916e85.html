@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Notification Center - Suler EMS</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "tertiary": "#943700",
+                        "surface-container-highest": "#e1e2ed",
+                        "background": "#faf8ff",
+                        "secondary-fixed": "#dce2f3",
+                        "outline-variant": "#c3c6d7",
+                        "on-tertiary-fixed-variant": "#7d2d00",
+                        "on-primary-fixed": "#00174b",
+                        "tertiary-container": "#bc4800",
+                        "surface-container": "#ededf9",
+                        "primary": "#004ac6",
+                        "secondary-container": "#dce2f3",
+                        "primary-fixed": "#dbe1ff",
+                        "on-error": "#ffffff",
+                        "on-background": "#191b23",
+                        "tertiary-fixed-dim": "#ffb596",
+                        "surface-variant": "#e1e2ed",
+                        "on-tertiary-container": "#ffede6",
+                        "tertiary-fixed": "#ffdbcd",
+                        "surface-container-low": "#f3f3fe",
+                        "secondary-fixed-dim": "#c0c7d6",
+                        "on-surface": "#191b23",
+                        "error": "#ba1a1a",
+                        "error-container": "#ffdad6",
+                        "surface-bright": "#faf8ff",
+                        "primary-container": "#2563eb",
+                        "secondary": "#585f6c",
+                        "on-surface-variant": "#434655",
+                        "inverse-on-surface": "#f0f0fb",
+                        "on-primary": "#ffffff",
+                        "on-secondary-container": "#5e6572",
+                        "on-primary-fixed-variant": "#003ea8",
+                        "surface-tint": "#0053db",
+                        "on-tertiary-fixed": "#360f00",
+                        "surface-dim": "#d9d9e5",
+                        "outline": "#737686",
+                        "surface-container-lowest": "#ffffff",
+                        "on-tertiary": "#ffffff",
+                        "on-primary-container": "#eeefff",
+                        "primary-fixed-dim": "#b4c5ff",
+                        "on-secondary-fixed-variant": "#404754",
+                        "inverse-primary": "#b4c5ff",
+                        "surface-container-high": "#e7e7f3",
+                        "surface": "#faf8ff",
+                        "on-error-container": "#93000a",
+                        "on-secondary": "#ffffff",
+                        "on-secondary-fixed": "#151c27",
+                        "inverse-surface": "#2e3039"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "2xl": "48px",
+                        "md": "16px",
+                        "lg": "24px",
+                        "3xl": "64px",
+                        "sm": "8px",
+                        "xs": "4px",
+                        "xl": "32px"
+                    },
+                    "fontFamily": {
+                        "h2": ["Inter"],
+                        "h1": ["Inter"],
+                        "button": ["Inter"],
+                        "h3": ["Inter"],
+                        "body-md": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "label-sm": ["Inter"]
+                    },
+                    "fontSize": {
+                        "h2": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                        "h1": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "button": ["14px", {"lineHeight": "20px", "fontWeight": "600"}],
+                        "h3": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                        "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                        "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "label-sm": ["12px", {"lineHeight": "16px", "fontWeight": "500"}]
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-background text-on-background min-h-screen">
+<!-- TopNavBar -->
+<header class="bg-white dark:bg-slate-900 flex justify-between items-center px-6 h-16 w-full fixed top-0 z-50 font-inter antialiased shadow-sm border-b border-slate-200 dark:border-slate-800">
+<div class="flex items-center gap-8">
+<span class="text-xl font-bold text-slate-900 dark:text-white">Suler EMS</span>
+<div class="hidden md:flex items-center bg-surface-container px-4 py-2 rounded-lg gap-2">
+<span class="material-symbols-outlined text-outline" data-icon="search">search</span>
+<input class="bg-transparent border-none focus:ring-0 text-sm w-64 text-on-surface" placeholder="Search resources..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="p-2 rounded-full hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors text-blue-600 border-b-2 border-blue-600 relative">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+<span class="absolute top-1.5 right-1.5 w-2 h-2 bg-error rounded-full"></span>
+</button>
+<button class="p-2 rounded-full hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors text-slate-600 dark:text-slate-400">
+<span class="material-symbols-outlined" data-icon="help">help</span>
+</button>
+<button class="p-2 rounded-full hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors text-slate-600 dark:text-slate-400">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+</button>
+<div class="h-8 w-8 rounded-full overflow-hidden ml-2 border border-outline-variant">
+<img alt="User profile avatar" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCPJtYV1apCvc73WTOj42SAUCGm8t-MxOcQ90n0k-tuatkMGyFyXxAJRdUuqmwF0bFijFe0PeEDTzdrmktHlEWH3GlVgy4Dg_gwd78ZdrWfh3F3heGoxfUbZsVrqRPKLKikax-3Hr-URCkZg5E2cqRaVQjU4qFJ7AnAvTO33p0qSFkTT2T4AVrCgngg4TPIFhsm_cgORqyddzNwx8_iniHQrRy0UIdQfv6a98Eas6nJUu2sS7iYeYBdUXooyx0kSTK_qPORan4CeCUJ"/>
+</div>
+</div>
+</header>
+<!-- SideNavBar -->
+<aside class="bg-white dark:bg-slate-900 w-64 h-screen border-r border-slate-200 dark:border-slate-800 fixed left-0 top-0 flex flex-col pt-16 pb-4 z-40 font-inter text-sm font-medium transition-all duration-200 ease-in-out">
+<div class="px-6 py-6 flex flex-col gap-1">
+<div class="flex items-center gap-3 mb-6">
+<div class="w-10 h-10 bg-primary-container rounded-xl flex items-center justify-center text-white">
+<span class="material-symbols-outlined" data-icon="corporate_fare">corporate_fare</span>
+</div>
+<div>
+<h2 class="text-lg font-black text-blue-600 leading-none">Suler EMS</h2>
+<p class="text-xs text-on-surface-variant">Enterprise Portal</p>
+</div>
+</div>
+<button class="mb-6 w-full py-2.5 bg-primary text-white rounded-lg font-button flex items-center justify-center gap-2 shadow-md hover:opacity-90 transition-all">
+<span class="material-symbols-outlined text-[20px]" data-icon="add">add</span>
+                New Request
+            </button>
+<nav class="flex flex-col gap-1">
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/50" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+                    Dashboard
+                </a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/50" href="#">
+<span class="material-symbols-outlined" data-icon="group">group</span>
+                    Employees
+                </a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/50" href="#">
+<span class="material-symbols-outlined" data-icon="payments">payments</span>
+                    Payroll
+                </a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/50" href="#">
+<span class="material-symbols-outlined" data-icon="schedule">schedule</span>
+                    Time Tracking
+                </a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/50" href="#">
+<span class="material-symbols-outlined" data-icon="assessment">assessment</span>
+                    Reports
+                </a>
+</nav>
+</div>
+<div class="mt-auto px-6 flex flex-col gap-1">
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/50" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+                Settings
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/50" href="#">
+<span class="material-symbols-outlined" data-icon="contact_support">contact_support</span>
+                Support
+            </a>
+</div>
+</aside>
+<!-- Main Content Canvas -->
+<main class="pl-64 pt-16 min-h-screen">
+<div class="max-w-[1440px] mx-auto p-lg">
+<!-- Page Header -->
+<div class="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-xl">
+<div>
+<h1 class="font-h1 text-h1 text-on-surface mb-xs">Notification Center</h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant">Stay updated with your latest activities and system alerts.</p>
+</div>
+<div class="flex items-center gap-sm">
+<button class="px-md py-sm rounded-lg border border-outline-variant text-on-surface font-button flex items-center gap-2 hover:bg-surface-container transition-colors">
+<span class="material-symbols-outlined text-[20px]" data-icon="done_all">done_all</span>
+                        Mark all as read
+                    </button>
+</div>
+</div>
+<!-- Bento Grid Layout -->
+<div class="grid grid-cols-12 gap-lg">
+<!-- Filters Section -->
+<div class="col-span-12 lg:col-span-3">
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-md shadow-sm sticky top-24">
+<h3 class="font-h3 text-h3 mb-md">Filters</h3>
+<div class="space-y-sm">
+<button class="w-full flex items-center justify-between px-md py-3 rounded-lg bg-blue-50 text-blue-600 border-l-4 border-blue-600 font-medium">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined" data-icon="list">list</span>
+                                    All Notifications
+                                </div>
+<span class="text-label-sm font-label-sm bg-blue-100 px-2 py-0.5 rounded-full">24</span>
+</button>
+<button class="w-full flex items-center justify-between px-md py-3 rounded-lg text-on-surface-variant hover:bg-surface-container transition-colors font-medium">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined" data-icon="mark_as_unread">mark_as_unread</span>
+                                    Unread
+                                </div>
+<span class="text-label-sm font-label-sm bg-error-container text-on-error-container px-2 py-0.5 rounded-full">12</span>
+</button>
+<button class="w-full flex items-center justify-between px-md py-3 rounded-lg text-on-surface-variant hover:bg-surface-container transition-colors font-medium">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined" data-icon="alternate_email">alternate_email</span>
+                                    Mentions
+                                </div>
+<span class="text-label-sm font-label-sm bg-surface-container-highest px-2 py-0.5 rounded-full">3</span>
+</button>
+<button class="w-full flex items-center justify-between px-md py-3 rounded-lg text-on-surface-variant hover:bg-surface-container transition-colors font-medium">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined" data-icon="settings_suggest">settings_suggest</span>
+                                    System
+                                </div>
+<span class="text-label-sm font-label-sm bg-surface-container-highest px-2 py-0.5 rounded-full">9</span>
+</button>
+</div>
+<div class="mt-xl pt-lg border-t border-outline-variant">
+<h4 class="text-label-sm font-label-sm text-outline uppercase mb-md tracking-wider">Preferences</h4>
+<div class="flex items-center justify-between text-body-md text-on-surface mb-sm">
+<span>Email Digests</span>
+<div class="w-10 h-5 bg-primary rounded-full relative">
+<div class="absolute right-0.5 top-0.5 w-4 h-4 bg-white rounded-full"></div>
+</div>
+</div>
+<div class="flex items-center justify-between text-body-md text-on-surface">
+<span>Desktop Alerts</span>
+<div class="w-10 h-5 bg-surface-container-highest rounded-full relative">
+<div class="absolute left-0.5 top-0.5 w-4 h-4 bg-white rounded-full"></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Notification List Section -->
+<div class="col-span-12 lg:col-span-9 space-y-md">
+<!-- Notification Card: Warning/Urgent -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow group">
+<div class="p-md flex gap-md">
+<div class="flex-shrink-0 w-12 h-12 rounded-full bg-error-container flex items-center justify-center text-error">
+<span class="material-symbols-outlined" data-icon="warning">warning</span>
+</div>
+<div class="flex-grow">
+<div class="flex items-start justify-between mb-xs">
+<h4 class="font-h3 text-[16px] text-on-surface">Payroll Discrepancy Detected</h4>
+<span class="text-label-sm font-label-sm text-outline">2 mins ago</span>
+</div>
+<p class="font-body-md text-on-surface-variant mb-md">An automated audit flagged a 15% discrepancy in overtime hours for the Engineering department in the current pay cycle.</p>
+<div class="flex items-center gap-sm">
+<button class="px-md py-1.5 bg-error text-white rounded-lg text-button">Review Now</button>
+<button class="px-md py-1.5 text-on-surface font-button hover:bg-surface-container rounded-lg">Dismiss</button>
+</div>
+</div>
+<div class="flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="p-2 text-outline hover:text-on-surface">
+<span class="material-symbols-outlined" data-icon="more_vert">more_vert</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Notification Card: Success -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow group">
+<div class="p-md flex gap-md">
+<div class="flex-shrink-0 w-12 h-12 rounded-full bg-green-100 flex items-center justify-center text-green-700">
+<span class="material-symbols-outlined" data-icon="check_circle">check_circle</span>
+</div>
+<div class="flex-grow">
+<div class="flex items-start justify-between mb-xs">
+<h4 class="font-h3 text-[16px] text-on-surface">Onboarding Completed</h4>
+<span class="text-label-sm font-label-sm text-outline">1 hour ago</span>
+</div>
+<p class="font-body-md text-on-surface-variant mb-md">Sarah Jenkins has successfully completed all mandatory onboarding modules and documentation.</p>
+<div class="flex items-center gap-md">
+<div class="flex -space-x-2">
+<img alt="Team member" class="w-8 h-8 rounded-full border-2 border-white" data-alt="A professional headshot of a diverse woman in a business casual outfit, smiling confidently against a soft-focus office background. The lighting is warm and natural, creating a welcoming and professional corporate atmosphere that aligns with a high-end employee management system interface." src="https://lh3.googleusercontent.com/aida-public/AB6AXuA830iLaBx0SBuVPnsdAyFAGY-m9sO99nKPUxh-Zs_-mWPkdvU8iaO3TWrP0Ys0ZwCPp8wa6jwF7XhJxjOmjZWZuS0pub9MnKna-ZO362nHaGddIP7M3CU3iZ7YeLeh0VmSu1AHb5Aoqs5fleP_B90wa2JCBk4MBE_kzMr4LF7C89QT9htJi91rvdV1Rq0EZw7h8wl7kB__JwMiTrpFiNvKEDa7iQg3pyPE4a-Mcn_DzBE1yQjebIKJY4OPrReCY-T6xUyAiAeMpyM7"/>
+</div>
+<span class="text-label-sm font-label-sm text-outline">Assigned to: Operations Team</span>
+</div>
+</div>
+<div class="flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="p-2 text-outline hover:text-on-surface">
+<span class="material-symbols-outlined" data-icon="more_vert">more_vert</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Notification Card: Info/Mention -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow group relative">
+<!-- Unread Indicator -->
+<div class="absolute left-0 top-0 bottom-0 w-1 bg-primary"></div>
+<div class="p-md flex gap-md">
+<div class="flex-shrink-0 w-12 h-12 rounded-full bg-primary-container/10 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined" data-icon="chat_bubble">chat_bubble</span>
+</div>
+<div class="flex-grow">
+<div class="flex items-start justify-between mb-xs">
+<div class="flex items-center gap-2">
+<h4 class="font-h3 text-[16px] text-on-surface">Mentioned by Marcus Chen</h4>
+<span class="w-2 h-2 bg-primary rounded-full"></span>
+</div>
+<span class="text-label-sm font-label-sm text-outline">3 hours ago</span>
+</div>
+<p class="font-body-md text-on-surface-variant italic border-l-4 border-surface-container-highest pl-md py-1 my-md">"@Admin, please take a look at the revised Q3 resource allocation plan. We need approval by EOD."</p>
+<div class="flex items-center gap-sm">
+<button class="px-md py-1.5 bg-primary text-white rounded-lg text-button">Reply</button>
+<button class="px-md py-1.5 text-on-surface font-button hover:bg-surface-container rounded-lg">View Thread</button>
+</div>
+</div>
+<div class="flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="p-2 text-outline hover:text-on-surface">
+<span class="material-symbols-outlined" data-icon="more_vert">more_vert</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Notification Card: System Info -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow group">
+<div class="p-md flex gap-md">
+<div class="flex-shrink-0 w-12 h-12 rounded-full bg-surface-container flex items-center justify-center text-on-surface-variant">
+<span class="material-symbols-outlined" data-icon="update">update</span>
+</div>
+<div class="flex-grow">
+<div class="flex items-start justify-between mb-xs">
+<h4 class="font-h3 text-[16px] text-on-surface">System Maintenance Scheduled</h4>
+<span class="text-label-sm font-label-sm text-outline">5 hours ago</span>
+</div>
+<p class="font-body-md text-on-surface-variant mb-md">Suler EMS will undergo routine server maintenance on Sunday, October 15th, from 02:00 AM to 04:00 AM UTC. Some services may be unavailable.</p>
+<a class="text-primary font-button hover:underline text-sm" href="#">View details in Help Center</a>
+</div>
+<div class="flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="p-2 text-outline hover:text-on-surface">
+<span class="material-symbols-outlined" data-icon="more_vert">more_vert</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Notification Card: Warning -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow group relative">
+<div class="absolute left-0 top-0 bottom-0 w-1 bg-primary"></div>
+<div class="p-md flex gap-md">
+<div class="flex-shrink-0 w-12 h-12 rounded-full bg-orange-100 flex items-center justify-center text-orange-600">
+<span class="material-symbols-outlined" data-icon="assignment_late">assignment_late</span>
+</div>
+<div class="flex-grow">
+<div class="flex items-start justify-between mb-xs">
+<div class="flex items-center gap-2">
+<h4 class="font-h3 text-[16px] text-on-surface">Pending Approval Request</h4>
+<span class="w-2 h-2 bg-primary rounded-full"></span>
+</div>
+<span class="text-label-sm font-label-sm text-outline">Yesterday</span>
+</div>
+<p class="font-body-md text-on-surface-variant mb-md">David Miller submitted a "Remote Work" request that requires your immediate attention before the cutoff period ends.</p>
+<div class="flex items-center gap-sm">
+<button class="px-md py-1.5 bg-primary-container text-white rounded-lg text-button">Approve</button>
+<button class="px-md py-1.5 border border-outline text-on-surface font-button hover:bg-surface-container rounded-lg">Review Details</button>
+</div>
+</div>
+<div class="flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="p-2 text-outline hover:text-on-surface">
+<span class="material-symbols-outlined" data-icon="more_vert">more_vert</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Load More Action -->
+<div class="pt-lg flex justify-center">
+<button class="flex items-center gap-2 px-xl py-3 rounded-xl border-2 border-dashed border-outline-variant text-outline hover:text-primary hover:border-primary transition-all font-medium">
+<span class="material-symbols-outlined" data-icon="keyboard_double_arrow_down">keyboard_double_arrow_down</span>
+                            Load previous notifications
+                        </button>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Contextual FAB - Only for specific screens, but added for visual completeness of the request action -->
+<!-- Hidden by default on details pages as per instructions, but keeping it here for the main Dashboard-like view -->
+</body></html>

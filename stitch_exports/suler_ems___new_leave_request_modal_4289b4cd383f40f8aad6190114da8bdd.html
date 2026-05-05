@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-tertiary": "#ffffff",
+                    "error": "#ba1a1a",
+                    "outline-variant": "#c3c6d7",
+                    "secondary-fixed-dim": "#c0c7d6",
+                    "tertiary": "#943700",
+                    "error-container": "#ffdad6",
+                    "on-secondary": "#ffffff",
+                    "surface-dim": "#d9d9e5",
+                    "inverse-on-surface": "#f0f0fb",
+                    "surface-container-low": "#f3f3fe",
+                    "on-background": "#191b23",
+                    "surface": "#faf8ff",
+                    "outline": "#737686",
+                    "inverse-surface": "#2e3039",
+                    "tertiary-fixed-dim": "#ffb596",
+                    "on-surface-variant": "#434655",
+                    "tertiary-container": "#bc4800",
+                    "primary-container": "#2563eb",
+                    "on-secondary-fixed-variant": "#404754",
+                    "tertiary-fixed": "#ffdbcd",
+                    "primary": "#004ac6",
+                    "on-surface": "#191b23",
+                    "secondary-fixed": "#dce2f3",
+                    "on-primary-fixed-variant": "#003ea8",
+                    "on-secondary-container": "#5e6572",
+                    "surface-tint": "#0053db",
+                    "secondary-container": "#dce2f3",
+                    "secondary": "#585f6c",
+                    "on-secondary-fixed": "#151c27",
+                    "background": "#faf8ff",
+                    "surface-container-highest": "#e1e2ed",
+                    "on-tertiary-container": "#ffede6",
+                    "primary-fixed-dim": "#b4c5ff",
+                    "on-tertiary-fixed-variant": "#7d2d00",
+                    "on-primary-container": "#eeefff",
+                    "inverse-primary": "#b4c5ff",
+                    "surface-container-high": "#e7e7f3",
+                    "primary-fixed": "#dbe1ff",
+                    "on-primary-fixed": "#00174b",
+                    "on-error": "#ffffff",
+                    "on-tertiary-fixed": "#360f00",
+                    "surface-container": "#ededf9",
+                    "surface-variant": "#e1e2ed",
+                    "surface-container-lowest": "#ffffff",
+                    "on-primary": "#ffffff",
+                    "surface-bright": "#faf8ff",
+                    "on-error-container": "#93000a"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "12px",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "lg": "24px",
+                    "xl": "32px",
+                    "2xl": "48px",
+                    "md": "16px",
+                    "3xl": "64px",
+                    "xs": "4px",
+                    "sm": "8px"
+            },
+            "fontFamily": {
+                    "body-md": ["Inter"],
+                    "label-sm": ["Inter"],
+                    "h3": ["Inter"],
+                    "body-lg": ["Inter"],
+                    "h2": ["Inter"],
+                    "h1": ["Inter"],
+                    "button": ["Inter"]
+            },
+            "fontSize": {
+                    "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                    "label-sm": ["12px", {"lineHeight": "16px", "fontWeight": "500"}],
+                    "h3": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                    "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "h2": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                    "h1": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "button": ["14px", {"lineHeight": "20px", "fontWeight": "600"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body class="bg-surface font-body-md text-on-surface antialiased overflow-hidden">
+<!-- Background: Leave Management Screen (Dimmed) -->
+<div class="flex h-screen w-full blur-sm brightness-75 select-none pointer-events-none">
+<!-- SideNavBar -->
+<aside class="flex flex-col h-screen w-64 bg-white border-r border-slate-200 fixed left-0 top-0">
+<div class="p-lg">
+<div class="text-lg font-bold tracking-tight text-slate-900">Suler EMS</div>
+<div class="text-xs text-slate-500 uppercase tracking-widest font-semibold mt-xs">Enterprise Clarity</div>
+</div>
+<nav class="flex-1 mt-md">
+<div class="flex items-center px-4 py-3 text-slate-600 hover:bg-slate-50 transition-colors">
+<span class="material-symbols-outlined mr-sm" data-icon="dashboard">dashboard</span>
+<span class="font-body-md">Dashboard</span>
+</div>
+<div class="flex items-center px-4 py-3 text-slate-600 hover:bg-slate-50 transition-colors">
+<span class="material-symbols-outlined mr-sm" data-icon="group">group</span>
+<span class="font-body-md">Employees</span>
+</div>
+<div class="flex items-center px-4 py-3 text-blue-600 bg-blue-50 border-l-4 border-blue-600 font-semibold">
+<span class="material-symbols-outlined mr-sm" data-icon="event_busy">event_busy</span>
+<span class="font-body-md">Leave Management</span>
+</div>
+<div class="flex items-center px-4 py-3 text-slate-600 hover:bg-slate-50 transition-colors">
+<span class="material-symbols-outlined mr-sm" data-icon="domain">domain</span>
+<span class="font-body-md">Departments</span>
+</div>
+<div class="flex items-center px-4 py-3 text-slate-600 hover:bg-slate-50 transition-colors">
+<span class="material-symbols-outlined mr-sm" data-icon="payments">payments</span>
+<span class="font-body-md">Payroll</span>
+</div>
+<div class="flex items-center px-4 py-3 text-slate-600 hover:bg-slate-50 transition-colors">
+<span class="material-symbols-outlined mr-sm" data-icon="settings">settings</span>
+<span class="font-body-md">Settings</span>
+</div>
+</nav>
+</aside>
+<!-- TopNavBar -->
+<header class="fixed top-0 right-0 left-64 h-16 border-b border-slate-200 bg-white/80 backdrop-blur-md flex justify-between items-center px-6 z-40">
+<div class="flex items-center bg-slate-100 px-3 py-1.5 rounded-lg w-96">
+<span class="material-symbols-outlined text-slate-400 mr-2" data-icon="search">search</span>
+<span class="text-slate-400 text-sm">Search employees, requests...</span>
+</div>
+<div class="flex items-center space-x-md">
+<span class="material-symbols-outlined text-slate-500 cursor-pointer" data-icon="notifications">notifications</span>
+<span class="material-symbols-outlined text-slate-500 cursor-pointer" data-icon="help_outline">help_outline</span>
+<div class="h-8 w-8 rounded-full bg-slate-200 overflow-hidden">
+<img alt="Admin" data-alt="A professional headshot of a senior HR administrator in a brightly lit modern office. The lighting is soft and natural, emphasizing a trustworthy and efficient persona. The background is a blurred corporate environment with clean lines and a palette of whites and soft blues, matching the Suler EMS aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuA6jfH1XLPZ-oFgbkqfXM-tOJfnnvaqJO4XzV3wQTJZiYIhZKm17ZGoL0r1SfTtkfb_oTLcleRgeRS8mlnG3RtkaDsSW1Alilh1Y6VzwbD_OOo3CoZV4fNo0-7-mHve5BQ6CKpZf8vIdQb6tMnFJJVTGYcM3zuLjVkfFo0ytZQFSxU5kpBJDi6NVEbRX6co70qVITiMeCgyCwqhmBb37dB10ZWFBKhggkI6bjJ8SgiQl5iyYW5Jp6-u-O8nc4WF4EClI2e18jtzpam_"/>
+</div>
+</div>
+</header>
+<!-- Content Canvas -->
+<main class="flex-1 ml-64 mt-16 p-lg bg-surface">
+<div class="max-w-7xl mx-auto space-y-lg">
+<div class="flex justify-between items-end">
+<div>
+<h1 class="font-h1 text-h1 text-on-surface">Leave Management</h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant">Track and approve employee time-off requests.</p>
+</div>
+<button class="bg-primary text-on-primary px-lg py-sm rounded-lg font-button flex items-center shadow-sm">
+<span class="material-symbols-outlined mr-2" data-icon="add">add</span>
+                        New Leave Request
+                    </button>
+</div>
+<!-- Summary Cards Bento -->
+<div class="grid grid-cols-4 gap-md">
+<div class="bg-white p-md border border-slate-200 rounded-lg shadow-sm">
+<p class="text-label-sm font-label-sm text-slate-500">PENDING APPROVAL</p>
+<h2 class="text-h2 font-h2 mt-xs">12</h2>
+</div>
+<div class="bg-white p-md border border-slate-200 rounded-lg shadow-sm">
+<p class="text-label-sm font-label-sm text-slate-500">ON LEAVE TODAY</p>
+<h2 class="text-h2 font-h2 mt-xs">4</h2>
+</div>
+<div class="bg-white p-md border border-slate-200 rounded-lg shadow-sm">
+<p class="text-label-sm font-label-sm text-slate-500">ANNUAL LEAVE UTILIZATION</p>
+<h2 class="text-h2 font-h2 mt-xs">68%</h2>
+</div>
+<div class="bg-white p-md border border-slate-200 rounded-lg shadow-sm">
+<p class="text-label-sm font-label-sm text-slate-500">AVG PROCESSING TIME</p>
+<h2 class="text-h2 font-h2 mt-xs">1.5d</h2>
+</div>
+</div>
+<!-- Table Simulation -->
+<div class="bg-white border border-slate-200 rounded-lg shadow-sm overflow-hidden">
+<div class="px-lg py-md border-b border-slate-100 flex justify-between items-center">
+<h3 class="font-h3 text-h3">Recent Requests</h3>
+<span class="material-symbols-outlined text-slate-400" data-icon="filter_list">filter_list</span>
+</div>
+<div class="h-96 bg-slate-50 flex items-center justify-center text-slate-300">
+<span class="material-symbols-outlined text-4xl" data-icon="table_chart">table_chart</span>
+</div>
+</div>
+</div>
+</main>
+</div>
+<!-- Modal Overlay -->
+<div class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-[2px]">
+<!-- Modal Container -->
+<div class="bg-white w-full max-w-2xl rounded-lg shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200">
+<!-- Header -->
+<div class="px-xl py-lg border-b border-slate-100 flex justify-between items-center">
+<h2 class="text-h2 font-h2 text-on-surface">New Leave Request</h2>
+<button class="text-slate-400 hover:text-slate-600 transition-colors p-xs rounded-full hover:bg-slate-100">
+<span class="material-symbols-outlined" data-icon="close">close</span>
+</button>
+</div>
+<!-- Form Content -->
+<form class="px-xl py-lg space-y-lg">
+<!-- Leave Type Selection -->
+<div class="space-y-sm">
+<label class="text-label-sm font-label-sm text-slate-700 uppercase tracking-wider">Select Leave Type</label>
+<div class="grid grid-cols-2 gap-sm">
+<label class="relative flex items-center p-md border border-primary bg-blue-50 rounded-lg cursor-pointer">
+<input checked="" class="hidden" name="leave_type" type="radio"/>
+<span class="material-symbols-outlined text-blue-600 mr-md" data-icon="beach_access" style="font-variation-settings: 'FILL' 1;">beach_access</span>
+<div>
+<p class="font-button text-blue-900">Annual</p>
+<p class="text-xs text-blue-600">Vacation &amp; Holidays</p>
+</div>
+<span class="absolute top-2 right-2 material-symbols-outlined text-blue-600 text-sm" data-icon="check_circle" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</label>
+<label class="relative flex items-center p-md border border-slate-200 hover:border-slate-300 rounded-lg cursor-pointer transition-all">
+<input class="hidden" name="leave_type" type="radio"/>
+<span class="material-symbols-outlined text-slate-500 mr-md" data-icon="medical_services">medical_services</span>
+<div>
+<p class="font-button text-slate-900">Sick</p>
+<p class="text-xs text-slate-500">Medical recovery</p>
+</div>
+</label>
+<label class="relative flex items-center p-md border border-slate-200 hover:border-slate-300 rounded-lg cursor-pointer transition-all">
+<input class="hidden" name="leave_type" type="radio"/>
+<span class="material-symbols-outlined text-slate-500 mr-md" data-icon="person">person</span>
+<div>
+<p class="font-button text-slate-900">Personal</p>
+<p class="text-xs text-slate-500">Errands &amp; urgent matters</p>
+</div>
+</label>
+<label class="relative flex items-center p-md border border-slate-200 hover:border-slate-300 rounded-lg cursor-pointer transition-all">
+<input class="hidden" name="leave_type" type="radio"/>
+<span class="material-symbols-outlined text-slate-500 mr-md" data-icon="child_care">child_care</span>
+<div>
+<p class="font-button text-slate-900">Maternity</p>
+<p class="text-xs text-slate-500">Parental leave</p>
+</div>
+</label>
+</div>
+</div>
+<!-- Date Range -->
+<div class="grid grid-cols-2 gap-lg">
+<div class="space-y-sm">
+<label class="text-label-sm font-label-sm text-slate-700 uppercase tracking-wider">Start Date</label>
+<div class="relative">
+<input class="w-full bg-slate-50 border border-slate-200 rounded-lg px-md py-sm focus:ring-2 focus:ring-primary focus:outline-none text-body-md" type="date" value="2024-05-20"/>
+<span class="absolute right-3 top-2.5 material-symbols-outlined text-slate-400 text-lg pointer-events-none" data-icon="calendar_today">calendar_today</span>
+</div>
+</div>
+<div class="space-y-sm">
+<label class="text-label-sm font-label-sm text-slate-700 uppercase tracking-wider">End Date</label>
+<div class="relative">
+<input class="w-full bg-slate-50 border border-slate-200 rounded-lg px-md py-sm focus:ring-2 focus:ring-primary focus:outline-none text-body-md" type="date" value="2024-05-24"/>
+<span class="absolute right-3 top-2.5 material-symbols-outlined text-slate-400 text-lg pointer-events-none" data-icon="calendar_today">calendar_today</span>
+</div>
+</div>
+</div>
+<!-- Reason -->
+<div class="space-y-sm">
+<label class="text-label-sm font-label-sm text-slate-700 uppercase tracking-wider">Reason (Optional)</label>
+<textarea class="w-full bg-slate-50 border border-slate-200 rounded-lg px-md py-sm focus:ring-2 focus:ring-primary focus:outline-none text-body-md resize-none" placeholder="Tell us more about your request..." rows="3"></textarea>
+</div>
+<!-- File Upload -->
+<div class="space-y-sm">
+<label class="text-label-sm font-label-sm text-slate-700 uppercase tracking-wider">Attachments</label>
+<div class="border-2 border-dashed border-slate-200 rounded-lg p-lg flex flex-col items-center justify-center bg-slate-50 hover:bg-slate-100 transition-colors cursor-pointer group">
+<span class="material-symbols-outlined text-slate-400 group-hover:text-primary transition-colors text-3xl mb-sm" data-icon="upload_file">upload_file</span>
+<p class="text-body-md text-slate-600 font-semibold">Click to upload or drag and drop</p>
+<p class="text-xs text-slate-400 mt-xs">Medical certificates or supporting documents (PDF, JPG up to 5MB)</p>
+</div>
+</div>
+<!-- Summary Banner -->
+<div class="bg-primary/5 rounded-lg px-md py-sm flex items-center justify-between border border-primary/10">
+<div class="flex items-center text-primary">
+<span class="material-symbols-outlined mr-sm" data-icon="info" style="font-variation-settings: 'FILL' 1;">info</span>
+<span class="text-body-md font-semibold">Leave Summary</span>
+</div>
+<div class="text-on-surface">
+<span class="text-h3 font-h3">5</span>
+<span class="text-body-md text-slate-500 ml-1">Working Days Requested</span>
+</div>
+</div>
+</form>
+<!-- Footer -->
+<div class="px-xl py-lg bg-slate-50 border-t border-slate-100 flex justify-end items-center space-x-md">
+<button class="px-lg py-sm border border-slate-300 text-slate-700 font-button rounded-lg hover:bg-slate-100 transition-colors">
+                    Discard
+                </button>
+<button class="px-xl py-sm bg-primary text-on-primary font-button rounded-lg hover:bg-primary-container shadow-md transition-all active:scale-95">
+                    Submit Request
+                </button>
+</div>
+</div>
+</div>
+</body></html>

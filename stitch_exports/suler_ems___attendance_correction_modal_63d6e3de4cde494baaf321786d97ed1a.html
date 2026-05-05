@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "secondary-container": "#dce2f3",
+                        "on-error": "#ffffff",
+                        "on-tertiary": "#ffffff",
+                        "on-tertiary-fixed-variant": "#7d2d00",
+                        "on-error-container": "#93000a",
+                        "inverse-primary": "#b4c5ff",
+                        "on-secondary-container": "#5e6572",
+                        "tertiary": "#943700",
+                        "inverse-on-surface": "#f0f0fb",
+                        "error-container": "#ffdad6",
+                        "on-tertiary-fixed": "#360f00",
+                        "surface-variant": "#e1e2ed",
+                        "secondary": "#585f6c",
+                        "on-secondary-fixed-variant": "#404754",
+                        "on-primary-container": "#eeefff",
+                        "primary-fixed": "#dbe1ff",
+                        "on-primary-fixed": "#00174b",
+                        "on-background": "#191b23",
+                        "tertiary-container": "#bc4800",
+                        "background": "#faf8ff",
+                        "outline": "#737686",
+                        "inverse-surface": "#2e3039",
+                        "surface-container-lowest": "#ffffff",
+                        "on-secondary-fixed": "#151c27",
+                        "on-primary": "#ffffff",
+                        "on-surface": "#191b23",
+                        "error": "#ba1a1a",
+                        "surface-container-highest": "#e1e2ed",
+                        "surface": "#faf8ff",
+                        "secondary-fixed-dim": "#c0c7d6",
+                        "surface-container": "#ededf9",
+                        "on-tertiary-container": "#ffede6",
+                        "surface-tint": "#0053db",
+                        "surface-container-low": "#f3f3fe",
+                        "surface-container-high": "#e7e7f3",
+                        "tertiary-fixed-dim": "#ffb596",
+                        "primary-container": "#2563eb",
+                        "tertiary-fixed": "#ffdbcd",
+                        "surface-bright": "#faf8ff",
+                        "on-primary-fixed-variant": "#003ea8",
+                        "outline-variant": "#c3c6d7",
+                        "surface-dim": "#d9d9e5",
+                        "secondary-fixed": "#dce2f3",
+                        "primary-fixed-dim": "#b4c5ff",
+                        "primary": "#004ac6",
+                        "on-surface-variant": "#434655",
+                        "on-secondary": "#ffffff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "3xl": "64px",
+                        "2xl": "48px",
+                        "xl": "32px",
+                        "md": "16px",
+                        "sm": "8px",
+                        "xs": "4px",
+                        "lg": "24px"
+                    },
+                    "fontFamily": {
+                        "h2": ["Inter"],
+                        "body-md": ["Inter"],
+                        "button": ["Inter"],
+                        "label-sm": ["Inter"],
+                        "h1": ["Inter"],
+                        "h3": ["Inter"],
+                        "body-lg": ["Inter"]
+                    },
+                    "fontSize": {
+                        "h2": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                        "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                        "button": ["14px", {"lineHeight": "20px", "fontWeight": "600"}],
+                        "label-sm": ["12px", {"lineHeight": "16px", "fontWeight": "500"}],
+                        "h1": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "h3": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                        "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}]
+                    }
+                },
+            },
+        }
+    </script>
+</head>
+<body class="bg-surface text-on-surface antialiased">
+<!-- TopNavBar -->
+<header class="sticky top-0 z-50 flex items-center justify-between px-6 h-16 w-full bg-white dark:bg-gray-900 shadow-sm border-b border-gray-200 dark:border-gray-800">
+<div class="flex items-center gap-xl">
+<span class="text-xl font-bold tracking-tight text-gray-900 dark:text-white">Suler EMS</span>
+<div class="hidden md:flex gap-md">
+<nav class="flex items-center gap-md">
+<span class="text-gray-500 dark:text-gray-400 font-inter text-sm font-medium cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors px-3 py-2 rounded">Home</span>
+<span class="text-blue-600 dark:text-blue-400 font-semibold border-b-2 border-blue-600 font-inter text-sm font-medium cursor-pointer px-3 py-2">Attendance</span>
+<span class="text-gray-500 dark:text-gray-400 font-inter text-sm font-medium cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors px-3 py-2 rounded">Employees</span>
+</nav>
+</div>
+</div>
+<div class="flex items-center gap-md">
+<button class="p-2 text-gray-500 hover:bg-gray-100 rounded-full transition-colors">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+<button class="p-2 text-gray-500 hover:bg-gray-100 rounded-full transition-colors">
+<span class="material-symbols-outlined" data-icon="help">help</span>
+</button>
+<div class="flex items-center gap-sm ml-2 border-l pl-4 border-gray-200">
+<img alt="User profile photo" class="w-8 h-8 rounded-full object-cover" data-alt="A high-quality professional corporate headshot of a middle-aged man with a friendly expression. He is wearing a modern navy blue blazer over a crisp white shirt. The background is a softly blurred office environment with natural lighting and cool blue tones, maintaining a professional and reliable corporate aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAmJQ4Qq_xEPG04oLBzRonQ-3CgFhXiixxYWxLJa0T1M7bw0rZQFVDpzUByTzhHDt5IijDlDKxrmI3ciaJwploV92rukuia36euQnq-vnas9RK3DTRENEl-DTcNaAjrGtbrua62cYbs53QlT6oCEKZLY-kuby9SOiXslTgM_ZAYjGQuvGkLgtUuZYCXu1wwW7AmlArj_mYomPG2y5K75NRfxPm14vtF2mGcoEhXzbKkdkn050apEYscdJc10CQxIOn9nvkcDiDVF_Us"/>
+<span class="font-inter text-sm font-medium text-gray-900">Alex Rivera</span>
+</div>
+</div>
+</header>
+<!-- SideNavBar (Hidden on Mobile for this view) -->
+<aside class="fixed left-0 top-0 h-full flex flex-col py-4 w-64 z-40 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 hidden md:flex">
+<div class="px-6 mb-8 mt-4">
+<h1 class="text-lg font-black text-blue-600 dark:text-blue-400">Suler EMS</h1>
+<p class="text-xs text-gray-500">Enterprise Admin</p>
+</div>
+<nav class="flex-1 px-4 space-y-1">
+<div class="flex items-center gap-3 px-3 py-2 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800/50 rounded-lg transition-all duration-200 hover:translate-x-1 cursor-pointer">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span class="font-inter text-sm antialiased">Dashboard</span>
+</div>
+<div class="flex items-center gap-3 px-3 py-2 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800/50 rounded-lg transition-all duration-200 hover:translate-x-1 cursor-pointer">
+<span class="material-symbols-outlined" data-icon="group">group</span>
+<span class="font-inter text-sm antialiased">Employees</span>
+</div>
+<div class="flex items-center gap-3 px-3 py-2 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800/50 rounded-lg transition-all duration-200 hover:translate-x-1 cursor-pointer">
+<span class="material-symbols-outlined" data-icon="payments">payments</span>
+<span class="font-inter text-sm antialiased">Payroll</span>
+</div>
+<div class="flex items-center gap-3 px-3 py-2 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 border-l-4 border-blue-600 font-semibold transition-all duration-200 cursor-pointer">
+<span class="material-symbols-outlined" data-icon="schedule">schedule</span>
+<span class="font-inter text-sm antialiased ml-2">Attendance</span>
+</div>
+<div class="flex items-center gap-3 px-3 py-2 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800/50 rounded-lg transition-all duration-200 hover:translate-x-1 cursor-pointer">
+<span class="material-symbols-outlined" data-icon="shield_person">shield_person</span>
+<span class="font-inter text-sm antialiased">Roles</span>
+</div>
+<div class="flex items-center gap-3 px-3 py-2 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800/50 rounded-lg transition-all duration-200 hover:translate-x-1 cursor-pointer">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span class="font-inter text-sm antialiased">Settings</span>
+</div>
+</nav>
+<div class="px-4 mt-auto">
+<div class="flex items-center gap-3 px-3 py-2 text-error hover:bg-error-container/10 rounded-lg cursor-pointer">
+<span class="material-symbols-outlined" data-icon="logout">logout</span>
+<span class="font-inter text-sm antialiased">Log Out</span>
+</div>
+</div>
+</aside>
+<!-- Main Content Canvas (Attendance Tracker Screen behind modal) -->
+<main class="md:ml-64 p-lg min-h-screen">
+<div class="max-w-6xl mx-auto space-y-lg">
+<header class="flex justify-between items-end">
+<div>
+<h2 class="font-h1 text-h1 text-on-surface">Attendance Tracker</h2>
+<p class="text-on-surface-variant font-body-md mt-sm">Monitor daily clock-in/out records and status.</p>
+</div>
+<button class="bg-primary text-on-primary px-lg py-sm rounded-lg font-button flex items-center gap-sm shadow-sm hover:opacity-90 transition-opacity">
+<span class="material-symbols-outlined text-[20px]" data-icon="add">add</span>
+                    New Request
+                </button>
+</header>
+<!-- Bento Grid Stats -->
+<div class="grid grid-cols-1 md:grid-cols-4 gap-lg">
+<div class="bg-surface-container-low p-md rounded-xl border border-outline-variant shadow-sm flex flex-col gap-xs">
+<span class="text-on-surface-variant font-label-sm">TOTAL HOURS</span>
+<span class="text-h2 font-h2 text-on-surface">156.5</span>
+<span class="text-xs text-primary font-medium flex items-center gap-xs">
+<span class="material-symbols-outlined text-[14px]" data-icon="trending_up">trending_up</span>
+                        4% from last month
+                    </span>
+</div>
+<div class="bg-surface-container-low p-md rounded-xl border border-outline-variant shadow-sm flex flex-col gap-xs">
+<span class="text-on-surface-variant font-label-sm">PRESENT DAYS</span>
+<span class="text-h2 font-h2 text-on-surface">21/22</span>
+<span class="text-xs text-secondary font-medium">95.4% Attendance</span>
+</div>
+<div class="bg-surface-container-low p-md rounded-xl border border-outline-variant shadow-sm flex flex-col gap-xs">
+<span class="text-on-surface-variant font-label-sm">LATE CLOCK-INS</span>
+<span class="text-h2 font-h2 text-on-surface">02</span>
+<span class="text-xs text-tertiary font-medium">Target: &lt; 01</span>
+</div>
+<div class="bg-surface-container-low p-md rounded-xl border border-outline-variant shadow-sm flex flex-col gap-xs">
+<span class="text-on-surface-variant font-label-sm">CORRECTIONS</span>
+<span class="text-h2 font-h2 text-on-surface">03</span>
+<span class="text-xs text-on-surface-variant font-medium">Pending Review</span>
+</div>
+</div>
+<!-- Attendance Table Placeholder -->
+<div class="bg-white rounded-xl border border-outline-variant shadow-sm overflow-hidden">
+<div class="p-md border-b border-outline-variant bg-surface-container-lowest flex justify-between items-center">
+<h3 class="font-h3 text-h3 text-on-surface">Recent Activity</h3>
+<div class="flex gap-sm">
+<div class="relative">
+<input class="pl-xl pr-md py-xs bg-surface-container rounded-lg border-none text-body-md focus:ring-2 focus:ring-primary" placeholder="Search records..." type="text"/>
+<span class="material-symbols-outlined absolute left-sm top-1/2 -translate-y-1/2 text-on-surface-variant text-[18px]" data-icon="search">search</span>
+</div>
+<button class="px-md py-xs border border-outline-variant rounded-lg font-button text-on-surface hover:bg-surface-container-low transition-colors">Filter</button>
+</div>
+</div>
+<table class="w-full text-left font-body-md">
+<thead>
+<tr class="bg-surface-container-low text-on-surface-variant border-b border-outline-variant">
+<th class="px-lg py-md">Date</th>
+<th class="px-lg py-md">Clock In</th>
+<th class="px-lg py-md">Clock Out</th>
+<th class="px-lg py-md">Status</th>
+<th class="px-lg py-md text-right">Action</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant">
+<tr class="hover:bg-surface-container-lowest transition-colors">
+<td class="px-lg py-md font-medium">Oct 24, 2023</td>
+<td class="px-lg py-md text-on-surface">09:00</td>
+<td class="px-lg py-md text-on-surface">17:00</td>
+<td class="px-lg py-md">
+<span class="bg-secondary-container/30 text-secondary px-sm py-xs rounded-full text-label-sm font-semibold">Completed</span>
+</td>
+<td class="px-lg py-md text-right text-primary cursor-pointer font-button">Edit</td>
+</tr>
+<tr class="hover:bg-surface-container-lowest transition-colors bg-surface-container-low/20">
+<td class="px-lg py-md font-medium">Oct 23, 2023</td>
+<td class="px-lg py-md text-on-surface">08:55</td>
+<td class="px-lg py-md text-on-surface text-error">--:--</td>
+<td class="px-lg py-md">
+<span class="bg-tertiary-container/10 text-tertiary px-sm py-xs rounded-full text-label-sm font-semibold">Missing Out</span>
+</td>
+<td class="px-lg py-md text-right text-primary cursor-pointer font-button font-bold">Request Correction</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</main>
+<!-- ATTENDANCE CORRECTION MODAL OVERLAY -->
+<div class="fixed inset-0 z-[100] flex items-center justify-center bg-inverse-surface/40 backdrop-blur-sm p-md">
+<!-- Modal Card -->
+<div class="bg-white w-full max-w-lg rounded-xl shadow-2xl overflow-hidden border border-outline-variant">
+<!-- Header -->
+<div class="px-lg py-md border-b border-outline-variant flex items-center justify-between bg-surface-container-lowest">
+<div class="flex items-center gap-sm">
+<span class="material-symbols-outlined text-primary text-[24px]" data-icon="edit_calendar">edit_calendar</span>
+<h2 class="font-h3 text-h3 text-on-surface">Attendance Correction Request</h2>
+</div>
+<button class="p-xs hover:bg-surface-container-high rounded-full transition-colors text-on-surface-variant">
+<span class="material-symbols-outlined" data-icon="close">close</span>
+</button>
+</div>
+<!-- Content -->
+<div class="p-lg space-y-lg">
+<!-- Info Message -->
+<div class="bg-primary-container/10 border border-primary-container/20 p-md rounded-lg flex gap-md">
+<span class="material-symbols-outlined text-primary" data-icon="info">info</span>
+<p class="text-body-md text-on-primary-fixed-variant">Correcting attendance records requires admin approval. Please ensure all details are accurate.</p>
+</div>
+<div class="grid grid-cols-2 gap-lg">
+<!-- Date (Pre-filled) -->
+<div class="space-y-xs">
+<label class="block font-label-sm text-on-surface-variant">Date</label>
+<div class="relative">
+<input class="w-full h-10 px-md bg-surface-container-low border border-outline-variant rounded-lg text-body-md text-on-surface-variant cursor-not-allowed" disabled="" type="text" value="Monday, Oct 23, 2023"/>
+<span class="material-symbols-outlined absolute right-md top-1/2 -translate-y-1/2 text-outline text-[18px]" data-icon="calendar_today">calendar_today</span>
+</div>
+</div>
+<!-- Original Time -->
+<div class="space-y-xs">
+<label class="block font-label-sm text-on-surface-variant">Original Time</label>
+<div class="relative">
+<input class="w-full h-10 px-md bg-surface-container-low border border-outline-variant rounded-lg text-body-md text-on-surface-variant cursor-not-allowed" disabled="" type="text" value="17:00"/>
+<span class="material-symbols-outlined absolute right-md top-1/2 -translate-y-1/2 text-outline text-[18px]" data-icon="schedule">schedule</span>
+</div>
+</div>
+</div>
+<!-- Corrected Time -->
+<div class="space-y-xs">
+<label class="block font-label-sm text-on-surface-variant">Corrected Time</label>
+<div class="relative group">
+<input class="w-full h-10 px-md bg-white border border-outline-variant rounded-lg text-body-md text-on-surface focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all" type="time" value="18:15"/>
+</div>
+<p class="text-[11px] text-on-surface-variant italic">Please enter the actual time you completed your shift.</p>
+</div>
+<!-- Reason for Correction -->
+<div class="space-y-xs">
+<label class="block font-label-sm text-on-surface-variant">Reason for Correction</label>
+<textarea class="w-full p-md bg-white border border-outline-variant rounded-lg text-body-md text-on-surface focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all resize-none" placeholder="e.g., System glitch, Forgot to clock out..." rows="3"></textarea>
+</div>
+</div>
+<!-- Footer -->
+<div class="px-lg py-md border-t border-outline-variant bg-surface-container-lowest flex items-center justify-end gap-md">
+<button class="px-lg py-sm border border-outline-variant rounded-lg font-button text-on-surface hover:bg-surface-container-low transition-colors">
+                    Cancel
+                </button>
+<button class="px-lg py-sm bg-primary text-on-primary rounded-lg font-button shadow-sm hover:bg-surface-tint active:scale-95 transition-all">
+                    Submit Request
+                </button>
+</div>
+</div>
+</div>
+</body></html>

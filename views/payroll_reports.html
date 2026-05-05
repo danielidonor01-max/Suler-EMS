@@ -1,0 +1,358 @@
+
+<!-- TopNavBar -->
+
+<!-- Canvas -->
+<div class="mt-16 p-lg space-y-lg max-w-[1440px]">
+<!-- Header Section -->
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-md">
+<div>
+<h2 class="font-h1 text-h1 text-on-surface">Payroll &amp; Compensation Reports</h2>
+<p class="text-on-surface-variant font-body-md mt-1">Financial analytics and department spending breakdown for Fiscal Year 2024.</p>
+</div>
+<div class="flex gap-sm">
+<button class="px-md py-sm bg-white border border-outline-variant text-on-surface rounded-lg font-button flex items-center gap-2 hover:bg-surface-container transition-colors">
+<span class="material-symbols-outlined text-sm">download</span>
+                        Export PDF
+                    </button>
+<button class="px-md py-sm bg-primary-container text-on-primary-container rounded-lg font-button flex items-center gap-2 hover:opacity-90 transition-all shadow-md">
+<span class="material-symbols-outlined text-sm">add</span>
+                        New Disbursement
+                    </button>
+</div>
+</div>
+<!-- Filter Bar -->
+<div class="bg-white p-md rounded-xl border border-outline-variant shadow-sm flex flex-wrap items-center gap-lg">
+<div class="flex flex-col gap-xs">
+<label class="text-label-sm text-on-surface-variant">Date Range</label>
+<select class="border-outline-variant rounded-lg text-body-md focus:ring-primary h-10 min-w-[200px]">
+<option>Current Fiscal Year (2024)</option>
+<option>Last 12 Months</option>
+<option>Q3 2024</option>
+<option>Custom Range</option>
+</select>
+</div>
+<div class="flex flex-col gap-xs">
+<label class="text-label-sm text-on-surface-variant">Department</label>
+<select class="border-outline-variant rounded-lg text-body-md focus:ring-primary h-10 min-w-[180px]">
+<option>All Departments</option>
+<option>Engineering</option>
+<option>Marketing</option>
+<option>Operations</option>
+</select>
+</div>
+<div class="flex flex-col gap-xs">
+<label class="text-label-sm text-on-surface-variant">Grade Level</label>
+<div class="flex gap-xs">
+<span class="px-3 py-2 bg-secondary-container text-on-secondary-container rounded-lg text-xs font-bold border border-secondary-fixed cursor-pointer">L1 - L4</span>
+<span class="px-3 py-2 bg-surface hover:bg-surface-container text-on-surface-variant rounded-lg text-xs font-bold border border-outline-variant cursor-pointer transition-colors">L5 - L8</span>
+<span class="px-3 py-2 bg-surface hover:bg-surface-container text-on-surface-variant rounded-lg text-xs font-bold border border-outline-variant cursor-pointer transition-colors">Exec</span>
+</div>
+</div>
+<div class="ml-auto">
+<button class="text-primary font-button hover:underline">Reset Filters</button>
+</div>
+</div>
+<!-- Stats Bento Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-lg">
+<div class="bg-white p-lg rounded-xl border border-outline-variant shadow-sm relative overflow-hidden group">
+<div class="flex justify-between items-start mb-4">
+<div class="p-2 bg-primary-fixed rounded-lg">
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">monetization_on</span>
+</div>
+<span class="text-green-600 bg-green-50 px-2 py-1 rounded text-xs font-bold">+12.4%</span>
+</div>
+<p class="text-on-surface-variant text-label-sm font-bold uppercase tracking-wider">Total Annual Payroll</p>
+<h3 class="text-h1 font-h1 mt-1 text-on-surface">$24.82M</h3>
+<div class="absolute bottom-0 left-0 w-full h-1 bg-primary"></div>
+</div>
+<div class="bg-white p-lg rounded-xl border border-outline-variant shadow-sm relative overflow-hidden group">
+<div class="flex justify-between items-start mb-4">
+<div class="p-2 bg-tertiary-fixed rounded-lg">
+<span class="material-symbols-outlined text-tertiary" style="font-variation-settings: 'FILL' 1;">groups</span>
+</div>
+<span class="text-on-surface-variant text-xs">By Dept</span>
+</div>
+<p class="text-on-surface-variant text-label-sm font-bold uppercase tracking-wider">Avg Salary per Dept</p>
+<h3 class="text-h1 font-h1 mt-1 text-on-surface">$108.5k</h3>
+<div class="absolute bottom-0 left-0 w-full h-1 bg-tertiary"></div>
+</div>
+<div class="bg-white p-lg rounded-xl border border-outline-variant shadow-sm relative overflow-hidden group">
+<div class="flex justify-between items-start mb-4">
+<div class="p-2 bg-secondary-container rounded-lg">
+<span class="material-symbols-outlined text-secondary" style="font-variation-settings: 'FILL' 1;">receipt_long</span>
+</div>
+<span class="text-on-surface-variant text-xs">YTD</span>
+</div>
+<p class="text-on-surface-variant text-label-sm font-bold uppercase tracking-wider">Tax Withholdings</p>
+<h3 class="text-h1 font-h1 mt-1 text-on-surface">$6.14M</h3>
+<div class="absolute bottom-0 left-0 w-full h-1 bg-secondary"></div>
+</div>
+<div class="bg-white p-lg rounded-xl border border-outline-variant shadow-sm relative overflow-hidden group">
+<div class="flex justify-between items-start mb-4">
+<div class="p-2 bg-error-container rounded-lg">
+<span class="material-symbols-outlined text-error" style="font-variation-settings: 'FILL' 1;">celebration</span>
+</div>
+<span class="text-error text-xs font-bold">Payout Q4</span>
+</div>
+<p class="text-on-surface-variant text-label-sm font-bold uppercase tracking-wider">Bonus Disbursements</p>
+<h3 class="text-h1 font-h1 mt-1 text-on-surface">$2.1M</h3>
+<div class="absolute bottom-0 left-0 w-full h-1 bg-error"></div>
+</div>
+</div>
+<!-- Charts & Visualization Grid -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-lg">
+<!-- Line Chart: Payroll Trends -->
+<div class="lg:col-span-2 bg-white p-lg rounded-xl border border-outline-variant shadow-sm">
+<div class="flex justify-between items-center mb-xl">
+<h3 class="text-h3 font-h3">Payroll Expense Trends</h3>
+<div class="flex gap-2">
+<span class="flex items-center gap-1 text-xs font-medium text-on-surface-variant">
+<span class="w-3 h-3 rounded-full bg-primary"></span> Salary
+                            </span>
+<span class="flex items-center gap-1 text-xs font-medium text-on-surface-variant">
+<span class="w-3 h-3 rounded-full bg-tertiary"></span> Bonuses
+                            </span>
+</div>
+</div>
+<div class="h-64 flex items-end justify-between gap-4 relative">
+<!-- Simulated Trend Line -->
+<div class="absolute inset-x-0 bottom-0 top-0 pointer-events-none opacity-20">
+<svg class="w-full h-full" preserveAspectRatio="none" viewBox="0 0 100 100">
+<path class="text-primary" d="M0,80 Q25,60 50,70 T100,20" fill="none" stroke="var(--primary)" stroke-width="2" style="stroke: currentColor;"></path>
+<path class="text-tertiary" d="M0,95 Q25,90 50,85 T100,75" fill="none" stroke="var(--tertiary)" stroke-width="2" style="stroke: currentColor;"></path>
+</svg>
+</div>
+<!-- Bar chart backdrop for data points -->
+<div class="w-full h-full flex items-end justify-between px-2">
+<div class="flex flex-col items-center gap-2 group cursor-pointer w-full">
+<div class="w-full bg-primary/10 group-hover:bg-primary/20 rounded-t h-32 transition-all"></div>
+<span class="text-[10px] font-bold text-on-surface-variant uppercase">Jan</span>
+</div>
+<div class="flex flex-col items-center gap-2 group cursor-pointer w-full">
+<div class="w-full bg-primary/10 group-hover:bg-primary/20 rounded-t h-40 transition-all"></div>
+<span class="text-[10px] font-bold text-on-surface-variant uppercase">Feb</span>
+</div>
+<div class="flex flex-col items-center gap-2 group cursor-pointer w-full">
+<div class="w-full bg-primary/10 group-hover:bg-primary/20 rounded-t h-36 transition-all"></div>
+<span class="text-[10px] font-bold text-on-surface-variant uppercase">Mar</span>
+</div>
+<div class="flex flex-col items-center gap-2 group cursor-pointer w-full">
+<div class="w-full bg-primary/10 group-hover:bg-primary/20 rounded-t h-44 transition-all"></div>
+<span class="text-[10px] font-bold text-on-surface-variant uppercase">Apr</span>
+</div>
+<div class="flex flex-col items-center gap-2 group cursor-pointer w-full">
+<div class="w-full bg-primary/10 group-hover:bg-primary/20 rounded-t h-48 transition-all"></div>
+<span class="text-[10px] font-bold text-on-surface-variant uppercase">May</span>
+</div>
+<div class="flex flex-col items-center gap-2 group cursor-pointer w-full">
+<div class="w-full bg-primary/10 group-hover:bg-primary/20 rounded-t h-56 transition-all"></div>
+<span class="text-[10px] font-bold text-on-surface-variant uppercase">Jun</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Compensation by Department -->
+<div class="bg-white p-lg rounded-xl border border-outline-variant shadow-sm flex flex-col">
+<h3 class="text-h3 font-h3 mb-xl">Comp. by Department</h3>
+<div class="flex-1 space-y-md">
+<div class="space-y-1">
+<div class="flex justify-between text-label-sm font-bold">
+<span>Engineering</span>
+<span>$8.4M</span>
+</div>
+<div class="w-full h-3 bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-primary rounded-full" style="width: 75%"></div>
+</div>
+</div>
+<div class="space-y-1">
+<div class="flex justify-between text-label-sm font-bold">
+<span>Product</span>
+<span>$4.2M</span>
+</div>
+<div class="w-full h-3 bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-secondary rounded-full" style="width: 45%"></div>
+</div>
+</div>
+<div class="space-y-1">
+<div class="flex justify-between text-label-sm font-bold">
+<span>Sales &amp; Marketing</span>
+<span>$6.1M</span>
+</div>
+<div class="w-full h-3 bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-tertiary rounded-full" style="width: 60%"></div>
+</div>
+</div>
+<div class="space-y-1">
+<div class="flex justify-between text-label-sm font-bold">
+<span>Operations</span>
+<span>$3.8M</span>
+</div>
+<div class="w-full h-3 bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-outline rounded-full" style="width: 35%"></div>
+</div>
+</div>
+<div class="space-y-1">
+<div class="flex justify-between text-label-sm font-bold">
+<span>Design</span>
+<span>$2.3M</span>
+</div>
+<div class="w-full h-3 bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-primary-fixed-dim rounded-full" style="width: 25%"></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Table: Payroll Summary -->
+<div class="bg-white rounded-xl border border-outline-variant shadow-sm overflow-hidden">
+<div class="px-lg py-md border-b border-outline-variant flex justify-between items-center">
+<h3 class="text-h3 font-h3">Departmental Payroll Summary</h3>
+<div class="flex gap-2">
+<button class="p-2 border border-outline-variant rounded-lg hover:bg-surface-container transition-colors">
+<span class="material-symbols-outlined text-sm">filter_alt</span>
+</button>
+<button class="p-2 border border-outline-variant rounded-lg hover:bg-surface-container transition-colors">
+<span class="material-symbols-outlined text-sm">more_horiz</span>
+</button>
+</div>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left">
+<thead class="bg-surface text-on-surface-variant">
+<tr>
+<th class="px-lg py-md text-label-sm font-bold uppercase tracking-wider">Department</th>
+<th class="px-lg py-md text-label-sm font-bold uppercase tracking-wider">Headcount</th>
+<th class="px-lg py-md text-label-sm font-bold uppercase tracking-wider">Base Salary (Total)</th>
+<th class="px-lg py-md text-label-sm font-bold uppercase tracking-wider">Bonuses &amp; OT</th>
+<th class="px-lg py-md text-label-sm font-bold uppercase tracking-wider">Taxes / Benefits</th>
+<th class="px-lg py-md text-label-sm font-bold uppercase tracking-wider text-right">Net Disbursement</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant">
+<tr class="hover:bg-surface-container-low transition-colors group">
+<td class="px-lg py-md">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded bg-primary/10 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-sm">code</span>
+</div>
+<span class="font-bold">Engineering</span>
+</div>
+</td>
+<td class="px-lg py-md text-body-md">142</td>
+<td class="px-lg py-md text-body-md">$1,240,500</td>
+<td class="px-lg py-md text-body-md">$85,200</td>
+<td class="px-lg py-md text-body-md text-error">$312,400</td>
+<td class="px-lg py-md text-body-md font-bold text-right">$1,013,300</td>
+</tr>
+<tr class="hover:bg-surface-container-low transition-colors group">
+<td class="px-lg py-md">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded bg-tertiary/10 flex items-center justify-center text-tertiary">
+<span class="material-symbols-outlined text-sm">campaign</span>
+</div>
+<span class="font-bold">Marketing</span>
+</div>
+</td>
+<td class="px-lg py-md text-body-md">56</td>
+<td class="px-lg py-md text-body-md">$412,000</td>
+<td class="px-lg py-md text-body-md">$24,500</td>
+<td class="px-lg py-md text-body-md text-error">$102,100</td>
+<td class="px-lg py-md text-body-md font-bold text-right">$334,400</td>
+</tr>
+<tr class="hover:bg-surface-container-low transition-colors group">
+<td class="px-lg py-md">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded bg-secondary-container flex items-center justify-center text-secondary">
+<span class="material-symbols-outlined text-sm">architecture</span>
+</div>
+<span class="font-bold">Product Design</span>
+</div>
+</td>
+<td class="px-lg py-md text-body-md">31</td>
+<td class="px-lg py-md text-body-md">$285,000</td>
+<td class="px-lg py-md text-body-md">$12,000</td>
+<td class="px-lg py-md text-body-md text-error">$71,400</td>
+<td class="px-lg py-md text-body-md font-bold text-right">$225,600</td>
+</tr>
+<tr class="hover:bg-surface-container-low transition-colors group">
+<td class="px-lg py-md">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded bg-on-tertiary-fixed-variant/10 flex items-center justify-center text-on-tertiary-fixed-variant">
+<span class="material-symbols-outlined text-sm">settings_suggest</span>
+</div>
+<span class="font-bold">Operations</span>
+</div>
+</td>
+<td class="px-lg py-md text-body-md">88</td>
+<td class="px-lg py-md text-body-md">$560,000</td>
+<td class="px-lg py-md text-body-md">$15,400</td>
+<td class="px-lg py-md text-body-md text-error">$140,200</td>
+<td class="px-lg py-md text-body-md font-bold text-right">$435,200</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="p-md bg-surface border-t border-outline-variant flex justify-between items-center">
+<p class="text-label-sm text-on-surface-variant font-medium">Showing 1 to 4 of 12 departments</p>
+<div class="flex gap-2">
+<button class="px-4 py-2 border border-outline-variant rounded-lg text-xs font-bold disabled:opacity-50" disabled="">Previous</button>
+<button class="px-4 py-2 bg-white border border-outline-variant rounded-lg text-xs font-bold hover:bg-surface-container transition-colors">Next</button>
+</div>
+</div>
+</div>
+<!-- Salary Band Distribution Section -->
+<div class="bg-white p-lg rounded-xl border border-outline-variant shadow-sm">
+<h3 class="text-h3 font-h3 mb-xl">Salary Band Distribution</h3>
+<div class="flex flex-col md:flex-row gap-2xl items-center">
+<div class="relative w-48 h-48 flex items-center justify-center">
+<!-- Simulated Donut Chart -->
+<div class="absolute inset-0 rounded-full border-[16px] border-primary" style="clip-path: polygon(50% 0%, 100% 0%, 100% 50%, 50% 50%)"></div>
+<div class="absolute inset-0 rounded-full border-[16px] border-tertiary" style="clip-path: polygon(50% 50%, 100% 50%, 100% 100%, 50% 100%)"></div>
+<div class="absolute inset-0 rounded-full border-[16px] border-secondary" style="clip-path: polygon(0% 50%, 50% 50%, 50% 100%, 0% 100%)"></div>
+<div class="absolute inset-0 rounded-full border-[16px] border-outline-variant" style="clip-path: polygon(0% 0%, 50% 0%, 50% 50%, 0% 50%)"></div>
+<div class="text-center z-10">
+<span class="text-h2 font-h2 block text-on-surface leading-none">384</span>
+<span class="text-[10px] text-on-surface-variant uppercase font-bold tracking-widest">Total Staff</span>
+</div>
+</div>
+<div class="flex-1 grid grid-cols-2 gap-lg">
+<div class="flex items-center gap-3">
+<div class="w-3 h-3 rounded-full bg-primary"></div>
+<div>
+<p class="text-label-sm font-bold">High Band (&gt;$150k)</p>
+<p class="text-xs text-on-surface-variant">15% of employees (58 total)</p>
+</div>
+</div>
+<div class="flex items-center gap-3">
+<div class="w-3 h-3 rounded-full bg-tertiary"></div>
+<div>
+<p class="text-label-sm font-bold">Mid-High ($100k-$150k)</p>
+<p class="text-xs text-on-surface-variant">32% of employees (123 total)</p>
+</div>
+</div>
+<div class="flex items-center gap-3">
+<div class="w-3 h-3 rounded-full bg-secondary"></div>
+<div>
+<p class="text-label-sm font-bold">Mid Band ($70k-$100k)</p>
+<p class="text-xs text-on-surface-variant">41% of employees (157 total)</p>
+</div>
+</div>
+<div class="flex items-center gap-3">
+<div class="w-3 h-3 rounded-full bg-outline-variant"></div>
+<div>
+<p class="text-label-sm font-bold">Base Band (&lt;$70k)</p>
+<p class="text-xs text-on-surface-variant">12% of employees (46 total)</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Footer -->
+<footer class="mt-auto px-lg py-md border-t border-outline-variant bg-surface-container-low flex justify-between items-center">
+<p class="text-label-sm text-on-surface-variant">© 2024 Suler EMS. All financial data is encrypted and confidential.</p>
+<div class="flex gap-lg">
+<a class="text-label-sm text-primary font-bold hover:underline" href="#">Internal Audit Log</a>
+<a class="text-label-sm text-primary font-bold hover:underline" href="#">Compliance Docs</a>
+</div>
+</footer>

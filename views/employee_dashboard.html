@@ -1,0 +1,194 @@
+<template id="page-actions-template">
+<button class="p-2 text-slate-500 hover:bg-slate-50 rounded-full transition-colors">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+</button>
+
+</template>
+
+<!-- TopNavBar Component (Standardized to SCREEN_13) -->
+
+<!-- Page Content -->
+<div class="p-lg">
+<!-- Header Section -->
+<div class="mb-xl flex justify-between items-end">
+<div>
+<h1 class="font-h1 text-h1 text-on-surface">Hello, Alex</h1>
+<p class="text-body-lg text-secondary mt-xs">Here is what's happening with your workflow today.</p>
+</div>
+<button class="bg-primary text-on-primary px-lg py-sm rounded-lg flex items-center gap-2 font-button text-button hover:opacity-90 transition-opacity shadow-sm">
+<span class="material-symbols-outlined" data-icon="add">add</span>
+                Request Leave
+            </button>
+</div>
+<!-- Dashboard Analytics (Standardized KPI Style) -->
+<div class="grid grid-cols-12 gap-lg mb-xl">
+<!-- Attendance -->
+<div class="col-span-12 md:col-span-4 bg-white p-md rounded-xl border border-slate-200 shadow-sm">
+<div class="flex justify-between items-start">
+<div class="w-10 h-10 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
+<span class="material-symbols-outlined" data-icon="schedule">schedule</span>
+</div>
+<span class="text-emerald-600 text-label-sm font-bold bg-emerald-50 px-2 py-0.5 rounded-full">On Time</span>
+</div>
+<div class="mt-4">
+<p class="text-secondary text-label-sm">Attendance</p>
+<h3 class="text-h3 font-h3 text-on-surface">9:00 AM</h3>
+</div>
+</div>
+<!-- Tasks Due -->
+<div class="col-span-12 md:col-span-4 bg-white p-md rounded-xl border border-slate-200 shadow-sm">
+<div class="flex justify-between items-start">
+<div class="w-10 h-10 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center">
+<span class="material-symbols-outlined" data-icon="task_alt">task_alt</span>
+</div>
+<span class="text-amber-600 text-label-sm font-bold bg-amber-50 px-2 py-0.5 rounded-full">2 Priority</span>
+</div>
+<div class="mt-4">
+<p class="text-secondary text-label-sm">Tasks Due</p>
+<h3 class="text-h3 font-h3 text-on-surface">04 Tasks</h3>
+</div>
+</div>
+<!-- Recent Alert -->
+<div class="col-span-12 md:col-span-4 bg-white p-md rounded-xl border border-slate-200 shadow-sm">
+<div class="flex justify-between items-start">
+<div class="w-10 h-10 rounded-lg bg-slate-50 text-slate-600 flex items-center justify-center">
+<span class="material-symbols-outlined" data-icon="campaign">campaign</span>
+</div>
+<span class="text-blue-600 text-label-sm font-bold bg-blue-50 px-2 py-0.5 rounded-full">Alert</span>
+</div>
+<div class="mt-4">
+<p class="text-secondary text-label-sm">Recent Alert</p>
+<h3 class="text-h3 font-h3 text-on-surface truncate">Townhall at 4PM</h3>
+</div>
+</div>
+</div>
+<!-- Main Bento Content -->
+<div class="grid grid-cols-12 gap-lg">
+<!-- Leave Balances -->
+<div class="col-span-12 lg:col-span-8 grid grid-cols-1 md:grid-cols-3 gap-lg h-fit">
+<!-- Card 1 -->
+<div class="bg-white p-md rounded-xl border border-slate-200 shadow-sm">
+<div class="flex justify-between items-start mb-4">
+<div class="w-10 h-10 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
+<span class="material-symbols-outlined" data-icon="beach_access">beach_access</span>
+</div>
+<h3 class="text-h3 font-h3">12</h3>
+</div>
+<p class="text-secondary text-label-sm">Annual Leave Remaining</p>
+<div class="w-full bg-slate-100 h-1.5 rounded-full mt-4 overflow-hidden">
+<div class="bg-blue-600 h-full w-[60%]"></div>
+</div>
+</div>
+<!-- Card 2 -->
+<div class="bg-white p-md rounded-xl border border-slate-200 shadow-sm">
+<div class="flex justify-between items-start mb-4">
+<div class="w-10 h-10 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center">
+<span class="material-symbols-outlined" data-icon="medical_services">medical_services</span>
+</div>
+<h3 class="text-h3 font-h3">05</h3>
+</div>
+<p class="text-secondary text-label-sm">Sick Leave Remaining</p>
+<div class="w-full bg-slate-100 h-1.5 rounded-full mt-4 overflow-hidden">
+<div class="bg-amber-600 h-full w-[40%]"></div>
+</div>
+</div>
+<!-- Card 3 -->
+<div class="bg-white p-md rounded-xl border border-slate-200 shadow-sm">
+<div class="flex justify-between items-start mb-4">
+<div class="w-10 h-10 rounded-lg bg-slate-50 text-slate-600 flex items-center justify-center">
+<span class="material-symbols-outlined" data-icon="person">person</span>
+</div>
+<h3 class="text-h3 font-h3">02</h3>
+</div>
+<p class="text-secondary text-label-sm">Personal Leave Remaining</p>
+<div class="w-full bg-slate-100 h-1.5 rounded-full mt-4 overflow-hidden">
+<div class="bg-slate-600 h-full w-[20%]"></div>
+</div>
+</div>
+<!-- Team Activity Content -->
+<section class="col-span-full bg-white border border-slate-200 rounded-xl p-lg shadow-sm">
+<div class="flex justify-between items-center mb-lg">
+<h2 class="font-h3 text-h3">Team Activity</h2>
+<div class="flex -space-x-2">
+<img class="w-8 h-8 rounded-full border-2 border-white ring-1 ring-gray-100" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBIsZVRCbcyu9691g7vabLDypa79Vk7GaY-d3J4R49VcXzSP_WDjxP6XjuzbchcocYe56lr1YG1tGChDJUvDB4LJInBuFW6JNZVTg2TIulSPVQ-6fHKolOZp-DgrqnwplgbGlXgg2mRCLMHohSyGvWWFSlfHtv2iCBNwLtJjOb1yDuMwtHlbfa3nd_YGKS_THnWToql7ZzufIhSAvylpYEJprIAS883whx8o0kkAfO1I9t7Gs2nUKVUjyPKUPvqk_I23hSi_-4_liTG">
+<img class="w-8 h-8 rounded-full border-2 border-white ring-1 ring-gray-100" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDvNK5cnUHW5G2gz3iSD8BGcwmRcjWvFO8TJ0PZqD-JJDoR2GEE9Q2MVHq46RnoMpxUZESFrstkolmHbfUjBPnyH2pecDm1_9TKW9d6EvVApsfNaeVUEcTVTMzoQZBpH6h2LliKsgw-1vXBNh3wR7B4Hvi6w-r_OoyQiE6ti8Sd8Y6kbHyHFHspG9oz45069wDFmg8Daigo84y1LTlxPx7iDWGykZrQmqsFWvTuFiQShh8G3HuK07Bl1PhQU5niv48n0jPYAX7z09wp">
+<img class="w-8 h-8 rounded-full border-2 border-white ring-1 ring-gray-100" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDJiPrGJSUmV9Le76BvDrBTTbsXVgo2atCYN-fhgsv3uJJUpm4YcXTHRAuAKQM-LmbpRiK34Ooggca8eFsw0xYSBANbq9I0bzVcBZ8Y0j6XOyN2NRtcJ0o-_S8sdQD2V6b7HhHW82gcua9PFXT8VvLkchPnhzCd5w80RuwSIHdKehugqFvrGTNjqGtItXDqvbuyrqRP0yy46duL4rR6ID2KWNpz4RCm43KgChSyLzdyQixdK6MjIYO_Un9zoXSTNrDwRsNw2CQCt51_">
+<div class="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-[10px] font-bold border-2 border-white ring-1 ring-gray-100">+5</div>
+</div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-md">
+<div class="flex gap-md items-center p-md bg-slate-50 rounded-lg">
+<div class="w-10 h-10 rounded-lg bg-white flex items-center justify-center border border-slate-100">
+<span class="material-symbols-outlined text-primary">description</span>
+</div>
+<div>
+<p class="text-body-md font-medium">Project Proposal.pdf</p>
+<p class="text-label-sm text-secondary">Updated 2h ago</p>
+</div>
+</div>
+<div class="flex gap-md items-center p-md bg-slate-50 rounded-lg">
+<div class="w-10 h-10 rounded-lg bg-white flex items-center justify-center border border-slate-100">
+<span class="material-symbols-outlined text-amber-600">campaign</span>
+</div>
+<div>
+<p class="text-body-md font-medium">HR Policy Update</p>
+<p class="text-label-sm text-secondary">Posted 5h ago</p>
+</div>
+</div>
+</div>
+</section>
+</div>
+<!-- My Tasks Sidebar Widget -->
+<section class="col-span-12 lg:col-span-4 bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden flex flex-col">
+<div class="p-md border-b border-slate-100 flex justify-between items-center">
+<h2 class="font-h3 text-h3">My Tasks</h2>
+<a class="text-primary text-label-sm font-semibold hover:underline" href="#">View All</a>
+</div>
+<div class="flex-1 overflow-y-auto">
+<ul class="divide-y divide-slate-100">
+<li class="p-md hover:bg-slate-50 transition-colors cursor-pointer group">
+<div class="flex items-start gap-md">
+<div class="w-5 h-5 rounded border-2 border-slate-300 mt-0.5 group-hover:border-primary"></div>
+<div class="flex-1">
+<div class="flex justify-between items-start">
+<p class="text-body-md font-semibold text-on-surface">Submit Q3 Review</p>
+<span class="px-2 py-0.5 bg-red-100 text-red-700 text-[10px] font-bold rounded uppercase">Due Today</span>
+</div>
+<p class="text-label-sm text-secondary mt-1">Project Delta &amp; Team feedback</p>
+</div>
+</div>
+</li>
+<li class="p-md hover:bg-slate-50 transition-colors cursor-pointer">
+<div class="flex items-start gap-md">
+<div class="w-5 h-5 rounded border-2 border-slate-300 mt-0.5"></div>
+<div class="flex-1">
+<div class="flex justify-between items-start">
+<p class="text-body-md font-semibold text-on-surface">Update Guidelines</p>
+<span class="px-2 py-0.5 bg-blue-100 text-blue-700 text-[10px] font-bold rounded uppercase">In Progress</span>
+</div>
+<p class="text-label-sm text-secondary mt-1">Component documentation</p>
+</div>
+</div>
+</li>
+<li class="p-md hover:bg-slate-50 transition-colors cursor-pointer">
+<div class="flex items-start gap-md">
+<div class="w-5 h-5 rounded border-2 border-slate-300 mt-0.5"></div>
+<div class="flex-1">
+<div class="flex justify-between items-start">
+<p class="text-body-md font-semibold text-on-surface">Client Integration</p>
+<span class="px-2 py-0.5 bg-slate-100 text-slate-700 text-[10px] font-bold rounded uppercase">Pending</span>
+</div>
+<p class="text-label-sm text-secondary mt-1">Review comments from Apex</p>
+</div>
+</div>
+</li>
+</ul>
+</div>
+<div class="p-md bg-slate-50 text-center">
+<button class="w-full py-2 bg-white border border-slate-200 rounded-lg font-button text-button text-on-surface hover:bg-white hover:border-blue-600 transition-colors">
+                        + Create New Task
+                    </button>
+</div>
+</section>
+</div>
+</div>

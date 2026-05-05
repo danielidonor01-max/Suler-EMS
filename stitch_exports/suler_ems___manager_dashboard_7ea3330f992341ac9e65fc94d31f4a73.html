@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Suler EMS - Manager Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-primary-fixed-variant": "#003ea8",
+                        "primary-container": "#2563eb",
+                        "outline": "#737686",
+                        "inverse-on-surface": "#f0f0fb",
+                        "surface-container-high": "#e7e7f3",
+                        "secondary": "#585f6c",
+                        "surface-container": "#ededf9",
+                        "surface-variant": "#e1e2ed",
+                        "on-tertiary-fixed-variant": "#7d2d00",
+                        "error-container": "#ffdad6",
+                        "on-tertiary-container": "#ffede6",
+                        "primary": "#004ac6",
+                        "on-background": "#191b23",
+                        "inverse-surface": "#2e3039",
+                        "error": "#ba1a1a",
+                        "on-secondary": "#ffffff",
+                        "on-secondary-fixed-variant": "#404754",
+                        "secondary-container": "#dce2f3",
+                        "surface": "#faf8ff",
+                        "on-primary": "#ffffff",
+                        "on-primary-container": "#eeefff",
+                        "tertiary-container": "#bc4800",
+                        "on-tertiary": "#ffffff",
+                        "on-secondary-fixed": "#151c27",
+                        "on-tertiary-fixed": "#360f00",
+                        "surface-bright": "#faf8ff",
+                        "on-error-container": "#93000a",
+                        "on-secondary-container": "#5e6572",
+                        "secondary-fixed-dim": "#c0c7d6",
+                        "inverse-primary": "#b4c5ff",
+                        "tertiary": "#943700",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-container-highest": "#e1e2ed",
+                        "background": "#faf8ff",
+                        "tertiary-fixed-dim": "#ffb596",
+                        "outline-variant": "#c3c6d7",
+                        "on-primary-fixed": "#00174b",
+                        "tertiary-fixed": "#ffdbcd",
+                        "primary-fixed": "#dbe1ff",
+                        "on-surface-variant": "#434655",
+                        "on-surface": "#191b23",
+                        "surface-tint": "#0053db",
+                        "surface-dim": "#d9d9e5",
+                        "secondary-fixed": "#dce2f3",
+                        "primary-fixed-dim": "#b4c5ff",
+                        "on-error": "#ffffff",
+                        "surface-container-low": "#f3f3fe"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "xs": "4px",
+                        "3xl": "64px",
+                        "2xl": "48px",
+                        "md": "16px",
+                        "lg": "24px",
+                        "xl": "32px",
+                        "sm": "8px"
+                    },
+                    "fontFamily": {
+                        "body-md": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "label-sm": ["Inter"],
+                        "h3": ["Inter"],
+                        "h1": ["Inter"],
+                        "button": ["Inter"],
+                        "h2": ["Inter"]
+                    },
+                    "fontSize": {
+                        "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                        "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "label-sm": ["12px", {"lineHeight": "16px", "fontWeight": "500"}],
+                        "h3": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                        "h1": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "button": ["14px", {"lineHeight": "20px", "fontWeight": "600"}],
+                        "h2": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        body { font-family: 'Inter', sans-serif; background-color: #faf8ff; }
+    </style>
+</head>
+<body class="bg-background text-on-surface">
+<!-- SideNavBar Component (Standardized from SCREEN_13) -->
+<aside class="h-screen w-64 border-r fixed left-0 top-0 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 z-50 overflow-y-auto">
+<div class="flex flex-col h-full pt-4 pb-8">
+<!-- Branding -->
+<div class="px-6 mb-8 flex items-center gap-3">
+<div class="w-10 h-10 bg-primary-container rounded-lg flex items-center justify-center">
+<span class="material-symbols-outlined text-white" data-icon="corporate_fare">corporate_fare</span>
+</div>
+<div>
+<h2 class="text-lg font-black text-blue-600 leading-none">Suler EMS</h2>
+<span class="text-label-sm text-secondary">Management Suite</span>
+</div>
+</div>
+<!-- Navigation Links -->
+<nav class="flex-1 px-2 space-y-1">
+<a class="flex items-center text-blue-600 dark:text-blue-400 bg-blue-50/50 dark:bg-blue-900/20 border-l-4 border-blue-600 px-4 py-3 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all font-sans text-sm font-semibold tracking-tight" href="#">
+<span class="material-symbols-outlined mr-3" data-icon="dashboard">dashboard</span>
+                    Dashboard
+                </a>
+<a class="flex items-center text-slate-600 dark:text-slate-400 px-4 py-3 border-l-4 border-transparent hover:bg-slate-50 dark:hover:bg-slate-800 transition-all font-sans text-sm font-semibold tracking-tight" href="#">
+<span class="material-symbols-outlined mr-3" data-icon="group">group</span>
+                    Team Overview
+                </a>
+<a class="flex items-center text-slate-600 dark:text-slate-400 px-4 py-3 border-l-4 border-transparent hover:bg-slate-50 dark:hover:bg-slate-800 transition-all font-sans text-sm font-semibold tracking-tight" href="#">
+<span class="material-symbols-outlined mr-3" data-icon="assignment_turned_in">assignment_turned_in</span>
+                    Task Progress
+                </a>
+<a class="flex items-center text-slate-600 dark:text-slate-400 px-4 py-3 border-l-4 border-transparent hover:bg-slate-50 dark:hover:bg-slate-800 transition-all font-sans text-sm font-semibold tracking-tight" href="#">
+<span class="material-symbols-outlined mr-3" data-icon="rule_folder">rule_folder</span>
+                    Approvals
+                </a>
+<a class="flex items-center text-slate-600 dark:text-slate-400 px-4 py-3 border-l-4 border-transparent hover:bg-slate-50 dark:hover:bg-slate-800 transition-all font-sans text-sm font-semibold tracking-tight" href="#">
+<span class="material-symbols-outlined mr-3" data-icon="leaderboard">leaderboard</span>
+                    Performance
+                </a>
+<a class="flex items-center text-slate-600 dark:text-slate-400 px-4 py-3 border-l-4 border-transparent hover:bg-slate-50 dark:hover:bg-slate-800 transition-all font-sans text-sm font-semibold tracking-tight" href="#">
+<span class="material-symbols-outlined mr-3" data-icon="settings">settings</span>
+                    Settings
+                </a>
+</nav>
+<!-- Footer Links -->
+<div class="px-2 mt-auto border-t border-slate-100 pt-4">
+<a class="flex items-center text-slate-600 dark:text-slate-400 px-4 py-3 border-l-4 border-transparent hover:bg-slate-50 dark:hover:bg-slate-800 transition-all font-sans text-sm font-semibold tracking-tight" href="#">
+<span class="material-symbols-outlined mr-3" data-icon="help">help</span>
+                    Help Center
+                </a>
+</div>
+</div>
+</aside>
+<!-- Main Content Wrapper -->
+<main class="ml-64 min-h-screen">
+<!-- TopNavBar Component (Standardized from SCREEN_13) -->
+<header class="flex justify-between items-center h-16 px-6 w-full sticky top-0 z-40 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 shadow-sm">
+<div class="flex items-center flex-1 max-w-xl">
+<div class="relative w-full">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" data-icon="search">search</span>
+<input class="w-full bg-slate-50 border-none rounded-lg pl-10 pr-4 py-2 focus:ring-2 focus:ring-blue-600 text-sm" placeholder="Search tasks, team members..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<!-- Role Switcher -->
+<div class="flex items-center bg-slate-50 dark:bg-slate-800 rounded-lg p-1">
+<button class="flex items-center gap-2 px-3 py-1.5 bg-white dark:bg-slate-700 shadow-sm rounded-md text-sm font-semibold text-blue-600">
+<span class="material-symbols-outlined text-[18px]" data-icon="swap_horiz">swap_horiz</span>
+                        Switch Role
+                    </button>
+</div>
+<div class="flex items-center gap-2 border-l border-slate-200 pl-4 ml-2">
+<button class="p-2 text-slate-500 hover:bg-slate-50 rounded-full transition-colors relative">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+<span class="absolute top-2 right-2 w-2 h-2 bg-error rounded-full"></span>
+</button>
+<div class="flex items-center gap-3 cursor-pointer hover:bg-slate-50 p-1 rounded-lg transition-colors">
+<img alt="Alex Thompson profile picture" class="w-8 h-8 rounded-full border border-slate-200" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBY7tSQEYqRyR5znNr0_RQyYN20bX02w9uT1xXNGNVEEJ61mogQkoZsYeB4rjfjadkXay70wBWmgyAFZpjpDdZmQZF1N6bjHben0qdCTy360LAL7diYUQ1HkkAQeaJ1__yn28iLCowBLet1reuc2lt7oYbghUFHpeYEshjjTDgYsHuwOhbd9XtcVidACmJCLRFkYDq7iAw66CUd-ygkCb_0ptQP_z5fevDSUDbxiRPCGRbfwSYQ_PtXvDiYUNHdRYMvwAGJeVi52LCE"/>
+<div class="hidden lg:block text-left">
+<p class="text-xs font-bold text-slate-900 leading-none">Alex Thompson</p>
+<p class="text-[10px] text-slate-500">Manager View</p>
+</div>
+</div>
+</div>
+</div>
+</header>
+<!-- Page Canvas -->
+<div class="p-lg">
+<!-- Dashboard Header -->
+<div class="mb-8 flex justify-between items-end">
+<div>
+<h2 class="font-h1 text-h1 text-on-surface mb-1">Morning, Alex</h2>
+<p class="font-body-md text-body-md text-secondary">Here's what's happening with your team today.</p>
+</div>
+<div class="flex gap-3">
+<button class="flex items-center gap-2 px-4 py-2 border border-slate-200 rounded-lg font-button text-button bg-white hover:bg-slate-50 transition-colors shadow-sm">
+<span class="material-symbols-outlined text-sm">calendar_today</span>
+                        Feb 24, 2024
+                    </button>
+<button class="flex items-center gap-2 px-4 py-2 bg-primary-container text-white rounded-lg font-button text-button hover:opacity-90 transition-opacity shadow-sm">
+<span class="material-symbols-outlined text-sm">add</span>
+                        Assign Task
+                    </button>
+</div>
+</div>
+<!-- Bento Grid Layout -->
+<div class="grid grid-cols-12 gap-lg">
+<!-- Team Overview Stats - Standardized to SCREEN_13 -->
+<div class="col-span-12 lg:col-span-8 grid grid-cols-1 md:grid-cols-3 gap-lg">
+<div class="bg-white p-md rounded-xl border border-slate-200 shadow-sm">
+<div class="flex justify-between items-start">
+<div class="w-10 h-10 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
+<span class="material-symbols-outlined">groups</span>
+</div>
+<span class="text-emerald-600 text-label-sm font-bold bg-emerald-50 px-2 py-0.5 rounded-full">+2 this mo</span>
+</div>
+<div class="mt-4">
+<p class="text-secondary text-label-sm uppercase tracking-wider">Total Team</p>
+<h3 class="text-h3 font-h3 text-on-surface">24 Members</h3>
+</div>
+</div>
+<div class="bg-white p-md rounded-xl border border-slate-200 shadow-sm">
+<div class="flex justify-between items-start">
+<div class="w-10 h-10 rounded-lg bg-orange-50 text-orange-600 flex items-center justify-center">
+<span class="material-symbols-outlined">bolt</span>
+</div>
+<span class="text-slate-600 text-label-sm font-bold bg-slate-50 px-2 py-0.5 rounded-full">92% online</span>
+</div>
+<div class="mt-4">
+<p class="text-secondary text-label-sm uppercase tracking-wider">Active Today</p>
+<h3 class="text-h3 font-h3 text-on-surface">22 Active</h3>
+</div>
+</div>
+<div class="bg-white p-md rounded-xl border border-slate-200 shadow-sm">
+<div class="flex justify-between items-start">
+<div class="w-10 h-10 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center">
+<span class="material-symbols-outlined">check_circle</span>
+</div>
+<span class="text-emerald-600 text-label-sm font-bold bg-emerald-50 px-2 py-0.5 rounded-full">On Track</span>
+</div>
+<div class="mt-4">
+<p class="text-secondary text-label-sm uppercase tracking-wider">Task Completion</p>
+<h3 class="text-h3 font-h3 text-on-surface">78.4%</h3>
+</div>
+</div>
+</div>
+<!-- Team Performance Card - Custom highlight -->
+<div class="col-span-12 lg:col-span-4 bg-primary-container text-on-primary-container rounded-xl p-6 shadow-lg relative overflow-hidden flex flex-col justify-between min-h-[160px]">
+<div class="relative z-10">
+<h3 class="font-h3 text-h3 mb-2">Team Velocity</h3>
+<p class="font-body-md text-body-md opacity-90">Your team completed 12% more tasks this week compared to last month. Keep up the momentum!</p>
+</div>
+<div class="relative z-10 flex items-center gap-4 mt-4">
+<div class="flex -space-x-2">
+<img alt="Team member" class="w-8 h-8 rounded-full border-2 border-primary-container" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD2eafeLW9peory021RAt6ygaMqHQ_VJvJ4PTDhIkVOwQQ6oBtukTGEwmaSoTIk3ffW2XIyA2UwgcOs6fKwXCLlO63OYcpNQkFGgjScNkvMfj7EgHOAOJNMLJH7sJjsi3d7y793cKWkrnZg7A3_wpuRCtMSdbRQWTHi1Ah67zgOmvGS0X1kAEidjxQks32QTtYFtKXrYD1tVJt7e2E35I1nokhQMYAbYr8aBzZszAaij71Yl0NZXANoEa6MzYVBwbGrptSDrzQ5oEx5"/>
+<img alt="Team member" class="w-8 h-8 rounded-full border-2 border-primary-container" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBOize-R0BluTaqN1FC0_ivFANyrzaMQw2vmMEyMOBsklydq5dLK4H4qq23xAgee0ZncfUomZYhE3tV9fFjZFNPRo_t_KX96BUZt10OYgi8eOO_ExrVfVm7-zOJzLpQ6hagvBuZK-zMaojcW6eGNATJRfL_0fCg2P35X7SnFyyX-nCw1a66hErUcwEo7oYqJv8TWArJcjl5HnXyos-t5aqq8lcKszN5BRetQXIxlulhjK4_0cBAfmjFmA7IR7bti0fxTBHoCN-Y2fCV"/>
+<div class="w-8 h-8 rounded-full border-2 border-primary-container bg-white text-primary text-[10px] font-bold flex items-center justify-center">+18</div>
+</div>
+<button class="text-xs font-bold underline decoration-2 underline-offset-4">View Report</button>
+</div>
+<div class="absolute -right-8 -bottom-8 w-32 h-32 bg-white/10 rounded-full blur-2xl"></div>
+</div>
+<!-- Task Progress -->
+<div class="col-span-12 lg:col-span-7 bg-white rounded-xl border border-slate-200 shadow-sm flex flex-col">
+<div class="p-lg border-b border-slate-100 flex justify-between items-center">
+<h3 class="font-h3 text-h3 text-on-background">Task Progress</h3>
+<select class="text-xs font-semibold border-none bg-slate-50 rounded-lg py-1 pr-8 focus:ring-0">
+<option>This Week</option>
+<option>Last Week</option>
+</select>
+</div>
+<div class="p-lg flex-1">
+<div class="space-y-6">
+<div>
+<div class="flex justify-between mb-2">
+<span class="font-label-sm text-label-sm font-semibold flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-green-500"></span>
+                                        Completed
+                                    </span>
+<span class="font-label-sm text-label-sm text-secondary">42 Tasks</span>
+</div>
+<div class="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden">
+<div class="bg-green-500 h-full w-[58%]"></div>
+</div>
+</div>
+<div>
+<div class="flex justify-between mb-2">
+<span class="font-label-sm text-label-sm font-semibold flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-blue-500"></span>
+                                        In Progress
+                                    </span>
+<span class="font-label-sm text-label-sm text-secondary">24 Tasks</span>
+</div>
+<div class="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden">
+<div class="bg-blue-500 h-full w-[33%]"></div>
+</div>
+</div>
+<div>
+<div class="flex justify-between mb-2">
+<span class="font-label-sm text-label-sm font-semibold flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-red-500"></span>
+                                        Overdue
+                                    </span>
+<span class="font-label-sm text-label-sm text-secondary">6 Tasks</span>
+</div>
+<div class="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden">
+<div class="bg-red-500 h-full w-[9%]"></div>
+</div>
+</div>
+</div>
+<div class="mt-8 grid grid-cols-2 gap-4">
+<div class="bg-surface-container-low p-4 rounded-lg">
+<p class="text-xs text-secondary mb-1">Efficiency Rate</p>
+<p class="text-xl font-bold text-on-surface">+12.4%</p>
+</div>
+<div class="bg-surface-container-low p-4 rounded-lg">
+<p class="text-xs text-secondary mb-1">Avg. Cycle Time</p>
+<p class="text-xl font-bold text-on-surface">3.2 Days</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Pending Approvals -->
+<div class="col-span-12 lg:col-span-5 bg-white rounded-xl border border-slate-200 shadow-sm flex flex-col">
+<div class="p-lg border-b border-slate-100 flex justify-between items-center">
+<h3 class="font-h3 text-h3 text-on-background">Pending Approvals</h3>
+<span class="px-2 py-1 bg-red-100 text-red-600 rounded text-[10px] font-bold uppercase">4 Urgent</span>
+</div>
+<div class="divide-y divide-slate-100 overflow-y-auto max-h-[400px]">
+<div class="p-md hover:bg-slate-50 transition-colors">
+<div class="flex gap-4 items-start mb-3">
+<img alt="Sarah Jenkins" class="w-10 h-10 rounded-full" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD8E6hJF3PCaAcnPXYpZ_cYhcU2pt0LmJUwQUOZm1LAkBu7hwbFKABNKdjf9Rh_kjEwHxttDNZylJYFVojOMobUH1mcWMMh6n2CewQBikupQd8KbFfFBPNhrkq9B88f16yRiBuEKweNDqhbMghuOB2yeG3pMv4pwIoTBu_81N0oYs830_ZR4yYZehyLiy1IQMlbEfhdftM6AbsyDis73fVS3fsNZtKNeQpaq9uWWAqUyJzogNGquQZtcC9DH_Xf0a1QqyFmGwAAozhr"/>
+<div class="flex-1">
+<p class="text-sm font-bold text-on-surface">Sarah Jenkins</p>
+<p class="text-xs text-secondary">Annual Leave Request • 3 Days</p>
+<p class="text-[10px] text-slate-400 mt-1 italic">"Family vacation to the coast."</p>
+</div>
+</div>
+<div class="flex gap-2">
+<button class="flex-1 py-1.5 bg-primary-container text-white text-xs font-bold rounded hover:opacity-90 transition-opacity">Approve</button>
+<button class="flex-1 py-1.5 border border-slate-200 text-on-surface text-xs font-bold rounded hover:bg-slate-50 transition-colors">Reject</button>
+</div>
+</div>
+<div class="p-md hover:bg-slate-50 transition-colors">
+<div class="flex gap-4 items-start mb-3">
+<img alt="David Miller" class="w-10 h-10 rounded-full" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCU7pTjnbMpyLPRbP73gGQBflls-U-PRodSj5gRxaWM8WN_BfNM1EB3Z_MFupqh7XpjQmIVs8qxr69mZcaClU4OoR7_xefByhqQ-AH4QUhh8RERSK3t9yJoiFf2TmFTMLxE2SNqqZAGp1RaNujufTOxbuZMyalBduxz28aSr_Wm3xcT_CIzpC3WnLvJZFFd8M4cSS6tFEXotB8g3bH994Uzz_ArJl_ZssY9iVfguG2-Zq426xkhIBzF7ngHvb7Im-fpftv8zBEbta0z"/>
+<div class="flex-1">
+<p class="text-sm font-bold text-on-surface">David Miller</p>
+<p class="text-xs text-secondary">Hardware Reimbursement • $1,240</p>
+<p class="text-[10px] text-slate-400 mt-1 italic">"New workstation monitors."</p>
+</div>
+</div>
+<div class="flex gap-2">
+<button class="flex-1 py-1.5 bg-primary-container text-white text-xs font-bold rounded hover:opacity-90 transition-opacity">Approve</button>
+<button class="flex-1 py-1.5 border border-slate-200 text-on-surface text-xs font-bold rounded hover:bg-slate-50 transition-colors">Reject</button>
+</div>
+</div>
+</div>
+<button class="p-3 text-xs font-bold text-blue-600 hover:bg-slate-50 transition-colors text-center border-t border-slate-100">View All Pending Requests</button>
+</div>
+<!-- Monthly Top Performers -->
+<div class="col-span-12 bg-white rounded-xl border border-slate-200 shadow-sm p-lg">
+<div class="flex justify-between items-center mb-6">
+<h3 class="font-h3 text-h3 text-on-background">Monthly Top Performers</h3>
+<button class="text-xs font-bold text-blue-600 flex items-center gap-1">
+                            View Analytics
+                            <span class="material-symbols-outlined text-xs">arrow_forward</span>
+</button>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-md">
+<div class="group p-4 rounded-xl border border-slate-100 hover:border-blue-200 hover:shadow-md transition-all">
+<div class="flex items-center gap-4">
+<div class="relative">
+<img alt="Sarah J." class="w-12 h-12 rounded-full border-2 border-white group-hover:border-blue-400 transition-colors" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB0RxIF6kDICyM2Qs9Bd8Ewe-V55YXFUavXn5ERc7YoxWADqVaoGgMNwIQl-EAz3_xuR_DodBnUqjkiL5Tu2mvTCEs-hbzer-biPstZdCyDamcwfem3IyKw2i6Y2WogmF-71ApbW8mQNvqGEnCn6nzbPGBoqplrvD7REGNyfvNCVpAPaEM7RIRgCNlGoeqQ-yGmm4ZwI_P1xr_7O9zMm1VBVtJGp6QDQOOMltAtQrvIXNhvDNprhg0S3j3PaDskGIMIG62ibpAPj3-5"/>
+<span class="absolute -bottom-1 -right-1 w-5 h-5 bg-yellow-400 text-white rounded-full border-2 border-white flex items-center justify-center text-[10px]">1</span>
+</div>
+<div>
+<p class="text-sm font-bold text-on-surface">Sarah J.</p>
+<p class="text-xs text-secondary">UX Design</p>
+</div>
+</div>
+<div class="mt-4 flex justify-between items-center">
+<span class="px-2 py-0.5 bg-green-50 text-green-600 rounded text-[10px] font-bold">112% Target</span>
+<span class="text-[10px] text-slate-400">18 Tasks</span>
+</div>
+</div>
+<div class="group p-4 rounded-xl border border-slate-100 hover:border-blue-200 hover:shadow-md transition-all">
+<div class="flex items-center gap-4">
+<div class="relative">
+<img alt="David M." class="w-12 h-12 rounded-full border-2 border-white group-hover:border-blue-400 transition-colors" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA-i-2pjxnxVyirnWeQ1ZPN_7IkiSsW1DndRQ0mPBhSzaE6fA1CrAA7hSH1YdpNadAkxIPm36bDCKhNfejzOGKWFeyGzKBhMTwGtjGaCwSR-NWsH4I37TuSI1eojUVE0AzGLNgSpqRSGsUQlxZ-tNPXlWceA8Rjp2L71JjDNosad4e2s9wYtHFR-EblZNGUZ3OFnYUKKQRy-bBrp5yoS6crsHPLCMDgu_HFMgP0-bwUazNTarXL1tqmD5z6TiIaeJvhMyQGYu0aDQmF"/>
+<span class="absolute -bottom-1 -right-1 w-5 h-5 bg-slate-300 text-white rounded-full border-2 border-white flex items-center justify-center text-[10px]">2</span>
+</div>
+<div>
+<p class="text-sm font-bold text-on-surface">David M.</p>
+<p class="text-xs text-secondary">Engineering</p>
+</div>
+</div>
+<div class="mt-4 flex justify-between items-center">
+<span class="px-2 py-0.5 bg-green-50 text-green-600 rounded text-[10px] font-bold">108% Target</span>
+<span class="text-[10px] text-slate-400">22 Tasks</span>
+</div>
+</div>
+<div class="group p-4 rounded-xl border border-slate-100 hover:border-blue-200 hover:shadow-md transition-all">
+<div class="flex items-center gap-4">
+<div class="relative">
+<img alt="Marcus T." class="w-12 h-12 rounded-full border-2 border-white group-hover:border-blue-400 transition-colors" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCWPIWGapNdyYGuxm2x0cvXNkbMpjK_WjwpdbwMwa4CNnzPTWXPsQHl8K5NB2shIP3YIj6vVHDvTp2eJRR1uG2TPiKJ62jeNNWxOnrv78d8ubFNPLN8f6YkmHox_5xlInXZurSyQxVsbd4pUypDQ4lgqnVQGRQ21WDRUBaLPbx4dehUFVlEo-n-orwyXJyLP8Rkill1rbXEJmSY1GZdjDfXBl70ZdW8IqKX7TCWKYL9if62nmUucQ6w4m_Ptvx1crUDyNa9WtcCai2n"/>
+<span class="absolute -bottom-1 -right-1 w-5 h-5 bg-orange-300 text-white rounded-full border-2 border-white flex items-center justify-center text-[10px]">3</span>
+</div>
+<div>
+<p class="text-sm font-bold text-on-surface">Marcus T.</p>
+<p class="text-xs text-secondary">Product</p>
+</div>
+</div>
+<div class="mt-4 flex justify-between items-center">
+<span class="px-2 py-0.5 bg-green-50 text-green-600 rounded text-[10px] font-bold">104% Target</span>
+<span class="text-[10px] text-slate-400">14 Tasks</span>
+</div>
+</div>
+<div class="group p-4 rounded-xl border border-slate-100 hover:border-blue-200 hover:shadow-md transition-all">
+<div class="flex items-center gap-4">
+<div class="relative">
+<img alt="Elena R." class="w-12 h-12 rounded-full border-2 border-white group-hover:border-blue-400 transition-colors" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBQ2jfXUU4Y_wwJkbHFhrBApNYKy2VBJBPKzO4YJA3YELGXSlGq1QFFJyPw3nUrd2J-IO91uR0T_44QRefcS_QPxY422_j5KYqX9-sKFM61UMQ_yuJwFZMMRonrNm2EXLDcPNrDn4CojXmp_NWKI0hRp69BHjTZFhejsPLX-rNJ579SylyZA_ob9dPr10Z2UDmpzZ17SESlxwljLthwPZ0cvegY07VjJ-0U182L89WiUXQHuFWobjVlw0ceeHaA74V9BJ8BRV7-Vd5A"/>
+<span class="absolute -bottom-1 -right-1 w-5 h-5 bg-slate-100 text-slate-400 rounded-full border-2 border-white flex items-center justify-center text-[10px]">4</span>
+</div>
+<div>
+<p class="text-sm font-bold text-on-surface">Elena R.</p>
+<p class="text-xs text-secondary">Marketing</p>
+</div>
+</div>
+<div class="mt-4 flex justify-between items-center">
+<span class="px-2 py-0.5 bg-green-50 text-green-600 rounded text-[10px] font-bold">102% Target</span>
+<span class="text-[10px] text-slate-400">19 Tasks</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+</body></html>

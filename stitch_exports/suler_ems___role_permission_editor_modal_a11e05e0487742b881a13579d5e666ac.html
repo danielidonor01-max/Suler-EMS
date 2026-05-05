@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+                  "secondary-container": "#dce2f3",
+                  "on-error": "#ffffff",
+                  "on-tertiary": "#ffffff",
+                  "on-tertiary-fixed-variant": "#7d2d00",
+                  "on-error-container": "#93000a",
+                  "inverse-primary": "#b4c5ff",
+                  "on-secondary-container": "#5e6572",
+                  "tertiary": "#943700",
+                  "inverse-on-surface": "#f0f0fb",
+                  "error-container": "#ffdad6",
+                  "on-tertiary-fixed": "#360f00",
+                  "surface-variant": "#e1e2ed",
+                  "secondary": "#585f6c",
+                  "on-secondary-fixed-variant": "#404754",
+                  "on-primary-container": "#eeefff",
+                  "primary-fixed": "#dbe1ff",
+                  "on-primary-fixed": "#00174b",
+                  "on-background": "#191b23",
+                  "tertiary-container": "#bc4800",
+                  "background": "#faf8ff",
+                  "outline": "#737686",
+                  "inverse-surface": "#2e3039",
+                  "surface-container-lowest": "#ffffff",
+                  "on-secondary-fixed": "#151c27",
+                  "on-primary": "#ffffff",
+                  "on-surface": "#191b23",
+                  "error": "#ba1a1a",
+                  "surface-container-highest": "#e1e2ed",
+                  "surface": "#faf8ff",
+                  "secondary-fixed-dim": "#c0c7d6",
+                  "surface-container": "#ededf9",
+                  "on-tertiary-container": "#ffede6",
+                  "surface-tint": "#0053db",
+                  "surface-container-low": "#f3f3fe",
+                  "surface-container-high": "#e7e7f3",
+                  "tertiary-fixed-dim": "#ffb596",
+                  "primary-container": "#2563eb",
+                  "tertiary-fixed": "#ffdbcd",
+                  "surface-bright": "#faf8ff",
+                  "on-primary-fixed-variant": "#003ea8",
+                  "outline-variant": "#c3c6d7",
+                  "surface-dim": "#d9d9e5",
+                  "secondary-fixed": "#dce2f3",
+                  "primary-fixed-dim": "#b4c5ff",
+                  "primary": "#004ac6",
+                  "on-surface-variant": "#434655",
+                  "on-secondary": "#ffffff"
+          },
+          "borderRadius": {
+                  "DEFAULT": "0.25rem",
+                  "lg": "0.5rem",
+                  "xl": "0.75rem",
+                  "full": "9999px"
+          },
+          "spacing": {
+                  "3xl": "64px",
+                  "2xl": "48px",
+                  "xl": "32px",
+                  "md": "16px",
+                  "sm": "8px",
+                  "xs": "4px",
+                  "lg": "24px"
+          },
+          "fontFamily": {
+                  "h2": ["Inter"],
+                  "body-md": ["Inter"],
+                  "button": ["Inter"],
+                  "label-sm": ["Inter"],
+                  "h1": ["Inter"],
+                  "h3": ["Inter"],
+                  "body-lg": ["Inter"]
+          },
+          "fontSize": {
+                  "h2": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                  "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                  "button": ["14px", {"lineHeight": "20px", "fontWeight": "600"}],
+                  "label-sm": ["12px", {"lineHeight": "16px", "fontWeight": "500"}],
+                  "h1": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                  "h3": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                  "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}]
+          }
+        },
+      },
+    }
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 6px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #e5e7eb;
+      border-radius: 10px;
+    }
+  </style>
+</head>
+<body class="bg-background font-body-md text-on-background min-h-screen">
+<div class="flex min-h-screen">
+<!-- SideNavBar -->
+<aside class="fixed left-0 top-0 h-full flex flex-col py-4 w-64 z-40 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 font-inter text-sm antialiased transition-all duration-200 ease-in-out">
+<div class="px-6 mb-8 flex items-center gap-3">
+<div class="w-8 h-8 bg-primary rounded-lg flex items-center justify-center text-white">
+<span class="material-symbols-outlined" data-icon="shield_person">shield_person</span>
+</div>
+<div>
+<h1 class="text-lg font-black text-blue-600 dark:text-blue-400">Suler EMS</h1>
+<p class="text-[10px] text-gray-500 uppercase tracking-widest">Enterprise Admin</p>
+</div>
+</div>
+<nav class="flex-1 px-4 space-y-1">
+<div class="flex items-center gap-3 px-3 py-2 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800/50 hover:translate-x-1 transition-transform duration-200 cursor-pointer rounded-lg">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span>Dashboard</span>
+</div>
+<div class="flex items-center gap-3 px-3 py-2 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800/50 hover:translate-x-1 transition-transform duration-200 cursor-pointer rounded-lg">
+<span class="material-symbols-outlined" data-icon="group">group</span>
+<span>Employees</span>
+</div>
+<div class="flex items-center gap-3 px-3 py-2 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800/50 hover:translate-x-1 transition-transform duration-200 cursor-pointer rounded-lg">
+<span class="material-symbols-outlined" data-icon="payments">payments</span>
+<span>Payroll</span>
+</div>
+<div class="flex items-center gap-3 px-3 py-2 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800/50 hover:translate-x-1 transition-transform duration-200 cursor-pointer rounded-lg">
+<span class="material-symbols-outlined" data-icon="schedule">schedule</span>
+<span>Attendance</span>
+</div>
+<!-- Active Tab: Roles (mapping to Role Management context) -->
+<div class="flex items-center gap-3 px-3 py-2 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 border-l-4 border-blue-600 font-semibold hover:translate-x-1 transition-transform duration-200 cursor-pointer">
+<span class="material-symbols-outlined" data-icon="shield_person">shield_person</span>
+<span>Roles</span>
+</div>
+<div class="flex items-center gap-3 px-3 py-2 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800/50 hover:translate-x-1 transition-transform duration-200 cursor-pointer rounded-lg">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span>Settings</span>
+</div>
+</nav>
+<div class="px-4 mt-auto">
+<button class="w-full py-2.5 bg-primary text-white font-button rounded-lg shadow-sm hover:opacity-90 transition-opacity flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-sm" data-icon="add">add</span>
+          New Request
+        </button>
+<div class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-800">
+<div class="flex items-center gap-3 px-3 py-2 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800/50 hover:translate-x-1 transition-transform duration-200 cursor-pointer rounded-lg">
+<span class="material-symbols-outlined" data-icon="logout">logout</span>
+<span>Log Out</span>
+</div>
+</div>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="ml-64 flex-1">
+<!-- TopNavBar -->
+<header class="sticky top-0 z-50 flex items-center justify-between px-6 h-16 w-full bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 shadow-sm">
+<div class="flex items-center flex-1 max-w-xl">
+<div class="relative w-full">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" data-icon="search">search</span>
+<input class="w-full bg-surface-container-low border-none rounded-lg pl-10 pr-4 py-2 text-sm focus:ring-2 focus:ring-primary" placeholder="Search roles or employees..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-4 ml-6">
+<button class="p-2 text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-full transition-colors relative">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+<span class="absolute top-2 right-2 w-2 h-2 bg-error rounded-full border-2 border-white"></span>
+</button>
+<button class="p-2 text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-full transition-colors">
+<span class="material-symbols-outlined" data-icon="help">help</span>
+</button>
+<span class="text-sm font-medium text-gray-700 dark:text-gray-300">Support</span>
+<div class="h-8 w-8 rounded-full overflow-hidden border border-gray-200">
+<img alt="User profile" data-alt="A professional headshot of a middle-aged male executive in a sleek dark suit. He is smiling warmly with a background of a brightly lit, modern corporate office with soft architectural blurring. The lighting is crisp and high-key, conveying professional reliability and a friendly business atmosphere consistent with an enterprise management system's user profile photo." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDTEVEX1EYjc0saL_gDfveiahyDcKs_KQvaCw5jCSClqcsbHT9Wd70_pYHoDYnXtKw_yNEWa4diuqqv3wKVk9owjKd7WOiaeIyn46mXHgpzOumhLXK6CtlfTHM87dFG6dadwbFWBh3y1h409-nNZj_VEms_moSLLo9K9tU3UAPKyBgNVjMQnDiVCq2DVkO8G9n470pilWe-8YMwi32pj-lvjuab_ycD_YXkP1p7osUUCaTUjh5Bwo5Byj9cDG8dc4YLAQA1XyuwZkXy"/>
+</div>
+</div>
+</header>
+<!-- Page Canvas -->
+<div class="p-lg">
+<div class="flex items-center justify-between mb-lg">
+<div>
+<h2 class="font-h2 text-h2 text-on-background">Role Management</h2>
+<p class="text-on-surface-variant">Define and manage access levels across the organization.</p>
+</div>
+<button class="px-md py-sm bg-primary text-white rounded-lg flex items-center gap-2 font-button hover:bg-surface-tint transition-colors">
+<span class="material-symbols-outlined" data-icon="add_moderator">add_moderator</span>
+            Create New Role
+          </button>
+</div>
+<!-- Role List (Bento Grid Style) -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-md">
+<!-- Administrator Role Card -->
+<div class="bg-white p-md rounded-xl border border-outline-variant shadow-sm hover:shadow-md transition-shadow relative overflow-hidden">
+<div class="flex justify-between items-start mb-sm">
+<div class="p-2 bg-primary-container/10 rounded-lg text-primary">
+<span class="material-symbols-outlined" data-icon="admin_panel_settings">admin_panel_settings</span>
+</div>
+<span class="px-2 py-0.5 bg-green-100 text-green-700 text-xs font-semibold rounded-full">Default</span>
+</div>
+<h3 class="font-h3 text-h3 mb-xs">Administrator</h3>
+<p class="text-on-surface-variant text-sm mb-md">Full access to all system modules and configuration settings.</p>
+<div class="flex items-center justify-between text-sm">
+<span class="text-on-surface-variant">12 Employees</span>
+<button class="text-primary font-semibold hover:underline">Edit Permissions</button>
+</div>
+</div>
+<!-- Manager Role Card -->
+<div class="bg-white p-md rounded-xl border-2 border-primary shadow-sm hover:shadow-md transition-shadow relative">
+<div class="flex justify-between items-start mb-sm">
+<div class="p-2 bg-blue-50 rounded-lg text-primary">
+<span class="material-symbols-outlined" data-icon="manager">network_manage</span>
+</div>
+<div class="h-2 w-2 bg-primary rounded-full"></div>
+</div>
+<h3 class="font-h3 text-h3 mb-xs">Manager</h3>
+<p class="text-on-surface-variant text-sm mb-md">Department-level management including payroll approval and attendance.</p>
+<div class="flex items-center justify-between text-sm">
+<span class="text-on-surface-variant">48 Employees</span>
+<button class="text-primary font-semibold hover:underline">Edit Permissions</button>
+</div>
+</div>
+<!-- Employee Role Card -->
+<div class="bg-white p-md rounded-xl border border-outline-variant shadow-sm hover:shadow-md transition-shadow relative">
+<div class="flex justify-between items-start mb-sm">
+<div class="p-2 bg-secondary-container/10 rounded-lg text-secondary">
+<span class="material-symbols-outlined" data-icon="person">person</span>
+</div>
+</div>
+<h3 class="font-h3 text-h3 mb-xs">Employee</h3>
+<p class="text-on-surface-variant text-sm mb-md">Standard access for personal profile, leaves, and attendance viewing.</p>
+<div class="flex items-center justify-between text-sm">
+<span class="text-on-surface-variant">842 Employees</span>
+<button class="text-primary font-semibold hover:underline">Edit Permissions</button>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+<!-- Role Permission Editor Modal Overlay -->
+<div class="fixed inset-0 z-[60] flex items-center justify-center p-md bg-black/40 backdrop-blur-sm">
+<!-- Modal Container -->
+<div class="bg-white w-full max-w-2xl rounded-xl shadow-high overflow-hidden flex flex-col max-h-[921px]">
+<!-- Modal Header -->
+<header class="px-lg py-md border-b border-outline-variant flex items-center justify-between bg-white sticky top-0 z-10">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 bg-primary-container rounded-lg flex items-center justify-center text-white">
+<span class="material-symbols-outlined" data-icon="settings_suggest">settings_suggest</span>
+</div>
+<div>
+<h2 class="text-h3 font-h3 text-on-background leading-tight">Edit Role Permissions - Manager</h2>
+<p class="text-xs text-on-surface-variant font-medium">Modifying core access for 48 users</p>
+</div>
+</div>
+<button class="p-2 text-on-surface-variant hover:bg-surface-container rounded-full transition-colors">
+<span class="material-symbols-outlined" data-icon="close">close</span>
+</button>
+</header>
+<!-- Modal Content (Categorized Permissions) -->
+<div class="flex-1 overflow-y-auto custom-scrollbar p-lg space-y-lg">
+<!-- Category: Employee Management -->
+<section>
+<div class="flex items-center gap-2 mb-md">
+<span class="material-symbols-outlined text-primary" data-icon="badge">badge</span>
+<h4 class="font-semibold text-on-background uppercase text-xs tracking-wider">Employee Management</h4>
+</div>
+<div class="bg-surface-container-low rounded-lg divide-y divide-outline-variant">
+<!-- Row: View Employee Profiles -->
+<div class="px-md py-md grid grid-cols-12 items-center gap-4">
+<div class="col-span-6">
+<p class="font-medium text-sm">Employee Profiles</p>
+<p class="text-xs text-on-surface-variant">View basic information and documents</p>
+</div>
+<div class="col-span-6 flex justify-end gap-xl">
+<label class="flex flex-col items-center gap-xs cursor-pointer group">
+<input checked="" class="rounded border-outline text-primary focus:ring-primary" type="checkbox"/>
+<span class="text-[10px] text-on-surface-variant group-hover:text-primary transition-colors">View</span>
+</label>
+<label class="flex flex-col items-center gap-xs cursor-pointer group">
+<input checked="" class="rounded border-outline text-primary focus:ring-primary" type="checkbox"/>
+<span class="text-[10px] text-on-surface-variant group-hover:text-primary transition-colors">Edit</span>
+</label>
+<label class="flex flex-col items-center gap-xs cursor-pointer group">
+<input class="rounded border-outline text-primary focus:ring-primary" type="checkbox"/>
+<span class="text-[10px] text-on-surface-variant group-hover:text-primary transition-colors">Delete</span>
+</label>
+</div>
+</div>
+<!-- Row: Org Chart -->
+<div class="px-md py-md grid grid-cols-12 items-center gap-4">
+<div class="col-span-6">
+<p class="font-medium text-sm">Org Chart &amp; Directory</p>
+<p class="text-xs text-on-surface-variant">Access company hierarchy data</p>
+</div>
+<div class="col-span-6 flex justify-end gap-xl">
+<label class="flex flex-col items-center gap-xs cursor-pointer group">
+<input checked="" class="rounded border-outline text-primary focus:ring-primary" type="checkbox"/>
+<span class="text-[10px] text-on-surface-variant group-hover:text-primary transition-colors">View</span>
+</label>
+<label class="flex flex-col items-center gap-xs opacity-20 pointer-events-none">
+<input class="rounded border-outline" disabled="" type="checkbox"/>
+<span class="text-[10px] text-on-surface-variant">Edit</span>
+</label>
+<label class="flex flex-col items-center gap-xs opacity-20 pointer-events-none">
+<input class="rounded border-outline" disabled="" type="checkbox"/>
+<span class="text-[10px] text-on-surface-variant">Delete</span>
+</label>
+</div>
+</div>
+</div>
+</section>
+<!-- Category: Payroll -->
+<section>
+<div class="flex items-center gap-2 mb-md">
+<span class="material-symbols-outlined text-primary" data-icon="payments">payments</span>
+<h4 class="font-semibold text-on-background uppercase text-xs tracking-wider">Payroll</h4>
+</div>
+<div class="bg-surface-container-low rounded-lg divide-y divide-outline-variant">
+<div class="px-md py-md grid grid-cols-12 items-center gap-4">
+<div class="col-span-6">
+<p class="font-medium text-sm">Salary &amp; Bonuses</p>
+<p class="text-xs text-on-surface-variant">View financial compensation details</p>
+</div>
+<div class="col-span-6 flex justify-end gap-xl">
+<label class="flex flex-col items-center gap-xs cursor-pointer group">
+<input checked="" class="rounded border-outline text-primary focus:ring-primary" type="checkbox"/>
+<span class="text-[10px] text-on-surface-variant group-hover:text-primary transition-colors">View</span>
+</label>
+<label class="flex flex-col items-center gap-xs cursor-pointer group">
+<input class="rounded border-outline text-primary focus:ring-primary" type="checkbox"/>
+<span class="text-[10px] text-on-surface-variant group-hover:text-primary transition-colors">Edit</span>
+</label>
+<label class="flex flex-col items-center gap-xs cursor-pointer group">
+<input class="rounded border-outline text-primary focus:ring-primary" type="checkbox"/>
+<span class="text-[10px] text-on-surface-variant group-hover:text-primary transition-colors">Delete</span>
+</label>
+</div>
+</div>
+</div>
+</section>
+<!-- Category: Attendance -->
+<section>
+<div class="flex items-center gap-2 mb-md">
+<span class="material-symbols-outlined text-primary" data-icon="event_available">event_available</span>
+<h4 class="font-semibold text-on-background uppercase text-xs tracking-wider">Attendance</h4>
+</div>
+<div class="bg-surface-container-low rounded-lg divide-y divide-outline-variant">
+<div class="px-md py-md grid grid-cols-12 items-center gap-4">
+<div class="col-span-6">
+<p class="font-medium text-sm">Timesheets</p>
+<p class="text-xs text-on-surface-variant">Review and approve daily logs</p>
+</div>
+<div class="col-span-6 flex justify-end gap-xl">
+<label class="flex flex-col items-center gap-xs cursor-pointer group">
+<input checked="" class="rounded border-outline text-primary focus:ring-primary" type="checkbox"/>
+<span class="text-[10px] text-on-surface-variant group-hover:text-primary transition-colors">View</span>
+</label>
+<label class="flex flex-col items-center gap-xs cursor-pointer group">
+<input checked="" class="rounded border-outline text-primary focus:ring-primary" type="checkbox"/>
+<span class="text-[10px] text-on-surface-variant group-hover:text-primary transition-colors">Edit</span>
+</label>
+<label class="flex flex-col items-center gap-xs cursor-pointer group">
+<input class="rounded border-outline text-primary focus:ring-primary" type="checkbox"/>
+<span class="text-[10px] text-on-surface-variant group-hover:text-primary transition-colors">Delete</span>
+</label>
+</div>
+</div>
+</div>
+</section>
+<!-- Category: Reports -->
+<section>
+<div class="flex items-center gap-2 mb-md">
+<span class="material-symbols-outlined text-primary" data-icon="analytics">analytics</span>
+<h4 class="font-semibold text-on-background uppercase text-xs tracking-wider">Reports</h4>
+</div>
+<div class="bg-surface-container-low rounded-lg divide-y divide-outline-variant">
+<div class="px-md py-md grid grid-cols-12 items-center gap-4">
+<div class="col-span-6">
+<p class="font-medium text-sm">Analytics Dashboards</p>
+<p class="text-xs text-on-surface-variant">Export and view organizational KPIs</p>
+</div>
+<div class="col-span-6 flex justify-end gap-xl">
+<label class="flex flex-col items-center gap-xs cursor-pointer group">
+<input checked="" class="rounded border-outline text-primary focus:ring-primary" type="checkbox"/>
+<span class="text-[10px] text-on-surface-variant group-hover:text-primary transition-colors">View</span>
+</label>
+<label class="flex flex-col items-center gap-xs cursor-pointer group">
+<input class="rounded border-outline text-primary focus:ring-primary" type="checkbox"/>
+<span class="text-[10px] text-on-surface-variant group-hover:text-primary transition-colors">Edit</span>
+</label>
+<label class="flex flex-col items-center gap-xs cursor-pointer group">
+<input class="rounded border-outline text-primary focus:ring-primary" type="checkbox"/>
+<span class="text-[10px] text-on-surface-variant group-hover:text-primary transition-colors">Delete</span>
+</label>
+</div>
+</div>
+</div>
+</section>
+</div>
+<!-- Modal Footer -->
+<footer class="px-lg py-md border-t border-outline-variant flex items-center justify-between bg-surface-container-lowest sticky bottom-0 z-10">
+<div class="flex items-center gap-2 text-xs text-on-surface-variant italic">
+<span class="material-symbols-outlined text-sm" data-icon="info">info</span>
+          Changes will take effect after next login.
+        </div>
+<div class="flex items-center gap-md">
+<button class="px-lg py-sm text-on-background font-button hover:bg-surface-container rounded-lg transition-colors">
+            Discard
+          </button>
+<button class="px-lg py-sm bg-primary text-white font-button rounded-lg shadow-sm hover:bg-surface-tint transition-all active:scale-[0.98]">
+            Save Changes
+          </button>
+</div>
+</footer>
+</div>
+</div>
+</body></html>

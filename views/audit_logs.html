@@ -1,0 +1,274 @@
+<!-- Audit Logs -->
+<div style="padding:var(--content-padding);">
+
+  <!-- Page Header -->
+  <div class="module-header">
+    <div>
+      <h2 style="font-size:var(--text-2xl);font-weight:var(--font-semibold);margin:0 0 4px 0;">System Audit Logs</h2>
+      <p style="font-size:var(--text-sm);color:var(--color-text-secondary);margin:0;">Comprehensive record of all system activities and administrative changes.</p>
+    </div>
+    <div class="module-header-actions">
+      <button class="btn btn-secondary">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Export CSV
+      </button>
+      <button class="btn btn-primary">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+        Refresh
+      </button>
+    </div>
+  </div>
+
+  <!-- KPI Summary Strip -->
+  <div class="dashboard-grid" style="margin-bottom:var(--space-lg);">
+    <div class="dashboard-card">
+      <div class="dashboard-card-icon" style="background:#eff6ff;color:#2563eb;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      </div>
+      <div class="dashboard-card-label">Activity Velocity</div>
+      <div class="dashboard-card-value">65%</div>
+      <div class="progress-wrapper"><div class="progress-bar" style="width:65%;"></div></div>
+      <div class="dashboard-card-trend trend-up">↑ +12% this week</div>
+    </div>
+    <div class="dashboard-card">
+      <div class="dashboard-card-icon" style="background:#fef2f2;color:#dc2626;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      </div>
+      <div class="dashboard-card-label">Login Anomalies</div>
+      <div class="dashboard-card-value">2</div>
+      <div class="dashboard-card-trend trend-down">Flagged events</div>
+    </div>
+    <div class="dashboard-card">
+      <div class="dashboard-card-icon" style="background:#f0fdf4;color:#16a34a;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+      </div>
+      <div class="dashboard-card-label">Integrity Check</div>
+      <div class="dashboard-card-value">OK</div>
+      <div class="dashboard-card-trend trend-up">Verified 5m ago</div>
+    </div>
+    <div class="dashboard-card">
+      <div class="dashboard-card-icon" style="background:#f8fafc;color:var(--color-text-secondary);">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+      </div>
+      <div class="dashboard-card-label">Total Entries</div>
+      <div class="dashboard-card-value">1,248</div>
+      <div class="dashboard-card-trend trend-up">Last 30 days</div>
+    </div>
+  </div>
+
+  <!-- Table Card -->
+  <div class="table-card">
+    <!-- Filter Bar -->
+    <div style="padding:var(--space-md) var(--space-lg);border-bottom:1px solid var(--color-border);">
+      <div class="filter-bar" style="padding:0;">
+        <div class="filter-search">
+          <span class="filter-search-icon">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          </span>
+          <input type="text" placeholder="Search by user, action, or ID…">
+        </div>
+
+        <div class="filter-chip-group">
+          <div style="position:relative;">
+            <div class="filter-chip" onclick="this.nextElementSibling.classList.toggle('open')">
+              <span style="color:var(--color-text-secondary);">Time:</span> Last 24 Hours
+            </div>
+            <div class="sleek-dropdown">
+              <div class="sleek-dropdown-item selected"><span class="sleek-dropdown-arrow">▸</span> Last 24 Hours</div>
+              <div class="sleek-dropdown-item"><span class="sleek-dropdown-arrow">▸</span> Last 7 Days</div>
+              <div class="sleek-dropdown-item"><span class="sleek-dropdown-arrow">▸</span> Last 30 Days</div>
+              <div class="sleek-dropdown-item"><span class="sleek-dropdown-arrow">▸</span> Custom Range</div>
+            </div>
+          </div>
+          
+          <div style="position:relative;">
+            <div class="filter-chip" onclick="this.nextElementSibling.classList.toggle('open')">
+              <span style="color:var(--color-text-secondary);">User:</span> All
+            </div>
+            <div class="sleek-dropdown">
+              <div class="sleek-dropdown-item selected"><span class="sleek-dropdown-arrow">▸</span> All Users</div>
+              <div class="sleek-dropdown-item"><span class="sleek-dropdown-arrow">▸</span> Administrators</div>
+              <div class="sleek-dropdown-item"><span class="sleek-dropdown-arrow">▸</span> HR Managers</div>
+              <div class="sleek-dropdown-item"><span class="sleek-dropdown-arrow">▸</span> System Service</div>
+            </div>
+          </div>
+
+          <div style="position:relative;">
+            <div class="filter-chip" onclick="this.nextElementSibling.classList.toggle('open')">
+              <span style="color:var(--color-text-secondary);">Module:</span> All
+            </div>
+            <div class="sleek-dropdown">
+              <div class="sleek-dropdown-item selected"><span class="sleek-dropdown-arrow">▸</span> All Modules</div>
+              <div class="sleek-dropdown-item"><span class="sleek-dropdown-arrow">▸</span> Payroll Engine</div>
+              <div class="sleek-dropdown-item"><span class="sleek-dropdown-arrow">▸</span> HR Records</div>
+              <div class="sleek-dropdown-item"><span class="sleek-dropdown-arrow">▸</span> System Config</div>
+              <div class="sleek-dropdown-item"><span class="sleek-dropdown-arrow">▸</span> Auth Service</div>
+            </div>
+          </div>
+
+          <div style="position:relative;">
+            <div class="filter-chip" onclick="this.nextElementSibling.classList.toggle('open')">
+              <span style="color:var(--color-text-secondary);">Severity:</span> All
+            </div>
+            <div class="sleek-dropdown">
+              <div class="sleek-dropdown-item selected"><span class="sleek-dropdown-arrow">▸</span> All Severities</div>
+              <div class="sleek-dropdown-item"><span class="sleek-dropdown-arrow">▸</span> Critical</div>
+              <div class="sleek-dropdown-item"><span class="sleek-dropdown-arrow">▸</span> High</div>
+              <div class="sleek-dropdown-item"><span class="sleek-dropdown-arrow">▸</span> Medium</div>
+              <div class="sleek-dropdown-item"><span class="sleek-dropdown-arrow">▸</span> Low</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="filter-bar-spacer"></div>
+
+        <div class="filter-bar-actions">
+          <span style="display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:var(--font-semibold);background:var(--color-success-bg);color:var(--color-success);padding:3px 10px;border-radius:var(--radius-full);">
+            <span style="width:6px;height:6px;border-radius:50%;background:var(--color-success);display:inline-block;"></span>
+            Live
+          </span>
+          <span style="font-size:var(--text-xs);color:var(--color-text-muted);">1,248 entries</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Table -->
+    <div class="table-responsive">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th style="padding-left:var(--space-lg);">Timestamp</th>
+            <th>User</th>
+            <th>Action</th>
+            <th>Module</th>
+            <th>IP Address</th>
+            <th>Severity</th>
+            <th>Status</th>
+            <th style="width:40px;"></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td style="padding-left:var(--space-lg);">
+              <div class="cell-primary" style="font-variant-numeric:tabular-nums;font-size:13px;">Oct 24, 2023</div>
+              <div class="cell-secondary" style="font-variant-numeric:tabular-nums;">14:32:11 UTC</div>
+            </td>
+            <td>
+              <div>
+                <div class="cell-primary">Sarah Jenkins</div>
+                <div class="cell-secondary">HR Manager</div>
+              </div>
+            </td>
+            <td>
+              <div class="cell-primary">Employee Profile Created</div>
+              <div class="cell-secondary" style="font-family:monospace;font-size:11px;">EMP-8842</div>
+            </td>
+            <td><span class="badge badge-primary">HR Records</span></td>
+            <td><span style="font-family:monospace;font-size:12px;color:var(--color-text-muted);">192.168.1.104</span></td>
+            <td><span class="audit-severity low">Low</span></td>
+            <td><span class="badge badge-success"><span class="badge-dot"></span>Success</span></td>
+            <td>
+              <button class="btn btn-sm btn-secondary" style="padding:0 6px;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              </button>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding-left:var(--space-lg);">
+              <div class="cell-primary" style="font-variant-numeric:tabular-nums;font-size:13px;">Oct 24, 2023</div>
+              <div class="cell-secondary" style="font-variant-numeric:tabular-nums;">14:15:05 UTC</div>
+            </td>
+            <td>
+              <div>
+                <div class="cell-primary">Marcus Thorne</div>
+                <div class="cell-secondary">Payroll Admin</div>
+              </div>
+            </td>
+            <td>
+              <div class="cell-primary">Tax Bracket Adjustment</div>
+              <div class="cell-secondary" style="font-family:monospace;font-size:11px;">FY24-CONFIG</div>
+            </td>
+            <td><span class="badge badge-warning">Payroll</span></td>
+            <td><span style="font-family:monospace;font-size:12px;color:var(--color-text-muted);">10.0.4.22</span></td>
+            <td><span class="audit-severity medium">Medium</span></td>
+            <td><span class="badge badge-warning"><span class="badge-dot"></span>Warning</span></td>
+            <td>
+              <button class="btn btn-sm btn-secondary" style="padding:0 6px;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              </button>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding-left:var(--space-lg);">
+              <div class="cell-primary" style="font-variant-numeric:tabular-nums;font-size:13px;">Oct 24, 2023</div>
+              <div class="cell-secondary" style="font-variant-numeric:tabular-nums;">13:48:30 UTC</div>
+            </td>
+            <td>
+              <div>
+                <div class="cell-primary">System Service</div>
+                <div class="cell-secondary">Automated</div>
+              </div>
+            </td>
+            <td>
+              <div class="cell-primary">Failed Login Attempt (×3)</div>
+              <div class="cell-secondary" style="font-family:monospace;font-size:11px;">AUTH-FAIL</div>
+            </td>
+            <td><span class="badge badge-danger">Auth</span></td>
+            <td><span style="font-family:monospace;font-size:12px;color:var(--color-text-muted);">203.0.113.42</span></td>
+            <td><span class="audit-severity high">High</span></td>
+            <td><span class="badge badge-danger"><span class="badge-dot"></span>Failed</span></td>
+            <td>
+              <button class="btn btn-sm btn-secondary" style="padding:0 6px;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              </button>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding-left:var(--space-lg);">
+              <div class="cell-primary" style="font-variant-numeric:tabular-nums;font-size:13px;">Oct 24, 2023</div>
+              <div class="cell-secondary" style="font-variant-numeric:tabular-nums;">12:00:00 UTC</div>
+            </td>
+            <td>
+              <div>
+                <div class="cell-primary">Daniel Idonor</div>
+                <div class="cell-secondary">Super Admin</div>
+              </div>
+            </td>
+            <td>
+              <div class="cell-primary">Role Permissions Updated</div>
+              <div class="cell-secondary" style="font-family:monospace;font-size:11px;">ROLE-ADM-002</div>
+            </td>
+            <td><span class="badge badge-neutral">System Config</span></td>
+            <td><span style="font-family:monospace;font-size:12px;color:var(--color-text-muted);">192.168.0.1</span></td>
+            <td><span class="audit-severity medium">Medium</span></td>
+            <td><span class="badge badge-success"><span class="badge-dot"></span>Success</span></td>
+            <td>
+              <button class="btn btn-sm btn-secondary" style="padding:0 6px;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Footer / Pagination -->
+    <div class="table-card-footer">
+      <span>Showing 1–25 of 1,248 entries</span>
+      <div class="pagination">
+        <button class="page-btn" disabled>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+        </button>
+        <button class="page-btn active">1</button>
+        <button class="page-btn">2</button>
+        <button class="page-btn">3</button>
+        <span style="padding:0 4px;color:var(--color-text-muted);font-size:var(--text-xs);">…</span>
+        <button class="page-btn">50</button>
+        <button class="page-btn">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+      </div>
+    </div>
+  </div><!-- /table-card -->
+
+</div>

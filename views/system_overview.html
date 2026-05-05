@@ -1,0 +1,306 @@
+<!-- System Overview -->
+<div style="padding:var(--content-padding);">
+
+  <!-- Page Header -->
+  <div class="module-header">
+    <div>
+      <h2 style="font-size:var(--text-2xl);font-weight:var(--font-semibold);margin:0 0 4px 0;">System Overview</h2>
+      <p style="font-size:var(--text-sm);color:var(--color-text-secondary);margin:0;">Full organizational visibility and platform health — Super Admin command centre.</p>
+    </div>
+    <div class="module-header-actions">
+      <div style="display:inline-flex;align-items:center;gap:6px;background:var(--color-success-bg);color:var(--color-success);padding:6px 14px;border-radius:var(--radius-full);font-size:var(--text-xs);font-weight:var(--font-semibold);">
+        <span style="width:6px;height:6px;border-radius:50%;background:currentColor;display:inline-block;animation:pulse-dot 2s infinite;"></span>
+        All Systems Operational
+      </div>
+      <button class="btn btn-secondary" onclick="App.routeView('sup_audit','super_admin')">View Audit Logs</button>
+      <button class="btn btn-primary" onclick="App.routeView('sup_settings','super_admin')">System Settings</button>
+    </div>
+  </div>
+
+  <!-- KPI Grid -->
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:var(--grid-gap);margin-bottom:var(--space-lg);">
+    <div class="dashboard-card">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+        <div class="dashboard-card-label" style="margin-top:0;">Total Employees</div>
+        <div class="dashboard-card-icon" style="background:#eff6ff;color:#2563eb;">
+          <span class="material-symbols-outlined">group</span>
+        </div>
+      </div>
+      <div class="dashboard-card-value">1,284</div>
+      <div class="dashboard-card-trend trend-up">
+        <span class="material-symbols-outlined" style="font-size:16px;">trending_up</span>
+        +12.5%
+      </div>
+    </div>
+
+    <div class="dashboard-card">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+        <div class="dashboard-card-label" style="margin-top:0;">Active Today</div>
+        <div class="dashboard-card-icon" style="background:#f0fdf4;color:#16a34a;">
+          <span class="material-symbols-outlined">how_to_reg</span>
+        </div>
+      </div>
+      <div class="dashboard-card-value">1,210</div>
+      <div class="dashboard-card-trend trend-up">
+        94.3%
+      </div>
+    </div>
+
+    <div class="dashboard-card">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+        <div class="dashboard-card-label" style="margin-top:0;">Pending Approvals</div>
+        <div class="dashboard-card-icon" style="background:#fefce8;color:#ca8a04;">
+          <span class="material-symbols-outlined">pending_actions</span>
+        </div>
+      </div>
+      <div class="dashboard-card-value">7</div>
+      <div class="dashboard-card-trend trend-down">
+        7 pending
+      </div>
+    </div>
+
+    <div class="dashboard-card">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+        <div class="dashboard-card-label" style="margin-top:0;">System Uptime</div>
+        <div class="dashboard-card-icon" style="background:#f0fdf4;color:#16a34a;">
+          <span class="material-symbols-outlined">dns</span>
+        </div>
+      </div>
+      <div class="dashboard-card-value">99.9%</div>
+      <div class="dashboard-card-trend trend-up">
+        Healthy
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Grid -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--grid-gap);">
+    
+    <!-- LEFT: Summary panels -->
+    <div style="display:flex;flex-direction:column;gap:var(--grid-gap);">
+      
+      <!-- Payroll Summary -->
+      <div class="panel">
+        <div class="panel-header">
+          <h3 class="panel-title">
+            <span style="display:inline-block;width:4px;height:16px;background:#2563eb;border-radius:2px;margin-right:8px;vertical-align:middle;"></span>
+            Payroll Overview
+          </h3>
+          <button class="btn btn-sm btn-secondary" onclick="App.routeView('sup_payroll','super_admin')">View Payroll</button>
+        </div>
+        <div class="panel-body" style="display:flex;flex-direction:column;gap:var(--space-md);">
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:var(--space-md);">
+            <div style="text-align:center;">
+              <div style="font-size:var(--text-xl);font-weight:var(--font-bold);color:var(--color-text-primary);">$2.4M</div>
+              <div style="font-size:var(--text-xs);color:var(--color-text-muted);margin-top:2px;">Monthly Spend</div>
+            </div>
+            <div style="text-align:center;">
+              <div style="font-size:var(--text-xl);font-weight:var(--font-bold);color:var(--color-text-primary);">1,284</div>
+              <div style="font-size:var(--text-xs);color:var(--color-text-muted);margin-top:2px;">On Payroll</div>
+            </div>
+            <div style="text-align:center;">
+              <div style="font-size:var(--text-xl);font-weight:var(--font-bold);color:var(--color-text-primary);">May 30</div>
+              <div style="font-size:var(--text-xs);color:var(--color-text-muted);margin-top:2px;">Next Run</div>
+            </div>
+          </div>
+          <div>
+            <div style="display:flex;justify-content:space-between;font-size:var(--text-xs);margin-bottom:4px;">
+              <span style="color:var(--color-text-muted);">Processing Progress</span>
+              <span style="font-weight:var(--font-bold);color:var(--color-text-primary);">78%</span>
+            </div>
+            <div class="progress-wrapper"><div class="progress-bar" style="width:78%;"></div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Attendance Snapshot -->
+      <div class="panel">
+        <div class="panel-header">
+          <h3 class="panel-title">
+            <span style="display:inline-block;width:4px;height:16px;background:#16a34a;border-radius:2px;margin-right:8px;vertical-align:middle;"></span>
+            Attendance Snapshot
+          </h3>
+          <button class="btn btn-sm btn-secondary" onclick="App.routeView('sup_attendance','super_admin')">View Report</button>
+        </div>
+        <div class="panel-body" style="display:grid;grid-template-columns:repeat(3,1fr);gap:var(--space-sm);">
+          <div style="text-align:center;padding:var(--space-md) 0;background:var(--color-success-bg);border-radius:var(--radius-md);">
+            <div style="font-size:var(--text-2xl);font-weight:var(--font-bold);color:var(--color-success);">1,210</div>
+            <div style="font-size:var(--text-xs);color:var(--color-text-muted);margin-top:4px;font-weight:var(--font-medium);">Present</div>
+          </div>
+          <div style="text-align:center;padding:var(--space-md) 0;background:var(--color-warning-bg);border-radius:var(--radius-md);">
+            <div style="font-size:var(--text-2xl);font-weight:var(--font-bold);color:#92400e;">74</div>
+            <div style="font-size:var(--text-xs);color:var(--color-text-muted);margin-top:4px;font-weight:var(--font-medium);">On Leave</div>
+          </div>
+          <div style="text-align:center;padding:var(--space-md) 0;background:var(--color-danger-bg);border-radius:var(--radius-md);">
+            <div style="font-size:var(--text-2xl);font-weight:var(--font-bold);color:var(--color-danger);">12</div>
+            <div style="font-size:var(--text-xs);color:var(--color-text-muted);margin-top:4px;font-weight:var(--font-medium);">Absent</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Role Distribution -->
+      <div class="panel">
+        <div class="panel-header">
+          <h3 class="panel-title">
+            <span style="display:inline-block;width:4px;height:16px;background:#7c3aed;border-radius:2px;margin-right:8px;vertical-align:middle;"></span>
+            Role Distribution
+          </h3>
+          <button class="btn btn-sm btn-secondary" onclick="App.routeView('sup_roles','super_admin')">Manage Roles</button>
+        </div>
+        <div class="panel-body" style="display:flex;flex-direction:column;gap:var(--space-sm);">
+          <div>
+            <div style="display:flex;justify-content:space-between;font-size:var(--text-xs);margin-bottom:4px;">
+              <span style="font-weight:var(--font-medium);">Employees</span>
+              <span style="color:var(--color-text-muted);">1,180</span>
+            </div>
+            <div class="progress-wrapper"><div class="progress-bar" style="width:92%;background:#2563eb;"></div></div>
+          </div>
+          <div>
+            <div style="display:flex;justify-content:space-between;font-size:var(--text-xs);margin-bottom:4px;">
+              <span style="font-weight:var(--font-medium);">Managers</span>
+              <span style="color:var(--color-text-muted);">68</span>
+            </div>
+            <div class="progress-wrapper"><div class="progress-bar" style="width:5%;background:#7c3aed;"></div></div>
+          </div>
+          <div>
+            <div style="display:flex;justify-content:space-between;font-size:var(--text-xs);margin-bottom:4px;">
+              <span style="font-weight:var(--font-medium);">Admins</span>
+              <span style="color:var(--color-text-muted);">32</span>
+            </div>
+            <div class="progress-wrapper"><div class="progress-bar" style="width:2%;background:#16a34a;"></div></div>
+          </div>
+          <div>
+            <div style="display:flex;justify-content:space-between;font-size:var(--text-xs);margin-bottom:4px;">
+              <span style="font-weight:var(--font-medium);">Super Admins</span>
+              <span style="color:var(--color-text-muted);">4</span>
+            </div>
+            <div class="progress-wrapper"><div class="progress-bar" style="width:1%;background:#dc2626;"></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT: Activity feed + Quick Access -->
+    <div style="display:flex;flex-direction:column;gap:var(--grid-gap);">
+      
+      <!-- Recent Activity -->
+      <div class="panel" style="padding:0;overflow:hidden;">
+        <div class="panel-header" style="border-bottom:1px solid var(--color-border);padding:var(--space-md) var(--space-lg);">
+          <h3 class="panel-title">
+            <span style="display:inline-block;width:4px;height:16px;background:var(--color-warning);border-radius:2px;margin-right:8px;vertical-align:middle;"></span>
+            Recent System Activity
+          </h3>
+          <button class="btn btn-sm btn-secondary" onclick="App.routeView('sup_audit','super_admin')">Full Log</button>
+        </div>
+        <div style="display:flex;flex-direction:column;">
+          <!-- Item -->
+          <div style="display:flex;align-items:flex-start;gap:var(--space-md);padding:var(--space-md) var(--space-lg);border-bottom:1px solid var(--color-border);">
+            <div style="width:36px;height:36px;border-radius:var(--radius-md);background:#eff6ff;color:#2563eb;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+              <span class="material-symbols-outlined" style="font-size:18px;">lock_open</span>
+            </div>
+            <div style="flex:1;">
+              <div style="font-size:13px;font-weight:var(--font-semibold);color:var(--color-text-primary);">Role Updated</div>
+              <div style="font-size:12px;color:var(--color-text-secondary);margin-top:2px;">super@suler.com changed Admin permissions</div>
+            </div>
+            <div style="font-size:11px;color:var(--color-text-muted);white-space:nowrap;">2m ago</div>
+          </div>
+          <!-- Item -->
+          <div style="display:flex;align-items:flex-start;gap:var(--space-md);padding:var(--space-md) var(--space-lg);border-bottom:1px solid var(--color-border);">
+            <div style="width:36px;height:36px;border-radius:var(--radius-md);background:#f0fdf4;color:#16a34a;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+              <span class="material-symbols-outlined" style="font-size:18px;">person</span>
+            </div>
+            <div style="flex:1;">
+              <div style="font-size:13px;font-weight:var(--font-semibold);color:var(--color-text-primary);">User Login</div>
+              <div style="font-size:12px;color:var(--color-text-secondary);margin-top:2px;">admin@suler.com signed in</div>
+            </div>
+            <div style="font-size:11px;color:var(--color-text-muted);white-space:nowrap;">14m ago</div>
+          </div>
+          <!-- Item -->
+          <div style="display:flex;align-items:flex-start;gap:var(--space-md);padding:var(--space-md) var(--space-lg);border-bottom:1px solid var(--color-border);">
+            <div style="width:36px;height:36px;border-radius:var(--radius-md);background:#fff7ed;color:#ea580c;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+              <span class="material-symbols-outlined" style="font-size:18px;">event_available</span>
+            </div>
+            <div style="flex:1;">
+              <div style="font-size:13px;font-weight:var(--font-semibold);color:var(--color-text-primary);">Leave Approved</div>
+              <div style="font-size:12px;color:var(--color-text-secondary);margin-top:2px;">Sarah Jenkins — 3-day annual leave</div>
+            </div>
+            <div style="font-size:11px;color:var(--color-text-muted);white-space:nowrap;">1h ago</div>
+          </div>
+          <!-- Item -->
+          <div style="display:flex;align-items:flex-start;gap:var(--space-md);padding:var(--space-md) var(--space-lg);border-bottom:1px solid var(--color-border);">
+            <div style="width:36px;height:36px;border-radius:var(--radius-md);background:#f8fafc;color:var(--color-text-secondary);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+              <span class="material-symbols-outlined" style="font-size:18px;">settings</span>
+            </div>
+            <div style="flex:1;">
+              <div style="font-size:13px;font-weight:var(--font-semibold);color:var(--color-text-primary);">Settings Modified</div>
+              <div style="font-size:12px;color:var(--color-text-secondary);margin-top:2px;">Attendance window updated to 09:00</div>
+            </div>
+            <div style="font-size:11px;color:var(--color-text-muted);white-space:nowrap;">2h ago</div>
+          </div>
+          <!-- Item -->
+          <div style="display:flex;align-items:flex-start;gap:var(--space-md);padding:var(--space-md) var(--space-lg);">
+            <div style="width:36px;height:36px;border-radius:var(--radius-md);background:#f0fdf4;color:#16a34a;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+              <span class="material-symbols-outlined" style="font-size:18px;">payments</span>
+            </div>
+            <div style="flex:1;">
+              <div style="font-size:13px;font-weight:var(--font-semibold);color:var(--color-text-primary);">Payroll Processed</div>
+              <div style="font-size:12px;color:var(--color-text-secondary);margin-top:2px;">April payroll completed: 1,284 employees</div>
+            </div>
+            <div style="font-size:11px;color:var(--color-text-muted);white-space:nowrap;">1d ago</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Access Module Cards -->
+      <div class="panel">
+        <h3 class="panel-title" style="margin-bottom:var(--space-md);">Quick Access</h3>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-sm);">
+          <button style="display:flex;align-items:center;gap:var(--space-sm);padding:var(--space-sm) var(--space-md);background:var(--color-bg);border:1px solid var(--color-border);border-radius:var(--radius-md);cursor:pointer;text-align:left;font-size:var(--text-sm);font-weight:var(--font-medium);color:var(--color-text-primary);transition:all 0.15s;" onclick="App.routeView('sup_employees','super_admin')" onmouseover="this.style.background='var(--color-surface)';this.style.transform='translateY(-1px)';this.style.boxShadow='var(--shadow-1)';" onmouseout="this.style.background='var(--color-bg)';this.style.transform='translateY(0)';this.style.boxShadow='none';">
+            <div style="width:32px;height:32px;border-radius:var(--radius-sm);background:#eff6ff;color:#2563eb;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+              <span class="material-symbols-outlined" style="font-size:18px;">groups</span>
+            </div>
+            All Employees
+          </button>
+          <button style="display:flex;align-items:center;gap:var(--space-sm);padding:var(--space-sm) var(--space-md);background:var(--color-bg);border:1px solid var(--color-border);border-radius:var(--radius-md);cursor:pointer;text-align:left;font-size:var(--text-sm);font-weight:var(--font-medium);color:var(--color-text-primary);transition:all 0.15s;" onclick="App.routeView('sup_payroll','super_admin')" onmouseover="this.style.background='var(--color-surface)';this.style.transform='translateY(-1px)';this.style.boxShadow='var(--shadow-1)';" onmouseout="this.style.background='var(--color-bg)';this.style.transform='translateY(0)';this.style.boxShadow='none';">
+            <div style="width:32px;height:32px;border-radius:var(--radius-sm);background:#f0fdf4;color:#16a34a;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+              <span class="material-symbols-outlined" style="font-size:18px;">account_balance_wallet</span>
+            </div>
+            Payroll
+          </button>
+          <button style="display:flex;align-items:center;gap:var(--space-sm);padding:var(--space-sm) var(--space-md);background:var(--color-bg);border:1px solid var(--color-border);border-radius:var(--radius-md);cursor:pointer;text-align:left;font-size:var(--text-sm);font-weight:var(--font-medium);color:var(--color-text-primary);transition:all 0.15s;" onclick="App.routeView('sup_org','super_admin')" onmouseover="this.style.background='var(--color-surface)';this.style.transform='translateY(-1px)';this.style.boxShadow='var(--shadow-1)';" onmouseout="this.style.background='var(--color-bg)';this.style.transform='translateY(0)';this.style.boxShadow='none';">
+            <div style="width:32px;height:32px;border-radius:var(--radius-sm);background:#fdf4ff;color:#7c3aed;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+              <span class="material-symbols-outlined" style="font-size:18px;">bar_chart</span>
+            </div>
+            Org Analytics
+          </button>
+          <button style="display:flex;align-items:center;gap:var(--space-sm);padding:var(--space-sm) var(--space-md);background:var(--color-bg);border:1px solid var(--color-border);border-radius:var(--radius-md);cursor:pointer;text-align:left;font-size:var(--text-sm);font-weight:var(--font-medium);color:var(--color-text-primary);transition:all 0.15s;" onclick="App.routeView('sup_audit','super_admin')" onmouseover="this.style.background='var(--color-surface)';this.style.transform='translateY(-1px)';this.style.boxShadow='var(--shadow-1)';" onmouseout="this.style.background='var(--color-bg)';this.style.transform='translateY(0)';this.style.boxShadow='none';">
+            <div style="width:32px;height:32px;border-radius:var(--radius-sm);background:#fefce8;color:#ca8a04;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+              <span class="material-symbols-outlined" style="font-size:18px;">list_alt</span>
+            </div>
+            Audit Logs
+          </button>
+          <button style="display:flex;align-items:center;gap:var(--space-sm);padding:var(--space-sm) var(--space-md);background:var(--color-bg);border:1px solid var(--color-border);border-radius:var(--radius-md);cursor:pointer;text-align:left;font-size:var(--text-sm);font-weight:var(--font-medium);color:var(--color-text-primary);transition:all 0.15s;" onclick="App.routeView('sup_roles','super_admin')" onmouseover="this.style.background='var(--color-surface)';this.style.transform='translateY(-1px)';this.style.boxShadow='var(--shadow-1)';" onmouseout="this.style.background='var(--color-bg)';this.style.transform='translateY(0)';this.style.boxShadow='none';">
+            <div style="width:32px;height:32px;border-radius:var(--radius-sm);background:#fff7ed;color:#ea580c;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+              <span class="material-symbols-outlined" style="font-size:18px;">security</span>
+            </div>
+            Roles
+          </button>
+          <button style="display:flex;align-items:center;gap:var(--space-sm);padding:var(--space-sm) var(--space-md);background:var(--color-bg);border:1px solid var(--color-border);border-radius:var(--radius-md);cursor:pointer;text-align:left;font-size:var(--text-sm);font-weight:var(--font-medium);color:var(--color-text-primary);transition:all 0.15s;" onclick="App.routeView('sup_settings','super_admin')" onmouseover="this.style.background='var(--color-surface)';this.style.transform='translateY(-1px)';this.style.boxShadow='var(--shadow-1)';" onmouseout="this.style.background='var(--color-bg)';this.style.transform='translateY(0)';this.style.boxShadow='none';">
+            <div style="width:32px;height:32px;border-radius:var(--radius-sm);background:#f8fafc;color:var(--color-text-secondary);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+              <span class="material-symbols-outlined" style="font-size:18px;">settings</span>
+            </div>
+            Settings
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+<style>
+/* Pulse animation for status dot */
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+</style>

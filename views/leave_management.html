@@ -1,0 +1,214 @@
+<!-- Leave Management -->
+<div style="padding:var(--content-padding);">
+
+  <!-- Page Header -->
+  <div class="module-header">
+    <div>
+      <h2 style="font-size:var(--text-2xl);font-weight:var(--font-semibold);margin:0 0 4px 0;">Leave Management</h2>
+      <p style="font-size:var(--text-sm);color:var(--color-text-secondary);margin:0;">Manage time off requests and team approvals in one place.</p>
+    </div>
+    <div class="module-header-actions">
+      <button class="btn btn-secondary">Leave Calendar</button>
+      <button class="btn btn-primary">+ New Request</button>
+    </div>
+  </div>
+
+  <!-- Leave Balance KPI Strip -->
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:var(--grid-gap);margin-bottom:var(--space-lg);">
+    <div class="dashboard-card">
+      <div class="dashboard-card-icon" style="background:#eff6ff;color:#2563eb;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      </div>
+      <div class="dashboard-card-label">Annual Leave Balance</div>
+      <div class="dashboard-card-value">18 Days</div>
+      <div class="progress-wrapper"><div class="progress-bar" style="width:75%;"></div></div>
+      <div class="cell-secondary" style="margin-top:4px;">6 of 24 days used</div>
+    </div>
+    <div class="dashboard-card">
+      <div class="dashboard-card-icon" style="background:#fff7ed;color:#ea580c;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+      </div>
+      <div class="dashboard-card-label">Sick Leave Balance</div>
+      <div class="dashboard-card-value">10 Days</div>
+      <div class="progress-wrapper"><div class="progress-bar progress-warning" style="width:16%;"></div></div>
+      <div class="cell-secondary" style="margin-top:4px;">2 of 12 days used</div>
+    </div>
+    <div class="dashboard-card">
+      <div class="dashboard-card-icon" style="background:#fdf4ff;color:#7c3aed;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="7" r="4"/><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/></svg>
+      </div>
+      <div class="dashboard-card-label">Personal Leave Balance</div>
+      <div class="dashboard-card-value">4 Days</div>
+      <div class="progress-wrapper"><div class="progress-bar" style="background:#7c3aed;width:20%;"></div></div>
+      <div class="cell-secondary" style="margin-top:4px;">1 of 5 days used</div>
+    </div>
+  </div>
+
+  <!-- 2-col: Table + Timeline -->
+  <div style="display:grid;grid-template-columns:1fr 280px;gap:var(--grid-gap);align-items:start;">
+
+    <!-- Pending Approvals Table -->
+    <div class="table-card">
+      <div class="table-card-header">
+        <h3 class="table-card-title">Team Pending Approvals <span class="badge badge-warning" style="margin-left:8px;">3 Pending</span></h3>
+        <div style="display:flex;gap:var(--space-sm);">
+          <div class="filter-search" style="max-width:180px;">
+            <span class="filter-search-icon">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            </span>
+            <input type="text" placeholder="Search…">
+          </div>
+          <div class="filter-chip-group">
+            <div style="position:relative;">
+              <div class="filter-chip" onclick="this.nextElementSibling.classList.toggle('open')">
+                <span style="color:var(--color-text-secondary);">Type:</span> All
+              </div>
+              <div class="sleek-dropdown">
+                <div class="sleek-dropdown-item selected"><span class="sleek-dropdown-arrow">▸</span> All Types</div>
+                <div class="sleek-dropdown-item"><span class="sleek-dropdown-arrow">▸</span> Annual Leave</div>
+                <div class="sleek-dropdown-item"><span class="sleek-dropdown-arrow">▸</span> Sick Leave</div>
+                <div class="sleek-dropdown-item"><span class="sleek-dropdown-arrow">▸</span> Personal</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="table-responsive">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th style="padding-left:var(--space-lg);">Employee</th>
+              <th>Type</th>
+              <th>Dates</th>
+              <th class="cell-num">Days</th>
+              <th>Status</th>
+              <th style="text-align:right;padding-right:var(--space-lg);">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style="padding-left:var(--space-lg);">
+                <div>
+                  <div class="cell-primary">Alex Rivera</div>
+                  <div class="cell-secondary">Software Engineer</div>
+                </div>
+              </td>
+              <td><span class="badge badge-primary">Annual</span></td>
+              <td>
+                <div class="cell-primary" style="font-size:13px;">Oct 12 – 15</div>
+                <div class="cell-secondary">Family Trip</div>
+              </td>
+              <td class="cell-num" style="font-weight:var(--font-medium);">4</td>
+              <td><span class="badge badge-warning"><span class="badge-dot"></span>Pending</span></td>
+              <td style="text-align:right;padding-right:var(--space-lg);">
+                <div class="cell-actions" style="justify-content:flex-end;">
+                  <button class="btn btn-sm" style="color:var(--color-danger);border-color:var(--color-danger);">Reject</button>
+                  <button class="btn btn-sm btn-primary">Approve</button>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding-left:var(--space-lg);">
+                <div>
+                  <div class="cell-primary">Elena Rodriguez</div>
+                  <div class="cell-secondary">Product Designer</div>
+                </div>
+              </td>
+              <td><span class="badge badge-warning">Sick</span></td>
+              <td>
+                <div class="cell-primary" style="font-size:13px;">Oct 08 – 09</div>
+                <div class="cell-secondary">Medical</div>
+              </td>
+              <td class="cell-num" style="font-weight:var(--font-medium);">2</td>
+              <td><span class="badge badge-warning"><span class="badge-dot"></span>Pending</span></td>
+              <td style="text-align:right;padding-right:var(--space-lg);">
+                <div class="cell-actions" style="justify-content:flex-end;">
+                  <button class="btn btn-sm" style="color:var(--color-danger);border-color:var(--color-danger);">Reject</button>
+                  <button class="btn btn-sm btn-primary">Approve</button>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding-left:var(--space-lg);">
+                <div>
+                  <div class="cell-primary">David Wong</div>
+                  <div class="cell-secondary">Operations Lead</div>
+                </div>
+              </td>
+              <td><span class="badge badge-neutral">Personal</span></td>
+              <td>
+                <div class="cell-primary" style="font-size:13px;">Oct 18</div>
+                <div class="cell-secondary">Personal</div>
+              </td>
+              <td class="cell-num" style="font-weight:var(--font-medium);">1</td>
+              <td><span class="badge badge-warning"><span class="badge-dot"></span>Pending</span></td>
+              <td style="text-align:right;padding-right:var(--space-lg);">
+                <div class="cell-actions" style="justify-content:flex-end;">
+                  <button class="btn btn-sm" style="color:var(--color-danger);border-color:var(--color-danger);">Reject</button>
+                  <button class="btn btn-sm btn-primary">Approve</button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="table-card-footer">
+        <span>3 pending requests</span>
+        <button class="btn btn-sm btn-secondary">View All Requests</button>
+      </div>
+    </div>
+
+    <!-- History Timeline -->
+    <div class="panel" style="position:sticky;top:calc(var(--topbar-height) + 16px);">
+      <div class="panel-header">
+        <h3 class="panel-title">Recent History</h3>
+        <button class="btn btn-sm btn-secondary">All</button>
+      </div>
+      <div class="panel-body">
+        <div class="timeline">
+          <div class="timeline-step active">
+            <div class="timeline-marker"></div>
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;">
+              <div>
+                <div class="timeline-title">Winter Vacation</div>
+                <div class="timeline-desc">Dec 20 – Dec 30 · 10d</div>
+              </div>
+              <span class="badge badge-warning">Pending</span>
+            </div>
+          </div>
+          <div class="timeline-step completed">
+            <div class="timeline-marker"></div>
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;">
+              <div>
+                <div class="timeline-title">Personal Day</div>
+                <div class="timeline-desc">Sep 15 · 1d</div>
+              </div>
+              <span class="badge badge-success">Approved</span>
+            </div>
+          </div>
+          <div class="timeline-step rejected">
+            <div class="timeline-marker"></div>
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;">
+              <div>
+                <div class="timeline-title">Conference Leave</div>
+                <div class="timeline-desc">Aug 22 – 24 · 3d</div>
+              </div>
+              <span class="badge badge-danger">Rejected</span>
+            </div>
+          </div>
+          <div class="timeline-step completed">
+            <div class="timeline-marker"></div>
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;">
+              <div>
+                <div class="timeline-title">Annual Leave</div>
+                <div class="timeline-desc">Jul 10 – 14 · 5d</div>
+              </div>
+              <span class="badge badge-success">Approved</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>

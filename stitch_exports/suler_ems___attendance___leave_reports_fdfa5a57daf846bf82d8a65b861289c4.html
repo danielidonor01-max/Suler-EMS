@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Suler EMS - Attendance &amp; Leave Reports</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "tertiary-container": "#bc4800",
+                    "inverse-primary": "#b4c5ff",
+                    "on-primary-container": "#eeefff",
+                    "primary": "#004ac6",
+                    "error": "#ba1a1a",
+                    "secondary-container": "#dce2f3",
+                    "on-primary-fixed": "#00174b",
+                    "outline-variant": "#c3c6d7",
+                    "on-tertiary": "#ffffff",
+                    "on-secondary": "#ffffff",
+                    "primary-fixed-dim": "#b4c5ff",
+                    "inverse-on-surface": "#f0f0fb",
+                    "on-error-container": "#93000a",
+                    "error-container": "#ffdad6",
+                    "on-surface": "#191b23",
+                    "on-secondary-container": "#5e6572",
+                    "outline": "#737686",
+                    "tertiary-fixed-dim": "#ffb596",
+                    "surface-container-low": "#f3f3fe",
+                    "surface-tint": "#0053db",
+                    "surface-variant": "#e1e2ed",
+                    "surface-dim": "#d9d9e5",
+                    "secondary-fixed": "#dce2f3",
+                    "primary-fixed": "#dbe1ff",
+                    "on-error": "#ffffff",
+                    "tertiary": "#943700",
+                    "secondary": "#585f6c",
+                    "inverse-surface": "#2e3039",
+                    "on-secondary-fixed": "#151c27",
+                    "surface-container-lowest": "#ffffff",
+                    "surface": "#faf8ff",
+                    "on-background": "#191b23",
+                    "tertiary-fixed": "#ffdbcd",
+                    "surface-bright": "#faf8ff",
+                    "surface-container": "#ededf9",
+                    "background": "#faf8ff",
+                    "secondary-fixed-dim": "#c0c7d6",
+                    "on-primary": "#ffffff",
+                    "primary-container": "#2563eb",
+                    "on-tertiary-container": "#ffede6",
+                    "on-surface-variant": "#434655",
+                    "surface-container-highest": "#e1e2ed",
+                    "on-tertiary-fixed-variant": "#7d2d00",
+                    "on-tertiary-fixed": "#360f00",
+                    "on-secondary-fixed-variant": "#404754",
+                    "on-primary-fixed-variant": "#003ea8",
+                    "surface-container-high": "#e7e7f3"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "xl": "32px",
+                    "lg": "24px",
+                    "2xl": "48px",
+                    "xs": "4px",
+                    "md": "16px",
+                    "3xl": "64px",
+                    "sm": "8px"
+            },
+            "fontFamily": {
+                    "h1": ["Inter"],
+                    "body-lg": ["Inter"],
+                    "h2": ["Inter"],
+                    "label-sm": ["Inter"],
+                    "h3": ["Inter"],
+                    "button": ["Inter"],
+                    "body-md": ["Inter"]
+            },
+            "fontSize": {
+                    "h1": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "h2": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                    "label-sm": ["12px", {"lineHeight": "16px", "fontWeight": "500"}],
+                    "h3": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                    "button": ["14px", {"lineHeight": "20px", "fontWeight": "600"}],
+                    "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}]
+            }
+          }
+        }
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
+        .bento-card { transition: transform 0.2s ease, box-shadow 0.2s ease; }
+        .bento-card:hover { transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); }
+    </style>
+</head>
+<body class="bg-surface font-body-md text-on-surface">
+<!-- SideNavBar -->
+<aside class="fixed left-0 top-0 h-screen w-64 border-r border-slate-200 bg-white z-50 flex flex-col py-4 space-y-2">
+<div class="px-6 mb-8 flex items-center gap-3">
+<div class="w-10 h-10 bg-primary-container rounded-lg flex items-center justify-center">
+<span class="material-symbols-outlined text-white" style="font-variation-settings: 'FILL' 1;">corporate_fare</span>
+</div>
+<div>
+<h1 class="text-blue-600 font-black text-2xl leading-tight">Suler EMS</h1>
+<p class="text-slate-500 text-xs font-medium uppercase tracking-wider">Management Portal</p>
+</div>
+</div>
+<nav class="flex-1 px-3 space-y-1">
+<a class="flex items-center px-3 py-2.5 rounded-lg text-slate-600 hover:bg-slate-50 transition-all duration-200" href="#">
+<span class="material-symbols-outlined mr-3">dashboard</span>
+<span class="font-medium">Dashboard</span>
+</a>
+<a class="flex items-center px-3 py-2.5 rounded-lg text-slate-600 hover:bg-slate-50 transition-all duration-200" href="#">
+<span class="material-symbols-outlined mr-3">groups</span>
+<span class="font-medium">Organization</span>
+</a>
+<a class="flex items-center px-3 py-2.5 rounded-lg text-slate-600 hover:bg-slate-50 transition-all duration-200" href="#">
+<span class="material-symbols-outlined mr-3">payments</span>
+<span class="font-medium">Payroll</span>
+</a>
+<a class="flex items-center px-3 py-2.5 rounded-lg text-slate-600 hover:bg-slate-50 transition-all duration-200" href="#">
+<span class="material-symbols-outlined mr-3">trending_up</span>
+<span class="font-medium">Performance</span>
+</a>
+<a class="flex items-center px-3 py-2.5 rounded-lg text-blue-600 bg-blue-50 border-l-4 border-blue-600 transition-all duration-200" href="#">
+<span class="material-symbols-outlined mr-3" style="font-variation-settings: 'FILL' 1;">event_note</span>
+<span class="font-medium">Attendance</span>
+</a>
+</nav>
+<div class="px-3 pt-4 border-t border-slate-100 space-y-1">
+<a class="flex items-center px-3 py-2.5 rounded-lg text-slate-600 hover:bg-slate-50 transition-all duration-200" href="#">
+<span class="material-symbols-outlined mr-3">settings</span>
+<span class="font-medium">Settings</span>
+</a>
+<a class="flex items-center px-3 py-2.5 rounded-lg text-error hover:bg-error-container/10 transition-all duration-200" href="#">
+<span class="material-symbols-outlined mr-3">logout</span>
+<span class="font-medium">Log Out</span>
+</a>
+</div>
+</aside>
+<!-- TopNavBar -->
+<header class="fixed top-0 right-0 z-40 w-[calc(100%-256px)] h-16 bg-white border-b border-slate-200 shadow-sm flex items-center justify-between px-6">
+<div class="flex items-center flex-1 max-w-md">
+<div class="relative w-full">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">search</span>
+<input class="w-full pl-10 pr-4 py-2 bg-slate-50 border-none rounded-full text-sm focus:ring-2 focus:ring-primary-container transition-all" placeholder="Search reports, employees..." type="text"/>
+</div>
+</div>
+<div class="flex items-center space-x-4">
+<button class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-slate-50 text-slate-600 relative">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-2 right-2 w-2 h-2 bg-error rounded-full border-2 border-white"></span>
+</button>
+<button class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-slate-50 text-slate-600">
+<span class="material-symbols-outlined">help</span>
+</button>
+<div class="h-8 w-[1px] bg-slate-200 mx-2"></div>
+<div class="flex items-center gap-3 pl-2">
+<div class="text-right">
+<p class="text-sm font-bold text-slate-900 leading-none">Sarah Jenkins</p>
+<p class="text-[10px] text-slate-500 font-medium uppercase tracking-tighter">Admin Principal</p>
+</div>
+<img alt="Administrator Profile" class="w-9 h-9 rounded-full border-2 border-white shadow-sm object-cover" data-alt="A professional headshot of a middle-aged woman with a confident and friendly expression, wearing professional attire. The background is a clean, softly blurred modern office environment with bright, natural lighting. The overall aesthetic is professional, reliable, and high-quality, fitting for a corporate management system." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAeJlLI7OcnzLDs2bqVXuYPsA3eQ7RCg5MI_1xyXP6HZdLZVpWfmTJp0RlCiizYpFP4RMiHVqCA1D3EC_yV8wfQD1zvAZZMrfXymbvI95IjE8nXIA9H_OCvfn2QcY2oj7SMjj0i6dFpW0YYWfkEiXl_SHamPYANrbh3ybYk_oj16JEx2xHTsqwTvhHtc1c6oHsZThRuiSQyLk967LKmOfH7aY4WNJcrmA7LO8b_caclpuAaEQ3U-pdrLxFKOBMEKYd30zSSkVeJcEuS"/>
+</div>
+</div>
+</header>
+<!-- Main Content -->
+<main class="ml-64 pt-16 min-h-screen">
+<div class="p-lg space-y-lg">
+<!-- Page Header & Filters -->
+<div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
+<div class="space-y-1">
+<nav class="flex items-center text-xs font-medium text-slate-500 gap-2 mb-2">
+<span>Attendance</span>
+<span class="material-symbols-outlined text-[14px]">chevron_right</span>
+<span class="text-blue-600">Leave Reports</span>
+</nav>
+<h2 class="font-h1 text-h1 text-on-surface">Reports &amp; Analytics</h2>
+<p class="text-body-md text-slate-500">Overview of organizational presence and leave utilization.</p>
+</div>
+<div class="flex items-center gap-3 bg-white p-2 rounded-xl border border-slate-200 shadow-sm">
+<div class="flex flex-col px-3 border-r border-slate-100">
+<label class="text-[10px] uppercase font-bold text-slate-400">Department</label>
+<select class="border-none p-0 text-sm font-semibold bg-transparent focus:ring-0 text-slate-900 cursor-pointer">
+<option>All Departments</option>
+<option>Engineering</option>
+<option>Marketing</option>
+<option>HR &amp; Ops</option>
+</select>
+</div>
+<div class="flex flex-col px-3 border-r border-slate-100">
+<label class="text-[10px] uppercase font-bold text-slate-400">Timeframe</label>
+<select class="border-none p-0 text-sm font-semibold bg-transparent focus:ring-0 text-slate-900 cursor-pointer">
+<option>Last 30 Days</option>
+<option>Last Quarter</option>
+<option>Year to Date</option>
+</select>
+</div>
+<button class="bg-primary-container text-white px-4 py-2 rounded-lg font-button flex items-center gap-2 hover:opacity-90 transition-all">
+<span class="material-symbols-outlined text-[20px]">filter_list</span>
+                        Apply
+                    </button>
+</div>
+</div>
+<!-- Stats Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-md">
+<div class="bg-white p-md rounded-xl border border-slate-200 shadow-sm bento-card flex flex-col justify-between">
+<div class="flex justify-between items-start">
+<div class="p-2 bg-blue-50 text-blue-600 rounded-lg">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">how_to_reg</span>
+</div>
+<span class="text-emerald-600 bg-emerald-50 text-[10px] font-bold px-2 py-0.5 rounded-full">+2.4%</span>
+</div>
+<div class="mt-4">
+<p class="text-slate-500 text-sm font-medium">Avg Attendance</p>
+<h3 class="text-h2 font-h2 text-slate-900">94.2%</h3>
+</div>
+</div>
+<div class="bg-white p-md rounded-xl border border-slate-200 shadow-sm bento-card flex flex-col justify-between">
+<div class="flex justify-between items-start">
+<div class="p-2 bg-amber-50 text-amber-600 rounded-lg">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">beach_access</span>
+</div>
+</div>
+<div class="mt-4">
+<p class="text-slate-500 text-sm font-medium">Common Leave</p>
+<h3 class="text-h2 font-h2 text-slate-900">Sick Leave</h3>
+</div>
+</div>
+<div class="bg-white p-md rounded-xl border border-slate-200 shadow-sm bento-card flex flex-col justify-between">
+<div class="flex justify-between items-start">
+<div class="p-2 bg-rose-50 text-rose-600 rounded-lg">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">person_off</span>
+</div>
+<span class="text-rose-600 bg-rose-50 text-[10px] font-bold px-2 py-0.5 rounded-full">-1.2%</span>
+</div>
+<div class="mt-4">
+<p class="text-slate-500 text-sm font-medium">Absenteeism Rate</p>
+<h3 class="text-h2 font-h2 text-slate-900">3.8%</h3>
+</div>
+</div>
+<div class="bg-primary-container p-md rounded-xl border-none shadow-lg bento-card flex flex-col justify-between text-white">
+<div class="flex justify-between items-start">
+<div class="p-2 bg-white/20 text-white rounded-lg">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">pending_actions</span>
+</div>
+</div>
+<div class="mt-4">
+<p class="text-white/80 text-sm font-medium">Pending Approvals</p>
+<h3 class="text-h2 font-h2">12 Requests</h3>
+</div>
+</div>
+</div>
+<!-- Main Charts Bento Grid -->
+<div class="grid grid-cols-12 gap-lg">
+<!-- Attendance Trends -->
+<div class="col-span-12 lg:col-span-8 bg-white p-lg rounded-xl border border-slate-200 shadow-sm">
+<div class="flex items-center justify-between mb-lg">
+<h3 class="text-h3 font-h3 text-slate-900">Attendance Trends</h3>
+<div class="flex items-center gap-2">
+<span class="flex items-center gap-1 text-xs text-slate-500">
+<span class="w-3 h-3 bg-blue-600 rounded-full"></span> Present
+                            </span>
+<span class="flex items-center gap-1 text-xs text-slate-500">
+<span class="w-3 h-3 bg-slate-200 rounded-full"></span> Absent
+                            </span>
+</div>
+</div>
+<div class="h-[300px] flex items-end gap-2 px-2">
+<!-- Bar Chart Representation -->
+<div class="flex-1 flex flex-col items-center gap-2 group">
+<div class="w-full flex flex-col-reverse h-full bg-slate-50 rounded-t-lg overflow-hidden">
+<div class="bg-blue-600 w-full h-[85%] group-hover:bg-blue-500 transition-colors"></div>
+<div class="bg-blue-200 w-full h-[15%]"></div>
+</div>
+<span class="text-[10px] font-bold text-slate-400">MON</span>
+</div>
+<div class="flex-1 flex flex-col items-center gap-2 group">
+<div class="w-full flex flex-col-reverse h-full bg-slate-50 rounded-t-lg overflow-hidden">
+<div class="bg-blue-600 w-full h-[92%] group-hover:bg-blue-500 transition-colors"></div>
+<div class="bg-blue-200 w-full h-[8%]"></div>
+</div>
+<span class="text-[10px] font-bold text-slate-400">TUE</span>
+</div>
+<div class="flex-1 flex flex-col items-center gap-2 group">
+<div class="w-full flex flex-col-reverse h-full bg-slate-50 rounded-t-lg overflow-hidden">
+<div class="bg-blue-600 w-full h-[88%] group-hover:bg-blue-500 transition-colors"></div>
+<div class="bg-blue-200 w-full h-[12%]"></div>
+</div>
+<span class="text-[10px] font-bold text-slate-400">WED</span>
+</div>
+<div class="flex-1 flex flex-col items-center gap-2 group">
+<div class="w-full flex flex-col-reverse h-full bg-slate-50 rounded-t-lg overflow-hidden">
+<div class="bg-blue-600 w-full h-[95%] group-hover:bg-blue-500 transition-colors"></div>
+<div class="bg-blue-200 w-full h-[5%]"></div>
+</div>
+<span class="text-[10px] font-bold text-slate-400">THU</span>
+</div>
+<div class="flex-1 flex flex-col items-center gap-2 group">
+<div class="w-full flex flex-col-reverse h-full bg-slate-50 rounded-t-lg overflow-hidden">
+<div class="bg-blue-600 w-full h-[70%] group-hover:bg-blue-500 transition-colors"></div>
+<div class="bg-blue-200 w-full h-[30%]"></div>
+</div>
+<span class="text-[10px] font-bold text-slate-400">FRI</span>
+</div>
+<div class="flex-1 flex flex-col items-center gap-2 group opacity-40">
+<div class="w-full flex flex-col-reverse h-full bg-slate-50 rounded-t-lg overflow-hidden">
+<div class="bg-slate-300 w-full h-[10%]"></div>
+</div>
+<span class="text-[10px] font-bold text-slate-400">SAT</span>
+</div>
+<div class="flex-1 flex flex-col items-center gap-2 group opacity-40">
+<div class="w-full flex flex-col-reverse h-full bg-slate-50 rounded-t-lg overflow-hidden">
+<div class="bg-slate-300 w-full h-[8%]"></div>
+</div>
+<span class="text-[10px] font-bold text-slate-400">SUN</span>
+</div>
+</div>
+</div>
+<!-- Leave Type Distribution -->
+<div class="col-span-12 lg:col-span-4 bg-white p-lg rounded-xl border border-slate-200 shadow-sm flex flex-col">
+<h3 class="text-h3 font-h3 text-slate-900 mb-lg">Leave Distribution</h3>
+<div class="flex-1 flex flex-col justify-center gap-4">
+<div class="space-y-2">
+<div class="flex justify-between text-sm">
+<span class="font-medium text-slate-600">Annual Leave</span>
+<span class="font-bold text-slate-900">45%</span>
+</div>
+<div class="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
+<div class="bg-primary-container h-full w-[45%]"></div>
+</div>
+</div>
+<div class="space-y-2">
+<div class="flex justify-between text-sm">
+<span class="font-medium text-slate-600">Sick Leave</span>
+<span class="font-bold text-slate-900">30%</span>
+</div>
+<div class="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
+<div class="bg-amber-400 h-full w-[30%]"></div>
+</div>
+</div>
+<div class="space-y-2">
+<div class="flex justify-between text-sm">
+<span class="font-medium text-slate-600">Personal Leave</span>
+<span class="font-bold text-slate-900">15%</span>
+</div>
+<div class="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
+<div class="bg-indigo-400 h-full w-[15%]"></div>
+</div>
+</div>
+<div class="space-y-2">
+<div class="flex justify-between text-sm">
+<span class="font-medium text-slate-600">Maternity/Paternity</span>
+<span class="font-bold text-slate-900">10%</span>
+</div>
+<div class="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
+<div class="bg-rose-400 h-full w-[10%]"></div>
+</div>
+</div>
+</div>
+</div>
+<!-- Holiday vs Work Day -->
+<div class="col-span-12 lg:col-span-4 bg-slate-900 p-lg rounded-xl shadow-lg text-white">
+<h3 class="text-h3 font-h3 mb-md">Productivity Context</h3>
+<div class="space-y-lg">
+<div class="flex items-center gap-4 bg-white/10 p-4 rounded-xl">
+<span class="material-symbols-outlined text-amber-400 text-3xl">celebration</span>
+<div>
+<p class="text-white/60 text-xs font-bold uppercase tracking-widest">Public Holidays</p>
+<p class="text-xl font-bold">2 Days</p>
+<p class="text-[10px] text-white/40">Upcoming: Labor Day (May 1st)</p>
+</div>
+</div>
+<div class="flex items-center gap-4 bg-white/10 p-4 rounded-xl">
+<span class="material-symbols-outlined text-blue-400 text-3xl">work</span>
+<div>
+<p class="text-white/60 text-xs font-bold uppercase tracking-widest">Working Days</p>
+<p class="text-xl font-bold">20 Days</p>
+<p class="text-[10px] text-white/40">Current active period</p>
+</div>
+</div>
+<div class="pt-4 border-t border-white/10">
+<div class="flex items-center justify-between mb-2">
+<span class="text-sm font-medium">Workload Intensity</span>
+<span class="text-sm font-bold text-emerald-400">Stable</span>
+</div>
+<div class="flex gap-1 h-1.5">
+<div class="flex-1 bg-emerald-500 rounded-full"></div>
+<div class="flex-1 bg-emerald-500 rounded-full"></div>
+<div class="flex-1 bg-emerald-500 rounded-full"></div>
+<div class="flex-1 bg-white/20 rounded-full"></div>
+<div class="flex-1 bg-white/20 rounded-full"></div>
+</div>
+</div>
+</div>
+</div>
+<!-- Table Section -->
+<div class="col-span-12 lg:col-span-8 bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
+<div class="p-lg border-b border-slate-100 flex items-center justify-between">
+<div>
+<h3 class="text-h3 font-h3 text-slate-900">Leave Utilization by Department</h3>
+<p class="text-sm text-slate-500 mt-1">Total days taken per department this month.</p>
+</div>
+<button class="text-primary-container hover:bg-primary-container/5 px-3 py-1.5 rounded-lg text-sm font-bold transition-all">Export CSV</button>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead class="bg-slate-50">
+<tr>
+<th class="px-6 py-4 text-[11px] font-black text-slate-500 uppercase tracking-widest">Department</th>
+<th class="px-6 py-4 text-[11px] font-black text-slate-500 uppercase tracking-widest">Team Size</th>
+<th class="px-6 py-4 text-[11px] font-black text-slate-500 uppercase tracking-widest">Leave Days</th>
+<th class="px-6 py-4 text-[11px] font-black text-slate-500 uppercase tracking-widest">Utilization</th>
+<th class="px-6 py-4 text-[11px] font-black text-slate-500 uppercase tracking-widest text-right">Trend</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-slate-100">
+<tr class="hover:bg-slate-50 transition-colors">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center text-blue-600 font-bold text-xs">EN</div>
+<span class="font-bold text-slate-900">Engineering</span>
+</div>
+</td>
+<td class="px-6 py-4 text-sm text-slate-600">42 Employees</td>
+<td class="px-6 py-4 text-sm font-bold text-slate-900">124 Days</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2">
+<div class="w-24 h-1.5 bg-slate-100 rounded-full overflow-hidden">
+<div class="bg-blue-600 h-full w-[65%]"></div>
+</div>
+<span class="text-xs font-bold text-slate-900">65%</span>
+</div>
+</td>
+<td class="px-6 py-4 text-right">
+<span class="text-rose-500 material-symbols-outlined text-lg">trending_up</span>
+</td>
+</tr>
+<tr class="hover:bg-slate-50 transition-colors">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 bg-amber-100 rounded-lg flex items-center justify-center text-amber-600 font-bold text-xs">MK</div>
+<span class="font-bold text-slate-900">Marketing</span>
+</div>
+</td>
+<td class="px-6 py-4 text-sm text-slate-600">28 Employees</td>
+<td class="px-6 py-4 text-sm font-bold text-slate-900">56 Days</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2">
+<div class="w-24 h-1.5 bg-slate-100 rounded-full overflow-hidden">
+<div class="bg-amber-500 h-full w-[38%]"></div>
+</div>
+<span class="text-xs font-bold text-slate-900">38%</span>
+</div>
+</td>
+<td class="px-6 py-4 text-right">
+<span class="text-emerald-500 material-symbols-outlined text-lg">trending_down</span>
+</td>
+</tr>
+<tr class="hover:bg-slate-50 transition-colors">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 bg-indigo-100 rounded-lg flex items-center justify-center text-indigo-600 font-bold text-xs">OP</div>
+<span class="font-bold text-slate-900">HR &amp; Ops</span>
+</div>
+</td>
+<td class="px-6 py-4 text-sm text-slate-600">15 Employees</td>
+<td class="px-6 py-4 text-sm font-bold text-slate-900">22 Days</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2">
+<div class="w-24 h-1.5 bg-slate-100 rounded-full overflow-hidden">
+<div class="bg-indigo-600 h-full w-[24%]"></div>
+</div>
+<span class="text-xs font-bold text-slate-900">24%</span>
+</div>
+</td>
+<td class="px-6 py-4 text-right">
+<span class="text-slate-400 material-symbols-outlined text-lg">trending_flat</span>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</div>
+</main>
+</body></html>

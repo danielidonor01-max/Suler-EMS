@@ -1,0 +1,259 @@
+<!-- Performance Insights -->
+<div style="padding:var(--content-padding);">
+
+  <!-- Page Header -->
+  <div class="module-header">
+    <div>
+      <h2 style="font-size:var(--text-2xl);font-weight:var(--font-semibold);margin:0 0 4px 0;">Performance Insights</h2>
+      <p style="font-size:var(--text-sm);color:var(--color-text-secondary);margin:0;">Real-time analytical overview of organizational excellence.</p>
+    </div>
+    <div class="module-header-actions">
+      <button class="btn btn-primary">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        Schedule Review
+      </button>
+    </div>
+  </div>
+
+  <!-- Stats Grid -->
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:var(--grid-gap);margin-bottom:var(--space-lg);">
+    <div class="dashboard-card">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+        <div class="dashboard-card-icon" style="background:#f0fdf4;color:#16a34a;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        </div>
+        <span class="badge badge-success">+4.2%</span>
+      </div>
+      <div class="dashboard-card-label" style="margin-top:var(--space-sm);">Avg Performance Rating</div>
+      <div class="dashboard-card-value">4.8 <span style="font-size:var(--text-sm);font-weight:var(--font-medium);color:var(--color-text-secondary);">/ 5.0</span></div>
+    </div>
+    <div class="dashboard-card">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+        <div class="dashboard-card-icon" style="background:#eff6ff;color:#2563eb;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+        </div>
+        <span class="badge badge-success">+12%</span>
+      </div>
+      <div class="dashboard-card-label" style="margin-top:var(--space-sm);">Goal Completion</div>
+      <div class="dashboard-card-value">86.4%</div>
+      <div class="progress-wrapper"><div class="progress-bar progress-success" style="width:86.4%;"></div></div>
+    </div>
+    <div class="dashboard-card">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+        <div class="dashboard-card-icon" style="background:#fdf4ff;color:#7c3aed;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
+        </div>
+        <span class="badge badge-danger">-2.1%</span>
+      </div>
+      <div class="dashboard-card-label" style="margin-top:var(--space-sm);">Training Progress</div>
+      <div class="dashboard-card-value">72.9%</div>
+      <div class="progress-wrapper"><div class="progress-bar" style="background:#7c3aed;width:72.9%;"></div></div>
+    </div>
+    <div class="dashboard-card">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+        <div class="dashboard-card-icon" style="background:#fef2f2;color:#dc2626;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+        </div>
+        <span class="badge badge-success">+8 pts</span>
+      </div>
+      <div class="dashboard-card-label" style="margin-top:var(--space-sm);">Employee NPS</div>
+      <div class="dashboard-card-value">74</div>
+      <div class="dashboard-card-trend trend-up">Excellent standing</div>
+    </div>
+  </div>
+
+  <!-- Bento Grid Layout for Charts -->
+  <div style="display:grid;grid-template-columns:2fr 1fr;gap:var(--grid-gap);margin-bottom:var(--space-lg);">
+    
+    <!-- Heatmap Mock -->
+    <div class="panel">
+      <div class="panel-header">
+        <h3 class="panel-title">Performance Heatmap by Department</h3>
+        <div style="display:flex;gap:var(--space-xs);">
+          <button class="btn btn-sm" style="background:var(--color-surface);border:1px solid var(--color-border);">Weekly</button>
+          <button class="btn btn-sm btn-primary">Monthly</button>
+        </div>
+      </div>
+      <div class="panel-body">
+        <div style="display:grid;grid-template-columns:100px repeat(6, 1fr);gap:8px;align-items:center;">
+          <!-- Header -->
+          <div></div>
+          <div style="text-align:center;font-size:11px;font-weight:var(--font-bold);color:var(--color-text-muted);text-transform:uppercase;">Mon</div>
+          <div style="text-align:center;font-size:11px;font-weight:var(--font-bold);color:var(--color-text-muted);text-transform:uppercase;">Tue</div>
+          <div style="text-align:center;font-size:11px;font-weight:var(--font-bold);color:var(--color-text-muted);text-transform:uppercase;">Wed</div>
+          <div style="text-align:center;font-size:11px;font-weight:var(--font-bold);color:var(--color-text-muted);text-transform:uppercase;">Thu</div>
+          <div style="text-align:center;font-size:11px;font-weight:var(--font-bold);color:var(--color-text-muted);text-transform:uppercase;">Fri</div>
+          <div style="text-align:center;font-size:11px;font-weight:var(--font-bold);color:var(--color-text-muted);text-transform:uppercase;">Sat</div>
+          
+          <!-- Engineering -->
+          <div style="font-size:12px;color:var(--color-text-secondary);text-align:right;padding-right:8px;">Engineering</div>
+          <div style="height:40px;background:#dbeafe;border-radius:4px;"></div>
+          <div style="height:40px;background:#93c5fd;border-radius:4px;"></div>
+          <div style="height:40px;background:#3b82f6;border-radius:4px;"></div>
+          <div style="height:40px;background:#1d4ed8;border-radius:4px;"></div>
+          <div style="height:40px;background:#60a5fa;border-radius:4px;"></div>
+          <div style="height:40px;background:#bfdbfe;border-radius:4px;"></div>
+
+          <!-- Marketing -->
+          <div style="font-size:12px;color:var(--color-text-secondary);text-align:right;padding-right:8px;">Marketing</div>
+          <div style="height:40px;background:#60a5fa;border-radius:4px;"></div>
+          <div style="height:40px;background:#2563eb;border-radius:4px;"></div>
+          <div style="height:40px;background:#93c5fd;border-radius:4px;"></div>
+          <div style="height:40px;background:#3b82f6;border-radius:4px;"></div>
+          <div style="height:40px;background:#1d4ed8;border-radius:4px;"></div>
+          <div style="height:40px;background:#bfdbfe;border-radius:4px;"></div>
+
+          <!-- Sales -->
+          <div style="font-size:12px;color:var(--color-text-secondary);text-align:right;padding-right:8px;">Sales</div>
+          <div style="height:40px;background:#bfdbfe;border-radius:4px;"></div>
+          <div style="height:40px;background:#60a5fa;border-radius:4px;"></div>
+          <div style="height:40px;background:#2563eb;border-radius:4px;"></div>
+          <div style="height:40px;background:#1e40af;border-radius:4px;"></div>
+          <div style="height:40px;background:#3b82f6;border-radius:4px;"></div>
+          <div style="height:40px;background:#93c5fd;border-radius:4px;"></div>
+        </div>
+        <div style="display:flex;justify-content:flex-end;align-items:center;margin-top:var(--space-xl);gap:8px;">
+          <span style="font-size:11px;color:var(--color-text-muted);text-transform:uppercase;">Intensity Legend:</span>
+          <div style="display:flex;gap:4px;">
+            <div style="width:12px;height:12px;background:#dbeafe;border-radius:2px;"></div>
+            <div style="width:12px;height:12px;background:#93c5fd;border-radius:2px;"></div>
+            <div style="width:12px;height:12px;background:#3b82f6;border-radius:2px;"></div>
+            <div style="width:12px;height:12px;background:#1d4ed8;border-radius:2px;"></div>
+            <div style="width:12px;height:12px;background:#1e3a8a;border-radius:2px;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Skill Gap Mock -->
+    <div class="panel">
+      <div class="panel-header">
+        <h3 class="panel-title">Skill Gap Analysis</h3>
+      </div>
+      <div class="panel-body" style="display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;min-height:260px;">
+        <!-- Radar Grid SVG -->
+        <svg viewBox="0 0 100 100" style="width:180px;height:180px;transform:rotate(-18deg);">
+          <circle cx="50" cy="50" fill="none" r="40" stroke="var(--color-border)" stroke-width="0.5"></circle>
+          <circle cx="50" cy="50" fill="none" r="30" stroke="var(--color-border)" stroke-width="0.5"></circle>
+          <circle cx="50" cy="50" fill="none" r="20" stroke="var(--color-border)" stroke-width="0.5"></circle>
+          <polygon fill="rgba(37, 99, 235, 0.2)" points="50,15 80,40 70,75 30,75 20,40" stroke="#2563EB" stroke-width="2"></polygon>
+        </svg>
+        <div style="position:absolute;top:20px;left:50%;transform:translateX(-50%);font-size:10px;font-weight:var(--font-bold);color:var(--color-text-muted);text-transform:uppercase;">Communication</div>
+        <div style="position:absolute;top:35%;right:20px;font-size:10px;font-weight:var(--font-bold);color:var(--color-text-muted);text-transform:uppercase;">Technical</div>
+        <div style="position:absolute;bottom:30px;right:40px;font-size:10px;font-weight:var(--font-bold);color:var(--color-text-muted);text-transform:uppercase;">Leadership</div>
+        <div style="position:absolute;bottom:30px;left:40px;font-size:10px;font-weight:var(--font-bold);color:var(--color-text-muted);text-transform:uppercase;">Creativity</div>
+        <div style="position:absolute;top:35%;left:20px;font-size:10px;font-weight:var(--font-bold);color:var(--color-text-muted);text-transform:uppercase;">Problem Solving</div>
+        
+        <div style="font-size:12px;color:var(--color-text-secondary);text-align:center;margin-top:var(--space-md);background:var(--color-surface);padding:8px 12px;border-radius:var(--radius-md);">Gap identified in <strong>Technical Proficiency</strong> within Junior tiers.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Lower Grid -->
+  <div style="display:grid;grid-template-columns:1fr 2fr;gap:var(--grid-gap);">
+    <!-- Quarterly Ratings -->
+    <div class="panel">
+      <div class="panel-header">
+        <h3 class="panel-title">Quarterly Rating Trends</h3>
+      </div>
+      <div class="panel-body" style="display:flex;flex-direction:column;gap:var(--space-lg);">
+        <div>
+          <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
+            <span style="font-size:13px;font-weight:var(--font-semibold);">Q1 2024</span>
+            <span style="font-size:13px;font-weight:var(--font-bold);color:var(--color-primary);">4.2</span>
+          </div>
+          <div class="progress-wrapper"><div class="progress-bar" style="background:#60a5fa;width:84%;"></div></div>
+        </div>
+        <div>
+          <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
+            <span style="font-size:13px;font-weight:var(--font-semibold);">Q2 2024</span>
+            <span style="font-size:13px;font-weight:var(--font-bold);color:var(--color-primary);">4.5</span>
+          </div>
+          <div class="progress-wrapper"><div class="progress-bar" style="background:#3b82f6;width:90%;"></div></div>
+        </div>
+        <div>
+          <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
+            <span style="font-size:13px;font-weight:var(--font-semibold);">Q3 2024</span>
+            <span style="font-size:13px;font-weight:var(--font-bold);color:var(--color-primary);">4.8</span>
+          </div>
+          <div class="progress-wrapper"><div class="progress-bar" style="background:#2563eb;width:96%;"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Top Performers Table -->
+    <div class="table-card">
+      <div class="table-card-header">
+        <h3 class="table-card-title">Top Performers by KPI</h3>
+        <button class="btn btn-sm btn-secondary">
+          View Detailed Report
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+        </button>
+      </div>
+      <div class="table-responsive">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th style="padding-left:var(--space-lg);">Employee</th>
+              <th class="cell-num">KPI Achieved</th>
+              <th class="cell-num">Rating</th>
+              <th class="cell-num">Growth</th>
+              <th style="text-align:right;padding-right:var(--space-lg);">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style="padding-left:var(--space-lg);">
+                <div>
+                  <div class="cell-primary">Sarah Johnson</div>
+                  <div class="cell-secondary">Sr. Software Engineer</div>
+                </div>
+              </td>
+              <td class="cell-num"><span class="badge badge-success">102%</span></td>
+              <td class="cell-num" style="font-weight:var(--font-bold);">4.9/5.0</td>
+              <td class="cell-num" style="color:var(--color-success);font-weight:var(--font-bold);">+5.2%</td>
+              <td style="text-align:right;padding-right:var(--space-lg);">
+                <button class="btn btn-sm btn-secondary" style="padding:0 6px;">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1"/><circle cx="12" cy="5" r="1"/><circle cx="12" cy="19" r="1"/></svg>
+                </button>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding-left:var(--space-lg);">
+                <div>
+                  <div class="cell-primary">Marcus Chen</div>
+                  <div class="cell-secondary">Marketing Lead</div>
+                </div>
+              </td>
+              <td class="cell-num"><span class="badge badge-success">98%</span></td>
+              <td class="cell-num" style="font-weight:var(--font-bold);">4.7/5.0</td>
+              <td class="cell-num" style="color:var(--color-success);font-weight:var(--font-bold);">+3.8%</td>
+              <td style="text-align:right;padding-right:var(--space-lg);">
+                <button class="btn btn-sm btn-secondary" style="padding:0 6px;">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1"/><circle cx="12" cy="5" r="1"/><circle cx="12" cy="19" r="1"/></svg>
+                </button>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding-left:var(--space-lg);">
+                <div>
+                  <div class="cell-primary">David Okoro</div>
+                  <div class="cell-secondary">Head of Sales</div>
+                </div>
+              </td>
+              <td class="cell-num"><span class="badge badge-success">115%</span></td>
+              <td class="cell-num" style="font-weight:var(--font-bold);">4.8/5.0</td>
+              <td class="cell-num" style="color:var(--color-success);font-weight:var(--font-bold);">+10.4%</td>
+              <td style="text-align:right;padding-right:var(--space-lg);">
+                <button class="btn btn-sm btn-secondary" style="padding:0 6px;">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1"/><circle cx="12" cy="5" r="1"/><circle cx="12" cy="19" r="1"/></svg>
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+</div>

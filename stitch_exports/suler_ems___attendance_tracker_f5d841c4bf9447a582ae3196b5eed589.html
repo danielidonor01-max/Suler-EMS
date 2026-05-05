@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>EMS Portal - Attendance Tracker</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "surface": "#faf8ff",
+                    "secondary-fixed-dim": "#c0c7d6",
+                    "primary-fixed": "#dbe1ff",
+                    "on-tertiary-container": "#ffede6",
+                    "surface-container": "#ededf9",
+                    "on-surface-variant": "#434655",
+                    "on-tertiary": "#ffffff",
+                    "outline-variant": "#c3c6d7",
+                    "error-container": "#ffdad6",
+                    "secondary-fixed": "#dce2f3",
+                    "error": "#ba1a1a",
+                    "surface-bright": "#faf8ff",
+                    "on-secondary": "#ffffff",
+                    "on-primary-container": "#eeefff",
+                    "inverse-primary": "#b4c5ff",
+                    "on-secondary-container": "#5e6572",
+                    "on-secondary-fixed-variant": "#404754",
+                    "on-error-container": "#93000a",
+                    "on-primary-fixed": "#00174b",
+                    "tertiary": "#943700",
+                    "on-surface": "#191b23",
+                    "background": "#faf8ff",
+                    "outline": "#737686",
+                    "surface-container-highest": "#e1e2ed",
+                    "on-primary": "#ffffff",
+                    "on-background": "#191b23",
+                    "primary": "#004ac6",
+                    "primary-container": "#2563eb",
+                    "inverse-on-surface": "#f0f0fb",
+                    "tertiary-fixed": "#ffdbcd",
+                    "tertiary-fixed-dim": "#ffb596",
+                    "on-primary-fixed-variant": "#003ea8",
+                    "on-secondary-fixed": "#151c27",
+                    "inverse-surface": "#2e3039",
+                    "primary-fixed-dim": "#b4c5ff",
+                    "surface-dim": "#d9d9e5",
+                    "surface-variant": "#e1e2ed",
+                    "secondary-container": "#dce2f3",
+                    "surface-container-high": "#e7e7f3",
+                    "tertiary-container": "#bc4800",
+                    "surface-container-low": "#f3f3fe",
+                    "secondary": "#585f6c",
+                    "surface-container-lowest": "#ffffff",
+                    "on-tertiary-fixed-variant": "#7d2d00",
+                    "on-error": "#ffffff",
+                    "on-tertiary-fixed": "#360f00",
+                    "surface-tint": "#0053db"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "xs": "4px",
+                    "lg": "24px",
+                    "3xl": "64px",
+                    "md": "16px",
+                    "2xl": "48px",
+                    "xl": "32px",
+                    "sm": "8px"
+            },
+            "fontFamily": {
+                    "h3": ["Inter"],
+                    "label-sm": ["Inter"],
+                    "body-md": ["Inter"],
+                    "h1": ["Inter"],
+                    "button": ["Inter"],
+                    "body-lg": ["Inter"],
+                    "h2": ["Inter"]
+            },
+            "fontSize": {
+                    "h3": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                    "label-sm": ["12px", {"lineHeight": "16px", "fontWeight": "500"}],
+                    "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                    "h1": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "button": ["14px", {"lineHeight": "20px", "fontWeight": "600"}],
+                    "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "h2": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body { font-family: 'Inter', sans-serif; background-color: #faf8ff; }
+    </style>
+</head>
+<body class="bg-background text-on-surface antialiased">
+<!-- SideNavBar Structure updated to match SCREEN_13 -->
+<aside class="h-screen w-64 border-r fixed left-0 top-0 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 z-50 overflow-y-auto">
+<div class="flex flex-col h-full pt-4 pb-8">
+<!-- Branding updated to Suler EMS -->
+<div class="px-6 mb-8 flex items-center gap-3">
+<div class="w-10 h-10 bg-primary-container rounded-lg flex items-center justify-center">
+<span class="material-symbols-outlined text-white" data-icon="corporate_fare">corporate_fare</span>
+</div>
+<div>
+<h2 class="text-lg font-black text-blue-600 leading-none">Suler EMS</h2>
+<span class="text-label-sm text-secondary">Employee Portal</span>
+</div>
+</div>
+<!-- Navigation Links -->
+<nav class="flex-1 px-2 space-y-1">
+<a class="flex items-center text-slate-600 dark:text-slate-400 px-4 py-3 border-l-4 border-transparent hover:bg-slate-50 dark:hover:bg-slate-800 transition-all font-sans text-sm font-semibold tracking-tight" href="#">
+<span class="material-symbols-outlined mr-3" data-icon="dashboard">dashboard</span>
+                Dashboard
+            </a>
+<a class="flex items-center text-blue-600 dark:text-blue-400 bg-blue-50/50 dark:bg-blue-900/20 border-l-4 border-blue-600 px-4 py-3 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all font-sans text-sm font-semibold tracking-tight" href="#">
+<span class="material-symbols-outlined mr-3" data-icon="calendar_today">calendar_today</span>
+                Attendance
+            </a>
+<a class="flex items-center text-slate-600 dark:text-slate-400 px-4 py-3 border-l-4 border-transparent hover:bg-slate-50 dark:hover:bg-slate-800 transition-all font-sans text-sm font-semibold tracking-tight" href="#">
+<span class="material-symbols-outlined mr-3" data-icon="group">group</span>
+                Employees
+            </a>
+<a class="flex items-center text-slate-600 dark:text-slate-400 px-4 py-3 border-l-4 border-transparent hover:bg-slate-50 dark:hover:bg-slate-800 transition-all font-sans text-sm font-semibold tracking-tight" href="#">
+<span class="material-symbols-outlined mr-3" data-icon="flight_takeoff">flight_takeoff</span>
+                Leave
+            </a>
+<a class="flex items-center text-slate-600 dark:text-slate-400 px-4 py-3 border-l-4 border-transparent hover:bg-slate-50 dark:hover:bg-slate-800 transition-all font-sans text-sm font-semibold tracking-tight" href="#">
+<span class="material-symbols-outlined mr-3" data-icon="bar_chart">bar_chart</span>
+                Reports
+            </a>
+<a class="flex items-center text-slate-600 dark:text-slate-400 px-4 py-3 border-l-4 border-transparent hover:bg-slate-50 dark:hover:bg-slate-800 transition-all font-sans text-sm font-semibold tracking-tight" href="#">
+<span class="material-symbols-outlined mr-3" data-icon="settings">settings</span>
+                Settings
+            </a>
+</nav>
+<!-- Footer Links -->
+<div class="px-2 mt-auto border-t border-slate-100 pt-4">
+<a class="flex items-center text-slate-600 dark:text-slate-400 px-4 py-3 border-l-4 border-transparent hover:bg-slate-50 dark:hover:bg-slate-800 transition-all font-sans text-sm font-semibold tracking-tight" href="#">
+<span class="material-symbols-outlined mr-3" data-icon="help">help</span>
+                Help Center
+            </a>
+</div>
+</div>
+</aside>
+<!-- Main Content Wrapper updated for ML-64 from SCREEN_13 -->
+<main class="ml-64 min-h-screen">
+<!-- TopNavBar updated to match SCREEN_13 -->
+<header class="flex justify-between items-center h-16 px-6 w-full sticky top-0 z-40 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 shadow-sm">
+<div class="flex items-center flex-1 max-w-xl">
+<div class="relative w-full">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" data-icon="search">search</span>
+<input class="w-full bg-slate-50 border-none rounded-lg pl-10 pr-4 py-2 focus:ring-2 focus:ring-blue-600 text-sm" placeholder="Search records..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<!-- Role Switcher -->
+<div class="flex items-center bg-slate-50 dark:bg-slate-800 rounded-lg p-1">
+<button class="flex items-center gap-2 px-3 py-1.5 bg-white dark:bg-slate-700 shadow-sm rounded-md text-sm font-semibold text-blue-600">
+<span class="material-symbols-outlined text-[18px]" data-icon="person_outline">person_outline</span>
+                    Employee View
+                </button>
+</div>
+<div class="flex items-center gap-2 border-l border-slate-200 pl-4 ml-2">
+<button class="p-2 text-slate-500 hover:bg-slate-50 rounded-full transition-colors relative">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+<span class="absolute top-2 right-2 w-2 h-2 bg-error rounded-full"></span>
+</button>
+<div class="flex items-center gap-3 cursor-pointer hover:bg-slate-50 p-1 rounded-lg transition-colors">
+<div class="hidden lg:block text-right">
+<p class="text-xs font-bold text-slate-900 leading-none">Alex Rivera</p>
+<p class="text-[10px] text-slate-500">Frontend Developer</p>
+</div>
+<img alt="Administrator profile photo" class="w-8 h-8 rounded-full border border-slate-200" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBahKn9fCzNyj_B3oGIWvxddaoP1RqjHgBc44Qhwn72x1_kWheJWrAKe78M3sKLRxPNlB_Iv49dtaVqr_CQeFvARDIrBivKtb-YVysQ8P7KzONXdsy0AcxrNzLjea1nb6xevkAdZy5dysH_zANRmfLq13wOjDlXEhOSFh0fWLctAdCZHrv5P-7CjPsmXRgk5_ewvq0X0V5gjWvA_38obbjXps-qSG-T3dqJJ8-Ze9BanJzfFgRKj9J2DbXrz6_xQw9zbCD56BoH0NJg"/>
+</div>
+</div>
+</div>
+</header>
+<!-- Page Canvas -->
+<div class="p-lg space-y-8">
+<!-- Bento Hero Section -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-lg">
+<!-- Daily Status Card -->
+<div class="lg:col-span-2 bg-white rounded-xl border border-slate-200 p-lg shadow-sm flex flex-col md:flex-row justify-between items-center gap-6 relative overflow-hidden">
+<div class="absolute -right-12 -top-12 w-48 h-48 bg-primary/5 rounded-full blur-3xl"></div>
+<div class="z-10 flex flex-col gap-2">
+<span class="text-primary font-semibold text-sm uppercase tracking-wider">Status: Offline</span>
+<h2 class="font-h2 text-on-surface">Good morning, Alex. Ready to check in?</h2>
+<div class="flex items-center gap-4 mt-2">
+<div class="flex items-center gap-1.5 text-secondary">
+<span class="material-symbols-outlined text-sm" data-icon="schedule">schedule</span>
+<span class="text-body-md">08:42 AM Local Time</span>
+</div>
+<div class="flex items-center gap-1.5 text-secondary">
+<span class="material-symbols-outlined text-sm" data-icon="location_on">location_on</span>
+<span class="text-body-md">Innovation Hub, Block B</span>
+</div>
+</div>
+</div>
+<button class="z-10 group relative flex items-center gap-3 px-xl py-lg bg-primary text-white rounded-xl font-button text-lg shadow-lg hover:bg-primary-container transition-all active:scale-95">
+<span class="material-symbols-outlined" data-icon="login" data-weight="fill">login</span>
+                    Check In
+                </button>
+</div>
+<!-- Policy Insight Card -->
+<div class="bg-primary text-white rounded-xl p-lg shadow-lg flex flex-col justify-between overflow-hidden relative">
+<div class="absolute right-0 bottom-0 opacity-10">
+<span class="material-symbols-outlined text-[120px] translate-y-8 translate-x-8" data-icon="auto_graph">auto_graph</span>
+</div>
+<div>
+<p class="text-primary-fixed text-sm font-medium">Policy Compliance</p>
+<h3 class="font-h3 mt-1">Perfect Attendance</h3>
+</div>
+<div class="mt-4 flex items-end justify-between">
+<div>
+<p class="text-3xl font-bold">100%</p>
+<p class="text-xs text-primary-fixed">Last 30 Days</p>
+</div>
+<div class="bg-white/20 p-2 rounded-lg">
+<span class="material-symbols-outlined" data-icon="trending_up">trending_up</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Standardized KPI Cards matching SCREEN_13 style -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-lg">
+<div class="bg-white p-md rounded-xl border border-slate-200 shadow-sm">
+<div class="flex justify-between items-start">
+<div class="w-10 h-10 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
+<span class="material-symbols-outlined" data-icon="timer">timer</span>
+</div>
+<span class="text-emerald-600 text-label-sm font-bold bg-emerald-50 px-2 py-0.5 rounded-full">81%</span>
+</div>
+<div class="mt-4">
+<p class="text-secondary text-label-sm">Total Hours This Week</p>
+<div class="flex items-baseline gap-2">
+<h3 class="text-h3 font-h3 text-on-surface">32.5</h3>
+<span class="text-secondary text-sm font-medium">/ 40h</span>
+</div>
+<div class="mt-3 w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
+<div class="bg-blue-600 h-full rounded-full" style="width: 81%"></div>
+</div>
+</div>
+</div>
+<div class="bg-white p-md rounded-xl border border-slate-200 shadow-sm">
+<div class="flex justify-between items-start">
+<div class="w-10 h-10 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center">
+<span class="material-symbols-outlined" data-icon="avg_time">avg_time</span>
+</div>
+<span class="text-emerald-600 text-label-sm font-bold bg-emerald-50 px-2 py-0.5 rounded-full">On-track</span>
+</div>
+<div class="mt-4">
+<p class="text-secondary text-label-sm">Average Check-in Time</p>
+<div class="flex items-baseline gap-1">
+<h3 class="text-h3 font-h3 text-on-surface">08:52</h3>
+<span class="text-secondary text-sm font-medium">AM</span>
+</div>
+<p class="text-[10px] text-emerald-600 mt-2 font-medium">8 mins earlier than target</p>
+</div>
+</div>
+<div class="bg-white p-md rounded-xl border border-slate-200 shadow-sm">
+<div class="flex justify-between items-start">
+<div class="w-10 h-10 rounded-lg bg-slate-50 text-slate-600 flex items-center justify-center">
+<span class="material-symbols-outlined" data-icon="event_available">event_available</span>
+</div>
+<span class="text-blue-600 text-label-sm font-bold bg-blue-50 px-2 py-0.5 rounded-full">4/5 Days</span>
+</div>
+<div class="mt-4">
+<p class="text-secondary text-label-sm">Days Present</p>
+<h3 class="text-h3 font-h3 text-on-surface">04</h3>
+<div class="mt-3 flex gap-1">
+<div class="h-1 flex-1 bg-blue-600 rounded-full"></div>
+<div class="h-1 flex-1 bg-blue-600 rounded-full"></div>
+<div class="h-1 flex-1 bg-blue-600 rounded-full"></div>
+<div class="h-1 flex-1 bg-blue-600 rounded-full"></div>
+<div class="h-1 flex-1 bg-slate-100 rounded-full"></div>
+</div>
+</div>
+</div>
+</div>
+<!-- Attendance History Table Section -->
+<section class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+<div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+<h3 class="font-h3 text-on-surface">Attendance History</h3>
+<div class="flex gap-2">
+<button class="flex items-center gap-2 px-3 py-1.5 border border-slate-200 rounded-lg text-sm font-semibold text-slate-600 hover:bg-white transition-colors">
+<span class="material-symbols-outlined text-[18px]" data-icon="filter_list">filter_list</span>
+                        Filter
+                    </button>
+<button class="flex items-center gap-2 px-3 py-1.5 border border-slate-200 rounded-lg text-sm font-semibold text-slate-600 hover:bg-white transition-colors">
+<span class="material-symbols-outlined text-[18px]" data-icon="download">download</span>
+                        Export
+                    </button>
+</div>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-white border-b border-slate-100 text-secondary text-xs uppercase tracking-wider font-semibold">
+<th class="px-6 py-4">Date</th>
+<th class="px-6 py-4">Check-in Time</th>
+<th class="px-6 py-4">Check-out Time</th>
+<th class="px-6 py-4">Status</th>
+<th class="px-6 py-4 text-right">Total Hours</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-slate-50">
+<tr class="hover:bg-slate-50/80 transition-colors">
+<td class="px-6 py-4 font-medium text-sm">Oct 24, 2023</td>
+<td class="px-6 py-4 text-sm text-slate-600">08:45 AM</td>
+<td class="px-6 py-4 text-sm text-slate-600">05:32 PM</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[12px] font-bold bg-emerald-100 text-emerald-800">
+                                    On Time
+                                </span>
+</td>
+<td class="px-6 py-4 text-sm font-bold text-on-surface text-right">8h 47m</td>
+</tr>
+<tr class="hover:bg-slate-50/80 transition-colors">
+<td class="px-6 py-4 font-medium text-sm">Oct 23, 2023</td>
+<td class="px-6 py-4 text-sm text-error font-medium">09:15 AM</td>
+<td class="px-6 py-4 text-sm text-slate-600">06:05 PM</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[12px] font-bold bg-error-container text-on-error-container">
+                                    Late
+                                </span>
+</td>
+<td class="px-6 py-4 text-sm font-bold text-on-surface text-right">8h 50m</td>
+</tr>
+<tr class="hover:bg-slate-50/80 transition-colors">
+<td class="px-6 py-4 font-medium text-sm">Oct 22, 2023</td>
+<td class="px-6 py-4 text-sm text-slate-600">08:55 AM</td>
+<td class="px-6 py-4 text-sm text-slate-600">05:40 PM</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[12px] font-bold bg-emerald-100 text-emerald-800">
+                                    On Time
+                                </span>
+</td>
+<td class="px-6 py-4 text-sm font-bold text-on-surface text-right">8h 45m</td>
+</tr>
+<tr class="hover:bg-slate-50/80 transition-colors">
+<td class="px-6 py-4 font-medium text-sm">Oct 21, 2023</td>
+<td class="px-6 py-4 text-sm text-slate-600">—</td>
+<td class="px-6 py-4 text-sm text-slate-600">—</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[12px] font-bold bg-slate-100 text-slate-600">
+                                    Excused
+                                </span>
+</td>
+<td class="px-6 py-4 text-sm font-bold text-on-surface text-right">0h 00m</td>
+</tr>
+<tr class="hover:bg-slate-50/80 transition-colors">
+<td class="px-6 py-4 font-medium text-sm">Oct 20, 2023</td>
+<td class="px-6 py-4 text-sm text-slate-600">08:40 AM</td>
+<td class="px-6 py-4 text-sm text-slate-600">05:25 PM</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[12px] font-bold bg-emerald-100 text-emerald-800">
+                                    On Time
+                                </span>
+</td>
+<td class="px-6 py-4 text-sm font-bold text-on-surface text-right">8h 45m</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="px-6 py-4 border-t border-slate-100 flex items-center justify-between bg-white">
+<p class="text-xs text-secondary">Showing 5 of 22 entries</p>
+<div class="flex gap-1">
+<button class="p-1.5 border border-slate-200 rounded-md hover:bg-slate-50 transition-colors disabled:opacity-50 text-slate-500" disabled="">
+<span class="material-symbols-outlined text-sm" data-icon="chevron_left">chevron_left</span>
+</button>
+<button class="p-1.5 border border-slate-200 rounded-md hover:bg-slate-50 transition-colors text-slate-500">
+<span class="material-symbols-outlined text-sm" data-icon="chevron_right">chevron_right</span>
+</button>
+</div>
+</div>
+</section>
+</div>
+</main>
+<!-- FAB Overlay matching branding -->
+<div class="fixed bottom-8 right-8 z-50">
+<button class="flex items-center gap-2 px-6 py-4 bg-primary text-white rounded-full shadow-2xl hover:scale-105 active:scale-95 transition-all">
+<span class="material-symbols-outlined" data-icon="add" data-weight="fill">add</span>
+<span class="font-button">New Request</span>
+</button>
+</div>
+</body></html>

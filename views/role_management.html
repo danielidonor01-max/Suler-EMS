@@ -1,0 +1,242 @@
+<!-- Role Management -->
+<div style="padding:var(--content-padding);">
+
+  <!-- Page Header -->
+  <div class="module-header">
+    <div>
+      <h2 style="font-size:var(--text-2xl);font-weight:var(--font-semibold);margin:0 0 4px 0;">Role Management</h2>
+      <p style="font-size:var(--text-sm);color:var(--color-text-secondary);margin:0;">Configure access levels and map employees to organizational roles.</p>
+    </div>
+    <div class="module-header-actions">
+      <div class="filter-search" style="min-width:260px;">
+        <span class="filter-search-icon">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        </span>
+        <input type="text" placeholder="Search roles or users…">
+      </div>
+      <button class="btn btn-primary">+ Create New Role</button>
+    </div>
+  </div>
+
+  <!-- Roles KPI Summary Strip -->
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:var(--grid-gap);margin-bottom:var(--space-lg);">
+    <div class="dashboard-card">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+        <div class="dashboard-card-icon" style="background:#fef2f2;color:#dc2626;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        </div>
+        <span class="badge badge-danger">System</span>
+      </div>
+      <div class="dashboard-card-label" style="margin-top:var(--space-sm);">Super Admin</div>
+      <div class="dashboard-card-value">04</div>
+    </div>
+    <div class="dashboard-card">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+        <div class="dashboard-card-icon" style="background:#eff6ff;color:#2563eb;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        </div>
+        <span class="badge badge-primary">HR/Ops</span>
+      </div>
+      <div class="dashboard-card-label" style="margin-top:var(--space-sm);">Admin</div>
+      <div class="dashboard-card-value">12</div>
+    </div>
+    <div class="dashboard-card">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+        <div class="dashboard-card-icon" style="background:#f0fdf4;color:#16a34a;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        </div>
+        <span class="badge badge-success">Leads</span>
+      </div>
+      <div class="dashboard-card-label" style="margin-top:var(--space-sm);">Manager</div>
+      <div class="dashboard-card-value">48</div>
+    </div>
+    <div class="dashboard-card">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+        <div class="dashboard-card-icon" style="background:#f8fafc;color:var(--color-text-secondary);">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        </div>
+        <span class="badge badge-neutral">Standard</span>
+      </div>
+      <div class="dashboard-card-label" style="margin-top:var(--space-sm);">Employee</div>
+      <div class="dashboard-card-value">512</div>
+    </div>
+  </div>
+
+  <!-- Permission Matrix -->
+  <div class="table-card" style="margin-bottom:var(--space-lg);">
+    <div class="table-card-header">
+      <h3 class="table-card-title">Permission Matrix</h3>
+      <button class="btn btn-sm btn-secondary">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        View Audit Log
+      </button>
+    </div>
+    <div class="table-responsive">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th style="padding-left:var(--space-lg);">Category / Feature</th>
+            <th style="text-align:center;">Super Admin</th>
+            <th style="text-align:center;">Admin</th>
+            <th style="text-align:center;">Manager</th>
+            <th style="text-align:center;">Employee</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Group 1 -->
+          <tr>
+            <td colspan="5" style="padding:var(--space-sm) var(--space-lg);background:var(--color-surface);font-size:11px;font-weight:var(--font-bold);color:var(--color-primary);text-transform:uppercase;letter-spacing:0.04em;border-bottom:1px solid var(--color-border);">Employee Management</td>
+          </tr>
+          <tr>
+            <td style="padding-left:var(--space-lg);font-weight:var(--font-medium);">Create &amp; Edit Employee Records</td>
+            <td style="text-align:center;color:var(--color-danger);"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg></td>
+            <td style="text-align:center;color:var(--color-primary);"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg></td>
+            <td style="text-align:center;color:var(--color-border);"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg></td>
+            <td style="text-align:center;color:var(--color-border);"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg></td>
+          </tr>
+          <tr>
+            <td style="padding-left:var(--space-lg);font-weight:var(--font-medium);">Approve Leave Requests</td>
+            <td style="text-align:center;color:var(--color-danger);"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg></td>
+            <td style="text-align:center;color:var(--color-primary);"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg></td>
+            <td style="text-align:center;color:var(--color-primary);"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg></td>
+            <td style="text-align:center;color:var(--color-border);"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg></td>
+          </tr>
+
+          <!-- Group 2 -->
+          <tr>
+            <td colspan="5" style="padding:var(--space-sm) var(--space-lg);background:var(--color-surface);font-size:11px;font-weight:var(--font-bold);color:var(--color-primary);text-transform:uppercase;letter-spacing:0.04em;border-bottom:1px solid var(--color-border);border-top:1px solid var(--color-border);">Finance &amp; Payroll</td>
+          </tr>
+          <tr>
+            <td style="padding-left:var(--space-lg);font-weight:var(--font-medium);">Process Monthly Payroll</td>
+            <td style="text-align:center;color:var(--color-danger);"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg></td>
+            <td style="text-align:center;color:var(--color-primary);"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg></td>
+            <td style="text-align:center;color:var(--color-border);"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg></td>
+            <td style="text-align:center;color:var(--color-border);"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg></td>
+          </tr>
+          <tr>
+            <td style="padding-left:var(--space-lg);font-weight:var(--font-medium);">View Salary Reports</td>
+            <td style="text-align:center;color:var(--color-danger);"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg></td>
+            <td style="text-align:center;color:var(--color-primary);"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg></td>
+            <td style="text-align:center;color:var(--color-primary);"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg></td>
+            <td style="text-align:center;color:var(--color-border);"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg></td>
+          </tr>
+
+          <!-- Group 3 -->
+          <tr>
+            <td colspan="5" style="padding:var(--space-sm) var(--space-lg);background:var(--color-surface);font-size:11px;font-weight:var(--font-bold);color:var(--color-primary);text-transform:uppercase;letter-spacing:0.04em;border-bottom:1px solid var(--color-border);border-top:1px solid var(--color-border);">System Security</td>
+          </tr>
+          <tr>
+            <td style="padding-left:var(--space-lg);font-weight:var(--font-medium);">Manage System Settings</td>
+            <td style="text-align:center;color:var(--color-danger);"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg></td>
+            <td style="text-align:center;color:var(--color-border);"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></td>
+            <td style="text-align:center;color:var(--color-border);"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></td>
+            <td style="text-align:center;color:var(--color-border);"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></td>
+          </tr>
+          <tr>
+            <td style="padding-left:var(--space-lg);font-weight:var(--font-medium);">Delete User Accounts</td>
+            <td style="text-align:center;color:var(--color-danger);"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg></td>
+            <td style="text-align:center;color:var(--color-border);"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></td>
+            <td style="text-align:center;color:var(--color-border);"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></td>
+            <td style="text-align:center;color:var(--color-border);"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Role Assignment Table -->
+  <div class="table-card">
+    <div class="table-card-header">
+      <h3 class="table-card-title">Direct Role Assignment</h3>
+      <div style="display:flex;align-items:center;gap:var(--space-sm);">
+        <div class="filter-chip-group">
+          <div style="position:relative;">
+            <div class="filter-chip" onclick="this.nextElementSibling.classList.toggle('open')">
+              <span style="color:var(--color-text-secondary);">Role:</span> All
+            </div>
+            <div class="sleek-dropdown">
+              <div class="sleek-dropdown-item selected"><span class="sleek-dropdown-arrow">▸</span> All Roles</div>
+              <div class="sleek-dropdown-item"><span class="sleek-dropdown-arrow">▸</span> Super Admin</div>
+              <div class="sleek-dropdown-item"><span class="sleek-dropdown-arrow">▸</span> Admin</div>
+              <div class="sleek-dropdown-item"><span class="sleek-dropdown-arrow">▸</span> Manager</div>
+              <div class="sleek-dropdown-item"><span class="sleek-dropdown-arrow">▸</span> Employee</div>
+            </div>
+          </div>
+        </div>
+        <button class="btn btn-sm btn-secondary">Bulk Update</button>
+      </div>
+    </div>
+    <div class="table-responsive">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th style="padding-left:var(--space-lg);">Employee</th>
+            <th>Primary Department</th>
+            <th>Current Role</th>
+            <th>Status</th>
+            <th style="text-align:right;padding-right:var(--space-lg);">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td style="padding-left:var(--space-lg);">
+              <div>
+                <div class="cell-primary">Sarah Chen</div>
+                <div class="cell-secondary">sarah.c@sulerms.com</div>
+              </div>
+            </td>
+            <td><span style="font-size:13px;color:var(--color-text-secondary);">Product Engineering</span></td>
+            <td><span class="badge badge-success">Manager</span></td>
+            <td><span class="badge badge-success"><span class="badge-dot"></span>Active</span></td>
+            <td style="text-align:right;padding-right:var(--space-lg);">
+              <button class="btn btn-sm btn-secondary">Edit Role</button>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding-left:var(--space-lg);">
+              <div>
+                <div class="cell-primary">Michael Ross</div>
+                <div class="cell-secondary">m.ross@sulerms.com</div>
+              </div>
+            </td>
+            <td><span style="font-size:13px;color:var(--color-text-secondary);">Operations</span></td>
+            <td><span class="badge badge-primary">Admin</span></td>
+            <td><span class="badge badge-success"><span class="badge-dot"></span>Active</span></td>
+            <td style="text-align:right;padding-right:var(--space-lg);">
+              <button class="btn btn-sm btn-secondary">Edit Role</button>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding-left:var(--space-lg);">
+              <div>
+                <div class="cell-primary">David Kim</div>
+                <div class="cell-secondary">d.kim@sulerms.com</div>
+              </div>
+            </td>
+            <td><span style="font-size:13px;color:var(--color-text-secondary);">Customer Success</span></td>
+            <td><span class="badge badge-neutral">Employee</span></td>
+            <td><span class="badge badge-warning"><span class="badge-dot"></span>On Leave</span></td>
+            <td style="text-align:right;padding-right:var(--space-lg);">
+              <button class="btn btn-sm btn-secondary">Edit Role</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="table-card-footer">
+      <span>Showing 3 of 576 employees</span>
+      <div class="pagination">
+        <button class="page-btn" disabled>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+        </button>
+        <button class="page-btn active">1</button>
+        <button class="page-btn">2</button>
+        <button class="page-btn">3</button>
+        <button class="page-btn">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+</div>

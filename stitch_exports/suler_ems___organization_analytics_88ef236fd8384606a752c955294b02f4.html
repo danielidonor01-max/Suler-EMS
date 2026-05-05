@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Suler EMS - Organization Analytics</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "tertiary-container": "#bc4800",
+                        "inverse-primary": "#b4c5ff",
+                        "on-primary-container": "#eeefff",
+                        "primary": "#004ac6",
+                        "error": "#ba1a1a",
+                        "secondary-container": "#dce2f3",
+                        "on-primary-fixed": "#00174b",
+                        "outline-variant": "#c3c6d7",
+                        "on-tertiary": "#ffffff",
+                        "on-secondary": "#ffffff",
+                        "primary-fixed-dim": "#b4c5ff",
+                        "inverse-on-surface": "#f0f0fb",
+                        "on-error-container": "#93000a",
+                        "error-container": "#ffdad6",
+                        "on-surface": "#191b23",
+                        "on-secondary-container": "#5e6572",
+                        "outline": "#737686",
+                        "tertiary-fixed-dim": "#ffb596",
+                        "surface-container-low": "#f3f3fe",
+                        "surface-tint": "#0053db",
+                        "surface-variant": "#e1e2ed",
+                        "surface-dim": "#d9d9e5",
+                        "secondary-fixed": "#dce2f3",
+                        "primary-fixed": "#dbe1ff",
+                        "on-error": "#ffffff",
+                        "tertiary": "#943700",
+                        "secondary": "#585f6c",
+                        "inverse-surface": "#2e3039",
+                        "on-secondary-fixed": "#151c27",
+                        "surface-container-lowest": "#ffffff",
+                        "surface": "#faf8ff",
+                        "on-background": "#191b23",
+                        "tertiary-fixed": "#ffdbcd",
+                        "surface-bright": "#faf8ff",
+                        "surface-container": "#ededf9",
+                        "background": "#faf8ff",
+                        "secondary-fixed-dim": "#c0c7d6",
+                        "on-primary": "#ffffff",
+                        "primary-container": "#2563eb",
+                        "on-tertiary-container": "#ffede6",
+                        "on-surface-variant": "#434655",
+                        "surface-container-highest": "#e1e2ed",
+                        "on-tertiary-fixed-variant": "#7d2d00",
+                        "on-tertiary-fixed": "#360f00",
+                        "on-secondary-fixed-variant": "#404754",
+                        "on-primary-fixed-variant": "#003ea8",
+                        "surface-container-high": "#e7e7f3"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "xl": "32px",
+                        "lg": "24px",
+                        "2xl": "48px",
+                        "xs": "4px",
+                        "md": "16px",
+                        "3xl": "64px",
+                        "sm": "8px"
+                    },
+                    "fontFamily": {
+                        "h1": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "h2": ["Inter"],
+                        "label-sm": ["Inter"],
+                        "h3": ["Inter"],
+                        "button": ["Inter"],
+                        "body-md": ["Inter"]
+                    },
+                    "fontSize": {
+                        "h1": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "h2": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                        "label-sm": ["12px", {"lineHeight": "16px", "fontWeight": "500"}],
+                        "h3": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                        "button": ["14px", {"lineHeight": "20px", "fontWeight": "600"}],
+                        "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body { font-family: 'Inter', sans-serif; background-color: #faf8ff; }
+    </style>
+</head>
+<body class="flex min-h-screen">
+<!-- SideNavBar -->
+<aside class="fixed left-0 top-0 h-screen w-64 border-r border-slate-200 bg-white flex flex-col h-full py-4 space-y-2 z-50">
+<div class="px-6 py-4 flex items-center gap-3">
+<div class="w-10 h-10 bg-primary-container rounded-lg flex items-center justify-center text-white">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">corporate_fare</span>
+</div>
+<div>
+<h1 class="text-blue-600 font-black text-2xl leading-none">Suler EMS</h1>
+<p class="text-xs text-slate-500 font-medium">Management Portal</p>
+</div>
+</div>
+<nav class="flex-1 mt-6 px-3 space-y-1">
+<a class="flex items-center gap-3 px-3 py-3 text-slate-600 hover:text-blue-600 hover:bg-slate-50 transition-all duration-200 ease-in-out font-sans text-sm font-medium" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span>Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-3 text-blue-600 bg-blue-50 border-l-4 border-blue-600 transition-all duration-200 ease-in-out font-sans text-sm font-medium bg-blue-50 text-blue-600 border-l-4 border-blue-600" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">groups</span>
+<span>Organization</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-3 text-slate-600 hover:text-blue-600 hover:bg-slate-50 transition-all duration-200 ease-in-out font-sans text-sm font-medium" href="#">
+<span class="material-symbols-outlined">payments</span>
+<span>Payroll</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-3 text-slate-600 hover:text-blue-600 hover:bg-slate-50 transition-all duration-200 ease-in-out font-sans text-sm font-medium" href="#">
+<span class="material-symbols-outlined">trending_up</span>
+<span>Performance</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-3 text-slate-600 hover:text-blue-600 hover:bg-slate-50 transition-all duration-200 ease-in-out font-sans text-sm font-medium" href="#">
+<span class="material-symbols-outlined">event_note</span>
+<span>Attendance</span>
+</a>
+</nav>
+<div class="px-3 pt-4 border-t border-slate-100 space-y-1">
+<a class="flex items-center gap-3 px-3 py-3 text-slate-600 hover:text-blue-600 hover:bg-slate-50 transition-all duration-200 ease-in-out font-sans text-sm font-medium" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span>Settings</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-3 text-error hover:bg-red-50 transition-all duration-200 ease-in-out font-sans text-sm font-medium" href="#">
+<span class="material-symbols-outlined">logout</span>
+<span>Log Out</span>
+</a>
+</div>
+</aside>
+<!-- Main Content Area -->
+<div class="flex-1 ml-64 min-w-0">
+<!-- TopNavBar -->
+<header class="fixed top-0 right-0 z-40 w-[calc(100%-256px)] h-16 bg-white flex items-center justify-between px-6 border-b border-slate-200 shadow-sm">
+<div class="flex items-center flex-1 max-w-xl">
+<div class="relative w-full group">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-600 transition-colors">search</span>
+<input class="w-full pl-10 pr-4 py-2 bg-slate-50 border-none rounded-lg focus:ring-2 focus:ring-blue-600/20 focus:bg-white transition-all text-sm" placeholder="Search organization data..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-2">
+<button class="p-2 text-slate-500 hover:bg-slate-50 rounded-lg transition-colors">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="p-2 text-slate-500 hover:bg-slate-50 rounded-lg transition-colors">
+<span class="material-symbols-outlined">help</span>
+</button>
+<button class="p-2 text-slate-500 hover:bg-slate-50 rounded-lg transition-colors mr-2">
+<span class="material-symbols-outlined">settings</span>
+</button>
+<div class="h-8 w-px bg-slate-200 mx-2"></div>
+<div class="flex items-center gap-3 pl-2">
+<div class="text-right hidden sm:block">
+<p class="text-sm font-bold text-slate-900 leading-none">Sarah Jenkins</p>
+<p class="text-[10px] text-slate-500 font-medium tracking-wide uppercase mt-1">Administrator</p>
+</div>
+<img alt="Administrator Profile" class="w-10 h-10 rounded-full border-2 border-white shadow-sm" data-alt="A professional headshot of a corporate woman in her late 30s with a confident and friendly expression. She is wearing a modern charcoal blazer and minimal jewelry. The background is a brightly lit, clean-lined office environment with soft focus, maintaining a professional and high-authority aesthetic aligned with the blue and white color palette." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBZ2pNQ7KGO21ztP-o1doOd4wCi6-JsH-sI0pVsxbReonu6xcQnolh1AEClXxT6kQudZd8Db7rnYNn3zw7-9nSqTt2jcvHD7DXl6lgsAuYdxwEoRM-n_0IgFSeheMUkpOSfM0JC3-nZeCwt5M1-uX4gHdqKnE-NF0ldxpXsmM85UDb7GYq_Uz0siiI7enNNRRGuuhBIsGv2oKLzsEpSvDjrK-mhB_lr_08mwqOGTSGEmmsysXQDuOoHtLLhmKTS9yg7rylLV7BFfmTQ"/>
+</div>
+</div>
+</header>
+<!-- Main Canvas -->
+<main class="mt-16 p-lg space-y-lg">
+<!-- Header & Actions -->
+<div class="flex items-center justify-between">
+<div>
+<h2 class="font-h2 text-h2 text-on-surface">Organization Analytics</h2>
+<p class="font-body-md text-body-md text-on-surface-variant">Real-time workforce health and distribution metrics.</p>
+</div>
+<div class="flex gap-sm">
+<button class="flex items-center gap-xs px-md py-sm bg-white border border-outline-variant text-on-surface-variant font-button text-button rounded-lg hover:bg-surface-container-low transition-colors">
+<span class="material-symbols-outlined text-[18px]">cloud_download</span>
+                        Export PDF
+                    </button>
+<button class="flex items-center gap-xs px-md py-sm bg-primary text-on-primary font-button text-button rounded-lg hover:opacity-90 transition-opacity shadow-sm">
+<span class="material-symbols-outlined text-[18px]">add_chart</span>
+                        Create Report
+                    </button>
+</div>
+</div>
+<!-- Stats Bento Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-md">
+<!-- Total Headcount -->
+<div class="bg-white p-md rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between" style="border-radius: 12px;">
+<div class="flex justify-between items-start">
+<div>
+<p class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Total Headcount</p>
+<h3 class="font-h1 text-h1 text-on-surface mt-xs">1,284</h3>
+</div>
+<div class="w-10 h-10 bg-primary-container/10 rounded-lg flex items-center justify-center text-primary">
+<span class="material-symbols-outlined">group</span>
+</div>
+</div>
+<div class="mt-md flex items-center gap-xs text-green-600 font-label-sm">
+<span class="material-symbols-outlined text-[16px]">trending_up</span>
+<span>+12.5% vs last year</span>
+</div>
+</div>
+<!-- Turnover Rate -->
+<div class="bg-white p-md rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between" style="border-radius: 12px;">
+<div class="flex justify-between items-start">
+<div>
+<p class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Turnover Rate</p>
+<h3 class="font-h1 text-h1 text-on-surface mt-xs">4.2%</h3>
+</div>
+<div class="w-10 h-10 bg-error-container/20 rounded-lg flex items-center justify-center text-error">
+<span class="material-symbols-outlined">person_remove</span>
+</div>
+</div>
+<div class="mt-md flex items-center gap-xs text-red-600 font-label-sm">
+<span class="material-symbols-outlined text-[16px]">trending_down</span>
+<span>-0.8% decrease (Good)</span>
+</div>
+</div>
+<!-- Diversity Ratio -->
+<div class="bg-white p-md rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between" style="border-radius: 12px;">
+<div class="flex justify-between items-start">
+<div>
+<p class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Diversity Ratio</p>
+<h3 class="font-h1 text-h1 text-on-surface mt-xs">48/52</h3>
+</div>
+<div class="w-10 h-10 bg-tertiary-fixed/30 rounded-lg flex items-center justify-center text-tertiary">
+<span class="material-symbols-outlined">diversity_3</span>
+</div>
+</div>
+<div class="mt-md flex items-center gap-xs text-on-surface-variant font-label-sm">
+<span class="material-symbols-outlined text-[16px]">equalizer</span>
+<span>Near parity target</span>
+</div>
+</div>
+<!-- Avg Tenure -->
+<div class="bg-white p-md rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between" style="border-radius: 12px;">
+<div class="flex justify-between items-start">
+<div>
+<p class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Avg Tenure</p>
+<h3 class="font-h1 text-h1 text-on-surface mt-xs">3.8 yrs</h3>
+</div>
+<div class="w-10 h-10 bg-secondary-container rounded-lg flex items-center justify-center text-secondary">
+<span class="material-symbols-outlined">history</span>
+</div>
+</div>
+<div class="mt-md flex items-center gap-xs text-blue-600 font-label-sm">
+<span class="material-symbols-outlined text-[16px]">trending_up</span>
+<span>+0.4 yrs since Q1</span>
+</div>
+</div>
+</div>
+<!-- Main Charts Row -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-lg">
+<!-- Headcount Growth Area Chart -->
+<div class="lg:col-span-2 bg-white rounded-xl border border-slate-200 shadow-sm p-md" style="border-radius: 12px;">
+<div class="flex justify-between items-center mb-xl">
+<h3 class="font-h3 text-h3 text-on-surface">Headcount Growth</h3>
+<div class="flex gap-xs">
+<button class="px-3 py-1 text-xs font-semibold rounded bg-slate-100 text-slate-600">6M</button>
+<button class="px-3 py-1 text-xs font-semibold rounded bg-blue-600 text-white">12M</button>
+</div>
+</div>
+<div class="h-[300px] w-full relative">
+<!-- Simulated Area Chart -->
+<svg class="w-full h-full" preserveaspectratio="none" viewbox="0 0 1000 300">
+<defs>
+<lineargradient id="gradient" x1="0" x2="0" y1="0" y2="1">
+<stop offset="0%" stop-color="#2563eb" stop-opacity="0.2"></stop>
+<stop offset="100%" stop-color="#2563eb" stop-opacity="0"></stop>
+</lineargradient>
+</defs>
+<path d="M0,280 L100,260 L200,270 L300,240 L400,220 L500,210 L600,180 L700,160 L800,130 L900,110 L1000,90 V300 H0 Z" fill="url(#gradient)"></path>
+<path d="M0,280 L100,260 L200,270 L300,240 L400,220 L500,210 L600,180 L700,160 L800,130 L900,110 L1000,90" fill="none" stroke="#2563eb" stroke-width="4"></path>
+<!-- Dots -->
+<circle cx="200" cy="270" fill="white" r="4" stroke="#2563eb" stroke-width="2"></circle>
+<circle cx="500" cy="210" fill="white" r="4" stroke="#2563eb" stroke-width="2"></circle>
+<circle cx="800" cy="130" fill="white" r="4" stroke="#2563eb" stroke-width="2"></circle>
+</svg>
+<div class="absolute bottom-0 left-0 w-full flex justify-between text-[10px] text-slate-400 font-bold px-2 pt-2">
+<span>JAN</span><span>FEB</span><span>MAR</span><span>APR</span><span>MAY</span><span>JUN</span><span>JUL</span><span>AUG</span><span>SEP</span><span>OCT</span><span>NOV</span><span>DEC</span>
+</div>
+</div>
+</div>
+<!-- Department Distribution Donut -->
+<div class="bg-white rounded-xl border border-slate-200 shadow-sm flex flex-col p-md" style="border-radius: 12px;">
+<h3 class="font-h3 text-h3 text-on-surface mb-xl">Departmental Split</h3>
+<div class="flex-1 flex flex-col items-center justify-center">
+<div class="relative w-48 h-48">
+<svg class="w-full h-full transform -rotate-90" viewbox="0 0 36 36">
+<circle cx="18" cy="18" fill="transparent" r="16" stroke="#f1f5f9" stroke-width="4"></circle>
+<circle cx="18" cy="18" fill="transparent" r="16" stroke="#2563eb" stroke-dasharray="40 100" stroke-dashoffset="0" stroke-width="4"></circle>
+<circle cx="18" cy="18" fill="transparent" r="16" stroke="#943700" stroke-dasharray="25 100" stroke-dashoffset="-40" stroke-width="4"></circle>
+<circle cx="18" cy="18" fill="transparent" r="16" stroke="#585f6c" stroke-dasharray="15 100" stroke-dashoffset="-65" stroke-width="4"></circle>
+<circle cx="18" cy="18" fill="transparent" r="16" stroke="#bc4800" stroke-dasharray="20 100" stroke-dashoffset="-80" stroke-width="4"></circle>
+</svg>
+<div class="absolute inset-0 flex flex-col items-center justify-center">
+<span class="text-2xl font-bold text-slate-900">8</span>
+<span class="text-[10px] text-slate-500 font-bold uppercase">Depts</span>
+</div>
+</div>
+<div class="mt-lg w-full space-y-2">
+<div class="flex items-center justify-between text-xs font-medium">
+<div class="flex items-center gap-2">
+<div class="w-3 h-3 rounded-full bg-blue-600"></div>
+<span class="text-slate-600">Engineering</span>
+</div>
+<span class="text-slate-900">40%</span>
+</div>
+<div class="flex items-center justify-between text-xs font-medium">
+<div class="flex items-center gap-2">
+<div class="w-3 h-3 rounded-full bg-tertiary"></div>
+<span class="text-slate-600">Operations</span>
+</div>
+<span class="text-slate-900">25%</span>
+</div>
+<div class="flex items-center justify-between text-xs font-medium">
+<div class="flex items-center gap-2">
+<div class="w-3 h-3 rounded-full bg-secondary"></div>
+<span class="text-slate-600">Sales</span>
+</div>
+<span class="text-slate-900">15%</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Table & Secondary Bar Chart -->
+<div class="grid grid-cols-1 xl:grid-cols-3 gap-lg">
+<!-- Recent Workforce Changes Table -->
+<div class="xl:col-span-2 bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden flex flex-col p-md" style="border-radius: 12px;">
+<div class="border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+<h3 class="font-h3 text-h3 text-on-surface">Recent Workforce Changes</h3>
+<button class="text-blue-600 text-sm font-bold hover:underline">View All</button>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left">
+<thead>
+<tr class="border-b border-slate-100">
+<th class="px-lg py-4 font-label-sm text-label-sm text-on-surface-variant uppercase">Employee</th>
+<th class="px-lg py-4 font-label-sm text-label-sm text-on-surface-variant uppercase">Action</th>
+<th class="px-lg py-4 font-label-sm text-label-sm text-on-surface-variant uppercase">Date</th>
+<th class="px-lg py-4 font-label-sm text-label-sm text-on-surface-variant uppercase">Department</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-slate-100">
+<tr class="hover:bg-slate-50 transition-colors">
+<td class="px-lg py-4 flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-slate-200 overflow-hidden">
+<img alt="Marcus Chen" class="w-full h-full object-cover" data-alt="Close-up headshot of an Asian man in professional attire with a friendly smile, clean-shaven, short hair. Bright natural lighting from an office window illuminates the side of his face. The overall mood is reliable and corporate." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCdqgBsckQgYooGzpeovPj_EQ74tJm5s5r-A_tal7q81UTAHRsrcgFEE_X80aCr0Tm7heUdAD-3OwIBXywriWQ9XyADwudPWip6NHv1Zi16JCUEUxFz2Iq0kHIe-QdMCXDrjweMZPYdvS5nSJYQWtDH5kpFb7F_aeXw8CPH-QhhKcUJ9CrtEjsJjesLKrDmLUwrADsR3wOQm0atRpOQgnyMva1oxWwI45ENKmuPmhbf7u0N1Yk-b8cYMVvWPWZCHlSIftHNSZaQQPeX"/>
+</div>
+<div>
+<p class="text-sm font-bold text-slate-900">Marcus Chen</p>
+<p class="text-xs text-slate-500">marcus.c@sulerms.com</p>
+</div>
+</td>
+<td class="px-lg py-4">
+<span class="px-2 py-1 rounded-full bg-green-100 text-green-700 text-[10px] font-bold uppercase">New Hire</span>
+</td>
+<td class="px-lg py-4 text-sm text-slate-600">Oct 24, 2023</td>
+<td class="px-lg py-4 text-sm text-slate-600 font-medium">Engineering</td>
+</tr>
+<tr class="hover:bg-slate-50 transition-colors">
+<td class="px-lg py-4 flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-slate-200 overflow-hidden">
+<img alt="Elena Rodriguez" class="w-full h-full object-cover" data-alt="Headshot of a Hispanic woman with long dark hair, wearing a white blouse and navy blazer. She has a confident, professional expression. Lighting is soft and even, typical of a high-end corporate photography studio. White and blue color accents in the environment." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAsKkZC159VjCv8JpDldpamBKj1xDqdgldJOFNvG2xEa1ibP56HCyeB0tI6lde5pTB1QUQTXeHXGhxTlkwaj5ZELUfW9aIMugkyMKGfSomXnzLZP421l2S8KCMqDtudlx58l9TWOAMd7RaPv7zhMce6jG9fP8FBGaCHTSxRCYPZm_q_KsPkmLRDOsOLWBOcTZ7SuHOgOaAqQp4I3O2p6EIjf0YU_wc73zI69HeI9KvFJvlj4tEBim0B6jEfaTXDB4SstxgUS5gA7pfZ"/>
+</div>
+<div>
+<p class="text-sm font-bold text-slate-900">Elena Rodriguez</p>
+<p class="text-xs text-slate-500">e.rodriguez@sulerms.com</p>
+</div>
+</td>
+<td class="px-lg py-4">
+<span class="px-2 py-1 rounded-full bg-blue-100 text-blue-700 text-[10px] font-bold uppercase">Promotion</span>
+</td>
+<td class="px-lg py-4 text-sm text-slate-600">Oct 22, 2023</td>
+<td class="px-lg py-4 text-sm text-slate-600 font-medium">Marketing</td>
+</tr>
+<tr class="hover:bg-slate-50 transition-colors">
+<td class="px-lg py-4 flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-slate-200 overflow-hidden">
+<img alt="David Miller" class="w-full h-full object-cover" data-alt="Portrait of a Caucasian man in his 40s with glasses and a neatly trimmed beard. He is wearing a professional light blue shirt. The background is a minimalist corporate setting with soft blues and whites. The lighting is crisp and flattering, emphasizing clarity and stability." src="https://lh3.googleusercontent.com/aida-public/AB6AXuB08nWmZd8Pkxy_cNm5qzGbIfd_1Wz2byId6Lf1gyekJb4KWMhTiK-JegFGyU6_WMPNWIqkOVQhjehruvAbGtfketAfkTyYfxFHBkOv6AHa-8nmgrmDLSFdvS92U6erlVm8WnKreQqOEdWXmu3FVjOZd15XIwUeYX56cAS34vzzVE_N4Us4fmxW0GmqDgennbZ6VgXEg-XjYxkfwd5QKY7WuRcp_nwFvDLIRkSGfMw1k2Zwh4PvSiw1XnhXA7ukxm3-nm4h4-LaQIDl"/>
+</div>
+<div>
+<p class="text-sm font-bold text-slate-900">David Miller</p>
+<p class="text-xs text-slate-500">d.miller@sulerms.com</p>
+</div>
+</td>
+<td class="px-lg py-4">
+<span class="px-2 py-1 rounded-full bg-red-100 text-red-700 text-[10px] font-bold uppercase">Terminated</span>
+</td>
+<td class="px-lg py-4 text-sm text-slate-600">Oct 20, 2023</td>
+<td class="px-lg py-4 text-sm text-slate-600 font-medium">Operations</td>
+</tr>
+<tr class="hover:bg-slate-50 transition-colors">
+<td class="px-lg py-4 flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-slate-200 overflow-hidden">
+<img alt="Sophia Kim" class="w-full h-full object-cover" data-alt="Professional studio portrait of a woman of Asian descent with shoulder-length dark hair, wearing a stylish beige corporate dress. She has a calm and capable expression. High-key lighting highlights the professional atmosphere and clean aesthetic of the Employee Management System." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAtPxDK3IuCJrvIvKaVjC0b06Z2-NV3ihhH0xvjv27OxVP9hhx-bOzpwtgjANhZ3HGYApLjqfFxg2DiCfjpPdilBD2qkkUB7zhadZ6gzDQKPSzIQeYj67pIRNvKkiE0Rd3uYT63EMtNhFIZ6iY3Sx6nHR-hNPjdloL0zk3szb2OJNo5l8LRNRah3ZdziutMp4mMdw9QAyon5Lfw_0Sd2iM5aVb9b6Xqrpnd5EPPvUP5OQZM_AemGdbQ-vlAOfGQZDw01X91ywRGY7hq"/>
+</div>
+<div>
+<p class="text-sm font-bold text-slate-900">Sophia Kim</p>
+<p class="text-xs text-slate-500">s.kim@sulerms.com</p>
+</div>
+</td>
+<td class="px-lg py-4">
+<span class="px-2 py-1 rounded-full bg-green-100 text-green-700 text-[10px] font-bold uppercase">New Hire</span>
+</td>
+<td class="px-lg py-4 text-sm text-slate-600">Oct 19, 2023</td>
+<td class="px-lg py-4 text-sm text-slate-600 font-medium">Human Resources</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<!-- Grouped Bar Chart: Hires vs Terminations -->
+<div class="bg-white rounded-xl border border-slate-200 shadow-sm p-md" style="border-radius: 12px;">
+<h3 class="font-h3 text-h3 text-on-surface mb-xl">Hires vs. Terminations</h3>
+<div class="space-y-6 h-full">
+<div class="space-y-2">
+<div class="flex justify-between text-xs font-bold text-slate-500 uppercase">
+<span>Q3 2023</span>
+<span>82 / 12</span>
+</div>
+<div class="h-8 w-full flex rounded-lg overflow-hidden">
+<div class="bg-primary h-full" style="width: 85%"></div>
+<div class="bg-error h-full" style="width: 15%"></div>
+</div>
+</div>
+<div class="space-y-2">
+<div class="flex justify-between text-xs font-bold text-slate-500 uppercase">
+<span>Q2 2023</span>
+<span>65 / 18</span>
+</div>
+<div class="h-8 w-full flex rounded-lg overflow-hidden">
+<div class="bg-primary h-full" style="width: 75%"></div>
+<div class="bg-error h-full" style="width: 25%"></div>
+</div>
+</div>
+<div class="space-y-2">
+<div class="flex justify-between text-xs font-bold text-slate-500 uppercase">
+<span>Q1 2023</span>
+<span>42 / 8</span>
+</div>
+<div class="h-8 w-full flex rounded-lg overflow-hidden">
+<div class="bg-primary h-full" style="width: 80%"></div>
+<div class="bg-error h-full" style="width: 20%"></div>
+</div>
+</div>
+<div class="mt-xl flex items-center justify-center gap-6">
+<div class="flex items-center gap-2">
+<div class="w-3 h-3 rounded-sm bg-primary"></div>
+<span class="text-xs font-medium text-slate-600">New Hires</span>
+</div>
+<div class="flex items-center gap-2">
+<div class="w-3 h-3 rounded-sm bg-error"></div>
+<span class="text-xs font-medium text-slate-600">Terminations</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+</body></html>

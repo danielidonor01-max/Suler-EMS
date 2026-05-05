@@ -1,0 +1,258 @@
+<!-- Organization Analytics -->
+<div style="padding:var(--content-padding);">
+
+  <!-- Page Header -->
+  <div class="module-header">
+    <div>
+      <h2 style="font-size:var(--text-2xl);font-weight:var(--font-semibold);margin:0 0 4px 0;">Organization Analytics</h2>
+      <p style="font-size:var(--text-sm);color:var(--color-text-secondary);margin:0;">Real-time workforce health and distribution metrics.</p>
+    </div>
+    <div class="module-header-actions">
+      <button class="btn btn-secondary" onclick="alert('Exporting PDF... This feature is simulated.')">
+        <span class="material-symbols-outlined">cloud_download</span>
+        Export PDF
+      </button>
+      <button class="btn btn-primary" onclick="alert('Creating custom report...')">
+        <span class="material-symbols-outlined">add_chart</span>
+        Create Report
+      </button>
+    </div>
+  </div>
+
+  <!-- KPI Grid -->
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:var(--grid-gap);margin-bottom:var(--space-lg);">
+    <div class="dashboard-card">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+        <div class="dashboard-card-label" style="margin-top:0;">Total Headcount</div>
+        <div class="dashboard-card-icon" style="background:#eff6ff;color:#2563eb;">
+          <span class="material-symbols-outlined">group</span>
+        </div>
+      </div>
+      <div class="dashboard-card-value">1,284</div>
+      <div class="dashboard-card-trend trend-up">
+        <span class="material-symbols-outlined" style="font-size:16px;">trending_up</span>
+        +12.5% vs last year
+      </div>
+    </div>
+
+    <div class="dashboard-card">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+        <div class="dashboard-card-label" style="margin-top:0;">Turnover Rate</div>
+        <div class="dashboard-card-icon" style="background:#fef2f2;color:#dc2626;">
+          <span class="material-symbols-outlined">person_remove</span>
+        </div>
+      </div>
+      <div class="dashboard-card-value">4.2%</div>
+      <div class="dashboard-card-trend trend-down">
+        <span class="material-symbols-outlined" style="font-size:16px;">trending_down</span>
+        -0.8% decrease (Good)
+      </div>
+    </div>
+
+    <div class="dashboard-card">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+        <div class="dashboard-card-label" style="margin-top:0;">Diversity Ratio</div>
+        <div class="dashboard-card-icon" style="background:#fdf4ff;color:#7c3aed;">
+          <span class="material-symbols-outlined">diversity_3</span>
+        </div>
+      </div>
+      <div class="dashboard-card-value">48/52</div>
+      <div class="cell-secondary" style="margin-top:4px;display:flex;align-items:center;gap:4px;">
+        <span class="material-symbols-outlined" style="font-size:16px;">equalizer</span>
+        Near parity target
+      </div>
+    </div>
+
+    <div class="dashboard-card">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+        <div class="dashboard-card-label" style="margin-top:0;">Avg Tenure</div>
+        <div class="dashboard-card-icon" style="background:#f8fafc;color:var(--color-text-secondary);">
+          <span class="material-symbols-outlined">history</span>
+        </div>
+      </div>
+      <div class="dashboard-card-value">3.8 yrs</div>
+      <div class="dashboard-card-trend trend-up">
+        <span class="material-symbols-outlined" style="font-size:16px;">trending_up</span>
+        +0.4 yrs since Q1
+      </div>
+    </div>
+  </div>
+
+  <!-- Charts Row -->
+  <div style="display:grid;grid-template-columns:2fr 1fr;gap:var(--grid-gap);margin-bottom:var(--space-lg);">
+    
+    <!-- Headcount Growth Area Chart -->
+    <div class="panel">
+      <div class="panel-header">
+        <h3 class="panel-title">Headcount Growth</h3>
+        <div class="filter-chip-group">
+          <div class="filter-chip">
+            <span style="color:var(--color-text-secondary);">Date:</span> Last 12 Months
+          </div>
+          <div class="filter-chip">
+            <span style="color:var(--color-text-secondary);">Department:</span> All
+          </div>
+          <button class="filter-chip-add">
+            <span class="material-symbols-outlined" style="font-size:18px;">add</span>
+          </button>
+        </div>
+      </div>
+      <div class="panel-body" style="height:300px;position:relative;padding:0 var(--space-md) var(--space-md) var(--space-md);">
+        <svg style="width:100%;height:100%;" preserveAspectRatio="none" viewBox="0 0 1000 300">
+          <defs>
+            <linearGradient id="growth-gradient" x1="0" x2="0" y1="0" y2="1">
+              <stop offset="0%" stop-color="#2563eb" stop-opacity="0.2"></stop>
+              <stop offset="100%" stop-color="#2563eb" stop-opacity="0"></stop>
+            </linearGradient>
+          </defs>
+          <path d="M0,280 L100,260 L200,270 L300,240 L400,220 L500,210 L600,180 L700,160 L800,130 L900,110 L1000,90 V300 H0 Z" fill="url(#growth-gradient)"></path>
+          <path d="M0,280 L100,260 L200,270 L300,240 L400,220 L500,210 L600,180 L700,160 L800,130 L900,110 L1000,90" fill="none" stroke="#2563eb" stroke-width="4"></path>
+          <circle cx="200" cy="270" fill="white" r="4" stroke="#2563eb" stroke-width="2"></circle>
+          <circle cx="500" cy="210" fill="white" r="4" stroke="#2563eb" stroke-width="2"></circle>
+          <circle cx="800" cy="130" fill="white" r="4" stroke="#2563eb" stroke-width="2"></circle>
+        </svg>
+        <div style="position:absolute;bottom:0;left:0;width:100%;display:flex;justify-content:space-between;font-size:10px;color:var(--color-text-muted);font-weight:var(--font-bold);padding:0 var(--space-lg);">
+          <span>JAN</span><span>FEB</span><span>MAR</span><span>APR</span><span>MAY</span><span>JUN</span><span>JUL</span><span>AUG</span><span>SEP</span><span>OCT</span><span>NOV</span><span>DEC</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Department Distribution Donut -->
+    <div class="panel" style="display:flex;flex-direction:column;">
+      <div class="panel-header">
+        <h3 class="panel-title">Departmental Split</h3>
+      </div>
+      <div class="panel-body" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;">
+        <div style="position:relative;width:180px;height:180px;">
+          <svg style="width:100%;height:100%;transform:rotate(-90deg);" viewBox="0 0 36 36">
+            <circle cx="18" cy="18" fill="transparent" r="16" stroke="var(--color-surface-hover)" stroke-width="4"></circle>
+            <circle cx="18" cy="18" fill="transparent" r="16" stroke="#2563eb" stroke-dasharray="40 100" stroke-dashoffset="0" stroke-width="4"></circle>
+            <circle cx="18" cy="18" fill="transparent" r="16" stroke="#ca8a04" stroke-dasharray="30 100" stroke-dashoffset="-40" stroke-width="4"></circle>
+            <circle cx="18" cy="18" fill="transparent" r="16" stroke="#9333ea" stroke-dasharray="15 100" stroke-dashoffset="-70" stroke-width="4"></circle>
+            <circle cx="18" cy="18" fill="transparent" r="16" stroke="#16a34a" stroke-dasharray="15 100" stroke-dashoffset="-85" stroke-width="4"></circle>
+          </svg>
+          <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;">
+            <span style="font-size:24px;font-weight:var(--font-bold);color:var(--color-text-primary);">4</span>
+            <span style="font-size:10px;font-weight:var(--font-bold);color:var(--color-text-muted);text-transform:uppercase;">Depts</span>
+          </div>
+        </div>
+        <div style="width:100%;margin-top:var(--space-xl);display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+          <div style="display:flex;justify-content:space-between;font-size:12px;font-weight:var(--font-medium);">
+            <div style="display:flex;align-items:center;gap:6px;">
+              <div style="width:8px;height:8px;border-radius:50%;background:#2563eb;"></div>
+              <span style="color:var(--color-text-secondary);">Engineering</span>
+            </div>
+            <span style="color:var(--color-text-primary);font-variant-numeric:tabular-nums;">40%</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;font-size:12px;font-weight:var(--font-medium);">
+            <div style="display:flex;align-items:center;gap:6px;">
+              <div style="width:8px;height:8px;border-radius:50%;background:#ca8a04;"></div>
+              <span style="color:var(--color-text-secondary);">Marketing</span>
+            </div>
+            <span style="color:var(--color-text-primary);font-variant-numeric:tabular-nums;">30%</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;font-size:12px;font-weight:var(--font-medium);">
+            <div style="display:flex;align-items:center;gap:6px;">
+              <div style="width:8px;height:8px;border-radius:50%;background:#9333ea;"></div>
+              <span style="color:var(--color-text-secondary);">Research</span>
+            </div>
+            <span style="color:var(--color-text-primary);font-variant-numeric:tabular-nums;">15%</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;font-size:12px;font-weight:var(--font-medium);">
+            <div style="display:flex;align-items:center;gap:6px;">
+              <div style="width:8px;height:8px;border-radius:50%;background:#16a34a;"></div>
+              <span style="color:var(--color-text-secondary);">Sales</span>
+            </div>
+            <span style="color:var(--color-text-primary);font-variant-numeric:tabular-nums;">15%</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Lower Grid -->
+  <div style="display:grid;grid-template-columns:2fr 1fr;gap:var(--grid-gap);">
+    <!-- Recent Changes Table -->
+    <div class="table-card">
+      <div class="table-card-header">
+        <h3 class="table-card-title">Recent Workforce Changes</h3>
+        <button class="btn btn-sm btn-secondary" onclick="App.routeView('sup_audit','super_admin')">View All</button>
+      </div>
+      <div class="table-responsive">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th style="padding-left:var(--space-lg);">Employee</th>
+              <th>Action</th>
+              <th>Date</th>
+              <th>Department</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style="padding-left:var(--space-lg);">
+                <div>
+                  <div class="cell-primary">Marcus Chen</div>
+                  <div class="cell-secondary">marcus.c@sulerms.com</div>
+                </div>
+              </td>
+              <td><span class="badge badge-success">New Hire</span></td>
+              <td><span style="font-size:13px;font-variant-numeric:tabular-nums;color:var(--color-text-secondary);">Oct 24, 2023</span></td>
+              <td><span style="font-size:13px;font-weight:var(--font-medium);">Engineering</span></td>
+            </tr>
+            <tr>
+              <td style="padding-left:var(--space-lg);">
+                <div>
+                  <div class="cell-primary">Elena Rodriguez</div>
+                  <div class="cell-secondary">elena.r@sulerms.com</div>
+                </div>
+              </td>
+              <td><span class="badge badge-danger">Terminated</span></td>
+              <td><span style="font-size:13px;font-variant-numeric:tabular-nums;color:var(--color-text-secondary);">Oct 22, 2023</span></td>
+              <td><span style="font-size:13px;font-weight:var(--font-medium);">Sales</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Hires vs Terminations Bar Chart Mock -->
+    <div class="panel">
+      <div class="panel-header">
+        <h3 class="panel-title">Hires vs. Terminations</h3>
+      </div>
+      <div class="panel-body" style="display:flex;align-items:flex-end;justify-content:space-around;height:240px;padding-top:var(--space-xl);border-bottom:1px solid var(--color-border);margin-bottom:var(--space-md);">
+        
+        <div style="display:flex;flex-direction:column;align-items:center;gap:8px;">
+          <div style="display:flex;align-items:flex-end;gap:2px;height:160px;">
+            <div style="width:16px;height:120px;background:#2563eb;border-radius:2px 2px 0 0;"></div>
+            <div style="width:16px;height:40px;background:#fca5a5;border-radius:2px 2px 0 0;"></div>
+          </div>
+          <span style="font-size:10px;font-weight:var(--font-bold);color:var(--color-text-muted);">Q1</span>
+        </div>
+        
+        <div style="display:flex;flex-direction:column;align-items:center;gap:8px;">
+          <div style="display:flex;align-items:flex-end;gap:2px;height:160px;">
+            <div style="width:16px;height:140px;background:#2563eb;border-radius:2px 2px 0 0;"></div>
+            <div style="width:16px;height:30px;background:#fca5a5;border-radius:2px 2px 0 0;"></div>
+          </div>
+          <span style="font-size:10px;font-weight:var(--font-bold);color:var(--color-text-muted);">Q2</span>
+        </div>
+
+        <div style="display:flex;flex-direction:column;align-items:center;gap:8px;">
+          <div style="display:flex;align-items:flex-end;gap:2px;height:160px;">
+            <div style="width:16px;height:90px;background:#2563eb;border-radius:2px 2px 0 0;"></div>
+            <div style="width:16px;height:50px;background:#fca5a5;border-radius:2px 2px 0 0;"></div>
+          </div>
+          <span style="font-size:10px;font-weight:var(--font-bold);color:var(--color-text-muted);">Q3</span>
+        </div>
+
+      </div>
+      <div style="display:flex;justify-content:center;gap:var(--space-lg);font-size:11px;font-weight:var(--font-medium);color:var(--color-text-secondary);">
+        <div style="display:flex;align-items:center;gap:6px;"><div style="width:8px;height:8px;border-radius:2px;background:#2563eb;"></div> Hired</div>
+        <div style="display:flex;align-items:center;gap:6px;"><div style="width:8px;height:8px;border-radius:2px;background:#fca5a5;"></div> Terminated</div>
+      </div>
+    </div>
+  </div>
+
+</div>

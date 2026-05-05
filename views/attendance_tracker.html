@@ -1,0 +1,177 @@
+<!-- Attendance Tracker -->
+<div style="padding:var(--content-padding);">
+
+  <!-- Page Header -->
+  <div class="module-header">
+    <div>
+      <h2 style="font-size:var(--text-2xl);font-weight:var(--font-semibold);margin:0 0 4px 0;">Attendance Tracker</h2>
+      <p style="font-size:var(--text-sm);color:var(--color-text-secondary);margin:0;">Your daily attendance status and weekly history.</p>
+    </div>
+    <div class="module-header-actions">
+      <button class="btn btn-secondary">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Export
+      </button>
+      <button class="btn btn-primary">Request Correction</button>
+    </div>
+  </div>
+
+  <!-- Hero Check-in + Compliance strip -->
+  <div style="display:grid;grid-template-columns:2fr 1fr;gap:var(--grid-gap);margin-bottom:var(--space-lg);">
+
+    <!-- Check-in Card -->
+    <div class="panel" style="display:flex;align-items:center;justify-content:space-between;gap:var(--space-lg);padding:var(--space-lg);overflow:hidden;position:relative;">
+      <div style="position:absolute;right:-40px;top:-40px;width:180px;height:180px;background:var(--color-primary-subtle);border-radius:50%;opacity:0.5;pointer-events:none;"></div>
+      <div style="position:relative;">
+        <div style="display:inline-flex;align-items:center;gap:6px;font-size:var(--text-xs);font-weight:var(--font-semibold);color:var(--color-primary);text-transform:uppercase;letter-spacing:0.04em;margin-bottom:var(--space-xs);">
+          <span style="width:7px;height:7px;border-radius:50%;background:#f97316;display:inline-block;"></span>
+          Status: Offline
+        </div>
+        <h3 style="font-size:var(--text-xl);font-weight:var(--font-semibold);color:var(--color-text-primary);margin:0 0 var(--space-sm);">Good morning, Alex. Ready to check in?</h3>
+        <div style="display:flex;align-items:center;gap:var(--space-md);">
+          <span style="font-size:var(--text-sm);color:var(--color-text-secondary);display:flex;align-items:center;gap:4px;"><span class="material-symbols-outlined" style="font-size:16px;">schedule</span> 08:42 AM Local Time</span>
+          <span style="font-size:var(--text-sm);color:var(--color-text-secondary);display:flex;align-items:center;gap:4px;"><span class="material-symbols-outlined" style="font-size:16px;">location_on</span> Innovation Hub, Block B</span>
+        </div>
+      </div>
+      <button class="btn btn-primary" style="padding:var(--space-md) var(--space-lg);font-size:var(--text-md);flex-shrink:0;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+        Check In
+      </button>
+    </div>
+
+    <!-- Policy Compliance Card -->
+    <div style="background:var(--color-primary);border-radius:var(--radius-lg);padding:var(--space-lg);color:#fff;position:relative;overflow:hidden;box-shadow:var(--shadow-2);">
+      <p style="font-size:var(--text-xs);opacity:0.8;font-weight:var(--font-medium);margin:0 0 4px;">Policy Compliance</p>
+      <h3 style="font-size:var(--text-xl);font-weight:var(--font-bold);margin:0 0 var(--space-md);">Perfect Attendance</h3>
+      <div style="font-size:32px;font-weight:var(--font-bold);line-height:1;">100%</div>
+      <div style="font-size:var(--text-xs);opacity:0.7;margin-top:4px;">Last 30 Days</div>
+      <div style="position:absolute;right:-16px;bottom:-16px;opacity:0.1;font-size:96px;line-height:1;pointer-events:none;"><span class="material-symbols-outlined" style="font-size:96px;">trending_up</span></div>
+    </div>
+  </div>
+
+  <!-- KPI Strip -->
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:var(--grid-gap);margin-bottom:var(--space-lg);">
+    <div class="dashboard-card">
+      <div class="dashboard-card-icon" style="background:#eff6ff;color:#2563eb;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      </div>
+      <div class="dashboard-card-label">Total Hours This Week</div>
+      <div style="font-size:28px;font-weight:var(--font-bold);font-variant-numeric:tabular-nums;">32.5 <span style="font-size:var(--text-sm);font-weight:var(--font-medium);color:var(--color-text-secondary);">/ 40h</span></div>
+      <div class="progress-wrapper"><div class="progress-bar" style="width:81%;"></div></div>
+      <div class="cell-secondary" style="margin-top:4px;">81% of target</div>
+    </div>
+    <div class="dashboard-card">
+      <div class="dashboard-card-icon" style="background:#fefce8;color:#ca8a04;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      </div>
+      <div class="dashboard-card-label">Avg Check-in Time</div>
+      <div style="font-size:28px;font-weight:var(--font-bold);font-variant-numeric:tabular-nums;">08:52 <span style="font-size:var(--text-sm);font-weight:var(--font-medium);color:var(--color-text-secondary);">AM</span></div>
+      <div class="dashboard-card-trend trend-up">↑ 8 mins ahead of target</div>
+    </div>
+    <div class="dashboard-card">
+      <div class="dashboard-card-icon" style="background:#f0fdf4;color:#16a34a;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      </div>
+      <div class="dashboard-card-label">Days Present This Week</div>
+      <div style="font-size:28px;font-weight:var(--font-bold);font-variant-numeric:tabular-nums;">4 <span style="font-size:var(--text-sm);font-weight:var(--font-medium);color:var(--color-text-secondary);">/ 5</span></div>
+      <!-- Day pills -->
+      <div style="display:flex;gap:4px;margin-top:var(--space-xs);">
+        <div style="height:4px;flex:1;border-radius:var(--radius-full);background:var(--color-primary);"></div>
+        <div style="height:4px;flex:1;border-radius:var(--radius-full);background:var(--color-primary);"></div>
+        <div style="height:4px;flex:1;border-radius:var(--radius-full);background:var(--color-primary);"></div>
+        <div style="height:4px;flex:1;border-radius:var(--radius-full);background:var(--color-primary);"></div>
+        <div style="height:4px;flex:1;border-radius:var(--radius-full);background:var(--color-border);"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- History Table Card -->
+  <div class="table-card">
+    <div class="table-card-header">
+      <h3 class="table-card-title">Attendance History</h3>
+      <div style="display:flex;gap:var(--space-sm);">
+        <div class="filter-chip-group">
+          <div style="position:relative;">
+            <div class="filter-chip" onclick="this.nextElementSibling.classList.toggle('open')">
+              <span style="color:var(--color-text-secondary);">Date:</span> This Month
+            </div>
+            <div class="sleek-dropdown">
+              <div class="sleek-dropdown-item selected"><span class="sleek-dropdown-arrow">▸</span> This Month</div>
+              <div class="sleek-dropdown-item"><span class="sleek-dropdown-arrow">▸</span> Last Month</div>
+              <div class="sleek-dropdown-item"><span class="sleek-dropdown-arrow">▸</span> Last 3 Months</div>
+              <div class="sleek-dropdown-item"><span class="sleek-dropdown-arrow">▸</span> Custom Range</div>
+            </div>
+          </div>
+        </div>
+        <button class="btn btn-sm btn-secondary">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Export
+        </button>
+      </div>
+    </div>
+    <div class="table-responsive">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th style="padding-left:var(--space-lg);">Date</th>
+            <th>Check-in</th>
+            <th>Check-out</th>
+            <th>Status</th>
+            <th class="cell-num" style="padding-right:var(--space-lg);">Total Hours</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td style="padding-left:var(--space-lg);"><span class="cell-primary" style="font-variant-numeric:tabular-nums;">Oct 24, 2023</span></td>
+            <td><span style="font-size:13px;font-variant-numeric:tabular-nums;">08:45 AM</span></td>
+            <td><span style="font-size:13px;font-variant-numeric:tabular-nums;">05:32 PM</span></td>
+            <td><span class="badge badge-success"><span class="badge-dot"></span>On Time</span></td>
+            <td class="cell-num" style="font-weight:var(--font-semibold);font-variant-numeric:tabular-nums;padding-right:var(--space-lg);">8h 47m</td>
+          </tr>
+          <tr>
+            <td style="padding-left:var(--space-lg);"><span class="cell-primary" style="font-variant-numeric:tabular-nums;">Oct 23, 2023</span></td>
+            <td><span style="font-size:13px;font-variant-numeric:tabular-nums;color:var(--color-danger);">09:15 AM</span></td>
+            <td><span style="font-size:13px;font-variant-numeric:tabular-nums;">06:05 PM</span></td>
+            <td><span class="badge badge-danger"><span class="badge-dot"></span>Late</span></td>
+            <td class="cell-num" style="font-weight:var(--font-semibold);font-variant-numeric:tabular-nums;padding-right:var(--space-lg);">8h 50m</td>
+          </tr>
+          <tr>
+            <td style="padding-left:var(--space-lg);"><span class="cell-primary" style="font-variant-numeric:tabular-nums;">Oct 22, 2023</span></td>
+            <td><span style="font-size:13px;font-variant-numeric:tabular-nums;">08:55 AM</span></td>
+            <td><span style="font-size:13px;font-variant-numeric:tabular-nums;">05:40 PM</span></td>
+            <td><span class="badge badge-success"><span class="badge-dot"></span>On Time</span></td>
+            <td class="cell-num" style="font-weight:var(--font-semibold);font-variant-numeric:tabular-nums;padding-right:var(--space-lg);">8h 45m</td>
+          </tr>
+          <tr>
+            <td style="padding-left:var(--space-lg);"><span class="cell-primary" style="font-variant-numeric:tabular-nums;">Oct 21, 2023</span></td>
+            <td><span style="font-size:13px;color:var(--color-text-muted);">—</span></td>
+            <td><span style="font-size:13px;color:var(--color-text-muted);">—</span></td>
+            <td><span class="badge badge-neutral">Excused</span></td>
+            <td class="cell-num" style="font-weight:var(--font-semibold);color:var(--color-text-muted);font-variant-numeric:tabular-nums;padding-right:var(--space-lg);">0h 00m</td>
+          </tr>
+          <tr>
+            <td style="padding-left:var(--space-lg);"><span class="cell-primary" style="font-variant-numeric:tabular-nums;">Oct 20, 2023</span></td>
+            <td><span style="font-size:13px;font-variant-numeric:tabular-nums;">08:40 AM</span></td>
+            <td><span style="font-size:13px;font-variant-numeric:tabular-nums;">05:25 PM</span></td>
+            <td><span class="badge badge-success"><span class="badge-dot"></span>On Time</span></td>
+            <td class="cell-num" style="font-weight:var(--font-semibold);font-variant-numeric:tabular-nums;padding-right:var(--space-lg);">8h 45m</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="table-card-footer">
+      <span>Showing 5 of 22 entries</span>
+      <div class="pagination">
+        <button class="page-btn" disabled>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+        </button>
+        <button class="page-btn active">1</button>
+        <button class="page-btn">2</button>
+        <button class="page-btn">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+</div>

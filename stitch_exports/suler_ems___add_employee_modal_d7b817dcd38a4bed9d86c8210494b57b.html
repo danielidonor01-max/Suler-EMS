@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-tertiary": "#ffffff",
+                        "error": "#ba1a1a",
+                        "outline-variant": "#c3c6d7",
+                        "secondary-fixed-dim": "#c0c7d6",
+                        "tertiary": "#943700",
+                        "error-container": "#ffdad6",
+                        "on-secondary": "#ffffff",
+                        "surface-dim": "#d9d9e5",
+                        "inverse-on-surface": "#f0f0fb",
+                        "surface-container-low": "#f3f3fe",
+                        "on-background": "#191b23",
+                        "surface": "#faf8ff",
+                        "outline": "#737686",
+                        "inverse-surface": "#2e3039",
+                        "tertiary-fixed-dim": "#ffb596",
+                        "on-surface-variant": "#434655",
+                        "tertiary-container": "#bc4800",
+                        "primary-container": "#2563eb",
+                        "on-secondary-fixed-variant": "#404754",
+                        "tertiary-fixed": "#ffdbcd",
+                        "primary": "#004ac6",
+                        "on-surface": "#191b23",
+                        "secondary-fixed": "#dce2f3",
+                        "on-primary-fixed-variant": "#003ea8",
+                        "on-secondary-container": "#5e6572",
+                        "surface-tint": "#0053db",
+                        "secondary-container": "#dce2f3",
+                        "secondary": "#585f6c",
+                        "on-secondary-fixed": "#151c27",
+                        "background": "#faf8ff",
+                        "surface-container-highest": "#e1e2ed",
+                        "on-tertiary-container": "#ffede6",
+                        "primary-fixed-dim": "#b4c5ff",
+                        "on-tertiary-fixed-variant": "#7d2d00",
+                        "on-primary-container": "#eeefff",
+                        "inverse-primary": "#b4c5ff",
+                        "surface-container-high": "#e7e7f3",
+                        "primary-fixed": "#dbe1ff",
+                        "on-primary-fixed": "#00174b",
+                        "on-error": "#ffffff",
+                        "on-tertiary-fixed": "#360f00",
+                        "surface-container": "#ededf9",
+                        "surface-variant": "#e1e2ed",
+                        "surface-container-lowest": "#ffffff",
+                        "on-primary": "#ffffff",
+                        "surface-bright": "#faf8ff",
+                        "on-error-container": "#93000a"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "lg": "24px",
+                        "xl": "32px",
+                        "2xl": "48px",
+                        "md": "16px",
+                        "3xl": "64px",
+                        "xs": "4px",
+                        "sm": "8px"
+                    },
+                    "fontFamily": {
+                        "body-md": ["Inter"],
+                        "label-sm": ["Inter"],
+                        "h3": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "h2": ["Inter"],
+                        "h1": ["Inter"],
+                        "button": ["Inter"]
+                    },
+                    "fontSize": {
+                        "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                        "label-sm": ["12px", {"lineHeight": "16px", "fontWeight": "500"}],
+                        "h3": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                        "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "h2": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                        "h1": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "button": ["14px", {"lineHeight": "20px", "fontWeight": "600"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body class="bg-background text-on-background antialiased overflow-hidden">
+<!-- BACKGROUND: Employee Management Screen (Dimmed) -->
+<div class="flex h-screen overflow-hidden filter blur-[2px] opacity-40">
+<!-- SideNavBar -->
+<aside class="flex flex-col h-screen w-64 bg-white border-r border-slate-200 fixed left-0 top-0 z-10">
+<div class="p-6">
+<span class="text-lg font-bold tracking-tight text-slate-900">Suler EMS</span>
+<p class="text-xs text-slate-500">Enterprise Clarity</p>
+</div>
+<nav class="flex-1 px-2 space-y-1">
+<a class="flex items-center px-4 py-3 text-slate-600 hover:bg-slate-50 transition-colors rounded-lg" href="#">
+<span class="material-symbols-outlined mr-3" data-icon="dashboard">dashboard</span>
+<span class="font-body-md text-body-md">Dashboard</span>
+</a>
+<a class="flex items-center px-4 py-3 text-blue-600 bg-blue-50 border-l-4 border-blue-600 font-semibold" href="#">
+<span class="material-symbols-outlined mr-3 text-blue-600" data-icon="group">group</span>
+<span class="font-body-md text-body-md">Employees</span>
+</a>
+<a class="flex items-center px-4 py-3 text-slate-600 hover:bg-slate-50 transition-colors rounded-lg" href="#">
+<span class="material-symbols-outlined mr-3" data-icon="event_busy">event_busy</span>
+<span class="font-body-md text-body-md">Leave Management</span>
+</a>
+<a class="flex items-center px-4 py-3 text-slate-600 hover:bg-slate-50 transition-colors rounded-lg" href="#">
+<span class="material-symbols-outlined mr-3" data-icon="domain">domain</span>
+<span class="font-body-md text-body-md">Departments</span>
+</a>
+<a class="flex items-center px-4 py-3 text-slate-600 hover:bg-slate-50 transition-colors rounded-lg" href="#">
+<span class="material-symbols-outlined mr-3" data-icon="payments">payments</span>
+<span class="font-body-md text-body-md">Payroll</span>
+</a>
+</nav>
+<div class="p-4 border-t border-slate-100">
+<a class="flex items-center px-4 py-3 text-slate-600 hover:bg-slate-50 transition-colors rounded-lg" href="#">
+<span class="material-symbols-outlined mr-3" data-icon="settings">settings</span>
+<span class="font-body-md text-body-md">Settings</span>
+</a>
+</div>
+</aside>
+<!-- Main Content Area (Employee List Mock) -->
+<main class="ml-64 flex-1 flex flex-col">
+<header class="h-16 border-b border-slate-200 bg-white/80 backdrop-blur-md flex items-center justify-between px-8">
+<div class="flex items-center flex-1">
+<div class="relative w-96">
+<span class="material-symbols-outlined absolute left-3 top-2.5 text-slate-400" data-icon="search">search</span>
+<input class="w-full pl-10 pr-4 py-2 bg-slate-50 border-none rounded-lg text-sm" placeholder="Search employees..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-slate-500" data-icon="notifications">notifications</span>
+<div class="w-8 h-8 rounded-full bg-slate-200 overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="A professional headshot of a senior HR Administrator for a corporate office environment. The person is middle-aged, wearing a tailored charcoal suit and a light blue shirt, looking directly into the camera with a confident, welcoming smile. The background is a bright, airy office with blurred glass partitions and soft natural sunlight, reflecting a high-end corporate setting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAKkEt69Axys1toiIOOthuuu1quRxTOhiPenvxyo3oKtivgQbW-V77c68aCnQdsveaBUIv5gcHPip9oHIM88VhV2UsSxLIFfZvHh8-YwpbTA6y5C8TdQ_S1bxXPFYRP0voMEPlpdNqnVi3JncNh6wnGmYr4PrGTzjKPz6CU65lETI5fh_Ket20hzzostixxui4LEXC3QQ0eO85wkMXn-xD29cODiXl9tllL5Siid-knHHkUf4L-l_1KeORbZWhfzG_l38rlanCzcRgK"/>
+</div>
+</div>
+</header>
+<section class="p-8 space-y-6">
+<div class="flex justify-between items-end">
+<div>
+<h1 class="font-h1 text-h1 text-slate-900">Employees</h1>
+<p class="text-slate-500 font-body-md">Manage your organization's workforce and records.</p>
+</div>
+<button class="bg-primary text-white px-4 py-2 rounded-lg font-button flex items-center gap-2">
+<span class="material-symbols-outlined" data-icon="add">add</span>
+                        Add New Employee
+                    </button>
+</div>
+<div class="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm">
+<table class="w-full text-left">
+<thead class="bg-slate-50 border-b border-slate-200">
+<tr>
+<th class="px-6 py-4 font-label-sm text-label-sm text-slate-500 uppercase tracking-wider">Employee</th>
+<th class="px-6 py-4 font-label-sm text-label-sm text-slate-500 uppercase tracking-wider">ID</th>
+<th class="px-6 py-4 font-label-sm text-label-sm text-slate-500 uppercase tracking-wider">Role</th>
+<th class="px-6 py-4 font-label-sm text-label-sm text-slate-500 uppercase tracking-wider">Department</th>
+<th class="px-6 py-4 font-label-sm text-label-sm text-slate-500 uppercase tracking-wider">Status</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-slate-100">
+<tr>
+<td class="px-6 py-4 flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-slate-200"></div>
+<div>
+<div class="font-medium text-slate-900">Sarah Jenkins</div>
+<div class="text-xs text-slate-500">sarah.j@sulerms.com</div>
+</div>
+</td>
+<td class="px-6 py-4 text-slate-600">EMP-1024</td>
+<td class="px-6 py-4 text-slate-600">Product Designer</td>
+<td class="px-6 py-4 text-slate-600">Design</td>
+<td class="px-6 py-4">
+<span class="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-700">Active</span>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+</main>
+</div>
+<!-- MODAL OVERLAY -->
+<div class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+<!-- MODAL CARD -->
+<div class="bg-white w-full max-w-2xl rounded-xl shadow-2xl overflow-hidden flex flex-col max-h-[921px]">
+<!-- Header -->
+<header class="px-6 py-4 border-b border-slate-200 flex items-center justify-between">
+<h2 class="font-h2 text-h2 text-slate-900">Add New Employee</h2>
+<button class="text-slate-400 hover:text-slate-600 transition-colors p-1 rounded-full hover:bg-slate-100">
+<span class="material-symbols-outlined" data-icon="close">close</span>
+</button>
+</header>
+<!-- Scrollable Form Body -->
+<div class="flex-1 overflow-y-auto p-6 space-y-8">
+<!-- Section: Personal Info -->
+<section class="space-y-4">
+<div class="flex items-center gap-2 pb-2 border-b border-slate-100">
+<span class="material-symbols-outlined text-blue-600 text-xl" data-icon="person">person</span>
+<h3 class="font-h3 text-h3 text-slate-800">Personal Info</h3>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+<div class="space-y-1.5">
+<label class="font-label-sm text-label-sm text-slate-700">Full Name</label>
+<input class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all text-body-md" placeholder="John Doe" type="text"/>
+</div>
+<div class="space-y-1.5">
+<label class="font-label-sm text-label-sm text-slate-700">Email Address</label>
+<input class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all text-body-md" placeholder="john.doe@company.com" type="email"/>
+</div>
+<div class="space-y-1.5 md:col-span-2">
+<label class="font-label-sm text-label-sm text-slate-700">Phone Number</label>
+<div class="flex">
+<span class="inline-flex items-center px-3 bg-slate-100 border border-r-0 border-slate-200 rounded-l-lg text-slate-500 text-sm">+1</span>
+<input class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-r-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all text-body-md" placeholder="(555) 000-0000" type="tel"/>
+</div>
+</div>
+</div>
+</section>
+<!-- Section: Employment -->
+<section class="space-y-4">
+<div class="flex items-center gap-2 pb-2 border-b border-slate-100">
+<span class="material-symbols-outlined text-blue-600 text-xl" data-icon="badge">badge</span>
+<h3 class="font-h3 text-h3 text-slate-800">Employment</h3>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+<div class="space-y-1.5">
+<label class="font-label-sm text-label-sm text-slate-700">Employee ID</label>
+<input class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all text-body-md" type="text" value="EMP-"/>
+</div>
+<div class="space-y-1.5">
+<label class="font-label-sm text-label-sm text-slate-700">Join Date</label>
+<input class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all text-body-md" type="date"/>
+</div>
+<div class="space-y-1.5">
+<label class="font-label-sm text-label-sm text-slate-700">Role</label>
+<select class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all text-body-md appearance-none">
+<option>Select Role</option>
+<option>Software Engineer</option>
+<option>Product Manager</option>
+<option>HR Specialist</option>
+<option>Marketing Associate</option>
+</select>
+</div>
+<div class="space-y-1.5">
+<label class="font-label-sm text-label-sm text-slate-700">Department</label>
+<select class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all text-body-md appearance-none">
+<option>Select Department</option>
+<option>Engineering</option>
+<option>Human Resources</option>
+<option>Design</option>
+<option>Sales &amp; Marketing</option>
+</select>
+</div>
+</div>
+</section>
+<!-- Section: Compensation -->
+<section class="space-y-4">
+<div class="flex items-center gap-2 pb-2 border-b border-slate-100">
+<span class="material-symbols-outlined text-blue-600 text-xl" data-icon="account_balance_wallet">account_balance_wallet</span>
+<h3 class="font-h3 text-h3 text-slate-800">Compensation</h3>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+<div class="space-y-1.5">
+<label class="font-label-sm text-label-sm text-slate-700">Salary Grade</label>
+<select class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all text-body-md appearance-none">
+<option>Select Grade</option>
+<option>Grade A1 (Entry)</option>
+<option>Grade B1 (Mid)</option>
+<option>Grade C1 (Senior)</option>
+<option>Grade D1 (Executive)</option>
+</select>
+</div>
+<div class="space-y-1.5">
+<label class="font-label-sm text-label-sm text-slate-700">Base Salary (Annual)</label>
+<div class="flex">
+<span class="inline-flex items-center px-3 bg-slate-100 border border-r-0 border-slate-200 rounded-l-lg text-slate-500 text-sm">$</span>
+<input class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-r-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all text-body-md" placeholder="0.00" type="number"/>
+</div>
+</div>
+</div>
+</section>
+</div>
+<!-- Footer -->
+<footer class="px-6 py-4 border-t border-slate-100 bg-slate-50 flex items-center justify-end gap-3">
+<button class="px-6 py-2 rounded-lg border border-slate-200 text-slate-700 font-button hover:bg-white transition-colors bg-transparent">
+                    Cancel
+                </button>
+<button class="px-6 py-2 rounded-lg bg-primary text-white font-button shadow-md hover:opacity-90 active:scale-95 transition-all">
+                    Add Employee
+                </button>
+</footer>
+</div>
+</div>
+</body></html>

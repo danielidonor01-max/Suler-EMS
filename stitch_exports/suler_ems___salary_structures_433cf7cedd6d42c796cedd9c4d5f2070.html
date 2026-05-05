@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Salary Structures - Suler EMS</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-tertiary": "#ffffff",
+                    "outline-variant": "#c3c6d7",
+                    "on-surface-variant": "#434655",
+                    "secondary-fixed": "#dce2f3",
+                    "error-container": "#ffdad6",
+                    "primary-fixed": "#dbe1ff",
+                    "on-tertiary-container": "#ffede6",
+                    "surface": "#faf8ff",
+                    "secondary-fixed-dim": "#c0c7d6",
+                    "surface-container": "#ededf9",
+                    "on-secondary-fixed-variant": "#404754",
+                    "on-error-container": "#93000a",
+                    "on-secondary-container": "#5e6572",
+                    "on-primary-fixed": "#00174b",
+                    "tertiary": "#943700",
+                    "on-surface": "#191b23",
+                    "error": "#ba1a1a",
+                    "inverse-primary": "#b4c5ff",
+                    "surface-bright": "#faf8ff",
+                    "on-secondary": "#ffffff",
+                    "on-primary-container": "#eeefff",
+                    "tertiary-fixed": "#ffdbcd",
+                    "tertiary-fixed-dim": "#ffb596",
+                    "primary-container": "#2563eb",
+                    "inverse-on-surface": "#f0f0fb",
+                    "inverse-surface": "#2e3039",
+                    "primary-fixed-dim": "#b4c5ff",
+                    "on-primary-fixed-variant": "#003ea8",
+                    "on-secondary-fixed": "#151c27",
+                    "outline": "#737686",
+                    "surface-container-highest": "#e1e2ed",
+                    "background": "#faf8ff",
+                    "primary": "#004ac6",
+                    "on-primary": "#ffffff",
+                    "on-background": "#191b23",
+                    "surface-container-low": "#f3f3fe",
+                    "secondary": "#585f6c",
+                    "tertiary-container": "#bc4800",
+                    "on-tertiary-fixed": "#360f00",
+                    "surface-tint": "#0053db",
+                    "surface-container-lowest": "#ffffff",
+                    "on-tertiary-fixed-variant": "#7d2d00",
+                    "on-error": "#ffffff",
+                    "secondary-container": "#dce2f3",
+                    "surface-container-high": "#e7e7f3",
+                    "surface-dim": "#d9d9e5",
+                    "surface-variant": "#e1e2ed"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "2xl": "48px",
+                    "md": "16px",
+                    "xs": "4px",
+                    "lg": "24px",
+                    "3xl": "64px",
+                    "sm": "8px",
+                    "xl": "32px"
+            },
+            "fontFamily": {
+                    "h2": ["Inter"],
+                    "h1": ["Inter"],
+                    "button": ["Inter"],
+                    "body-lg": ["Inter"],
+                    "body-md": ["Inter"],
+                    "label-sm": ["Inter"],
+                    "h3": ["Inter"]
+            },
+            "fontSize": {
+                    "h2": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                    "h1": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "button": ["14px", {"lineHeight": "20px", "fontWeight": "600"}],
+                    "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                    "label-sm": ["12px", {"lineHeight": "16px", "fontWeight": "500"}],
+                    "h3": ["20px", {"lineHeight": "28px", "fontWeight": "600"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body class="bg-background text-on-background antialiased overflow-x-hidden">
+<!-- SideNavBar -->
+<aside class="fixed left-0 top-0 h-screen w-64 border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm flex flex-col z-50">
+<div class="p-6">
+<h1 class="text-xl font-bold text-blue-600 dark:text-blue-400">Suler EMS</h1>
+<p class="text-xs text-slate-500 font-medium tracking-wider">Management System</p>
+</div>
+<nav class="flex-1 px-2 space-y-1">
+<a class="flex items-center gap-3 px-4 py-3 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span class="font-body-md">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined" data-icon="group">group</span>
+<span class="font-body-md">Employees</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-600 font-semibold transition-colors duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined" data-icon="payments">payments</span>
+<span class="font-body-md">Payroll</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined" data-icon="calendar_today">calendar_today</span>
+<span class="font-body-md">Attendance</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span class="font-body-md">Settings</span>
+</a>
+</nav>
+<div class="p-4 border-t border-slate-200 dark:border-slate-800">
+<div class="flex items-center gap-3 px-2">
+<div class="w-10 h-10 rounded-full overflow-hidden bg-surface-container">
+<img alt="Administrator Profile" class="w-full h-full object-cover" data-alt="A professional close-up portrait of a corporate HR executive with a warm but authoritative expression. The individual is wearing a charcoal gray blazer and a crisp white shirt. The background is a brightly lit, soft-focus modern office corridor with minimalist architectural lines. The lighting is flattering and high-key, emphasizing a reliable and efficient professional identity." src="https://lh3.googleusercontent.com/aida-public/AB6AXuC4Lmd-w6_igdI84fMXSwZIU3nryVQxLjKduZ_qOHUTtZRWtHXTW8n25en9yZpsjtdx7KgtGBVcJyc_kt1u5x1tOfEouwAYsPYeq4IW5ekGudU4oLAtFtKpVsl2596kw4HWsZp_CwdyrvwFi-jXdGiQl34H9eZdBIafKV4mHyU6-ugwdPmOIv5rjMnEcSFHHHE2_Zo6vlgbKHx6Y56fPlStfIzdkzzzsJK2YXZsu5S_XcVzT5u6qe8UNmvBmYhX8PriwS7uKN9_wGHY"/>
+</div>
+<div class="flex flex-col">
+<span class="font-label-sm text-on-surface">Alex Rivera</span>
+<span class="text-[10px] text-slate-500">Admin</span>
+</div>
+</div>
+</div>
+</aside>
+<!-- TopNavBar -->
+<header class="fixed top-0 right-0 left-64 h-16 z-40 border-b border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md flex items-center justify-between px-6">
+<div class="flex items-center gap-4 flex-1">
+<div class="relative w-full max-w-md">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-lg">search</span>
+<input class="w-full pl-10 pr-4 py-2 bg-slate-50 dark:bg-slate-800 border-none rounded-lg text-sm focus:ring-2 focus:ring-blue-600 transition-all outline-none" placeholder="Search salary structures..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-6">
+<div class="flex items-center gap-4 text-slate-500 dark:text-slate-400">
+<button class="hover:text-blue-600 transition-colors"><span class="material-symbols-outlined" data-icon="notifications">notifications</span></button>
+<button class="hover:text-blue-600 transition-colors"><span class="material-symbols-outlined" data-icon="help">help</span></button>
+</div>
+<div class="h-8 w-px bg-slate-200 dark:border-slate-800"></div>
+<h2 class="text-lg font-semibold text-slate-900 dark:text-white">Payroll Management</h2>
+</div>
+</header>
+<!-- Main Content -->
+<main class="ml-64 pt-16 min-h-screen">
+<div class="p-lg md:p-xl max-w-[1440px] mx-auto space-y-lg">
+<!-- Page Header -->
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-md">
+<div>
+<h1 class="font-h1 text-h1 text-on-surface">Salary Structures</h1>
+<p class="font-body-md text-secondary mt-xs">Define and manage compensation frameworks across the organization.</p>
+</div>
+<button class="bg-primary-container text-on-primary hover:opacity-90 px-lg py-sm rounded-lg flex items-center gap-sm font-button transition-all shadow-sm">
+<span class="material-symbols-outlined text-[18px]">add</span>
+                    Add New Grade
+                </button>
+</div>
+<!-- Bento Grid Layout -->
+<div class="grid grid-cols-12 gap-lg">
+<!-- Main Table Area -->
+<div class="col-span-12 lg:col-span-8 space-y-lg">
+<div class="bg-white border border-outline-variant rounded-xl shadow-sm overflow-hidden">
+<div class="p-md border-b border-outline-variant flex items-center justify-between bg-surface-container-low/30">
+<h3 class="font-h3 text-h3 text-on-surface">Salary Grades</h3>
+<div class="flex items-center gap-xs">
+<span class="text-label-sm text-secondary bg-surface-container px-sm py-1 rounded-full">Total: 4 Grades</span>
+</div>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left">
+<thead>
+<tr class="bg-surface-container-low border-b border-outline-variant">
+<th class="px-md py-4 font-button text-secondary text-[12px] uppercase tracking-wider">Grade Name</th>
+<th class="px-md py-4 font-button text-secondary text-[12px] uppercase tracking-wider text-right">Min Salary</th>
+<th class="px-md py-4 font-button text-secondary text-[12px] uppercase tracking-wider text-right">Max Salary</th>
+<th class="px-md py-4 font-button text-secondary text-[12px] uppercase tracking-wider">Allowances</th>
+<th class="px-md py-4 font-button text-secondary text-[12px] uppercase tracking-wider text-center">Employees</th>
+<th class="px-md py-4 font-button text-secondary text-[12px] uppercase tracking-wider text-right">Action</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant">
+<!-- Grade 1 -->
+<tr class="hover:bg-slate-50 transition-colors">
+<td class="px-md py-4">
+<div class="flex flex-col">
+<span class="font-body-md font-semibold text-on-surface">Grade 1 - Executive</span>
+<span class="text-[12px] text-secondary">C-Suite &amp; SVPs</span>
+</div>
+</td>
+<td class="px-md py-4 text-right font-body-md text-on-surface">$12,000</td>
+<td class="px-md py-4 text-right font-body-md text-on-surface">$25,000</td>
+<td class="px-md py-4">
+<div class="flex flex-wrap gap-1">
+<span class="text-[10px] font-semibold px-2 py-0.5 rounded bg-blue-100 text-blue-700">CAR</span>
+<span class="text-[10px] font-semibold px-2 py-0.5 rounded bg-blue-100 text-blue-700">HOUSE</span>
+<span class="text-[10px] font-semibold px-2 py-0.5 rounded bg-blue-100 text-blue-700">+2</span>
+</div>
+</td>
+<td class="px-md py-4 text-center">
+<span class="font-body-md font-medium text-primary">12</span>
+</td>
+<td class="px-md py-4 text-right">
+<button class="text-secondary hover:text-primary transition-colors"><span class="material-symbols-outlined">edit</span></button>
+</td>
+</tr>
+<!-- Grade 2 -->
+<tr class="hover:bg-slate-50 transition-colors">
+<td class="px-md py-4">
+<div class="flex flex-col">
+<span class="font-body-md font-semibold text-on-surface">Grade 2 - Manager</span>
+<span class="text-[12px] text-secondary">Dept. Heads &amp; Leads</span>
+</div>
+</td>
+<td class="px-md py-4 text-right font-body-md text-on-surface">$8,500</td>
+<td class="px-md py-4 text-right font-body-md text-on-surface">$14,500</td>
+<td class="px-md py-4">
+<div class="flex flex-wrap gap-1">
+<span class="text-[10px] font-semibold px-2 py-0.5 rounded bg-blue-100 text-blue-700">HEALTH</span>
+<span class="text-[10px] font-semibold px-2 py-0.5 rounded bg-blue-100 text-blue-700">COMM</span>
+</div>
+</td>
+<td class="px-md py-4 text-center">
+<span class="font-body-md font-medium text-primary">45</span>
+</td>
+<td class="px-md py-4 text-right">
+<button class="text-secondary hover:text-primary transition-colors"><span class="material-symbols-outlined">edit</span></button>
+</td>
+</tr>
+<!-- Grade 3 -->
+<tr class="hover:bg-slate-50 transition-colors">
+<td class="px-md py-4">
+<div class="flex flex-col">
+<span class="font-body-md font-semibold text-on-surface">Grade 3 - Senior</span>
+<span class="text-[12px] text-secondary">Team Senior Staff</span>
+</div>
+</td>
+<td class="px-md py-4 text-right font-body-md text-on-surface">$5,500</td>
+<td class="px-md py-4 text-right font-body-md text-on-surface">$9,000</td>
+<td class="px-md py-4">
+<div class="flex flex-wrap gap-1">
+<span class="text-[10px] font-semibold px-2 py-0.5 rounded bg-blue-100 text-blue-700">MEALS</span>
+</div>
+</td>
+<td class="px-md py-4 text-center">
+<span class="font-body-md font-medium text-primary">128</span>
+</td>
+<td class="px-md py-4 text-right">
+<button class="text-secondary hover:text-primary transition-colors"><span class="material-symbols-outlined">edit</span></button>
+</td>
+</tr>
+<!-- Grade 4 -->
+<tr class="hover:bg-slate-50 transition-colors">
+<td class="px-md py-4">
+<div class="flex flex-col">
+<span class="font-body-md font-semibold text-on-surface">Grade 4 - Associate</span>
+<span class="text-[12px] text-secondary">Entry Level Staff</span>
+</div>
+</td>
+<td class="px-md py-4 text-right font-body-md text-on-surface">$3,000</td>
+<td class="px-md py-4 text-right font-body-md text-on-surface">$6,000</td>
+<td class="px-md py-4">
+<div class="flex flex-wrap gap-1 text-secondary text-[12px]">
+                                                No allowances set
+                                            </div>
+</td>
+<td class="px-md py-4 text-center">
+<span class="font-body-md font-medium text-primary">210</span>
+</td>
+<td class="px-md py-4 text-right">
+<button class="text-secondary hover:text-primary transition-colors"><span class="material-symbols-outlined">edit</span></button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="p-md bg-surface-container-low/30 border-t border-outline-variant flex justify-center">
+<button class="text-button text-primary hover:underline flex items-center gap-1">
+                                View Detailed Structure Report
+                                <span class="material-symbols-outlined text-[14px]">open_in_new</span>
+</button>
+</div>
+</div>
+<!-- Visual Summary (Bento Piece) -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-lg">
+<div class="bg-white p-lg rounded-xl border border-outline-variant shadow-sm relative overflow-hidden group">
+<div class="flex justify-between items-start mb-md relative z-10">
+<div>
+<p class="text-label-sm text-secondary uppercase font-bold tracking-widest">Avg. Retention Bonus</p>
+<h4 class="text-h2 font-h2 text-on-surface mt-1">$1,240</h4>
+</div>
+<div class="bg-green-50 p-sm rounded-lg text-green-600">
+<span class="material-symbols-outlined" data-weight="fill">trending_up</span>
+</div>
+</div>
+<div class="w-full h-1.5 bg-surface-container rounded-full relative z-10">
+<div class="absolute top-0 left-0 h-full bg-green-500 rounded-full" style="width: 65%"></div>
+</div>
+<p class="text-[12px] text-secondary mt-sm relative z-10">8.4% increase compared to Q3</p>
+<!-- Decorative background accent -->
+<div class="absolute top-0 right-0 -mr-12 -mt-12 w-32 h-32 bg-green-50 rounded-full blur-3xl opacity-0 group-hover:opacity-100 transition-opacity"></div>
+</div>
+<div class="bg-white p-lg rounded-xl border border-outline-variant shadow-sm relative overflow-hidden group">
+<div class="flex justify-between items-start mb-md relative z-10">
+<div>
+<p class="text-label-sm text-secondary uppercase font-bold tracking-widest">Total Monthly Payroll</p>
+<h4 class="text-h2 font-h2 text-on-surface mt-1">$458,200</h4>
+</div>
+<div class="bg-blue-50 p-sm rounded-lg text-blue-600">
+<span class="material-symbols-outlined" data-weight="fill">account_balance_wallet</span>
+</div>
+</div>
+<div class="w-full h-1.5 bg-surface-container rounded-full relative z-10">
+<div class="absolute top-0 left-0 h-full bg-blue-500 rounded-full" style="width: 82%"></div>
+</div>
+<p class="text-[12px] text-secondary mt-sm relative z-10">Estimated for 395 active staff</p>
+<!-- Decorative background accent -->
+<div class="absolute top-0 right-0 -mr-12 -mt-12 w-32 h-32 bg-blue-50 rounded-full blur-3xl opacity-0 group-hover:opacity-100 transition-opacity"></div>
+</div>
+</div>
+</div>
+<!-- Right Sidebar Widgets -->
+<div class="col-span-12 lg:col-span-4 space-y-lg">
+<!-- Tax Configuration -->
+<div class="bg-white rounded-xl border border-outline-variant shadow-sm">
+<div class="p-md border-b border-outline-variant flex items-center justify-between">
+<h3 class="font-h3 text-h3 text-on-surface flex items-center gap-sm">
+<span class="material-symbols-outlined text-primary" data-weight="fill">receipt_long</span>
+                                Tax Configuration
+                            </h3>
+<button class="p-1 hover:bg-surface-container-low rounded transition-colors">
+<span class="material-symbols-outlined text-secondary">more_vert</span>
+</button>
+</div>
+<div class="p-md space-y-md">
+<div class="flex items-center justify-between group cursor-pointer">
+<div class="flex items-center gap-md">
+<div class="w-10 h-10 rounded-lg bg-surface-container flex items-center justify-center text-secondary group-hover:bg-primary-container group-hover:text-on-primary-container transition-colors">
+<span class="material-symbols-outlined text-xl">gavel</span>
+</div>
+<div>
+<p class="font-body-md font-semibold">Standard Income Tax</p>
+<p class="text-label-sm text-secondary">Based on annual slabs</p>
+</div>
+</div>
+<div class="text-right">
+<p class="font-body-md font-bold text-on-surface">15% - 30%</p>
+<span class="text-[10px] text-green-600 font-bold uppercase">Current</span>
+</div>
+</div>
+<div class="flex items-center justify-between group cursor-pointer">
+<div class="flex items-center gap-md">
+<div class="w-10 h-10 rounded-lg bg-surface-container flex items-center justify-center text-secondary group-hover:bg-primary-container group-hover:text-on-primary-container transition-colors">
+<span class="material-symbols-outlined text-xl">shield</span>
+</div>
+<div>
+<p class="font-body-md font-semibold">Social Security</p>
+<p class="text-label-sm text-secondary">Mandatory contribution</p>
+</div>
+</div>
+<div class="text-right">
+<p class="font-body-md font-bold text-on-surface">6.5%</p>
+<span class="text-[10px] text-secondary font-bold uppercase">Fixed</span>
+</div>
+</div>
+</div>
+<div class="px-md pb-md">
+<button class="w-full py-2 bg-surface-container hover:bg-surface-container-high text-on-surface text-button rounded-lg transition-colors border border-outline-variant/30">
+                                Edit Tax Parameters
+                            </button>
+</div>
+</div>
+<!-- Deduction Types -->
+<div class="bg-white rounded-xl border border-outline-variant shadow-sm overflow-hidden">
+<div class="p-md bg-inverse-surface text-inverse-on-surface flex items-center justify-between">
+<h3 class="font-h3 text-h3 flex items-center gap-sm">
+<span class="material-symbols-outlined" data-weight="fill">playlist_add_check</span>
+                                Deduction Types
+                            </h3>
+<button class="text-[12px] bg-white/10 hover:bg-white/20 px-2 py-1 rounded transition-colors">Manage</button>
+</div>
+<div class="p-md space-y-md bg-white">
+<!-- Deduction Item -->
+<div class="flex items-start gap-md">
+<div class="bg-red-50 text-error p-sm rounded-lg">
+<span class="material-symbols-outlined text-[20px]" data-weight="fill">medical_services</span>
+</div>
+<div class="flex-1">
+<div class="flex items-center justify-between">
+<h4 class="font-body-md font-bold text-on-surface">Health Insurance</h4>
+<span class="text-label-sm text-secondary">$120.00 / mo</span>
+</div>
+<p class="text-[12px] text-secondary leading-tight mt-0.5">Corporate plan inclusive of family dental and vision.</p>
+</div>
+</div>
+<div class="h-px bg-outline-variant/50 ml-12"></div>
+<!-- Deduction Item -->
+<div class="flex items-start gap-md">
+<div class="bg-blue-50 text-primary p-sm rounded-lg">
+<span class="material-symbols-outlined text-[20px]" data-weight="fill">savings</span>
+</div>
+<div class="flex-1">
+<div class="flex items-center justify-between">
+<h4 class="font-body-md font-bold text-on-surface">Pension Fund</h4>
+<span class="text-label-sm text-secondary">5.0% Gross</span>
+</div>
+<p class="text-[12px] text-secondary leading-tight mt-0.5">Employee retirement scheme with matching 5%.</p>
+</div>
+</div>
+<div class="h-px bg-outline-variant/50 ml-12"></div>
+<!-- Deduction Item -->
+<div class="flex items-start gap-md">
+<div class="bg-orange-50 text-tertiary p-sm rounded-lg">
+<span class="material-symbols-outlined text-[20px]" data-weight="fill">school</span>
+</div>
+<div class="flex-1">
+<div class="flex items-center justify-between">
+<h4 class="font-body-md font-bold text-on-surface">Education Loan</h4>
+<span class="text-label-sm text-secondary">Variable</span>
+</div>
+<p class="text-[12px] text-secondary leading-tight mt-0.5">Repayment for professional development courses.</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Knowledge Base Promo -->
+<div class="bg-gradient-to-br from-blue-600 to-indigo-700 rounded-xl p-lg text-white shadow-lg relative overflow-hidden">
+<div class="relative z-10">
+<h4 class="font-h3 text-h3 mb-xs">Policy Updates</h4>
+<p class="text-[13px] opacity-90 leading-relaxed mb-md">New government regulations regarding holiday pay structure are effective from Jan 1st. View the impact analysis.</p>
+<button class="bg-white text-blue-700 font-button px-lg py-sm rounded-lg hover:bg-blue-50 transition-colors shadow-md">
+                                Read More
+                            </button>
+</div>
+<div class="absolute -right-8 -bottom-8 opacity-20 pointer-events-none">
+<span class="material-symbols-outlined text-[120px]">policy</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- FAB (Suppressed on Details/Management Screen - Rule applied: Priority Content) -->
+<!-- However, providing a 'Quick Setup' FAB for utility as this is a Dashboard-like view -->
+<button class="fixed bottom-lg right-lg bg-primary-container text-on-primary-container p-lg rounded-full shadow-2xl flex items-center justify-center hover:scale-105 active:scale-95 transition-all z-50">
+<span class="material-symbols-outlined text-[28px]">auto_awesome</span>
+</button>
+</body></html>

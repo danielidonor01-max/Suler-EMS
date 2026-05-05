@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>My Payroll | Suler EMS</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "on-tertiary": "#ffffff",
+            "outline-variant": "#c3c6d7",
+            "on-surface-variant": "#434655",
+            "secondary-fixed": "#dce2f3",
+            "error-container": "#ffdad6",
+            "primary-fixed": "#dbe1ff",
+            "on-tertiary-container": "#ffede6",
+            "surface": "#faf8ff",
+            "secondary-fixed-dim": "#c0c7d6",
+            "surface-container": "#ededf9",
+            "on-secondary-fixed-variant": "#404754",
+            "on-error-container": "#93000a",
+            "on-secondary-container": "#5e6572",
+            "on-primary-fixed": "#00174b",
+            "tertiary": "#943700",
+            "on-surface": "#191b23",
+            "error": "#ba1a1a",
+            "inverse-primary": "#b4c5ff",
+            "surface-bright": "#faf8ff",
+            "on-secondary": "#ffffff",
+            "on-primary-container": "#eeefff",
+            "tertiary-fixed": "#ffdbcd",
+            "tertiary-fixed-dim": "#ffb596",
+            "primary-container": "#2563eb",
+            "inverse-on-surface": "#f0f0fb",
+            "inverse-surface": "#2e3039",
+            "primary-fixed-dim": "#b4c5ff",
+            "on-primary-fixed-variant": "#003ea8",
+            "on-secondary-fixed": "#151c27",
+            "outline": "#737686",
+            "surface-container-highest": "#e1e2ed",
+            "background": "#faf8ff",
+            "primary": "#004ac6",
+            "on-primary": "#ffffff",
+            "on-background": "#191b23",
+            "surface-container-low": "#f3f3fe",
+            "secondary": "#585f6c",
+            "tertiary-container": "#bc4800",
+            "on-tertiary-fixed": "#360f00",
+            "surface-tint": "#0053db",
+            "surface-container-lowest": "#ffffff",
+            "on-tertiary-fixed-variant": "#7d2d00",
+            "on-error": "#ffffff",
+            "secondary-container": "#dce2f3",
+            "surface-container-high": "#e7e7f3",
+            "surface-dim": "#d9d9e5",
+            "surface-variant": "#e1e2ed"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px"
+          },
+          "spacing": {
+            "2xl": "48px",
+            "md": "16px",
+            "xs": "4px",
+            "lg": "24px",
+            "3xl": "64px",
+            "sm": "8px",
+            "xl": "32px"
+          },
+          "fontFamily": {
+            "h2": ["Inter"],
+            "h1": ["Inter"],
+            "button": ["Inter"],
+            "body-lg": ["Inter"],
+            "body-md": ["Inter"],
+            "label-sm": ["Inter"],
+            "h3": ["Inter"]
+          },
+          "fontSize": {
+            "h2": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+            "h1": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+            "button": ["14px", {"lineHeight": "20px", "fontWeight": "600"}],
+            "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+            "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+            "label-sm": ["12px", {"lineHeight": "16px", "fontWeight": "500"}],
+            "h3": ["20px", {"lineHeight": "28px", "fontWeight": "600"}]
+          }
+        },
+      },
+    }
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+    body { font-family: 'Inter', sans-serif; }
+  </style>
+</head>
+<body class="bg-background text-on-background antialiased min-h-screen">
+<!-- Side Navigation Bar -->
+<aside class="fixed left-0 top-0 h-screen w-64 border-r border-slate-200 bg-white shadow-sm flex flex-col z-50">
+<div class="p-lg flex items-center gap-md">
+<div class="w-10 h-10 bg-primary-container rounded-lg flex items-center justify-center text-on-primary-container">
+<span class="material-symbols-outlined" data-icon="payments">payments</span>
+</div>
+<div>
+<h1 class="text-lg font-bold text-blue-600">Suler EMS</h1>
+<p class="text-[10px] text-slate-500 uppercase tracking-wider font-semibold">Management System</p>
+</div>
+</div>
+<nav class="flex-1 mt-md px-sm">
+<ul class="space-y-sm">
+<li>
+<a class="flex items-center gap-3 px-4 py-3 text-slate-600 hover:bg-slate-50 transition-colors rounded-lg" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span class="font-body-md">Dashboard</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-4 py-3 text-slate-600 hover:bg-slate-50 transition-colors rounded-lg" href="#">
+<span class="material-symbols-outlined" data-icon="assignment">assignment</span>
+<span class="font-body-md">My Tasks</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-4 py-3 text-slate-600 hover:bg-slate-50 transition-colors rounded-lg" href="#">
+<span class="material-symbols-outlined" data-icon="calendar_today">calendar_today</span>
+<span class="font-body-md">Attendance</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-4 py-3 text-slate-600 hover:bg-slate-50 transition-colors rounded-lg" href="#">
+<span class="material-symbols-outlined" data-icon="event_busy">event_busy</span>
+<span class="font-body-md">Leave</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-4 py-3 text-blue-600 bg-blue-50 border-l-4 border-blue-600 font-semibold rounded-r-lg" href="#">
+<span class="material-symbols-outlined" data-icon="payments" style="font-variation-settings: 'FILL' 1;">payments</span>
+<span class="font-body-md">Payroll</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-4 py-3 text-slate-600 hover:bg-slate-50 transition-colors rounded-lg" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span class="font-body-md">Settings</span>
+</a>
+</li>
+</ul>
+</nav>
+<div class="p-md border-t border-slate-100 mt-auto">
+<div class="flex items-center gap-md p-sm bg-surface-container-low rounded-xl">
+<img alt="Alex Thompson" class="w-10 h-10 rounded-full object-cover border-2 border-white shadow-sm" data-alt="A professional portrait of a male corporate employee in his late 20s with a friendly smile, wearing a modern navy blue polo shirt. The lighting is bright and natural, coming from a large office window in the background. The aesthetic is clean and corporate-modern, utilizing a shallow depth of field to keep the focus entirely on the subject. The atmosphere conveys approachability and professional competence." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCyxazJqPBJSeKB-UrPgjUQbWUSOeXZWbuQ1ZOvxp8hALG6LHDGePuFoT7kqtp-oHyfHEX4g-AIXh2a9wpTK3QH0RV4QgI1s9OtGEl43BHb9rkYFPSE9HZ0OjbVDw1xzy7ZBovKVn2mOszNL6p1wkIDDHsMOLkKSaTWge2ptGLEcjLgD6s7wTB89eIt7weUS3lwKMccunowCFzsZHa_HTZLHsqRyh85pcEvpc0E3He7r-ZgCEeClEC0jbT1QkewHPoJpUhke_AHOTsU"/>
+<div class="overflow-hidden">
+<p class="text-sm font-semibold truncate">Alex Thompson</p>
+<p class="text-[10px] text-slate-500 truncate">Senior Developer</p>
+</div>
+</div>
+</div>
+</aside>
+<!-- Top Navigation Bar -->
+<header class="fixed top-0 right-0 left-64 h-16 bg-white/80 backdrop-blur-md border-b border-slate-200 z-40 flex items-center justify-between px-6 shadow-sm">
+<div class="flex items-center gap-xl">
+<h2 class="text-lg font-bold text-slate-900">My Payroll</h2>
+<div class="relative w-96">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm" data-icon="search">search</span>
+<input class="w-full bg-slate-50 border-none rounded-lg pl-10 pr-4 py-2 text-sm focus:ring-2 focus:ring-blue-600" placeholder="Search for paystubs, tax docs..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-lg">
+<button class="text-slate-500 hover:text-blue-600 transition-colors relative">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+<span class="absolute top-0 right-0 w-2 h-2 bg-error rounded-full border-2 border-white"></span>
+</button>
+<button class="text-slate-500 hover:text-blue-600 transition-colors">
+<span class="material-symbols-outlined" data-icon="help">help</span>
+</button>
+<div class="h-8 w-[1px] bg-slate-200"></div>
+<div class="flex items-center gap-sm cursor-pointer hover:opacity-80 transition-opacity">
+<img alt="Administrator Profile" class="w-8 h-8 rounded-full object-cover" data-alt="A professional close-up of a young male professional in a business-casual white shirt, looking directly into the camera with a confident expression. The lighting is soft and high-key, creating a bright and clean look suitable for a modern web interface. The color palette is minimal, focusing on bright whites and natural skin tones to maintain a high-end corporate feel." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBvR-Qt6vHJ8MwNYoyu88vHcBnC_pIjSxZjlWPXKPUFqxUHuH4hfFVFAmnAFvcTLu3cIXP-UxVN-nrBcBsjHFwgy6Z8ecg16_d4VdVjZ2MwnlvlKjq7fJfVfo2c7gUDQkArG_YrKRuNifk3ovDuJ9Euy1h8zuZEwg9a8t_rDylDIdoagKwwj6x4KUUhY4CQlWcMsj-j73EWGJMWTFaiDLmW6o8yVjfW6j20QcMUaVcvS3BM8iU0nFprDnjeKXRQMFBfuHmVUxB0yvOB"/>
+<span class="text-sm font-medium text-slate-700">Alex Thompson</span>
+</div>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="ml-64 pt-16 p-lg bg-surface">
+<div class="max-w-[1440px] mx-auto">
+<!-- Stats Cards Row -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-lg mb-xl">
+<div class="bg-white p-md rounded-xl shadow-sm border border-slate-200">
+<div class="flex items-center justify-between mb-sm">
+<span class="text-slate-500 font-label-sm uppercase tracking-tight">Last Payment</span>
+<div class="bg-blue-50 p-2 rounded-lg text-blue-600">
+<span class="material-symbols-outlined" data-icon="account_balance_wallet" style="font-variation-settings: 'FILL' 1;">account_balance_wallet</span>
+</div>
+</div>
+<div class="flex flex-col">
+<span class="text-h2 font-bold text-slate-900">$4,200</span>
+<span class="text-label-sm text-green-600 font-medium">Paid Oct 01, 2023</span>
+</div>
+</div>
+<div class="bg-white p-md rounded-xl shadow-sm border border-slate-200">
+<div class="flex items-center justify-between mb-sm">
+<span class="text-slate-500 font-label-sm uppercase tracking-tight">Year to Date Gross</span>
+<div class="bg-orange-50 p-2 rounded-lg text-orange-600">
+<span class="material-symbols-outlined" data-icon="trending_up">trending_up</span>
+</div>
+</div>
+<div class="flex flex-col">
+<span class="text-h2 font-bold text-slate-900">$42,000</span>
+<span class="text-label-sm text-slate-400">Total earnings in 2023</span>
+</div>
+</div>
+<div class="bg-white p-md rounded-xl shadow-sm border border-slate-200">
+<div class="flex items-center justify-between mb-sm">
+<span class="text-slate-500 font-label-sm uppercase tracking-tight">Tax Deductions YTD</span>
+<div class="bg-red-50 p-2 rounded-lg text-red-600">
+<span class="material-symbols-outlined" data-icon="receipt_long">receipt_long</span>
+</div>
+</div>
+<div class="flex flex-col">
+<span class="text-h2 font-bold text-slate-900">$8,400</span>
+<span class="text-label-sm text-slate-400">20% effective tax rate</span>
+</div>
+</div>
+<div class="bg-white p-md rounded-xl shadow-sm border border-slate-200">
+<div class="flex items-center justify-between mb-sm">
+<span class="text-slate-500 font-label-sm uppercase tracking-tight">Next Payout</span>
+<div class="bg-green-50 p-2 rounded-lg text-green-600">
+<span class="material-symbols-outlined" data-icon="event">event</span>
+</div>
+</div>
+<div class="flex flex-col">
+<span class="text-h2 font-bold text-slate-900">Oct 31</span>
+<span class="text-label-sm text-blue-600 font-medium">Estimated in 12 days</span>
+</div>
+</div>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-lg items-start">
+<!-- Payment History Table (Bento Style) -->
+<div class="lg:col-span-2 bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+<div class="p-lg border-b border-slate-100 flex items-center justify-between">
+<h3 class="text-h3 text-slate-900">Payment History</h3>
+<button class="flex items-center gap-2 text-sm text-blue-600 font-semibold hover:bg-blue-50 px-3 py-1.5 rounded-lg transition-colors">
+<span class="material-symbols-outlined text-sm" data-icon="filter_list">filter_list</span>
+              Filter Results
+            </button>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left">
+<thead>
+<tr class="bg-slate-50 text-slate-500 text-[11px] font-bold uppercase tracking-wider">
+<th class="px-lg py-md">Pay Date</th>
+<th class="px-lg py-md">Period</th>
+<th class="px-lg py-md">Gross Pay</th>
+<th class="px-lg py-md">Net Pay</th>
+<th class="px-lg py-md">Status</th>
+<th class="px-lg py-md text-right">Action</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-slate-100">
+<tr class="hover:bg-slate-50 transition-colors cursor-pointer group">
+<td class="px-lg py-md text-sm font-medium text-slate-900">Oct 01, 2023</td>
+<td class="px-lg py-md text-sm text-slate-500">Sep 01 - Sep 30</td>
+<td class="px-lg py-md text-sm text-slate-900">$5,200</td>
+<td class="px-lg py-md text-sm font-bold text-slate-900">$4,200</td>
+<td class="px-lg py-md text-sm">
+<span class="bg-green-100 text-green-700 px-2 py-1 rounded text-[11px] font-bold">Paid</span>
+</td>
+<td class="px-lg py-md text-right">
+<button class="text-blue-600 hover:text-blue-800 flex items-center justify-end gap-1 font-semibold text-xs ml-auto">
+<span class="material-symbols-outlined text-sm" data-icon="download">download</span>
+                      Download PDF
+                    </button>
+</td>
+</tr>
+<tr class="hover:bg-slate-50 transition-colors cursor-pointer group">
+<td class="px-lg py-md text-sm font-medium text-slate-900">Sep 01, 2023</td>
+<td class="px-lg py-md text-sm text-slate-500">Aug 01 - Aug 31</td>
+<td class="px-lg py-md text-sm text-slate-900">$5,200</td>
+<td class="px-lg py-md text-sm font-bold text-slate-900">$4,200</td>
+<td class="px-lg py-md text-sm">
+<span class="bg-green-100 text-green-700 px-2 py-1 rounded text-[11px] font-bold">Paid</span>
+</td>
+<td class="px-lg py-md text-right">
+<button class="text-blue-600 hover:text-blue-800 flex items-center justify-end gap-1 font-semibold text-xs ml-auto">
+<span class="material-symbols-outlined text-sm" data-icon="download">download</span>
+                      Download PDF
+                    </button>
+</td>
+</tr>
+<tr class="hover:bg-slate-50 transition-colors cursor-pointer group">
+<td class="px-lg py-md text-sm font-medium text-slate-900">Aug 01, 2023</td>
+<td class="px-lg py-md text-sm text-slate-500">Jul 01 - Jul 31</td>
+<td class="px-lg py-md text-sm text-slate-900">$5,500</td>
+<td class="px-lg py-md text-sm font-bold text-slate-900">$4,450</td>
+<td class="px-lg py-md text-sm">
+<span class="bg-green-100 text-green-700 px-2 py-1 rounded text-[11px] font-bold">Paid</span>
+</td>
+<td class="px-lg py-md text-right">
+<button class="text-blue-600 hover:text-blue-800 flex items-center justify-end gap-1 font-semibold text-xs ml-auto">
+<span class="material-symbols-outlined text-sm" data-icon="download">download</span>
+                      Download PDF
+                    </button>
+</td>
+</tr>
+<tr class="hover:bg-slate-50 transition-colors cursor-pointer group">
+<td class="px-lg py-md text-sm font-medium text-slate-900">Jul 01, 2023</td>
+<td class="px-lg py-md text-sm text-slate-500">Jun 01 - Jun 30</td>
+<td class="px-lg py-md text-sm text-slate-900">$5,200</td>
+<td class="px-lg py-md text-sm font-bold text-slate-900">$4,200</td>
+<td class="px-lg py-md text-sm">
+<span class="bg-green-100 text-green-700 px-2 py-1 rounded text-[11px] font-bold">Paid</span>
+</td>
+<td class="px-lg py-md text-right">
+<button class="text-blue-600 hover:text-blue-800 flex items-center justify-end gap-1 font-semibold text-xs ml-auto">
+<span class="material-symbols-outlined text-sm" data-icon="download">download</span>
+                      Download PDF
+                    </button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="p-md bg-slate-50 text-center">
+<button class="text-sm font-semibold text-slate-600 hover:text-blue-600 transition-colors">View All Pay History</button>
+</div>
+</div>
+<!-- Detailed Paystub Preview -->
+<div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden flex flex-col">
+<div class="p-lg bg-blue-600 text-white">
+<div class="flex justify-between items-start mb-md">
+<div>
+<p class="text-[11px] uppercase font-bold tracking-widest opacity-80">Latest Statement</p>
+<h3 class="text-h2">September 2023</h3>
+</div>
+<button class="bg-white/20 p-2 rounded-full hover:bg-white/30 transition-colors">
+<span class="material-symbols-outlined" data-icon="print">print</span>
+</button>
+</div>
+<div class="flex justify-between items-end">
+<div>
+<p class="text-[11px] opacity-80">Net Amount</p>
+<p class="text-2xl font-bold">$4,200.00</p>
+</div>
+<p class="text-xs opacity-80">Ref: SL-2023-09</p>
+</div>
+</div>
+<div class="p-lg space-y-lg">
+<!-- Earnings Section -->
+<div>
+<div class="flex justify-between items-center mb-md">
+<span class="text-sm font-bold text-slate-900">Earnings</span>
+<span class="text-xs text-slate-400">Total: $5,200.00</span>
+</div>
+<ul class="space-y-md">
+<li class="flex justify-between text-sm">
+<span class="text-slate-600">Basic Salary</span>
+<span class="font-medium text-slate-900">$4,000.00</span>
+</li>
+<li class="flex justify-between text-sm">
+<span class="text-slate-600">HRA (Housing)</span>
+<span class="font-medium text-slate-900">$800.00</span>
+</li>
+<li class="flex justify-between text-sm">
+<span class="text-slate-600">Performance Bonus</span>
+<span class="font-medium text-slate-900">$400.00</span>
+</li>
+</ul>
+</div>
+<div class="h-[1px] bg-slate-100"></div>
+<!-- Deductions Section -->
+<div>
+<div class="flex justify-between items-center mb-md">
+<span class="text-sm font-bold text-slate-900">Deductions</span>
+<span class="text-xs text-slate-400">Total: $1,000.00</span>
+</div>
+<ul class="space-y-md">
+<li class="flex justify-between text-sm">
+<span class="text-slate-600">Income Tax (FIT)</span>
+<span class="font-medium text-red-600">-$750.00</span>
+</li>
+<li class="flex justify-between text-sm">
+<span class="text-slate-600">Health Insurance</span>
+<span class="font-medium text-red-600">-$200.00</span>
+</li>
+<li class="flex justify-between text-sm">
+<span class="text-slate-600">401(k) Contribution</span>
+<span class="font-medium text-red-600">-$50.00</span>
+</li>
+</ul>
+</div>
+<!-- Total Bar Chart (Subtle) -->
+<div class="pt-md">
+<div class="flex h-3 w-full rounded-full overflow-hidden mb-sm">
+<div class="h-full bg-blue-600" style="width: 80%"></div>
+<div class="h-full bg-red-400" style="width: 20%"></div>
+</div>
+<div class="flex justify-between text-[10px] font-bold uppercase text-slate-400">
+<span>80% Take Home</span>
+<span>20% Deducted</span>
+</div>
+</div>
+</div>
+<div class="mt-auto p-md bg-slate-50 flex gap-md">
+<button class="flex-1 bg-white border border-slate-200 py-2 rounded-lg text-sm font-semibold text-slate-700 hover:bg-slate-100 transition-colors flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-sm" data-icon="visibility">visibility</span>
+              Full Preview
+            </button>
+<button class="flex-1 bg-primary-container text-white py-2 rounded-lg text-sm font-semibold hover:bg-blue-700 transition-colors flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-sm" data-icon="download">download</span>
+              PDF
+            </button>
+</div>
+</div>
+</div>
+<!-- Action Footer -->
+<div class="mt-xl grid grid-cols-1 md:grid-cols-3 gap-lg">
+<div class="bg-indigo-50 border border-indigo-100 p-lg rounded-xl flex items-center gap-lg">
+<div class="bg-indigo-600 text-white p-3 rounded-full">
+<span class="material-symbols-outlined" data-icon="description">description</span>
+</div>
+<div>
+<h4 class="font-bold text-slate-900">Tax Documents</h4>
+<p class="text-sm text-slate-600">Download your W-2 for the 2022 tax year.</p>
+<a class="text-sm text-indigo-600 font-bold hover:underline mt-sm inline-block" href="#">Get W-2 Form</a>
+</div>
+</div>
+<div class="bg-emerald-50 border border-emerald-100 p-lg rounded-xl flex items-center gap-lg">
+<div class="bg-emerald-600 text-white p-3 rounded-full">
+<span class="material-symbols-outlined" data-icon="account_balance">account_balance</span>
+</div>
+<div>
+<h4 class="font-bold text-slate-900">Direct Deposit</h4>
+<p class="text-sm text-slate-600">Manage your linked bank accounts.</p>
+<a class="text-sm text-emerald-600 font-bold hover:underline mt-sm inline-block" href="#">Update Details</a>
+</div>
+</div>
+<div class="bg-amber-50 border border-amber-100 p-lg rounded-xl flex items-center gap-lg">
+<div class="bg-amber-600 text-white p-3 rounded-full">
+<span class="material-symbols-outlined" data-icon="live_help">live_help</span>
+</div>
+<div>
+<h4 class="font-bold text-slate-900">Payroll Support</h4>
+<p class="text-sm text-slate-600">Have a question about your deductions?</p>
+<a class="text-sm text-amber-600 font-bold hover:underline mt-sm inline-block" href="#">Open Ticket</a>
+</div>
+</div>
+</div>
+</div>
+</main>
+</body></html>

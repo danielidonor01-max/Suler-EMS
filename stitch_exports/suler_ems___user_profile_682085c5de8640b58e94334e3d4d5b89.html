@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>User Profile | Suler EMS</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "tertiary": "#943700",
+                        "surface-container-highest": "#e1e2ed",
+                        "background": "#faf8ff",
+                        "secondary-fixed": "#dce2f3",
+                        "outline-variant": "#c3c6d7",
+                        "on-tertiary-fixed-variant": "#7d2d00",
+                        "on-primary-fixed": "#00174b",
+                        "tertiary-container": "#bc4800",
+                        "surface-container": "#ededf9",
+                        "primary": "#004ac6",
+                        "secondary-container": "#dce2f3",
+                        "primary-fixed": "#dbe1ff",
+                        "on-error": "#ffffff",
+                        "on-background": "#191b23",
+                        "tertiary-fixed-dim": "#ffb596",
+                        "surface-variant": "#e1e2ed",
+                        "on-tertiary-container": "#ffede6",
+                        "tertiary-fixed": "#ffdbcd",
+                        "surface-container-low": "#f3f3fe",
+                        "secondary-fixed-dim": "#c0c7d6",
+                        "on-surface": "#191b23",
+                        "error": "#ba1a1a",
+                        "error-container": "#ffdad6",
+                        "surface-bright": "#faf8ff",
+                        "primary-container": "#2563eb",
+                        "secondary": "#585f6c",
+                        "on-surface-variant": "#434655",
+                        "inverse-on-surface": "#f0f0fb",
+                        "on-primary": "#ffffff",
+                        "on-secondary-container": "#5e6572",
+                        "on-primary-fixed-variant": "#003ea8",
+                        "surface-tint": "#0053db",
+                        "on-tertiary-fixed": "#360f00",
+                        "surface-container-lowest": "#ffffff",
+                        "on-tertiary": "#ffffff",
+                        "on-primary-container": "#eeefff",
+                        "primary-fixed-dim": "#b4c5ff",
+                        "on-secondary-fixed-variant": "#404754",
+                        "inverse-primary": "#b4c5ff",
+                        "surface-container-high": "#e7e7f3",
+                        "surface": "#faf8ff",
+                        "on-error-container": "#93000a",
+                        "on-secondary": "#ffffff",
+                        "on-secondary-fixed": "#151c27",
+                        "inverse-surface": "#2e3039"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "2xl": "48px",
+                        "md": "16px",
+                        "lg": "24px",
+                        "3xl": "64px",
+                        "sm": "8px",
+                        "xs": "4px",
+                        "xl": "32px"
+                    },
+                    "fontFamily": {
+                        "h2": ["Inter"],
+                        "h1": ["Inter"],
+                        "button": ["Inter"],
+                        "h3": ["Inter"],
+                        "body-md": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "label-sm": ["Inter"]
+                    },
+                    "fontSize": {
+                        "h2": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                        "h1": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "button": ["14px", {"lineHeight": "20px", "fontWeight": "600"}],
+                        "h3": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                        "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                        "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "label-sm": ["12px", {"lineHeight": "16px", "fontWeight": "500"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body {
+            background-color: #faf8ff;
+            font-family: 'Inter', sans-serif;
+        }
+    </style>
+</head>
+<body class="antialiased">
+<!-- TopNavBar -->
+<nav class="bg-white border-b border-outline-variant shadow-sm flex justify-between items-center px-lg h-16 w-full fixed top-0 z-50">
+<div class="flex items-center gap-xl">
+<span class="text-h2 font-bold text-primary">Suler EMS</span>
+<div class="hidden md:flex items-center gap-md">
+<div class="relative group">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline group-focus-within:text-primary transition-colors">search</span>
+<input class="pl-10 pr-4 py-2 bg-surface-container border-none rounded-lg text-body-md w-72 focus:ring-2 focus:ring-primary-container transition-all" placeholder="Search resources..." type="text"/>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-sm">
+<button class="p-2 text-on-surface-variant hover:bg-surface-container transition-colors rounded-full">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="p-2 text-on-surface-variant hover:bg-surface-container transition-colors rounded-full">
+<span class="material-symbols-outlined">help</span>
+</button>
+<button class="p-2 text-primary bg-primary-fixed hover:bg-primary-fixed-dim transition-colors rounded-full">
+<span class="material-symbols-outlined">settings</span>
+</button>
+<div class="ml-2 w-8 h-8 rounded-full overflow-hidden border border-outline-variant shadow-sm">
+<img alt="User profile avatar" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBTUyuoOCGYBoS5pjGp7n_kf4OUfkVl6QE2I4XvWaOaa6U5e9GSoZkNy9fY_P7p8BJjiSa4Uz0l2I4M4zbNVplP70K8eNn_Xm5wUszfHimJWYcCKie6sPi_yZtgsFkdWkWllQh9ZLrOhdxaPu70nEaI_Zlju7CdjbiwJwZej1sL1v0o1CvazjFAbwy6i2UX8-khzCGl8b7pVbAwFJLt3VaJQMKiXh6o8uJuAkspITG47bMDQD1nuE1KhkoKGM_ojuyC2gp143P7GICr"/>
+</div>
+</div>
+</nav>
+<!-- SideNavBar -->
+<aside class="bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 fixed left-0 top-0 h-full flex flex-col pt-16 pb-4 z-40 w-64">
+<div class="px-6 py-6 border-b border-slate-200 dark:border-slate-800 mb-2">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 bg-primary-container rounded-lg flex items-center justify-center text-white">
+<span class="material-symbols-outlined">corporate_fare</span>
+</div>
+<div>
+<p class="text-lg font-black text-blue-600 leading-none">Suler EMS</p>
+<p class="text-[10px] uppercase tracking-wider text-slate-500 font-bold mt-1">Enterprise Portal</p>
+</div>
+</div>
+</div>
+<div class="flex-1 px-3 space-y-1 py-4">
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-all duration-200 group" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-inter text-sm font-medium">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-all duration-200 group" href="#">
+<span class="material-symbols-outlined">group</span>
+<span class="font-inter text-sm font-medium">Employees</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-all duration-200 group" href="#">
+<span class="material-symbols-outlined">payments</span>
+<span class="font-inter text-sm font-medium">Payroll</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-all duration-200 group" href="#">
+<span class="material-symbols-outlined">schedule</span>
+<span class="font-inter text-sm font-medium">Time Tracking</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-all duration-200 group" href="#">
+<span class="material-symbols-outlined">assessment</span>
+<span class="font-inter text-sm font-medium">Reports</span>
+</a>
+</div>
+<div class="px-3 space-y-1 border-t border-slate-200 dark:border-slate-800 pt-4">
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-blue-600 bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-600 transition-all duration-200" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-inter text-sm font-medium">Settings</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-all duration-200" href="#">
+<span class="material-symbols-outlined">contact_support</span>
+<span class="font-inter text-sm font-medium">Support</span>
+</a>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="pl-64 pt-16 min-h-screen bg-background">
+<div class="max-w-[1200px] mx-auto p-lg">
+<!-- Page Header -->
+<div class="mb-xl flex items-center justify-between">
+<div>
+<h1 class="font-h1 text-h1 text-on-surface">Account Settings</h1>
+<p class="font-body-md text-body-md text-on-surface-variant mt-sm">Manage your personal information, security preferences, and notifications.</p>
+</div>
+<button class="bg-primary hover:bg-primary-container text-white px-lg py-sm rounded-lg font-button text-button shadow-sm transition-all flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">save</span>
+                    Save Changes
+                </button>
+</div>
+<!-- Bento Grid Layout -->
+<div class="grid grid-cols-12 gap-lg">
+<!-- Personal Info Card -->
+<div class="col-span-12 lg:col-span-8 bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm overflow-hidden">
+<div class="px-lg py-md border-b border-outline-variant flex items-center justify-between">
+<h3 class="font-h3 text-h3 text-on-surface">Personal Information</h3>
+<span class="material-symbols-outlined text-outline">person</span>
+</div>
+<div class="p-lg">
+<div class="flex flex-col md:flex-row gap-xl items-start">
+<div class="relative group">
+<div class="w-32 h-32 rounded-full overflow-hidden border-4 border-surface-container shadow-sm">
+<img alt="Avatar upload" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB1a43Ht7zSd0JSrBRlX6nsZYxfsyAhXrmb4xJSglQdlBooTjesjRwbcZxduHBOCCfHJJYludv6Yrmxc3uGU-ncLFVRDyE_ekU-daJwhbVtVVOO0HZCC3txlG_CZ6hBhllSW9DJrKb8noFnh0ZWslg54aTwLc6_yGc-liYQu9HeGmDy7FisG-Q1cJpGAbSc5LMU5NA1ladQ03z2z5vm-E03LvdK-CCubrQkotufNb17Qu8mfETb0Pi9PCSfjiOw0seOzZa6VTH4J-rJ"/>
+</div>
+<button class="absolute bottom-0 right-0 bg-primary text-white p-2 rounded-full shadow-lg hover:scale-105 transition-transform">
+<span class="material-symbols-outlined text-[18px]">photo_camera</span>
+</button>
+</div>
+<div class="flex-1 grid grid-cols-1 md:grid-cols-2 gap-md w-full">
+<div class="space-y-xs">
+<label class="font-label-sm text-label-sm text-on-surface-variant">Full Name</label>
+<input class="w-full h-10 px-md bg-surface-container-low border-none rounded-lg font-body-md text-on-surface focus:ring-2 focus:ring-primary-container transition-all" type="text" value="Alexander Sterling"/>
+</div>
+<div class="space-y-xs">
+<label class="font-label-sm text-label-sm text-on-surface-variant">Email Address</label>
+<input class="w-full h-10 px-md bg-surface-container-low border-none rounded-lg font-body-md text-on-surface focus:ring-2 focus:ring-primary-container transition-all" type="email" value="alexander.s@sulerems.io"/>
+</div>
+<div class="space-y-xs">
+<label class="font-label-sm text-label-sm text-on-surface-variant">Phone Number</label>
+<input class="w-full h-10 px-md bg-surface-container-low border-none rounded-lg font-body-md text-on-surface focus:ring-2 focus:ring-primary-container transition-all" type="tel" value="1 (555) 0123-4567"/>
+</div>
+<div class="space-y-xs">
+<label class="font-label-sm text-label-sm text-on-surface-variant">Employee ID</label>
+<input class="w-full h-10 px-md bg-surface-container border-none rounded-lg font-body-md text-outline cursor-not-allowed" disabled="" type="text" value="EMS-8842-X"/>
+</div>
+<div class="col-span-full space-y-xs">
+<label class="font-label-sm text-label-sm text-on-surface-variant">Biography</label>
+<textarea class="w-full px-md py-sm bg-surface-container-low border-none rounded-lg font-body-md text-on-surface focus:ring-2 focus:ring-primary-container transition-all resize-none" rows="3">Senior Operations Manager with over 10 years of experience in enterprise logistics and employee coordination.</textarea>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Account Security Card -->
+<div class="col-span-12 lg:col-span-4 flex flex-col gap-lg">
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm overflow-hidden">
+<div class="px-lg py-md border-b border-outline-variant flex items-center justify-between bg-surface-container-low">
+<h3 class="font-h3 text-h3 text-on-surface">Security</h3>
+<span class="material-symbols-outlined text-primary">security</span>
+</div>
+<div class="p-md space-y-md">
+<div class="flex items-center justify-between p-sm hover:bg-surface-container transition-colors rounded-lg cursor-pointer group">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-outline">lock</span>
+<div>
+<p class="font-body-md font-bold text-on-surface">Password</p>
+<p class="text-[12px] text-on-surface-variant">Last changed 3 months ago</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-outline group-hover:text-primary">chevron_right</span>
+</div>
+<div class="flex items-center justify-between p-sm hover:bg-surface-container transition-colors rounded-lg cursor-pointer group">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-outline">verified_user</span>
+<div>
+<p class="font-body-md font-bold text-on-surface">2FA Security</p>
+<p class="text-[12px] text-tertiary">Currently disabled</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-outline group-hover:text-primary">chevron_right</span>
+</div>
+<div class="flex items-center justify-between p-sm hover:bg-surface-container transition-colors rounded-lg cursor-pointer group">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-outline">devices</span>
+<div>
+<p class="font-body-md font-bold text-on-surface">Active Sessions</p>
+<p class="text-[12px] text-on-surface-variant">3 devices logged in</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-outline group-hover:text-primary">chevron_right</span>
+</div>
+</div>
+</div>
+<!-- Usage Stats (Secondary Bento Element) -->
+<div class="bg-primary text-white rounded-xl p-lg shadow-lg relative overflow-hidden">
+<div class="relative z-10">
+<p class="text-white/80 font-label-sm mb-xs">Storage Usage</p>
+<h4 class="text-[24px] font-bold mb-md">78.4 GB <span class="text-sm font-normal opacity-80">of 100 GB</span></h4>
+<div class="w-full bg-white/20 h-2 rounded-full mb-md">
+<div class="bg-white h-2 rounded-full" style="width: 78.4%"></div>
+</div>
+<button class="bg-white/20 hover:bg-white/30 transition-colors w-full py-2 rounded-lg text-sm font-bold backdrop-blur-md">Upgrade Plan</button>
+</div>
+<div class="absolute -right-8 -bottom-8 opacity-10">
+<span class="material-symbols-outlined text-[120px]">cloud_done</span>
+</div>
+</div>
+</div>
+<!-- Notification Preferences Card -->
+<div class="col-span-12 bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm overflow-hidden mb-2xl">
+<div class="px-lg py-md border-b border-outline-variant flex items-center justify-between">
+<h3 class="font-h3 text-h3 text-on-surface">Notification Preferences</h3>
+<span class="material-symbols-outlined text-outline">notifications_active</span>
+</div>
+<div class="p-lg grid grid-cols-1 md:grid-cols-3 gap-lg">
+<div class="space-y-md">
+<h4 class="font-body-lg font-bold text-primary mb-sm">Email Alerts</h4>
+<div class="space-y-sm">
+<label class="flex items-center justify-between group cursor-pointer">
+<span class="font-body-md text-on-surface">Payroll Disbursed</span>
+<div class="relative inline-flex items-center">
+<input checked="" class="sr-only peer" type="checkbox"/>
+<div class="w-11 h-6 bg-outline-variant rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+</div>
+</label>
+<label class="flex items-center justify-between group cursor-pointer">
+<span class="font-body-md text-on-surface">Policy Updates</span>
+<div class="relative inline-flex items-center">
+<input checked="" class="sr-only peer" type="checkbox"/>
+<div class="w-11 h-6 bg-outline-variant rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+</div>
+</label>
+<label class="flex items-center justify-between group cursor-pointer">
+<span class="font-body-md text-on-surface">Team Announcements</span>
+<div class="relative inline-flex items-center">
+<input class="sr-only peer" type="checkbox"/>
+<div class="w-11 h-6 bg-outline-variant rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+</div>
+</label>
+</div>
+</div>
+<div class="space-y-md">
+<h4 class="font-body-lg font-bold text-primary mb-sm">Push Notifications</h4>
+<div class="space-y-sm">
+<label class="flex items-center justify-between group cursor-pointer">
+<span class="font-body-md text-on-surface">Time Clock Reminders</span>
+<div class="relative inline-flex items-center">
+<input checked="" class="sr-only peer" type="checkbox"/>
+<div class="w-11 h-6 bg-outline-variant rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+</div>
+</label>
+<label class="flex items-center justify-between group cursor-pointer">
+<span class="font-body-md text-on-surface">Task Assignments</span>
+<div class="relative inline-flex items-center">
+<input checked="" class="sr-only peer" type="checkbox"/>
+<div class="w-11 h-6 bg-outline-variant rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+</div>
+</label>
+<label class="flex items-center justify-between group cursor-pointer">
+<span class="font-body-md text-on-surface">Direct Messages</span>
+<div class="relative inline-flex items-center">
+<input checked="" class="sr-only peer" type="checkbox"/>
+<div class="w-11 h-6 bg-outline-variant rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+</div>
+</label>
+</div>
+</div>
+<div class="bg-surface-container-low p-md rounded-xl flex flex-col justify-center border border-dashed border-outline-variant">
+<div class="flex items-center gap-3 mb-sm">
+<span class="material-symbols-outlined text-primary">do_not_disturb_on</span>
+<p class="font-body-md font-bold text-on-surface">Quiet Mode</p>
+</div>
+<p class="text-label-sm text-on-surface-variant mb-md">Automatically silence notifications between 10:00 PM and 7:00 AM.</p>
+<button class="w-full py-2 bg-white border border-outline-variant rounded-lg text-button text-on-surface hover:bg-surface-container transition-colors">Configure Schedule</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+</body></html>

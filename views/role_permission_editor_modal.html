@@ -1,0 +1,63 @@
+
+<!-- TopNavBar -->
+
+<!-- Page Canvas -->
+<div class="p-lg">
+<div class="flex items-center justify-between mb-lg">
+<div>
+<h2 class="font-h2 text-h2 text-on-background">Role Management</h2>
+<p class="text-on-surface-variant">Define and manage access levels across the organization.</p>
+</div>
+<button class="px-md py-sm bg-primary text-white rounded-lg flex items-center gap-2 font-button hover:bg-surface-tint transition-colors">
+<span class="material-symbols-outlined" data-icon="add_moderator">add_moderator</span>
+            Create New Role
+          </button>
+</div>
+<!-- Role List (Bento Grid Style) -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-md">
+<!-- Administrator Role Card -->
+<div class="bg-white p-md rounded-xl border border-outline-variant shadow-sm hover:shadow-md transition-shadow relative overflow-hidden">
+<div class="flex justify-between items-start mb-sm">
+<div class="p-2 bg-primary-container/10 rounded-lg text-primary">
+<span class="material-symbols-outlined" data-icon="admin_panel_settings">admin_panel_settings</span>
+</div>
+<span class="px-2 py-0.5 bg-green-100 text-green-700 text-xs font-semibold rounded-full">Default</span>
+</div>
+<h3 class="font-h3 text-h3 mb-xs">Administrator</h3>
+<p class="text-on-surface-variant text-sm mb-md">Full access to all system modules and configuration settings.</p>
+<div class="flex items-center justify-between text-sm">
+<span class="text-on-surface-variant">12 Employees</span>
+<button class="text-primary font-semibold hover:underline">Edit Permissions</button>
+</div>
+</div>
+<!-- Manager Role Card -->
+<div class="bg-white p-md rounded-xl border-2 border-primary shadow-sm hover:shadow-md transition-shadow relative">
+<div class="flex justify-between items-start mb-sm">
+<div class="p-2 bg-blue-50 rounded-lg text-primary">
+<span class="material-symbols-outlined" data-icon="manager">network_manage</span>
+</div>
+<div class="h-2 w-2 bg-primary rounded-full"></div>
+</div>
+<h3 class="font-h3 text-h3 mb-xs">Manager</h3>
+<p class="text-on-surface-variant text-sm mb-md">Department-level management including payroll approval and attendance.</p>
+<div class="flex items-center justify-between text-sm">
+<span class="text-on-surface-variant">48 Employees</span>
+<button class="text-primary font-semibold hover:underline">Edit Permissions</button>
+</div>
+</div>
+<!-- Employee Role Card -->
+<div class="bg-white p-md rounded-xl border border-outline-variant shadow-sm hover:shadow-md transition-shadow relative">
+<div class="flex justify-between items-start mb-sm">
+<div class="p-2 bg-secondary-container/10 rounded-lg text-secondary">
+<span class="material-symbols-outlined" data-icon="person">person</span>
+</div>
+</div>
+<h3 class="font-h3 text-h3 mb-xs">Employee</h3>
+<p class="text-on-surface-variant text-sm mb-md">Standard access for personal profile, leaves, and attendance viewing.</p>
+<div class="flex items-center justify-between text-sm">
+<span class="text-on-surface-variant">842 Employees</span>
+<button class="text-primary font-semibold hover:underline">Edit Permissions</button>
+</div>
+</div>
+</div>
+</div>

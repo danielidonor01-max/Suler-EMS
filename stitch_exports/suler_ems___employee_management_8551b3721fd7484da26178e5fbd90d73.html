@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Employee Management (Admin) - Suler EMS</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-error": "#ffffff",
+                        "secondary": "#585f6c",
+                        "tertiary": "#943700",
+                        "inverse-surface": "#2e3039",
+                        "on-secondary-fixed": "#151c27",
+                        "tertiary-fixed-dim": "#ffb596",
+                        "surface-container-low": "#f3f3fe",
+                        "surface-variant": "#e1e2ed",
+                        "surface-tint": "#0053db",
+                        "secondary-fixed": "#dce2f3",
+                        "primary-fixed": "#dbe1ff",
+                        "surface-dim": "#d9d9e5",
+                        "on-primary": "#ffffff",
+                        "primary-container": "#2563eb",
+                        "on-tertiary-container": "#ffede6",
+                        "on-surface-variant": "#434655",
+                        "on-secondary-fixed-variant": "#404754",
+                        "on-primary-fixed-variant": "#003ea8",
+                        "surface-container-highest": "#e1e2ed",
+                        "on-tertiary-fixed-variant": "#7d2d00",
+                        "on-tertiary-fixed": "#360f00",
+                        "surface-container-high": "#e7e7f3",
+                        "surface-container-lowest": "#ffffff",
+                        "surface": "#faf8ff",
+                        "on-background": "#191b23",
+                        "tertiary-fixed": "#ffdbcd",
+                        "surface-container": "#ededf9",
+                        "background": "#faf8ff",
+                        "surface-bright": "#faf8ff",
+                        "secondary-fixed-dim": "#c0c7d6",
+                        "error": "#ba1a1a",
+                        "primary": "#004ac6",
+                        "secondary-container": "#dce2f3",
+                        "tertiary-container": "#bc4800",
+                        "inverse-primary": "#b4c5ff",
+                        "on-primary-container": "#eeefff",
+                        "on-error-container": "#93000a",
+                        "error-container": "#ffdad6",
+                        "inverse-on-surface": "#f0f0fb",
+                        "on-surface": "#191b23",
+                        "on-secondary-container": "#5e6572",
+                        "outline": "#737686",
+                        "outline-variant": "#c3c6d7",
+                        "on-primary-fixed": "#00174b",
+                        "on-tertiary": "#ffffff",
+                        "on-secondary": "#ffffff",
+                        "primary-fixed-dim": "#b4c5ff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "xl": "32px",
+                        "lg": "24px",
+                        "2xl": "48px",
+                        "xs": "4px",
+                        "md": "16px",
+                        "3xl": "64px",
+                        "sm": "8px"
+                    },
+                    "fontFamily": {
+                        "h3": ["Inter"],
+                        "button": ["Inter"],
+                        "body-md": ["Inter"],
+                        "h1": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "h2": ["Inter"],
+                        "label-sm": ["Inter"]
+                    },
+                    "fontSize": {
+                        "h3": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                        "button": ["14px", {"lineHeight": "20px", "fontWeight": "600"}],
+                        "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                        "h1": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "h2": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                        "label-sm": ["12px", {"lineHeight": "16px", "fontWeight": "500"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body { font-family: 'Inter', sans-serif; background-color: #faf8ff; }
+    </style>
+</head>
+<body class="bg-background text-on-surface">
+<!-- SideNavBar Component (Standardized to SCREEN_13 style) -->
+<aside class="h-screen w-64 border-r fixed left-0 top-0 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 z-50 flex flex-col">
+<!-- Branding -->
+<div class="px-6 py-8 flex items-center gap-3">
+<div class="w-10 h-10 bg-primary-container rounded-lg flex items-center justify-center">
+<span class="material-symbols-outlined text-white" data-icon="corporate_fare">corporate_fare</span>
+</div>
+<div>
+<h2 class="text-xl font-black text-blue-600 leading-none">Suler EMS</h2>
+<span class="text-label-sm text-secondary">HR Portal</span>
+</div>
+</div>
+<!-- Navigation Links -->
+<nav class="flex-1 px-4 space-y-1">
+<a class="flex items-center text-slate-600 dark:text-slate-400 px-3 py-3 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-all font-sans text-sm font-semibold tracking-tight" href="#">
+<span class="material-symbols-outlined mr-3" data-icon="dashboard">dashboard</span>
+            Dashboard
+        </a>
+<a class="flex items-center text-blue-600 dark:text-blue-400 bg-blue-50/50 dark:bg-blue-900/20 px-3 py-3 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-all font-sans text-sm font-semibold tracking-tight" href="#">
+<span class="material-symbols-outlined mr-3" data-icon="group">group</span>
+            Employees
+        </a>
+<a class="flex items-center text-slate-600 dark:text-slate-400 px-3 py-3 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-all font-sans text-sm font-semibold tracking-tight" href="#">
+<span class="material-symbols-outlined mr-3" data-icon="calendar_today">calendar_today</span>
+            Attendance
+        </a>
+<a class="flex items-center text-slate-600 dark:text-slate-400 px-3 py-3 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-all font-sans text-sm font-semibold tracking-tight" href="#">
+<span class="material-symbols-outlined mr-3" data-icon="event_busy">event_busy</span>
+            Leave Management
+        </a>
+<a class="flex items-center text-slate-600 dark:text-slate-400 px-3 py-3 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-all font-sans text-sm font-semibold tracking-tight" href="#">
+<span class="material-symbols-outlined mr-3" data-icon="bar_chart">bar_chart</span>
+            Reports
+        </a>
+<a class="flex items-center text-slate-600 dark:text-slate-400 px-3 py-3 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-all font-sans text-sm font-semibold tracking-tight" href="#">
+<span class="material-symbols-outlined mr-3" data-icon="settings">settings</span>
+            Settings
+        </a>
+</nav>
+<!-- Footer Links -->
+<div class="px-4 py-8 border-t border-slate-100">
+<a class="flex items-center text-slate-600 dark:text-slate-400 px-3 py-3 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-all font-sans text-sm font-semibold tracking-tight" href="#">
+<span class="material-symbols-outlined mr-3" data-icon="help">help</span>
+            Help Center
+        </a>
+</div>
+</aside>
+<!-- Main Content Wrapper -->
+<main class="ml-64 min-h-screen">
+<!-- TopNavBar Component (Standardized to SCREEN_13 style) -->
+<header class="flex justify-between items-center h-20 px-8 w-full sticky top-0 z-40 bg-white/80 backdrop-blur-md dark:bg-slate-900/80 border-b border-slate-200 dark:border-slate-800">
+<div class="flex items-center flex-1 max-w-xl">
+<div class="relative w-full">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" data-icon="search">search</span>
+<input class="w-full bg-slate-50 border-none rounded-xl pl-12 pr-4 py-3 focus:ring-2 focus:ring-blue-600 text-sm" placeholder="Search employees..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-6">
+<!-- Role Switcher -->
+<button class="flex items-center gap-2 px-4 py-2 bg-slate-50 hover:bg-slate-100 transition-colors rounded-xl text-sm font-semibold text-blue-600">
+<span class="material-symbols-outlined text-[18px]" data-icon="swap_horiz">swap_horiz</span>
+                Admin View
+            </button>
+<div class="flex items-center gap-4 border-l border-slate-200 pl-6">
+<button class="p-2 text-slate-500 hover:bg-slate-50 rounded-full transition-colors relative">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+<span class="absolute top-2 right-2 w-2 h-2 bg-error rounded-full border-2 border-white"></span>
+</button>
+<div class="flex items-center gap-3 cursor-pointer group">
+<img alt="Administrator profile avatar" class="w-10 h-10 rounded-full border-2 border-transparent group-hover:border-blue-600 transition-all" data-alt="A professional headshot of a senior executive in a well-lit modern corporate environment. The person wears a crisp charcoal business suit and a slight, confident smile. The background is a blurred high-end office with soft bokeh highlights and cool blue undertones. The lighting is flattering, emphasizing clean lines and professional reliability." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCFST33nhh6sG-oHN68wRmnwyzON17cqzLzkubOQ4c-SCGs9rfL00cTIeEaP-CGPzvU_ITp0aHGWIPv8TwDWD5lDLpQJOc-qmCEo_2G_Ypo6mzj4ZRROi90EnJhK9MSGs95XmEKdYLLF_ctvUvI7mX1XcN_j3odM0N5BR3CG1UcTE6BP_ImxgBd99XADTmuSv7wlf_7VkRtJmT6uB1mTxN_xf6G7hIRod4_3P3RXJ_V611_AiXJje3rQcbls0LIcCutcGc0KDtMuLLS"/>
+<div class="hidden lg:block text-left">
+<p class="text-sm font-bold text-slate-900 leading-none">Alex Thompson</p>
+<p class="text-[11px] text-slate-500 mt-0.5">System Admin</p>
+</div>
+</div>
+</div>
+</div>
+</header>
+<!-- Page Canvas -->
+<div class="p-xl">
+<!-- Header Section -->
+<div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-xl gap-4">
+<div>
+<h1 class="font-h1 text-h1 text-on-surface">Employee Management</h1>
+<p class="font-body-md text-body-md text-secondary mt-1">Manage, filter, and monitor all organization staff members.</p>
+</div>
+<button class="bg-primary text-white px-8 py-3 rounded-xl flex items-center gap-2 font-button text-button hover:bg-blue-700 transition-colors shadow-lg shadow-blue-600/20">
+<span class="material-symbols-outlined" data-icon="add">add</span>
+                Add Employee
+            </button>
+</div>
+<!-- Dashboard Analytics Quick Glance (KPI Cards standardized to SCREEN_13) -->
+<div class="grid grid-cols-1 md:grid-cols-4 gap-lg mb-xl">
+<!-- Card 1 -->
+<div class="bg-white p-lg rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden group">
+<div class="flex justify-between items-start mb-6">
+<div class="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center transition-colors group-hover:bg-blue-600 group-hover:text-white">
+<span class="material-symbols-outlined text-[28px]" data-icon="groups">groups</span>
+</div>
+<span class="text-emerald-600 text-label-sm font-bold bg-emerald-50 px-3 py-1 rounded-full">+12%</span>
+</div>
+<div>
+<p class="text-secondary text-sm font-medium mb-1">Total Employees</p>
+<h3 class="text-[32px] font-bold text-on-surface leading-tight">1,284</h3>
+</div>
+</div>
+<!-- Card 2 -->
+<div class="bg-white p-lg rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden group">
+<div class="flex justify-between items-start mb-6">
+<div class="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center transition-colors group-hover:bg-emerald-600 group-hover:text-white">
+<span class="material-symbols-outlined text-[28px]" data-icon="check_circle">check_circle</span>
+</div>
+<span class="text-emerald-600 text-label-sm font-bold bg-emerald-50 px-3 py-1 rounded-full">Active</span>
+</div>
+<div>
+<p class="text-secondary text-sm font-medium mb-1">Active Staff</p>
+<h3 class="text-[32px] font-bold text-on-surface leading-tight">1,156</h3>
+</div>
+</div>
+<!-- Card 3 -->
+<div class="bg-white p-lg rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden group">
+<div class="flex justify-between items-start mb-6">
+<div class="w-12 h-12 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center transition-colors group-hover:bg-amber-600 group-hover:text-white">
+<span class="material-symbols-outlined text-[28px]" data-icon="beach_access">beach_access</span>
+</div>
+<span class="text-amber-600 text-label-sm font-bold bg-amber-50 px-3 py-1 rounded-full">8%</span>
+</div>
+<div>
+<p class="text-secondary text-sm font-medium mb-1">On Leave</p>
+<h3 class="text-[32px] font-bold text-on-surface leading-tight">92</h3>
+</div>
+</div>
+<!-- Card 4 -->
+<div class="bg-white p-lg rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden group">
+<div class="flex justify-between items-start mb-6">
+<div class="w-12 h-12 rounded-xl bg-slate-50 text-slate-600 flex items-center justify-center transition-colors group-hover:bg-slate-900 group-hover:text-white">
+<span class="material-symbols-outlined text-[28px]" data-icon="person_add">person_add</span>
+</div>
+<span class="text-blue-600 text-label-sm font-bold bg-blue-50 px-3 py-1 rounded-full">New</span>
+</div>
+<div>
+<p class="text-secondary text-sm font-medium mb-1">Monthly Hires</p>
+<h3 class="text-[32px] font-bold text-on-surface leading-tight">14</h3>
+</div>
+</div>
+</div>
+<!-- Filtering & Data Table Card -->
+<div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+<!-- Filter Bar -->
+<div class="p-lg border-b border-slate-100 bg-white flex flex-wrap gap-4 items-center">
+<div class="relative min-w-[280px]">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm" data-icon="filter_list">filter_list</span>
+<input class="w-full text-sm rounded-xl border-slate-200 pl-10 py-2.5 focus:ring-blue-600 focus:border-blue-600" placeholder="Filter by name or ID..." type="text"/>
+</div>
+<select class="text-sm rounded-xl border-slate-200 bg-white px-4 py-2.5 focus:ring-blue-600 focus:border-blue-600 cursor-pointer">
+<option value="">All Departments</option>
+<option>Engineering</option>
+<option>HR</option>
+<option>Sales</option>
+<option>Marketing</option>
+</select>
+<select class="text-sm rounded-xl border-slate-200 bg-white px-4 py-2.5 focus:ring-blue-600 focus:border-blue-600 cursor-pointer">
+<option value="">All Statuses</option>
+<option>Active</option>
+<option>On Leave</option>
+<option>Inactive</option>
+</select>
+<button class="text-sm font-bold text-slate-600 flex items-center gap-2 ml-auto hover:text-blue-600 transition-colors px-4 py-2.5 rounded-xl hover:bg-slate-50">
+<span class="material-symbols-outlined text-[20px]" data-icon="download">download</span>
+                    Export CSV
+                </button>
+</div>
+<!-- Table Content -->
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-slate-50/50 border-b border-slate-100">
+<th class="px-8 py-5 text-label-sm text-slate-500 uppercase font-bold tracking-wider">Employee Name</th>
+<th class="px-8 py-5 text-label-sm text-slate-500 uppercase font-bold tracking-wider">Employee ID</th>
+<th class="px-8 py-5 text-label-sm text-slate-500 uppercase font-bold tracking-wider">Department</th>
+<th class="px-8 py-5 text-label-sm text-slate-500 uppercase font-bold tracking-wider">Role</th>
+<th class="px-8 py-5 text-label-sm text-slate-500 uppercase font-bold tracking-wider">Status</th>
+<th class="px-8 py-5 text-label-sm text-slate-500 uppercase font-bold tracking-wider">Join Date</th>
+<th class="px-8 py-5 text-label-sm text-slate-500 uppercase font-bold tracking-wider text-right">Actions</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-slate-100">
+<!-- Row 1 -->
+<tr class="hover:bg-slate-50/50 transition-colors">
+<td class="px-8 py-5">
+<div class="flex items-center gap-4">
+<img class="w-11 h-11 rounded-full object-cover ring-2 ring-transparent group-hover:ring-blue-100 transition-all" data-alt="A portrait of a male software engineer with glasses, looking directly into the camera." src="https://lh3.googleusercontent.com/aida-public/AB6AXuD9RDRm0LUWkq5S15b9JU8biTwAR_ABcq22_SQUOYeYLnNjLgKA9-ISsMi2sHUUwVn0gJgsV-dWNLj9jhcnkasBrb9YwCU2mRPWtBh9DQzXKCZMe_dJFShbSHi-JpFT7LtJyjuma99Y2hRhxsuqWb3fresZ0N-YwPQA7283c1yEWD88EsWOObT0cogk9MIPwp3jlbJ4xMWdbZZWVSZzydRKOZLoa8fu9rtDwucu9LId-8rSaYzp_kAXzTzFHs8_qkuKnAOn4Y0g_UuU"/>
+<div>
+<p class="text-body-md font-bold text-on-surface">Jordan Henderson</p>
+<p class="text-[12px] text-secondary">j.henderson@company.com</p>
+</div>
+</div>
+</td>
+<td class="px-8 py-5 text-body-md text-on-surface">EMP-2041</td>
+<td class="px-8 py-5 text-body-md text-on-surface">Engineering</td>
+<td class="px-8 py-5 text-body-md text-on-surface">Senior Developer</td>
+<td class="px-8 py-5">
+<span class="inline-flex items-center px-3 py-1 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-100">
+                                    Active
+                                </span>
+</td>
+<td class="px-8 py-5 text-body-md text-secondary">Jan 12, 2021</td>
+<td class="px-8 py-5 text-right">
+<div class="flex justify-end gap-1">
+<button class="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all">
+<span class="material-symbols-outlined text-[20px]" data-icon="edit">edit</span>
+</button>
+<button class="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-xl transition-all">
+<span class="material-symbols-outlined text-[20px]" data-icon="more_vert">more_vert</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Additional rows follow same pattern... -->
+<tr class="hover:bg-slate-50/50 transition-colors">
+<td class="px-8 py-5">
+<div class="flex items-center gap-4">
+<img class="w-11 h-11 rounded-full object-cover" data-alt="A medium shot of a professional woman of color in a modern office, smiling warmly." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAy8nJeLdutXzHzVZKKIowhHvCWDqm9HNbCIqEDo4OWRHNgObC4LHSTsoXTDp_DVeG8O9ewCI2y8olub5mHkD0K1PpR5qqGEt-XCcXNSYMnJTI5XbtA1ZWmASDn7qOTBFYThyDMuwxp3Vr0_pHDPIfLZstdhZ01_KOtD9q5hCznhsKM7PhdDI7C8oPe2vT-Mw9ds86wjXvCd4vUWPIuiMOnMiJiTMwhcnffa5CwbiH0YHHJwiRIZgI7OTayhNrNDChZgDTJseAhk_-r"/>
+<div>
+<p class="text-body-md font-bold text-on-surface">Sarah Jenkins</p>
+<p class="text-[12px] text-secondary">s.jenkins@company.com</p>
+</div>
+</div>
+</td>
+<td class="px-8 py-5 text-body-md text-on-surface">EMP-2045</td>
+<td class="px-8 py-5 text-body-md text-on-surface">HR</td>
+<td class="px-8 py-5 text-body-md text-on-surface">HR Manager</td>
+<td class="px-8 py-5">
+<span class="inline-flex items-center px-3 py-1 rounded-full text-[11px] font-bold bg-amber-50 text-amber-700 border border-amber-100">
+                                    On Leave
+                                </span>
+</td>
+<td class="px-8 py-5 text-body-md text-secondary">Mar 05, 2019</td>
+<td class="px-8 py-5 text-right">
+<div class="flex justify-end gap-1">
+<button class="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all">
+<span class="material-symbols-outlined text-[20px]" data-icon="edit">edit</span>
+</button>
+<button class="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-xl transition-all">
+<span class="material-symbols-outlined text-[20px]" data-icon="more_vert">more_vert</span>
+</button>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Pagination -->
+<div class="px-8 py-6 bg-white flex items-center justify-between border-t border-slate-100">
+<p class="text-label-sm font-medium text-slate-500">Showing 1 to 6 of 1,284 entries</p>
+<div class="flex items-center gap-2">
+<button class="p-2 text-slate-400 hover:bg-slate-50 rounded-xl transition-colors disabled:opacity-30" disabled="">
+<span class="material-symbols-outlined text-[20px]" data-icon="chevron_left">chevron_left</span>
+</button>
+<button class="w-10 h-10 rounded-xl bg-blue-600 text-white text-sm font-bold shadow-lg shadow-blue-600/20">1</button>
+<button class="w-10 h-10 rounded-xl hover:bg-slate-50 text-slate-600 text-sm font-bold transition-colors">2</button>
+<button class="w-10 h-10 rounded-xl hover:bg-slate-50 text-slate-600 text-sm font-bold transition-colors">3</button>
+<span class="px-2 text-slate-300 font-bold">...</span>
+<button class="w-10 h-10 rounded-xl hover:bg-slate-50 text-slate-600 text-sm font-bold transition-colors">214</button>
+<button class="p-2 text-slate-400 hover:bg-slate-50 rounded-xl transition-colors">
+<span class="material-symbols-outlined text-[20px]" data-icon="chevron_right">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Focus Tasks / Notifications Section (Secondary) -->
+<div class="mt-xl grid grid-cols-1 md:grid-cols-2 gap-lg">
+<div class="bg-white p-lg rounded-2xl border border-slate-100 shadow-sm">
+<h3 class="font-h3 text-h3 text-on-surface mb-6 flex items-center gap-2">
+<span class="w-1.5 h-6 bg-blue-600 rounded-full"></span>
+                    Recent Hire Activity
+                </h3>
+<div class="space-y-6">
+<div class="flex items-start gap-4">
+<div class="mt-1.5 w-2 h-2 rounded-full bg-blue-600 ring-4 ring-blue-50"></div>
+<div class="flex-1">
+<p class="text-body-md text-on-surface leading-tight">New Employee <span class="font-bold">Thomas Shelby</span> joined Engineering.</p>
+<span class="text-[11px] font-bold text-slate-400 uppercase tracking-wide">2 hours ago</span>
+</div>
+</div>
+<div class="flex items-start gap-4">
+<div class="mt-1.5 w-2 h-2 rounded-full bg-emerald-600 ring-4 ring-emerald-50"></div>
+<div class="flex-1">
+<p class="text-body-md text-on-surface leading-tight">Document verification completed for <span class="font-bold">Lisa Ray</span>.</p>
+<span class="text-[11px] font-bold text-slate-400 uppercase tracking-wide">5 hours ago</span>
+</div>
+</div>
+<div class="flex items-start gap-4">
+<div class="mt-1.5 w-2 h-2 rounded-full bg-amber-600 ring-4 ring-amber-50"></div>
+<div class="flex-1">
+<p class="text-body-md text-on-surface leading-tight">Leave request approved for <span class="font-bold">Sarah Jenkins</span>.</p>
+<span class="text-[11px] font-bold text-slate-400 uppercase tracking-wide">Yesterday</span>
+</div>
+</div>
+</div>
+</div>
+<div class="bg-gradient-to-br from-blue-600 to-blue-800 p-lg rounded-2xl shadow-xl shadow-blue-600/20 relative overflow-hidden text-white flex flex-col justify-between min-h-[220px]">
+<div class="relative z-10">
+<h3 class="text-2xl font-bold mb-3">Performance Reports Ready</h3>
+<p class="text-blue-50 font-medium opacity-90 max-w-md">The Q3 performance metrics are now compiled and available for administrative review.</p>
+</div>
+<div class="relative z-10 mt-6">
+<button class="bg-white text-blue-600 px-6 py-3 rounded-xl font-bold text-sm hover:bg-blue-50 transition-all transform hover:-translate-y-0.5 flex items-center gap-2 shadow-lg">
+<span class="material-symbols-outlined text-[20px]" data-icon="analytics">analytics</span>
+                        View Detailed Reports
+                    </button>
+</div>
+<!-- Decorative element -->
+<div class="absolute -right-6 -bottom-10 opacity-10 transform rotate-12 scale-125">
+<span class="material-symbols-outlined text-[200px]" data-icon="monitoring">monitoring</span>
+</div>
+</div>
+</div>
+</div>
+</main>
+</body></html>

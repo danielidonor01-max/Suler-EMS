@@ -1,0 +1,247 @@
+<!-- Salary Structures -->
+<div style="padding:var(--content-padding);">
+
+  <!-- Page Header -->
+  <div class="module-header">
+    <div>
+      <h2 style="font-size:var(--text-2xl);font-weight:var(--font-semibold);margin:0 0 4px 0;">Salary Structures</h2>
+      <p style="font-size:var(--text-sm);color:var(--color-text-secondary);margin:0;">Define and manage compensation frameworks across the organization.</p>
+    </div>
+    <div class="module-header-actions">
+      <button class="btn btn-secondary">Export Report</button>
+      <button class="btn btn-primary">+ Add Grade</button>
+    </div>
+  </div>
+
+  <!-- KPI Summary Strip -->
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:var(--grid-gap);margin-bottom:var(--space-lg);">
+    <div class="dashboard-card">
+      <div class="dashboard-card-icon" style="background:#f0fdf4;color:#16a34a;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+      </div>
+      <div class="dashboard-card-label">Avg Retention Bonus</div>
+      <div class="dashboard-card-value" style="font-variant-numeric:tabular-nums;">$1,240</div>
+      <div class="progress-wrapper"><div class="progress-bar progress-success" style="width:65%;"></div></div>
+      <div class="dashboard-card-trend trend-up">↑ 8.4% vs Q3</div>
+    </div>
+    <div class="dashboard-card">
+      <div class="dashboard-card-icon" style="background:#eff6ff;color:#2563eb;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+      </div>
+      <div class="dashboard-card-label">Monthly Payroll Total</div>
+      <div class="dashboard-card-value" style="font-variant-numeric:tabular-nums;">$458,200</div>
+      <div class="progress-wrapper"><div class="progress-bar" style="width:82%;"></div></div>
+      <div class="cell-secondary" style="margin-top:4px;">395 active staff</div>
+    </div>
+    <div class="dashboard-card">
+      <div class="dashboard-card-icon" style="background:#fdf4ff;color:#7c3aed;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      </div>
+      <div class="dashboard-card-label">Total Salary Grades</div>
+      <div class="dashboard-card-value">4</div>
+      <div class="dashboard-card-trend trend-up">Active grades</div>
+    </div>
+  </div>
+
+  <!-- Main 2-col layout -->
+  <div style="display:grid;grid-template-columns:1fr 280px;gap:var(--grid-gap);align-items:start;">
+
+    <!-- Salary Grades Table -->
+    <div style="display:flex;flex-direction:column;gap:var(--grid-gap);">
+      <div class="table-card">
+        <div class="table-card-header">
+          <h3 class="table-card-title">Salary Grades</h3>
+          <div style="display:flex;gap:var(--space-sm);">
+            <div class="filter-search" style="max-width:200px;">
+              <span class="filter-search-icon">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              </span>
+              <input type="text" placeholder="Search grades…">
+            </div>
+            <span style="font-size:var(--text-xs);color:var(--color-text-muted);display:flex;align-items:center;">4 grades</span>
+          </div>
+        </div>
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th style="padding-left:var(--space-lg);">Grade</th>
+                <th class="cell-num">Min Salary</th>
+                <th class="cell-num">Max Salary</th>
+                <th>Allowances</th>
+                <th class="cell-num">Employees</th>
+                <th style="text-align:right;padding-right:var(--space-lg);">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td style="padding-left:var(--space-lg);">
+                  <div class="cell-primary">Grade 1 — Executive</div>
+                  <div class="cell-secondary">C-Suite &amp; SVPs</div>
+                </td>
+                <td class="cell-num" style="font-variant-numeric:tabular-nums;font-weight:var(--font-medium);">$12,000</td>
+                <td class="cell-num" style="font-variant-numeric:tabular-nums;font-weight:var(--font-medium);">$25,000</td>
+                <td>
+                  <div style="display:flex;flex-wrap:wrap;gap:4px;">
+                    <span class="badge badge-primary">CAR</span>
+                    <span class="badge badge-primary">HOUSE</span>
+                    <span class="badge badge-neutral">+2</span>
+                  </div>
+                </td>
+                <td class="cell-num" style="font-weight:var(--font-semibold);color:var(--color-primary);font-variant-numeric:tabular-nums;">12</td>
+                <td style="text-align:right;padding-right:var(--space-lg);">
+                  <button class="btn btn-sm btn-secondary">Edit</button>
+                </td>
+              </tr>
+              <tr>
+                <td style="padding-left:var(--space-lg);">
+                  <div class="cell-primary">Grade 2 — Manager</div>
+                  <div class="cell-secondary">Dept. Heads &amp; Leads</div>
+                </td>
+                <td class="cell-num" style="font-variant-numeric:tabular-nums;font-weight:var(--font-medium);">$8,500</td>
+                <td class="cell-num" style="font-variant-numeric:tabular-nums;font-weight:var(--font-medium);">$14,500</td>
+                <td>
+                  <div style="display:flex;flex-wrap:wrap;gap:4px;">
+                    <span class="badge badge-primary">HEALTH</span>
+                    <span class="badge badge-primary">COMM</span>
+                  </div>
+                </td>
+                <td class="cell-num" style="font-weight:var(--font-semibold);color:var(--color-primary);font-variant-numeric:tabular-nums;">45</td>
+                <td style="text-align:right;padding-right:var(--space-lg);">
+                  <button class="btn btn-sm btn-secondary">Edit</button>
+                </td>
+              </tr>
+              <tr>
+                <td style="padding-left:var(--space-lg);">
+                  <div class="cell-primary">Grade 3 — Senior</div>
+                  <div class="cell-secondary">Senior Staff</div>
+                </td>
+                <td class="cell-num" style="font-variant-numeric:tabular-nums;font-weight:var(--font-medium);">$5,500</td>
+                <td class="cell-num" style="font-variant-numeric:tabular-nums;font-weight:var(--font-medium);">$9,000</td>
+                <td>
+                  <div style="display:flex;flex-wrap:wrap;gap:4px;">
+                    <span class="badge badge-primary">MEALS</span>
+                  </div>
+                </td>
+                <td class="cell-num" style="font-weight:var(--font-semibold);color:var(--color-primary);font-variant-numeric:tabular-nums;">128</td>
+                <td style="text-align:right;padding-right:var(--space-lg);">
+                  <button class="btn btn-sm btn-secondary">Edit</button>
+                </td>
+              </tr>
+              <tr>
+                <td style="padding-left:var(--space-lg);">
+                  <div class="cell-primary">Grade 4 — Associate</div>
+                  <div class="cell-secondary">Entry Level</div>
+                </td>
+                <td class="cell-num" style="font-variant-numeric:tabular-nums;font-weight:var(--font-medium);">$3,000</td>
+                <td class="cell-num" style="font-variant-numeric:tabular-nums;font-weight:var(--font-medium);">$6,000</td>
+                <td>
+                  <span style="font-size:12px;color:var(--color-text-muted);">No allowances</span>
+                </td>
+                <td class="cell-num" style="font-weight:var(--font-semibold);color:var(--color-primary);font-variant-numeric:tabular-nums;">210</td>
+                <td style="text-align:right;padding-right:var(--space-lg);">
+                  <button class="btn btn-sm btn-secondary">Edit</button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="table-card-footer">
+          <span>4 salary grades</span>
+          <button class="btn btn-sm btn-secondary">View Detailed Report</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Sidebar -->
+    <div style="display:flex;flex-direction:column;gap:var(--grid-gap);position:sticky;top:calc(var(--topbar-height)+16px);">
+
+      <!-- Tax Configuration -->
+      <div class="panel">
+        <div class="panel-header">
+          <h3 class="panel-title">Tax Configuration</h3>
+        </div>
+        <div class="panel-body" style="padding:0;">
+          <div style="padding:var(--space-md) var(--space-lg);border-bottom:1px solid var(--color-border);display:flex;justify-content:space-between;align-items:center;">
+            <div>
+              <div class="cell-primary">Standard Income Tax</div>
+              <div class="cell-secondary">Based on annual slabs</div>
+            </div>
+            <div style="text-align:right;">
+              <div style="font-size:13px;font-weight:var(--font-semibold);font-variant-numeric:tabular-nums;">15%–30%</div>
+              <span class="badge badge-success" style="margin-top:2px;">Current</span>
+            </div>
+          </div>
+          <div style="padding:var(--space-md) var(--space-lg);display:flex;justify-content:space-between;align-items:center;">
+            <div>
+              <div class="cell-primary">Social Security</div>
+              <div class="cell-secondary">Mandatory contribution</div>
+            </div>
+            <div style="text-align:right;">
+              <div style="font-size:13px;font-weight:var(--font-semibold);font-variant-numeric:tabular-nums;">6.5%</div>
+              <span class="badge badge-neutral" style="margin-top:2px;">Fixed</span>
+            </div>
+          </div>
+        </div>
+        <div class="panel-footer">
+          <button class="btn btn-secondary" style="width:100%;justify-content:center;">Edit Tax Parameters</button>
+        </div>
+      </div>
+
+      <!-- Deduction Types -->
+      <div class="panel">
+        <div class="panel-header" style="background:var(--color-text-primary);border-radius:var(--radius-lg) var(--radius-lg) 0 0;">
+          <h3 class="panel-title" style="color:#fff;">Deduction Types</h3>
+          <button class="btn btn-sm" style="background:rgba(255,255,255,0.15);color:#fff;border:none;">Manage</button>
+        </div>
+        <div class="panel-body" style="padding:0;">
+          <div style="padding:var(--space-md) var(--space-lg);border-bottom:1px solid var(--color-border);display:flex;align-items:flex-start;gap:var(--space-sm);">
+            <div style="width:34px;height:34px;border-radius:var(--radius-md);background:#fef2f2;color:var(--color-danger);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+            </div>
+            <div style="flex:1;">
+              <div style="display:flex;justify-content:space-between;">
+                <div class="cell-primary">Health Insurance</div>
+                <span style="font-size:12px;font-weight:var(--font-semibold);font-variant-numeric:tabular-nums;">$120/mo</span>
+              </div>
+              <div class="cell-secondary">Corporate plan incl. dental &amp; vision</div>
+            </div>
+          </div>
+          <div style="padding:var(--space-md) var(--space-lg);border-bottom:1px solid var(--color-border);display:flex;align-items:flex-start;gap:var(--space-sm);">
+            <div style="width:34px;height:34px;border-radius:var(--radius-md);background:#eff6ff;color:var(--color-primary);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+            </div>
+            <div style="flex:1;">
+              <div style="display:flex;justify-content:space-between;">
+                <div class="cell-primary">Pension Fund</div>
+                <span style="font-size:12px;font-weight:var(--font-semibold);">5.0% Gross</span>
+              </div>
+              <div class="cell-secondary">Employee retirement, matching 5%</div>
+            </div>
+          </div>
+          <div style="padding:var(--space-md) var(--space-lg);display:flex;align-items:flex-start;gap:var(--space-sm);">
+            <div style="width:34px;height:34px;border-radius:var(--radius-md);background:#fff7ed;color:#ea580c;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
+            </div>
+            <div style="flex:1;">
+              <div style="display:flex;justify-content:space-between;">
+                <div class="cell-primary">Education Loan</div>
+                <span style="font-size:12px;font-weight:var(--font-semibold);">Variable</span>
+              </div>
+              <div class="cell-secondary">Professional development repayment</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Policy Update Banner -->
+      <div style="background:linear-gradient(135deg,#2563eb,#4338ca);border-radius:var(--radius-lg);padding:var(--space-lg);color:#fff;position:relative;overflow:hidden;">
+        <h4 style="font-size:var(--text-md);font-weight:var(--font-bold);margin:0 0 var(--space-xs);">Policy Update</h4>
+        <p style="font-size:12px;opacity:0.9;line-height:1.5;margin:0 0 var(--space-md);">New government holiday pay regulations effective Jan 1st. View the impact analysis.</p>
+        <button class="btn" style="background:#fff;color:#2563eb;font-weight:var(--font-semibold);">Read More</button>
+      </div>
+
+    </div><!-- /right -->
+  </div><!-- /grid -->
+
+</div>

@@ -1,0 +1,83 @@
+
+<div class="max-w-6xl mx-auto space-y-lg">
+<header class="flex justify-between items-end">
+<div>
+<h2 class="font-h1 text-h1 text-on-surface">Attendance Tracker</h2>
+<p class="text-on-surface-variant font-body-md mt-sm">Monitor daily clock-in/out records and status.</p>
+</div>
+<button class="bg-primary text-on-primary px-lg py-sm rounded-lg font-button flex items-center gap-sm shadow-sm hover:opacity-90 transition-opacity">
+<span class="material-symbols-outlined text-[20px]" data-icon="add">add</span>
+                    New Request
+                </button>
+</header>
+<!-- Bento Grid Stats -->
+<div class="grid grid-cols-1 md:grid-cols-4 gap-lg">
+<div class="bg-surface-container-low p-md rounded-xl border border-outline-variant shadow-sm flex flex-col gap-xs">
+<span class="text-on-surface-variant font-label-sm">TOTAL HOURS</span>
+<span class="text-h2 font-h2 text-on-surface">156.5</span>
+<span class="text-xs text-primary font-medium flex items-center gap-xs">
+<span class="material-symbols-outlined text-[14px]" data-icon="trending_up">trending_up</span>
+                        4% from last month
+                    </span>
+</div>
+<div class="bg-surface-container-low p-md rounded-xl border border-outline-variant shadow-sm flex flex-col gap-xs">
+<span class="text-on-surface-variant font-label-sm">PRESENT DAYS</span>
+<span class="text-h2 font-h2 text-on-surface">21/22</span>
+<span class="text-xs text-secondary font-medium">95.4% Attendance</span>
+</div>
+<div class="bg-surface-container-low p-md rounded-xl border border-outline-variant shadow-sm flex flex-col gap-xs">
+<span class="text-on-surface-variant font-label-sm">LATE CLOCK-INS</span>
+<span class="text-h2 font-h2 text-on-surface">02</span>
+<span class="text-xs text-tertiary font-medium">Target: &lt; 01</span>
+</div>
+<div class="bg-surface-container-low p-md rounded-xl border border-outline-variant shadow-sm flex flex-col gap-xs">
+<span class="text-on-surface-variant font-label-sm">CORRECTIONS</span>
+<span class="text-h2 font-h2 text-on-surface">03</span>
+<span class="text-xs text-on-surface-variant font-medium">Pending Review</span>
+</div>
+</div>
+<!-- Attendance Table Placeholder -->
+<div class="bg-white rounded-xl border border-outline-variant shadow-sm overflow-hidden">
+<div class="p-md border-b border-outline-variant bg-surface-container-lowest flex justify-between items-center">
+<h3 class="font-h3 text-h3 text-on-surface">Recent Activity</h3>
+<div class="flex gap-sm">
+<div class="relative">
+<input class="pl-xl pr-md py-xs bg-surface-container rounded-lg border-none text-body-md focus:ring-2 focus:ring-primary" placeholder="Search records..." type="text">
+<span class="material-symbols-outlined absolute left-sm top-1/2 -translate-y-1/2 text-on-surface-variant text-[18px]" data-icon="search">search</span>
+</div>
+<button class="px-md py-xs border border-outline-variant rounded-lg font-button text-on-surface hover:bg-surface-container-low transition-colors">Filter</button>
+</div>
+</div>
+<table class="w-full text-left font-body-md">
+<thead>
+<tr class="bg-surface-container-low text-on-surface-variant border-b border-outline-variant">
+<th class="px-lg py-md">Date</th>
+<th class="px-lg py-md">Clock In</th>
+<th class="px-lg py-md">Clock Out</th>
+<th class="px-lg py-md">Status</th>
+<th class="px-lg py-md text-right">Action</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant">
+<tr class="hover:bg-surface-container-lowest transition-colors">
+<td class="px-lg py-md font-medium">Oct 24, 2023</td>
+<td class="px-lg py-md text-on-surface">09:00</td>
+<td class="px-lg py-md text-on-surface">17:00</td>
+<td class="px-lg py-md">
+<span class="bg-secondary-container/30 text-secondary px-sm py-xs rounded-full text-label-sm font-semibold">Completed</span>
+</td>
+<td class="px-lg py-md text-right text-primary cursor-pointer font-button">Edit</td>
+</tr>
+<tr class="hover:bg-surface-container-lowest transition-colors bg-surface-container-low/20">
+<td class="px-lg py-md font-medium">Oct 23, 2023</td>
+<td class="px-lg py-md text-on-surface">08:55</td>
+<td class="px-lg py-md text-on-surface text-error">--:--</td>
+<td class="px-lg py-md">
+<span class="bg-tertiary-container/10 text-tertiary px-sm py-xs rounded-full text-label-sm font-semibold">Missing Out</span>
+</td>
+<td class="px-lg py-md text-right text-primary cursor-pointer font-button font-bold">Request Correction</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>

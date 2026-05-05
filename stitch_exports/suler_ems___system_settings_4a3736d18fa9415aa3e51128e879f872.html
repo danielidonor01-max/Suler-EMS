@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>System Settings - Suler EMS</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-error": "#ffffff",
+                        "secondary": "#585f6c",
+                        "tertiary": "#943700",
+                        "inverse-surface": "#2e3039",
+                        "on-secondary-fixed": "#151c27",
+                        "tertiary-fixed-dim": "#ffb596",
+                        "surface-container-low": "#f3f3fe",
+                        "surface-variant": "#e1e2ed",
+                        "surface-tint": "#0053db",
+                        "secondary-fixed": "#dce2f3",
+                        "primary-fixed": "#dbe1ff",
+                        "surface-dim": "#d9d9e5",
+                        "on-primary": "#ffffff",
+                        "primary-container": "#2563eb",
+                        "on-tertiary-container": "#ffede6",
+                        "on-surface-variant": "#434655",
+                        "on-secondary-fixed-variant": "#404754",
+                        "on-primary-fixed-variant": "#003ea8",
+                        "surface-container-highest": "#e1e2ed",
+                        "on-tertiary-fixed-variant": "#7d2d00",
+                        "on-tertiary-fixed": "#360f00",
+                        "surface-container-high": "#e7e7f3",
+                        "surface-container-lowest": "#ffffff",
+                        "surface": "#faf8ff",
+                        "on-background": "#191b23",
+                        "tertiary-fixed": "#ffdbcd",
+                        "surface-container": "#ededf9",
+                        "background": "#faf8ff",
+                        "surface-bright": "#faf8ff",
+                        "secondary-fixed-dim": "#c0c7d6",
+                        "error": "#ba1a1a",
+                        "primary": "#004ac6",
+                        "secondary-container": "#dce2f3",
+                        "tertiary-container": "#bc4800",
+                        "inverse-primary": "#b4c5ff",
+                        "on-primary-container": "#eeefff",
+                        "on-error-container": "#93000a",
+                        "error-container": "#ffdad6",
+                        "inverse-on-surface": "#f0f0fb",
+                        "on-surface": "#191b23",
+                        "on-secondary-container": "#5e6572",
+                        "outline": "#737686",
+                        "outline-variant": "#c3c6d7",
+                        "on-primary-fixed": "#00174b",
+                        "on-tertiary": "#ffffff",
+                        "on-secondary": "#ffffff",
+                        "primary-fixed-dim": "#b4c5ff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "xl": "32px",
+                        "lg": "24px",
+                        "2xl": "48px",
+                        "xs": "4px",
+                        "md": "16px",
+                        "3xl": "64px",
+                        "sm": "8px"
+                    },
+                    "fontFamily": {
+                        "h3": ["Inter"],
+                        "button": ["Inter"],
+                        "body-md": ["Inter"],
+                        "h1": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "h2": ["Inter"],
+                        "label-sm": ["Inter"]
+                    },
+                    "fontSize": {
+                        "h3": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                        "button": ["14px", {"lineHeight": "20px", "fontWeight": "600"}],
+                        "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                        "h1": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "h2": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                        "label-sm": ["12px", {"lineHeight": "16px", "fontWeight": "500"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body { font-family: 'Inter', sans-serif; background-color: #faf8ff; }
+        .tab-active { border-bottom: 2px solid #004ac6; color: #004ac6; }
+    </style>
+</head>
+<body class="bg-background text-on-surface">
+<!-- SideNavBar Component (Standardized from SCREEN_13) -->
+<aside class="h-screen w-64 border-r fixed left-0 top-0 bg-white border-slate-200 z-50 overflow-y-auto">
+<div class="flex flex-col h-full pt-4 pb-8">
+<!-- Branding -->
+<div class="px-6 mb-8 flex items-center gap-3">
+<div class="w-10 h-10 bg-primary-container rounded-lg flex items-center justify-center">
+<span class="material-symbols-outlined text-white" data-icon="corporate_fare">corporate_fare</span>
+</div>
+<div>
+<h2 class="text-lg font-black text-blue-600 leading-none">Suler EMS</h2>
+<span class="text-label-sm text-secondary">HR Portal</span>
+</div>
+</div>
+<!-- Navigation Links -->
+<nav class="flex-1 px-2 space-y-1">
+<a class="flex items-center text-slate-600 px-4 py-3 border-l-4 border-transparent hover:bg-slate-50 transition-all font-sans text-sm font-semibold tracking-tight" href="#">
+<span class="material-symbols-outlined mr-3" data-icon="dashboard">dashboard</span>
+                Dashboard
+            </a>
+<a class="flex items-center text-slate-600 px-4 py-3 border-l-4 border-transparent hover:bg-slate-50 transition-all font-sans text-sm font-semibold tracking-tight" href="#">
+<span class="material-symbols-outlined mr-3" data-icon="group">group</span>
+                Employees
+            </a>
+<a class="flex items-center text-slate-600 px-4 py-3 border-l-4 border-transparent hover:bg-slate-50 transition-all font-sans text-sm font-semibold tracking-tight" href="#">
+<span class="material-symbols-outlined mr-3" data-icon="calendar_today">calendar_today</span>
+                Attendance
+            </a>
+<a class="flex items-center text-slate-600 px-4 py-3 border-l-4 border-transparent hover:bg-slate-50 transition-all font-sans text-sm font-semibold tracking-tight" href="#">
+<span class="material-symbols-outlined mr-3" data-icon="event_busy">event_busy</span>
+                Leave Management
+            </a>
+<a class="flex items-center text-slate-600 px-4 py-3 border-l-4 border-transparent hover:bg-slate-50 transition-all font-sans text-sm font-semibold tracking-tight" href="#">
+<span class="material-symbols-outlined mr-3" data-icon="bar_chart">bar_chart</span>
+                Reports
+            </a>
+<a class="flex items-center text-blue-600 bg-blue-50/50 border-l-4 border-blue-600 px-4 py-3 transition-all font-sans text-sm font-semibold tracking-tight" href="#"><span class="material-symbols-outlined mr-3" data-icon="settings">settings</span>Settings</a>
+</nav>
+<!-- Footer Links -->
+<div class="px-2 mt-auto border-t border-slate-100 pt-4">
+<a class="flex items-center text-slate-600 px-4 py-3 border-l-4 border-transparent hover:bg-slate-50 transition-all font-sans text-sm font-semibold tracking-tight" href="#">
+<span class="material-symbols-outlined mr-3" data-icon="help">help</span>
+                Help Center
+            </a>
+</div>
+</div>
+</aside>
+<!-- Main Content Wrapper -->
+<main class="ml-64 min-h-screen">
+<!-- TopNavBar Component (Standardized from SCREEN_13) -->
+<header class="flex justify-between items-center h-16 px-6 w-full sticky top-0 z-40 bg-white border-b border-slate-200 shadow-sm">
+<div class="flex items-center flex-1 max-w-xl">
+<div class="relative w-full">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" data-icon="search">search</span>
+<input class="w-full bg-slate-50 border-none rounded-lg pl-10 pr-4 py-2 focus:ring-2 focus:ring-blue-600 text-sm" placeholder="Search system settings..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<div class="flex items-center bg-slate-50 rounded-lg p-1">
+<button class="flex items-center gap-2 px-3 py-1.5 bg-white shadow-sm rounded-md text-sm font-semibold text-blue-600">
+<span class="material-symbols-outlined text-[18px]" data-icon="swap_horiz">swap_horiz</span>
+                    Admin View
+                </button>
+</div>
+<div class="flex items-center gap-2 border-l border-slate-200 pl-4 ml-2">
+<button class="p-2 text-slate-500 hover:bg-slate-50 rounded-full transition-colors relative">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+<span class="absolute top-2 right-2 w-2 h-2 bg-error rounded-full"></span>
+</button>
+<div class="flex items-center gap-3 cursor-pointer hover:bg-slate-50 p-1 rounded-lg transition-colors">
+<img alt="Alex Thompson" class="w-8 h-8 rounded-full border border-slate-200" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCFST33nhh6sG-oHN68wRmnwyzON17cqzLzkubOQ4c-SCGs9rfL00cTIeEaP-CGPzvU_ITp0aHGWIPv8TwDWD5lDLpQJOc-qmCEo_2G_Ypo6mzj4ZRROi90EnJhK9MSGs95XmEKdYLLF_ctvUvI7mX1XcN_j3odM0N5BR3CG1UcTE6BP_ImxgBd99XADTmuSv7wlf_7VkRtJmT6uB1mTxN_xf6G7hIRod4_3P3RXJ_V611_AiXJje3rQcbls0LIcCutcGc0KDtMuLLS"/>
+<div class="hidden lg:block text-left">
+<p class="text-xs font-bold text-slate-900 leading-none">Alex Thompson</p>
+<p class="text-[10px] text-slate-500">System Admin</p>
+</div>
+</div>
+</div>
+</div>
+</header>
+<!-- Page Content -->
+<div class="p-lg">
+<!-- Page Header -->
+<div class="mb-lg">
+<h1 class="font-h1 text-h1 text-on-surface">System Preferences</h1>
+<p class="font-body-md text-body-md text-secondary mt-1">Manage your organization's global configurations and employee compliance rules.</p>
+</div>
+<!-- Settings Tabs Navigation -->
+<div class="flex border-b border-outline-variant mb-lg overflow-x-auto">
+<button class="px-6 py-4 font-button text-button tab-active whitespace-nowrap">Organization Settings</button>
+<button class="px-6 py-4 font-button text-button text-on-surface-variant hover:text-primary transition-colors whitespace-nowrap">Attendance Rules</button>
+<button class="px-6 py-4 font-button text-button text-on-surface-variant hover:text-primary transition-colors whitespace-nowrap">Leave Configuration</button>
+<button class="px-6 py-4 font-button text-button text-on-surface-variant hover:text-primary transition-colors whitespace-nowrap">Notification Settings</button>
+</div>
+<div class="grid grid-cols-12 gap-lg">
+<!-- Section 1: Organization Settings -->
+<section class="col-span-12 lg:col-span-8">
+<div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+<div class="p-lg border-b border-slate-100 bg-slate-50/50">
+<h3 class="font-h3 text-h3 text-on-surface">Organization Identity</h3>
+<p class="font-label-sm text-label-sm text-secondary">Update your public profile and brand assets.</p>
+</div>
+<div class="p-lg space-y-6">
+<div class="grid grid-cols-1 md:grid-cols-2 gap-md">
+<div class="space-y-2">
+<label class="font-label-sm text-label-sm text-on-surface uppercase tracking-wider">Company Name</label>
+<input class="w-full h-10 px-4 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary outline-none font-body-md text-body-md" type="text" value="Suler Core Solutions"/>
+</div>
+<div class="space-y-2">
+<label class="font-label-sm text-label-sm text-on-surface uppercase tracking-wider">Website URL</label>
+<input class="w-full h-10 px-4 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary outline-none font-body-md text-body-md" type="url" value="https://sulerems.io"/>
+</div>
+</div>
+<div class="space-y-2">
+<label class="font-label-sm text-label-sm text-on-surface uppercase tracking-wider">Primary Contact Email</label>
+<input class="w-full h-10 px-4 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary outline-none font-body-md text-body-md" type="email" value="admin@sulerems.io"/>
+</div>
+<div class="space-y-2">
+<label class="font-label-sm text-label-sm text-on-surface uppercase tracking-wider">Branding Logo</label>
+<div class="flex items-center gap-6 p-lg border-2 border-dashed border-slate-200 rounded-xl bg-slate-50/30">
+<div class="w-20 h-20 bg-white rounded-lg border border-slate-200 flex items-center justify-center overflow-hidden">
+<img alt="Company Logo" class="w-12 h-12 object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAF0s-KNvDq47KdKv_TF1t_eyS47v1vJAwyaTTh6Hose0H-fIqec6uKUv2DlOlEbH8hXwyrpt_VH3hzVPB8OHkL0MZxCPOg3RzEzRKyMZS836NAeFrHuri08mnH9ckgmCRbkcJx3vBD3dJgml8A73wK66CF1rO8t2EDVE29K6DjVm9q3IE3_BqfERMA5Ezgeiz6IQw3DI6qn6Nnp48vZ82KykTO4r7aeFuNtXSPuzhcBS5Dr5DAqO2asYlusxMuoZnAFToMw23lFC4l"/>
+</div>
+<div class="flex-1">
+<p class="font-body-md text-body-md font-semibold text-on-surface">Upload new logo</p>
+<p class="font-label-sm text-label-sm text-secondary">PNG, JPG, or SVG. Max size of 800K.</p>
+<button class="mt-2 px-4 py-2 bg-white border border-slate-200 rounded-lg font-button text-button hover:bg-slate-50 transition-colors">Replace Image</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Section 2: Quick Status Sidebar (Standardized KPI Style from SCREEN_13) -->
+<aside class="col-span-12 lg:col-span-4 space-y-lg">
+<!-- Attendance Card (KPI Style) -->
+<div class="bg-white p-md rounded-xl border border-slate-200 shadow-sm">
+<div class="flex justify-between items-start">
+<div class="w-10 h-10 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
+<span class="material-symbols-outlined" data-icon="schedule">schedule</span>
+</div>
+<span class="material-symbols-outlined text-blue-600 cursor-pointer" data-icon="info">info</span>
+</div>
+<div class="mt-4">
+<p class="text-secondary text-label-sm">Work Starts</p>
+<h3 class="text-h3 font-h3 text-on-surface">09:00 AM</h3>
+<div class="mt-4 pt-4 border-t border-slate-50 space-y-3">
+<div class="flex justify-between items-center">
+<span class="text-label-sm text-secondary">Grace Period</span>
+<span class="text-label-sm font-bold text-on-surface">15 min</span>
+</div>
+<div class="flex justify-between items-center">
+<span class="text-label-sm text-secondary">Overtime Calc.</span>
+<label class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox"/>
+<div class="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-600"></div>
+</label>
+</div>
+</div>
+</div>
+</div>
+<!-- System Status (Standardized from SCREEN_13 secondary card style) -->
+<div class="bg-gradient-to-br from-blue-600 to-blue-800 p-lg rounded-xl shadow-lg relative overflow-hidden text-white">
+<div class="relative z-10">
+<h3 class="font-h3 text-h3 mb-2">Cloud Sync Active</h3>
+<p class="text-body-md opacity-90 mb-lg">Your settings are being replicated across 4 regional clusters.</p>
+<div class="flex items-center gap-2">
+<div class="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></div>
+<span class="text-label-sm font-bold uppercase tracking-wider">Synchronized</span>
+</div>
+</div>
+<div class="absolute -right-8 -bottom-8 opacity-20 transform rotate-12">
+<span class="material-symbols-outlined text-[160px]" data-icon="cloud_done">cloud_done</span>
+</div>
+</div>
+</aside>
+<!-- Section 3: Leave Configuration (Standardized Table Style) -->
+<section class="col-span-12">
+<div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+<div class="p-lg border-b border-slate-100 bg-slate-50/50 flex justify-between items-center">
+<div>
+<h3 class="font-h3 text-h3 text-on-surface">Leave Policies</h3>
+<p class="font-label-sm text-label-sm text-secondary">Define annual entitlements and rollover behavior.</p>
+</div>
+<button class="bg-primary-container text-white px-md py-sm rounded-lg flex items-center gap-2 font-button text-button hover:opacity-90 transition-opacity shadow-sm">
+<span class="material-symbols-outlined" data-icon="add">add</span> Add Leave Type
+                        </button>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-white border-b border-slate-100">
+<th class="px-6 py-4 text-label-sm text-secondary uppercase tracking-wider">Leave Type</th>
+<th class="px-6 py-4 text-label-sm text-secondary uppercase tracking-wider">Description</th>
+<th class="px-6 py-4 text-label-sm text-secondary uppercase tracking-wider">Days / Year</th>
+<th class="px-6 py-4 text-label-sm text-secondary uppercase tracking-wider">Carry Over</th>
+<th class="px-6 py-4 text-label-sm text-secondary uppercase tracking-wider text-right">Actions</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-slate-50">
+<tr class="hover:bg-slate-50/80 transition-colors">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center">
+<span class="material-symbols-outlined text-sm" data-icon="beach_access">beach_access</span>
+</div>
+<span class="text-body-md font-semibold text-on-surface">Annual Leave</span>
+</div>
+</td>
+<td class="px-6 py-4 text-body-md text-secondary">Standard vacation time for all staff.</td>
+<td class="px-6 py-4">
+<input class="w-16 h-8 px-2 bg-slate-50 border border-slate-200 rounded font-body-md text-center" type="number" value="21"/>
+</td>
+<td class="px-6 py-4">
+<label class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox"/>
+<div class="w-9 h-5 bg-slate-200 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-600"></div>
+</label>
+</td>
+<td class="px-6 py-4 text-right">
+<button class="p-2 text-slate-400 hover:text-error hover:bg-error-container/10 rounded-lg transition-all">
+<span class="material-symbols-outlined text-[20px]" data-icon="delete">delete</span>
+</button>
+</td>
+</tr>
+<tr class="hover:bg-slate-50/80 transition-colors">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center">
+<span class="material-symbols-outlined text-sm" data-icon="medical_services">medical_services</span>
+</div>
+<span class="text-body-md font-semibold text-on-surface">Sick Leave</span>
+</div>
+</td>
+<td class="px-6 py-4 text-body-md text-secondary">Paid leave for health-related issues.</td>
+<td class="px-6 py-4">
+<input class="w-16 h-8 px-2 bg-slate-50 border border-slate-200 rounded font-body-md text-center" type="number" value="10"/>
+</td>
+<td class="px-6 py-4">
+<label class="relative inline-flex items-center cursor-pointer">
+<input class="sr-only peer" type="checkbox"/>
+<div class="w-9 h-5 bg-slate-200 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-600"></div>
+</label>
+</td>
+<td class="px-6 py-4 text-right">
+<button class="p-2 text-slate-400 hover:text-error hover:bg-error-container/10 rounded-lg transition-all">
+<span class="material-symbols-outlined text-[20px]" data-icon="delete">delete</span>
+</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</section>
+<!-- Section 4: Notification Settings -->
+<section class="col-span-12">
+<div class="bg-white rounded-xl border border-slate-200 shadow-sm p-lg">
+<div class="mb-lg">
+<h3 class="font-h3 text-h3 text-on-surface">Notification Channels</h3>
+<p class="font-label-sm text-label-sm text-secondary">Control how and when the system alerts administrators.</p>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-lg">
+<div class="space-y-4">
+<h4 class="font-button text-button text-on-surface">Event Type</h4>
+<div class="h-10 flex items-center font-body-md text-secondary">New Leave Request</div>
+<div class="h-10 flex items-center font-body-md text-secondary">Attendance Alert</div>
+<div class="h-10 flex items-center font-body-md text-secondary">System Update</div>
+<div class="h-10 flex items-center font-body-md text-secondary">Payroll Approval</div>
+</div>
+<div class="space-y-4 text-center">
+<h4 class="font-button text-button text-on-surface">Email</h4>
+<div class="h-10 flex items-center justify-center"><input checked="" class="w-5 h-5 text-blue-600 bg-slate-50 border-slate-200 rounded focus:ring-blue-600" type="checkbox"/></div>
+<div class="h-10 flex items-center justify-center"><input checked="" class="w-5 h-5 text-blue-600 bg-slate-50 border-slate-200 rounded focus:ring-blue-600" type="checkbox"/></div>
+<div class="h-10 flex items-center justify-center"><input checked="" class="w-5 h-5 text-blue-600 bg-slate-50 border-slate-200 rounded focus:ring-blue-600" type="checkbox"/></div>
+<div class="h-10 flex items-center justify-center"><input checked="" class="w-5 h-5 text-blue-600 bg-slate-50 border-slate-200 rounded focus:ring-blue-600" type="checkbox"/></div>
+</div>
+<div class="space-y-4 text-center">
+<h4 class="font-button text-button text-on-surface">Push / In-app</h4>
+<div class="h-10 flex items-center justify-center"><input checked="" class="w-5 h-5 text-blue-600 bg-slate-50 border-slate-200 rounded focus:ring-blue-600" type="checkbox"/></div>
+<div class="h-10 flex items-center justify-center"><input class="w-5 h-5 text-blue-600 bg-slate-50 border-slate-200 rounded focus:ring-blue-600" type="checkbox"/></div>
+<div class="h-10 flex items-center justify-center"><input checked="" class="w-5 h-5 text-blue-600 bg-slate-50 border-slate-200 rounded focus:ring-blue-600" type="checkbox"/></div>
+<div class="h-10 flex items-center justify-center"><input class="w-5 h-5 text-blue-600 bg-slate-50 border-slate-200 rounded focus:ring-blue-600" type="checkbox"/></div>
+</div>
+</div>
+</div>
+</section>
+</div>
+<!-- Footer Actions -->
+<div class="mt-2xl mb-2xl pt-lg border-t border-slate-100 flex justify-end gap-md">
+<button class="px-6 py-2 rounded-lg border border-slate-200 font-button text-button text-on-surface hover:bg-slate-50 transition-all">
+                Discard Changes
+            </button>
+<button class="px-8 py-2 rounded-lg bg-blue-600 text-white font-button text-button shadow-md hover:opacity-90 transition-all active:scale-95">
+                Save Configuration
+            </button>
+</div>
+</div>
+</main>
+</body></html>
