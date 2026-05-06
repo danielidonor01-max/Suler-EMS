@@ -79,6 +79,7 @@ const App = {
       { id: 'sup_performance',   label: 'Performance',        icon: 'bar-chart',    section: 'workforce' },
       // ORGANIZATION
       { id: 'sup_org',           label: 'Org Analytics',      icon: 'pie-chart',    section: 'organization' },
+      { id: 'sup_departments',   label: 'Departments',        icon: 'grid',         section: 'organization' },
       { id: 'sup_roles',         label: 'Role Management',    icon: 'shield',       section: 'organization' },
       { id: 'sup_audit',         label: 'Audit Logs',         icon: 'activity',     section: 'organization' },
       // SYSTEM
@@ -527,6 +528,7 @@ const App = {
       'sup_performance':   'performance_insights',
       // organization section
       'sup_org':           'organization_analytics',
+      'sup_departments':   'departments_management',
       'sup_roles':         'role_management',
       'sup_audit':         'audit_logs',
       // system section

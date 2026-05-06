@@ -81,10 +81,17 @@
 <div class="col-span-12 lg:col-span-7 bg-white rounded-xl border border-slate-200 shadow-sm flex flex-col">
 <div class="p-lg border-b border-slate-100 flex justify-between items-center">
 <h3 class="font-h3 text-h3 text-on-background">Task Progress</h3>
-<select class="text-xs font-semibold border-none bg-slate-50 rounded-lg py-1 pr-8 focus:ring-0">
-<option>This Week</option>
-<option>Last Week</option>
-</select>
+<div class="filter-chip-group">
+  <div style="position:relative;">
+    <div class="filter-chip" onclick="this.nextElementSibling.classList.toggle('open')">
+      <span style="color:var(--color-text-secondary);text-transform:uppercase;font-size:10px;">Timeframe:</span> This Week
+    </div>
+    <div class="sleek-dropdown" style="right:0;left:auto;">
+      <div class="sleek-dropdown-item selected"><span class="sleek-dropdown-arrow">▸</span> This Week</div>
+      <div class="sleek-dropdown-item"><span class="sleek-dropdown-arrow">▸</span> Last Week</div>
+    </div>
+  </div>
+</div>
 </div>
 <div class="p-lg flex-1">
 <div class="space-y-6">
@@ -193,7 +200,7 @@
 </div>
 <div>
 <p class="text-sm font-bold text-on-surface">Sarah J.</p>
-<p class="text-xs text-secondary">UX Design</p>
+<p class="text-xs text-secondary">UX Research</p>
 </div>
 </div>
 <div class="mt-4 flex justify-between items-center">
@@ -225,7 +232,7 @@
 </div>
 <div>
 <p class="text-sm font-bold text-on-surface">Marcus T.</p>
-<p class="text-xs text-secondary">Product</p>
+<p class="text-xs text-secondary">Project</p>
 </div>
 </div>
 <div class="mt-4 flex justify-between items-center">

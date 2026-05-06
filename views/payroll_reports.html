@@ -21,36 +21,48 @@
 </div>
 </div>
 <!-- Filter Bar -->
-<div class="bg-white p-md rounded-xl border border-outline-variant shadow-sm flex flex-wrap items-center gap-lg">
-<div class="flex flex-col gap-xs">
-<label class="text-label-sm text-on-surface-variant">Date Range</label>
-<select class="border-outline-variant rounded-lg text-body-md focus:ring-primary h-10 min-w-[200px]">
-<option>Current Fiscal Year (2024)</option>
-<option>Last 12 Months</option>
-<option>Q3 2024</option>
-<option>Custom Range</option>
-</select>
-</div>
-<div class="flex flex-col gap-xs">
-<label class="text-label-sm text-on-surface-variant">Department</label>
-<select class="border-outline-variant rounded-lg text-body-md focus:ring-primary h-10 min-w-[180px]">
-<option>All Departments</option>
-<option>Engineering</option>
-<option>Marketing</option>
-<option>Operations</option>
-</select>
-</div>
-<div class="flex flex-col gap-xs">
-<label class="text-label-sm text-on-surface-variant">Grade Level</label>
-<div class="flex gap-xs">
-<span class="px-3 py-2 bg-secondary-container text-on-secondary-container rounded-lg text-xs font-bold border border-secondary-fixed cursor-pointer">L1 - L4</span>
-<span class="px-3 py-2 bg-surface hover:bg-surface-container text-on-surface-variant rounded-lg text-xs font-bold border border-outline-variant cursor-pointer transition-colors">L5 - L8</span>
-<span class="px-3 py-2 bg-surface hover:bg-surface-container text-on-surface-variant rounded-lg text-xs font-bold border border-outline-variant cursor-pointer transition-colors">Exec</span>
-</div>
-</div>
-<div class="ml-auto">
-<button class="text-primary font-button hover:underline">Reset Filters</button>
-</div>
+<div style="display:flex;gap:var(--space-sm);align-items:center;margin-bottom:var(--space-lg);">
+  <div class="filter-chip-group">
+    <div style="position:relative;">
+      <div class="filter-chip" onclick="this.nextElementSibling.classList.toggle('open')">
+        <span style="color:var(--color-text-secondary);text-transform:uppercase;font-size:10px;">Date Range:</span> FY 2024
+      </div>
+      <div class="sleek-dropdown">
+        <div class="sleek-dropdown-item selected"><span class="sleek-dropdown-arrow">▸</span> Current Fiscal Year (2024)</div>
+        <div class="sleek-dropdown-item"><span class="sleek-dropdown-arrow">▸</span> Last 12 Months</div>
+        <div class="sleek-dropdown-item"><span class="sleek-dropdown-arrow">▸</span> Q3 2024</div>
+        <div class="sleek-dropdown-item"><span class="sleek-dropdown-arrow">▸</span> Custom Range</div>
+      </div>
+    </div>
+  </div>
+  <div class="filter-chip-group">
+    <div style="position:relative;">
+      <div class="filter-chip" onclick="this.nextElementSibling.classList.toggle('open')">
+        <span style="color:var(--color-text-secondary);text-transform:uppercase;font-size:10px;">Department:</span> All Departments
+      </div>
+      <div class="sleek-dropdown">
+        <div class="sleek-dropdown-item selected"><span class="sleek-dropdown-arrow">▸</span> All Departments</div>
+        <div class="sleek-dropdown-item"><span class="sleek-dropdown-arrow">▸</span> Engineering</div>
+        <div class="sleek-dropdown-item"><span class="sleek-dropdown-arrow">▸</span> Marketing</div>
+        <div class="sleek-dropdown-item"><span class="sleek-dropdown-arrow">▸</span> Research</div>
+        <div class="sleek-dropdown-item"><span class="sleek-dropdown-arrow">▸</span> Project</div>
+      </div>
+    </div>
+  </div>
+  <div class="filter-chip-group">
+    <div style="position:relative;">
+      <div class="filter-chip" onclick="this.nextElementSibling.classList.toggle('open')">
+        <span style="color:var(--color-text-secondary);text-transform:uppercase;font-size:10px;">Grade Level:</span> All Levels
+      </div>
+      <div class="sleek-dropdown">
+        <div class="sleek-dropdown-item selected"><span class="sleek-dropdown-arrow">▸</span> All Levels</div>
+        <div class="sleek-dropdown-item"><span class="sleek-dropdown-arrow">▸</span> L1 - L4</div>
+        <div class="sleek-dropdown-item"><span class="sleek-dropdown-arrow">▸</span> L5 - L8</div>
+        <div class="sleek-dropdown-item"><span class="sleek-dropdown-arrow">▸</span> Exec</div>
+      </div>
+    </div>
+  </div>
+  <button class="text-primary font-button hover:underline" style="margin-left:auto;">Reset Filters</button>
 </div>
 <!-- Stats Bento Grid -->
 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-lg">
@@ -63,7 +75,6 @@
 </div>
 <p class="text-on-surface-variant text-label-sm font-bold uppercase tracking-wider">Total Annual Payroll</p>
 <h3 class="text-h1 font-h1 mt-1 text-on-surface">₦24.82M</h3>
-<div class="absolute bottom-0 left-0 w-full h-1 bg-primary"></div>
 </div>
 <div class="bg-white p-lg rounded-xl border border-outline-variant shadow-sm relative overflow-hidden group">
 <div class="flex justify-between items-start mb-4">
@@ -74,7 +85,6 @@
 </div>
 <p class="text-on-surface-variant text-label-sm font-bold uppercase tracking-wider">Avg Salary per Dept</p>
 <h3 class="text-h1 font-h1 mt-1 text-on-surface">₦108.5k</h3>
-<div class="absolute bottom-0 left-0 w-full h-1 bg-tertiary"></div>
 </div>
 <div class="bg-white p-lg rounded-xl border border-outline-variant shadow-sm relative overflow-hidden group">
 <div class="flex justify-between items-start mb-4">
@@ -85,7 +95,6 @@
 </div>
 <p class="text-on-surface-variant text-label-sm font-bold uppercase tracking-wider">Tax Withholdings</p>
 <h3 class="text-h1 font-h1 mt-1 text-on-surface">₦6.14M</h3>
-<div class="absolute bottom-0 left-0 w-full h-1 bg-secondary"></div>
 </div>
 <div class="bg-white p-lg rounded-xl border border-outline-variant shadow-sm relative overflow-hidden group">
 <div class="flex justify-between items-start mb-4">
@@ -96,7 +105,6 @@
 </div>
 <p class="text-on-surface-variant text-label-sm font-bold uppercase tracking-wider">Bonus Disbursements</p>
 <h3 class="text-h1 font-h1 mt-1 text-on-surface">₦2.1M</h3>
-<div class="absolute bottom-0 left-0 w-full h-1 bg-error"></div>
 </div>
 </div>
 <!-- Charts & Visualization Grid -->
@@ -166,7 +174,7 @@
 </div>
 <div class="space-y-1">
 <div class="flex justify-between text-label-sm font-bold">
-<span>Product</span>
+<span>Project</span>
 <span>₦4.2M</span>
 </div>
 <div class="w-full h-3 bg-surface-container rounded-full overflow-hidden">
@@ -175,7 +183,7 @@
 </div>
 <div class="space-y-1">
 <div class="flex justify-between text-label-sm font-bold">
-<span>Sales &amp; Marketing</span>
+<span>Marketing</span>
 <span>₦6.1M</span>
 </div>
 <div class="w-full h-3 bg-surface-container rounded-full overflow-hidden">
@@ -184,7 +192,7 @@
 </div>
 <div class="space-y-1">
 <div class="flex justify-between text-label-sm font-bold">
-<span>Operations</span>
+<span>Project</span>
 <span>₦3.8M</span>
 </div>
 <div class="w-full h-3 bg-surface-container rounded-full overflow-hidden">
@@ -193,7 +201,7 @@
 </div>
 <div class="space-y-1">
 <div class="flex justify-between text-label-sm font-bold">
-<span>Design</span>
+<span>Research</span>
 <span>₦2.3M</span>
 </div>
 <div class="w-full h-3 bg-surface-container rounded-full overflow-hidden">
@@ -265,7 +273,7 @@
 <div class="w-8 h-8 rounded bg-secondary-container flex items-center justify-center text-secondary">
 <span class="material-symbols-outlined text-sm">architecture</span>
 </div>
-<span class="font-bold">Product Design</span>
+<span class="font-bold">Research</span>
 </div>
 </td>
 <td class="px-lg py-md text-body-md">31</td>
@@ -280,7 +288,7 @@
 <div class="w-8 h-8 rounded bg-on-tertiary-fixed-variant/10 flex items-center justify-center text-on-tertiary-fixed-variant">
 <span class="material-symbols-outlined text-sm">settings_suggest</span>
 </div>
-<span class="font-bold">Operations</span>
+<span class="font-bold">Project</span>
 </div>
 </td>
 <td class="px-lg py-md text-body-md">88</td>

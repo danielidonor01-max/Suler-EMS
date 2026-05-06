@@ -17,7 +17,7 @@
 <div class="grid grid-cols-12 gap-lg">
 <!-- Filters Section -->
 <div class="col-span-12 lg:col-span-3">
-<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-md shadow-sm sticky top-24 rounded-xl shadow-sm border-outline-variant/50">
+<div class="bg-white border border-slate-200 rounded-xl p-md shadow-sm sticky top-24">
 <h3 class="font-h3 text-h3 mb-md">Filters</h3>
 <div class="space-y-sm">
 <button class="w-full flex items-center justify-between px-md py-3 rounded-lg bg-blue-50 text-blue-600 border-l-4 border-blue-600 font-medium">
@@ -27,39 +27,39 @@
                                 </div>
 <span class="text-label-sm font-label-sm bg-blue-100 px-2 py-0.5 rounded-full">24</span>
 </button>
-<button class="w-full flex items-center justify-between px-md py-3 rounded-lg text-on-surface-variant hover:bg-surface-container transition-colors font-medium">
+<button class="w-full flex items-center justify-between px-md py-3 rounded-lg text-slate-600 hover:bg-slate-50 transition-colors font-medium">
 <div class="flex items-center gap-3">
 <span class="material-symbols-outlined" data-icon="mark_as_unread">mark_as_unread</span>
                                     Unread
                                 </div>
-<span class="text-label-sm font-label-sm bg-error-container text-on-error-container px-2 py-0.5 rounded-full">12</span>
+<span class="text-label-sm font-label-sm bg-red-100 text-red-700 px-2 py-0.5 rounded-full">12</span>
 </button>
-<button class="w-full flex items-center justify-between px-md py-3 rounded-lg text-on-surface-variant hover:bg-surface-container transition-colors font-medium">
+<button class="w-full flex items-center justify-between px-md py-3 rounded-lg text-slate-600 hover:bg-slate-50 transition-colors font-medium">
 <div class="flex items-center gap-3">
 <span class="material-symbols-outlined" data-icon="alternate_email">alternate_email</span>
                                     Mentions
                                 </div>
-<span class="text-label-sm font-label-sm bg-surface-container-highest px-2 py-0.5 rounded-full">3</span>
+<span class="text-label-sm font-label-sm bg-slate-100 px-2 py-0.5 rounded-full">3</span>
 </button>
-<button class="w-full flex items-center justify-between px-md py-3 rounded-lg text-on-surface-variant hover:bg-surface-container transition-colors font-medium">
+<button class="w-full flex items-center justify-between px-md py-3 rounded-lg text-slate-600 hover:bg-slate-50 transition-colors font-medium">
 <div class="flex items-center gap-3">
 <span class="material-symbols-outlined" data-icon="settings_suggest">settings_suggest</span>
                                     System
                                 </div>
-<span class="text-label-sm font-label-sm bg-surface-container-highest px-2 py-0.5 rounded-full">9</span>
+<span class="text-label-sm font-label-sm bg-slate-100 px-2 py-0.5 rounded-full">9</span>
 </button>
 </div>
-<div class="mt-xl pt-lg border-t border-outline-variant">
-<h4 class="text-label-sm font-label-sm text-outline uppercase mb-md tracking-wider">Preferences</h4>
+<div class="mt-xl pt-lg border-t border-slate-200">
+<h4 class="text-label-sm font-label-sm text-slate-400 uppercase mb-md tracking-wider">Preferences</h4>
 <div class="flex items-center justify-between text-body-md text-on-surface mb-sm">
 <span>Email Digests</span>
-<div class="w-10 h-5 bg-primary rounded-full relative">
+<div class="w-10 h-5 bg-blue-600 rounded-full relative cursor-pointer">
 <div class="absolute right-0.5 top-0.5 w-4 h-4 bg-white rounded-full"></div>
 </div>
 </div>
 <div class="flex items-center justify-between text-body-md text-on-surface">
 <span>Desktop Alerts</span>
-<div class="w-10 h-5 bg-surface-container-highest rounded-full relative">
+<div class="w-10 h-5 bg-slate-200 rounded-full relative cursor-pointer">
 <div class="absolute left-0.5 top-0.5 w-4 h-4 bg-white rounded-full"></div>
 </div>
 </div>
@@ -69,109 +69,110 @@
 <!-- Notification List Section -->
 <div class="col-span-12 lg:col-span-9 space-y-md">
 <!-- Notification Card: Warning/Urgent -->
-<div class="bg-surface-container-lowest border border-outline-variant rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow group rounded-xl shadow-sm border-outline-variant/50">
-<div class="p-md flex gap-md p-4">
-<div class="flex-shrink-0 w-12 h-12 rounded-full bg-error-container flex items-center justify-center text-error">
+<div class="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow group relative">
+<div class="absolute left-0 top-0 bottom-0 w-1 bg-red-500"></div>
+<div class="p-lg flex gap-md">
+<div class="flex-shrink-0 w-12 h-12 rounded-full bg-red-50 flex items-center justify-center text-red-600">
 <span class="material-symbols-outlined" data-icon="warning">warning</span>
 </div>
 <div class="flex-grow">
 <div class="flex items-start justify-between mb-xs">
 <h4 class="font-h3 text-[16px] text-on-surface">Payroll Discrepancy Detected</h4>
-<span class="text-label-sm font-label-sm text-outline">2 mins ago</span>
+<span class="text-label-sm font-label-sm text-slate-400">2 mins ago</span>
 </div>
-<p class="font-body-md text-on-surface-variant mb-md">An automated audit flagged a 15% discrepancy in overtime hours for the Engineering department in the current pay cycle.</p>
+<p class="font-body-md text-secondary mb-md">An automated audit flagged a 15% discrepancy in overtime hours for the Engineering department in the current pay cycle.</p>
 <div class="flex items-center gap-sm">
-<button class="px-md py-1.5 bg-error text-white rounded-lg text-button">Review Now</button>
-<button class="px-md py-1.5 text-on-surface font-button hover:bg-surface-container rounded-lg">Dismiss</button>
+<button class="px-md py-1.5 bg-red-600 text-white rounded-lg text-button font-bold hover:bg-red-700 transition-colors">Review Now</button>
+<button class="px-md py-1.5 text-slate-600 font-button hover:bg-slate-50 border border-transparent rounded-lg">Dismiss</button>
 </div>
 </div>
 <div class="flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
-<button class="p-2 text-outline hover:text-on-surface">
+<button class="p-2 text-slate-400 hover:text-on-surface">
 <span class="material-symbols-outlined" data-icon="more_vert">more_vert</span>
 </button>
 </div>
 </div>
 </div>
 <!-- Notification Card: Success -->
-<div class="bg-surface-container-lowest border border-outline-variant rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow group rounded-xl shadow-sm border-outline-variant/50">
-<div class="p-md flex gap-md p-4">
-<div class="flex-shrink-0 w-12 h-12 rounded-full bg-green-100 flex items-center justify-center text-green-700">
+<div class="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow group">
+<div class="p-lg flex gap-md">
+<div class="flex-shrink-0 w-12 h-12 rounded-full bg-green-50 flex items-center justify-center text-green-600">
 <span class="material-symbols-outlined" data-icon="check_circle">check_circle</span>
 </div>
 <div class="flex-grow">
 <div class="flex items-start justify-between mb-xs">
 <h4 class="font-h3 text-[16px] text-on-surface">Onboarding Completed</h4>
-<span class="text-label-sm font-label-sm text-outline">1 hour ago</span>
+<span class="text-label-sm font-label-sm text-slate-400">1 hour ago</span>
 </div>
-<p class="font-body-md text-on-surface-variant mb-md">Sarah Jenkins has successfully completed all mandatory onboarding modules and documentation.</p>
+<p class="font-body-md text-secondary mb-md">Sarah Jenkins has successfully completed all mandatory onboarding modules and documentation.</p>
 <div class="flex items-center gap-md">
 <div class="flex -space-x-2">
-<img alt="Team member" class="w-8 h-8 rounded-full border-2 border-white" data-alt="A professional headshot of a diverse woman in a business casual outfit, smiling confidently against a soft-focus office background. The lighting is warm and natural, creating a welcoming and professional corporate atmosphere that aligns with a high-end employee management system interface." src="https://lh3.googleusercontent.com/aida-public/AB6AXuA830iLaBx0SBuVPnsdAyFAGY-m9sO99nKPUxh-Zs_-mWPkdvU8iaO3TWrP0Ys0ZwCPp8wa6jwF7XhJxjOmjZWZuS0pub9MnKna-ZO362nHaGddIP7M3CU3iZ7YeLeh0VmSu1AHb5Aoqs5fleP_B90wa2JCBk4MBE_kzMr4LF7C89QT9htJi91rvdV1Rq0EZw7h8wl7kB__JwMiTrpFiNvKEDa7iQg3pyPE4a-Mcn_DzBE1yQjebIKJY4OPrReCY-T6xUyAiAeMpyM7">
+<img alt="Team member" class="w-8 h-8 rounded-full border-2 border-white" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA830iLaBx0SBuVPnsdAyFAGY-m9sO99nKPUxh-Zs_-mWPkdvU8iaO3TWrP0Ys0ZwCPp8wa6jwF7XhJxjOmjZWZuS0pub9MnKna-ZO362nHaGddIP7M3CU3iZ7YeLeh0VmSu1AHb5Aoqs5fleP_B90wa2JCBk4MBE_kzMr4LF7C89QT9htJi91rvdV1Rq0EZw7h8wl7kB__JwMiTrpFiNvKEDa7iQg3pyPE4a-Mcn_DzBE1yQjebIKJY4OPrReCY-T6xUyAiAeMpyM7">
 </div>
-<span class="text-label-sm font-label-sm text-outline">Assigned to: Operations Team</span>
+<span class="text-label-sm font-label-sm text-slate-500">Assigned to: Project Team</span>
 </div>
 </div>
 <div class="flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
-<button class="p-2 text-outline hover:text-on-surface">
+<button class="p-2 text-slate-400 hover:text-on-surface">
 <span class="material-symbols-outlined" data-icon="more_vert">more_vert</span>
 </button>
 </div>
 </div>
 </div>
 <!-- Notification Card: Info/Mention -->
-<div class="bg-surface-container-lowest border border-outline-variant rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow group relative rounded-xl shadow-sm border-outline-variant/50">
+<div class="bg-blue-50/30 border border-blue-200 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow group relative">
 <!-- Unread Indicator -->
-<div class="absolute left-0 top-0 bottom-0 w-1 bg-primary"></div>
-<div class="p-md flex gap-md p-4">
-<div class="flex-shrink-0 w-12 h-12 rounded-full bg-primary-container/10 flex items-center justify-center text-primary">
+<div class="absolute left-0 top-0 bottom-0 w-1 bg-blue-600"></div>
+<div class="p-lg flex gap-md">
+<div class="flex-shrink-0 w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center text-blue-600">
 <span class="material-symbols-outlined" data-icon="chat_bubble">chat_bubble</span>
 </div>
 <div class="flex-grow">
 <div class="flex items-start justify-between mb-xs">
 <div class="flex items-center gap-2">
 <h4 class="font-h3 text-[16px] text-on-surface">Mentioned by Marcus Chen</h4>
-<span class="w-2 h-2 bg-primary rounded-full"></span>
+<span class="w-2 h-2 bg-blue-600 rounded-full"></span>
 </div>
-<span class="text-label-sm font-label-sm text-outline">3 hours ago</span>
+<span class="text-label-sm font-label-sm text-slate-400">3 hours ago</span>
 </div>
-<p class="font-body-md text-on-surface-variant italic border-l-4 border-surface-container-highest pl-md py-1 my-md">"@Admin, please take a look at the revised Q3 resource allocation plan. We need approval by EOD."</p>
+<p class="font-body-md text-secondary italic border-l-4 border-blue-200 pl-md py-1 my-md">"@Admin, please take a look at the revised Q3 resource allocation plan. We need approval by EOD."</p>
 <div class="flex items-center gap-sm">
-<button class="px-md py-1.5 bg-primary text-white rounded-lg text-button">Reply</button>
-<button class="px-md py-1.5 text-on-surface font-button hover:bg-surface-container rounded-lg">View Thread</button>
+<button class="px-md py-1.5 bg-blue-600 text-white rounded-lg text-button font-bold hover:bg-blue-700 transition-colors">Reply</button>
+<button class="px-md py-1.5 text-slate-600 font-button hover:bg-slate-50 border border-slate-200 rounded-lg">View Thread</button>
 </div>
 </div>
 <div class="flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
-<button class="p-2 text-outline hover:text-on-surface">
+<button class="p-2 text-slate-400 hover:text-on-surface">
 <span class="material-symbols-outlined" data-icon="more_vert">more_vert</span>
 </button>
 </div>
 </div>
 </div>
 <!-- Notification Card: System Info -->
-<div class="bg-surface-container-lowest border border-outline-variant rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow group rounded-xl shadow-sm border-outline-variant/50">
-<div class="p-md flex gap-md p-4">
-<div class="flex-shrink-0 w-12 h-12 rounded-full bg-surface-container flex items-center justify-center text-on-surface-variant">
+<div class="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow group">
+<div class="p-lg flex gap-md">
+<div class="flex-shrink-0 w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center text-slate-600">
 <span class="material-symbols-outlined" data-icon="update">update</span>
 </div>
 <div class="flex-grow">
 <div class="flex items-start justify-between mb-xs">
 <h4 class="font-h3 text-[16px] text-on-surface">System Maintenance Scheduled</h4>
-<span class="text-label-sm font-label-sm text-outline">5 hours ago</span>
+<span class="text-label-sm font-label-sm text-slate-400">5 hours ago</span>
 </div>
-<p class="font-body-md text-on-surface-variant mb-md">Suler EMS will undergo routine server maintenance on Sunday, October 15th, from 02:00 AM to 04:00 AM UTC. Some services may be unavailable.</p>
-<a class="text-primary font-button hover:underline text-sm" href="#">View details in Help Center</a>
+<p class="font-body-md text-secondary mb-md">Suler EMS will undergo routine server maintenance on Sunday, October 15th, from 02:00 AM to 04:00 AM UTC. Some services may be unavailable.</p>
+<a class="text-blue-600 font-button hover:underline text-sm font-bold" href="#">View details in Help Center</a>
 </div>
 <div class="flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
-<button class="p-2 text-outline hover:text-on-surface">
+<button class="p-2 text-slate-400 hover:text-on-surface">
 <span class="material-symbols-outlined" data-icon="more_vert">more_vert</span>
 </button>
 </div>
 </div>
 </div>
 <!-- Notification Card: Warning -->
-<div class="bg-surface-container-lowest border border-outline-variant rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow group relative rounded-xl shadow-sm border-outline-variant/50">
-<div class="absolute left-0 top-0 bottom-0 w-1 bg-primary"></div>
-<div class="p-md flex gap-md p-4">
+<div class="bg-orange-50/30 border border-orange-200 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow group relative">
+<div class="absolute left-0 top-0 bottom-0 w-1 bg-orange-500"></div>
+<div class="p-lg flex gap-md">
 <div class="flex-shrink-0 w-12 h-12 rounded-full bg-orange-100 flex items-center justify-center text-orange-600">
 <span class="material-symbols-outlined" data-icon="assignment_late">assignment_late</span>
 </div>
@@ -179,18 +180,18 @@
 <div class="flex items-start justify-between mb-xs">
 <div class="flex items-center gap-2">
 <h4 class="font-h3 text-[16px] text-on-surface">Pending Approval Request</h4>
-<span class="w-2 h-2 bg-primary rounded-full"></span>
+<span class="w-2 h-2 bg-orange-500 rounded-full"></span>
 </div>
-<span class="text-label-sm font-label-sm text-outline">Yesterday</span>
+<span class="text-label-sm font-label-sm text-slate-400">Yesterday</span>
 </div>
-<p class="font-body-md text-on-surface-variant mb-md">David Miller submitted a "Remote Work" request that requires your immediate attention before the cutoff period ends.</p>
+<p class="font-body-md text-secondary mb-md">David Miller submitted a "Remote Work" request that requires your immediate attention before the cutoff period ends.</p>
 <div class="flex items-center gap-sm">
-<button class="px-md py-1.5 bg-primary-container text-white rounded-lg text-button">Approve</button>
-<button class="px-md py-1.5 border border-outline text-on-surface font-button hover:bg-surface-container rounded-lg">Review Details</button>
+<button class="px-md py-1.5 bg-blue-600 text-white rounded-lg text-button font-bold hover:bg-blue-700 transition-colors">Approve</button>
+<button class="px-md py-1.5 border border-slate-200 text-slate-600 font-button hover:bg-slate-50 rounded-lg">Review Details</button>
 </div>
 </div>
 <div class="flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
-<button class="p-2 text-outline hover:text-on-surface">
+<button class="p-2 text-slate-400 hover:text-on-surface">
 <span class="material-symbols-outlined" data-icon="more_vert">more_vert</span>
 </button>
 </div>
@@ -198,7 +199,7 @@
 </div>
 <!-- Load More Action -->
 <div class="pt-lg flex justify-center">
-<button class="flex items-center gap-2 px-xl py-3 rounded-xl border-2 border-dashed border-outline-variant text-outline hover:text-primary hover:border-primary transition-all font-medium">
+<button class="flex items-center gap-2 px-xl py-3 rounded-xl border-2 border-dashed border-slate-200 text-slate-400 hover:text-blue-600 hover:border-blue-300 transition-all font-medium">
 <span class="material-symbols-outlined" data-icon="keyboard_double_arrow_down">keyboard_double_arrow_down</span>
                             Load previous notifications
                         </button>

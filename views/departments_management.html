@@ -1,0 +1,137 @@
+<!-- Departments Management -->
+<div style="padding:var(--content-padding);">
+
+  <!-- Page Header -->
+  <div class="module-header">
+    <div>
+      <h2 style="font-size:var(--text-2xl);font-weight:var(--font-semibold);margin:0 0 4px 0;">Departments Management</h2>
+      <p style="font-size:var(--text-sm);color:var(--color-text-secondary);margin:0;">Organize and manage the core departments within your organization.</p>
+    </div>
+    <div class="module-header-actions">
+      <div class="filter-search" style="min-width:260px;">
+        <span class="filter-search-icon">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        </span>
+        <input type="text" placeholder="Search departments…">
+      </div>
+      <button class="btn btn-primary" onclick="alert('Add Department functionality is not yet implemented.')">+ Add Department</button>
+    </div>
+  </div>
+
+  <!-- Departments KPI Summary Strip -->
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:var(--grid-gap);margin-bottom:var(--space-lg);">
+    <div class="dashboard-card">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+        <div class="dashboard-card-icon" style="background:#eff6ff;color:#2563eb;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+        </div>
+        <span class="badge badge-primary">Tech</span>
+      </div>
+      <div class="dashboard-card-label" style="margin-top:var(--space-sm);">Engineering</div>
+      <div class="dashboard-card-value">142</div>
+    </div>
+    <div class="dashboard-card">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+        <div class="dashboard-card-icon" style="background:#fef2f2;color:#dc2626;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        </div>
+        <span class="badge badge-danger">Growth</span>
+      </div>
+      <div class="dashboard-card-label" style="margin-top:var(--space-sm);">Marketing</div>
+      <div class="dashboard-card-value">56</div>
+    </div>
+    <div class="dashboard-card">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+        <div class="dashboard-card-icon" style="background:#f0fdf4;color:#16a34a;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+        </div>
+        <span class="badge badge-success">Data</span>
+      </div>
+      <div class="dashboard-card-label" style="margin-top:var(--space-sm);">Research</div>
+      <div class="dashboard-card-value">48</div>
+    </div>
+    <div class="dashboard-card">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+        <div class="dashboard-card-icon" style="background:#fdf4ff;color:#c026d3;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        </div>
+        <span class="badge badge-warning">Delivery</span>
+      </div>
+      <div class="dashboard-card-label" style="margin-top:var(--space-sm);">Project</div>
+      <div class="dashboard-card-value">88</div>
+    </div>
+  </div>
+
+  <!-- Departments Table -->
+  <div class="table-card">
+    <div class="table-card-header">
+      <h3 class="table-card-title">Registered Departments</h3>
+      <div style="display:flex;align-items:center;gap:var(--space-sm);">
+        <div class="filter-chip-group">
+          <div style="position:relative;">
+            <div class="filter-chip" onclick="this.nextElementSibling.classList.toggle('open')">
+              <span style="color:var(--color-text-secondary);">Sort By:</span> Size
+            </div>
+            <div class="sleek-dropdown">
+              <div class="sleek-dropdown-item selected"><span class="sleek-dropdown-arrow">▸</span> Size (Desc)</div>
+              <div class="sleek-dropdown-item"><span class="sleek-dropdown-arrow">▸</span> Name (A-Z)</div>
+              <div class="sleek-dropdown-item"><span class="sleek-dropdown-arrow">▸</span> Budget</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="table-responsive">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th style="padding-left:var(--space-lg);">Department Name</th>
+            <th>Headcount</th>
+            <th>Department Head</th>
+            <th>Status</th>
+            <th style="text-align:right;padding-right:var(--space-lg);">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="hover-row">
+            <td style="padding-left:var(--space-lg);font-weight:var(--font-semibold);">Engineering</td>
+            <td>142 Employees</td>
+            <td>Marcus Chen</td>
+            <td><span class="badge badge-success">Active</span></td>
+            <td style="text-align:right;padding-right:var(--space-lg);">
+              <button class="btn btn-sm btn-secondary" onclick="alert('Edit Engineering department.')">Edit</button>
+            </td>
+          </tr>
+          <tr class="hover-row">
+            <td style="padding-left:var(--space-lg);font-weight:var(--font-semibold);">Project</td>
+            <td>88 Employees</td>
+            <td>Sarah Jenkins</td>
+            <td><span class="badge badge-success">Active</span></td>
+            <td style="text-align:right;padding-right:var(--space-lg);">
+              <button class="btn btn-sm btn-secondary" onclick="alert('Edit Project department.')">Edit</button>
+            </td>
+          </tr>
+          <tr class="hover-row">
+            <td style="padding-left:var(--space-lg);font-weight:var(--font-semibold);">Marketing</td>
+            <td>56 Employees</td>
+            <td>David Miller</td>
+            <td><span class="badge badge-success">Active</span></td>
+            <td style="text-align:right;padding-right:var(--space-lg);">
+              <button class="btn btn-sm btn-secondary" onclick="alert('Edit Marketing department.')">Edit</button>
+            </td>
+          </tr>
+          <tr class="hover-row">
+            <td style="padding-left:var(--space-lg);font-weight:var(--font-semibold);">Research</td>
+            <td>48 Employees</td>
+            <td>Elena Rodriguez</td>
+            <td><span class="badge badge-success">Active</span></td>
+            <td style="text-align:right;padding-right:var(--space-lg);">
+              <button class="btn btn-sm btn-secondary" onclick="alert('Edit Research department.')">Edit</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
