@@ -83,7 +83,6 @@
       <div class="panel">
         <div class="panel-header">
           <h3 class="panel-title">
-            <span style="display:inline-block;width:4px;height:16px;background:#2563eb;border-radius:2px;margin-right:8px;vertical-align:middle;"></span>
             Payroll Overview
           </h3>
           <button class="btn btn-sm btn-secondary" onclick="App.routeView('sup_payroll','super_admin')">View Payroll</button>
@@ -91,7 +90,7 @@
         <div class="panel-body" style="display:flex;flex-direction:column;gap:var(--space-md);">
           <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:var(--space-md);">
             <div style="text-align:center;">
-              <div style="font-size:var(--text-xl);font-weight:var(--font-bold);color:var(--color-text-primary);">$2.4M</div>
+              <div style="font-size:var(--text-xl);font-weight:var(--font-bold);color:var(--color-text-primary);">₦2.4M</div>
               <div style="font-size:var(--text-xs);color:var(--color-text-muted);margin-top:2px;">Monthly Spend</div>
             </div>
             <div style="text-align:center;">
@@ -117,7 +116,6 @@
       <div class="panel">
         <div class="panel-header">
           <h3 class="panel-title">
-            <span style="display:inline-block;width:4px;height:16px;background:#16a34a;border-radius:2px;margin-right:8px;vertical-align:middle;"></span>
             Attendance Snapshot
           </h3>
           <button class="btn btn-sm btn-secondary" onclick="App.routeView('sup_attendance','super_admin')">View Report</button>
@@ -142,7 +140,6 @@
       <div class="panel">
         <div class="panel-header">
           <h3 class="panel-title">
-            <span style="display:inline-block;width:4px;height:16px;background:#7c3aed;border-radius:2px;margin-right:8px;vertical-align:middle;"></span>
             Role Distribution
           </h3>
           <button class="btn btn-sm btn-secondary" onclick="App.routeView('sup_roles','super_admin')">Manage Roles</button>
@@ -187,7 +184,6 @@
       <div class="panel" style="padding:0;overflow:hidden;">
         <div class="panel-header" style="border-bottom:1px solid var(--color-border);padding:var(--space-md) var(--space-lg);">
           <h3 class="panel-title">
-            <span style="display:inline-block;width:4px;height:16px;background:var(--color-warning);border-radius:2px;margin-right:8px;vertical-align:middle;"></span>
             Recent System Activity
           </h3>
           <button class="btn btn-sm btn-secondary" onclick="App.routeView('sup_audit','super_admin')">Full Log</button>
@@ -253,8 +249,11 @@
 
       <!-- Quick Access Module Cards -->
       <div class="panel">
-        <h3 class="panel-title" style="margin-bottom:var(--space-md);">Quick Access</h3>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-sm);">
+        <div class="panel-header">
+          <h3 class="panel-title">Quick Access</h3>
+        </div>
+        <div class="panel-body">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-sm);">
           <button style="display:flex;align-items:center;gap:var(--space-sm);padding:var(--space-sm) var(--space-md);background:var(--color-bg);border:1px solid var(--color-border);border-radius:var(--radius-md);cursor:pointer;text-align:left;font-size:var(--text-sm);font-weight:var(--font-medium);color:var(--color-text-primary);transition:all 0.15s;" onclick="App.routeView('sup_employees','super_admin')" onmouseover="this.style.background='var(--color-surface)';this.style.transform='translateY(-1px)';this.style.boxShadow='var(--shadow-1)';" onmouseout="this.style.background='var(--color-bg)';this.style.transform='translateY(0)';this.style.boxShadow='none';">
             <div style="width:32px;height:32px;border-radius:var(--radius-sm);background:#eff6ff;color:#2563eb;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
               <span class="material-symbols-outlined" style="font-size:18px;">groups</span>
@@ -292,6 +291,7 @@
             Settings
           </button>
         </div>
+      </div>
       </div>
     </div>
   </div>

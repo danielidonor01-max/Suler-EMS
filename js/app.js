@@ -28,11 +28,6 @@ const App = {
     activeRoleLabel: document.getElementById('active-role-label'),
     roleSwitcherMenu: document.getElementById('role-switcher-menu'),
     
-    // Impersonation
-    impersonationBanner: document.getElementById('impersonation-banner'),
-    impersonatedUserName: document.getElementById('impersonated-user-name'),
-    exitImpersonationBtn: document.getElementById('exit-impersonation-btn'),
-    
     // Notifications
     notificationsContainer: document.getElementById('notifications-container'),
     notificationsBtn: document.getElementById('notifications-btn'),
@@ -51,7 +46,6 @@ const App = {
       { id: 'emp_dash',       label: 'Dashboard',   icon: 'home',         section: 'main' },
       { id: 'emp_attendance', label: 'Attendance',   icon: 'clock',        section: 'main' },
       { id: 'emp_leave',      label: 'Leave',        icon: 'calendar',     section: 'main' },
-      { id: 'emp_paystubs',   label: 'My Paystubs',  icon: 'folder',       section: 'main' },
       { id: 'emp_profile',    label: 'My Profile',   icon: 'user',         section: 'profile' }
     ],
     'manager': [
@@ -67,6 +61,7 @@ const App = {
       { id: 'adm_attendance', label: 'Attendance',      icon: 'clock',        section: 'main' },
       { id: 'adm_leave',      label: 'Leave Management',icon: 'calendar',     section: 'main' },
       { id: 'adm_payroll',    label: 'Payroll',         icon: 'folder',       section: 'finance' },
+      { id: 'adm_paystubs',   label: 'Paystubs',        icon: 'file-text',    section: 'finance' },
       { id: 'adm_roles',      label: 'Role Assignments',icon: 'shield',       section: 'settings' },
       { id: 'adm_audit',      label: 'Audit Logs',      icon: 'activity',     section: 'settings' }
     ],
@@ -76,6 +71,7 @@ const App = {
       // EMPLOYEE MANAGEMENT
       { id: 'sup_employees',     label: 'All Employees',      icon: 'users',        section: 'employees' },
       { id: 'sup_payroll',       label: 'Payroll Processing', icon: 'folder',       section: 'employees' },
+      { id: 'sup_paystubs',      label: 'Paystubs',           icon: 'file-text',    section: 'employees' },
       { id: 'sup_salary',        label: 'Salary Structures',  icon: 'pie-chart',    section: 'employees' },
       // WORKFORCE
       { id: 'sup_attendance',    label: 'Attendance & Leave', icon: 'clock',        section: 'workforce' },
@@ -87,8 +83,7 @@ const App = {
       { id: 'sup_audit',         label: 'Audit Logs',         icon: 'activity',     section: 'organization' },
       // SYSTEM
       { id: 'sup_settings',      label: 'System Settings',    icon: 'settings',     section: 'system' },
-      { id: 'sup_notifications', label: 'Notifications',      icon: 'bell',         section: 'system' },
-      { id: 'sup_impersonate',   label: 'Impersonation',      icon: 'user-x',       section: 'system' }
+      { id: 'sup_notifications', label: 'Notifications',      icon: 'bell',         section: 'system' }
     ]
   },
 
@@ -191,11 +186,6 @@ const App = {
       }
     });
 
-    // Exit Impersonation
-    this.els.exitImpersonationBtn.addEventListener('click', () => {
-      Store.clearImpersonation();
-      this.renderAppShell();
-    });
 
     // Notifications Toggle
     if (this.els.notificationsBtn) {
@@ -314,13 +304,6 @@ const App = {
     const sidebarLabel = document.getElementById('sidebar-role-label');
     if (sidebarLabel) sidebarLabel.textContent = sidebarPortalLabels[effectiveActiveRole] || 'System Portal';
 
-    // Impersonation Banner
-    if (impersonatedUser) {
-      this.els.impersonatedUserName.textContent = impersonatedUser.name;
-      this.els.impersonationBanner.classList.remove('hidden');
-    } else {
-      this.els.impersonationBanner.classList.add('hidden');
-    }
 
     this.renderRoleSwitcher(effectiveUser, effectiveActiveRole);
     this.renderSidebar(effectiveActiveRole);
@@ -536,6 +519,7 @@ const App = {
       // employees section
       'sup_employees':     'employee_management',
       'sup_payroll':       'payroll_processing',
+      'sup_paystubs':      'payroll_reports',
       'sup_salary':        'salary_structures',
       // workforce section
       'sup_attendance':    'attendance_leave_reports',
@@ -556,6 +540,7 @@ const App = {
       'adm_attendance':    'attendance_leave_reports',
       'adm_leave':         'leave_management',
       'adm_payroll':       'payroll_processing',
+      'adm_paystubs':      'payroll_reports',
       'adm_roles':         'role_management',
       'adm_audit':         'audit_logs',
 
@@ -570,7 +555,6 @@ const App = {
       'emp_dash':          'employee_dashboard',
       'emp_attendance':    'attendance_tracker',
       'emp_leave':         'leave_management',
-      'emp_paystubs':      'payroll_reports',
       'emp_profile':       'user_profile'
     };
 

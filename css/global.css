@@ -188,10 +188,10 @@ p  { font-size: var(--text-sm);  line-height: 20px; color: var(--color-text-seco
 .btn-danger:hover { background-color: #FECACA; }
 
 .btn-sm {
-  height: 32px;
-  padding: 0 var(--space-sm);
-  font-size: var(--text-xs);
-  border-radius: var(--radius-sm);
+  height: 38px;
+  padding: 0 var(--space-md);
+  font-size: var(--text-sm);
+  border-radius: var(--radius-md);
 }
 .btn-lg {
   height: 48px;
