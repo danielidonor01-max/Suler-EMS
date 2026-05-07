@@ -1,0 +1,20 @@
+import { PrismaClient } from '@prisma/client';
+
+const prismaClientSingleton = () => {
+  return new PrismaClient();
+};
+
+declare global {
+  var prisma: undefined | ReturnType<typeof prismaClientSingleton>;
+}
+
+import { initEventSystem } from './events/init';
+
+const prisma = globalThis.prisma ?? prismaClientSingleton();
+
+// Initialize Event-Driven Infrastructure
+initEventSystem();
+
+export default prisma;
+
+if (process.env.NODE_ENV !== 'production') globalThis.prisma = prisma;
