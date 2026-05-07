@@ -12,31 +12,41 @@ import {
   Download,
   Fingerprint,
   Zap,
-  Activity
+  Activity,
+  ShieldCheck,
+  History,
+  ArrowRight
 } from 'lucide-react';
 import { DataTable } from "@/components/tables/DataTable";
 import { MetricCard } from '@/components/dashboard/MetricCard';
+import { Drawer } from '@/components/common/Drawer';
+import { EmptyState } from '@/components/common/EmptyState';
 
 // Initial Mock Data
 const MOCK_ATTENDANCE = [
-  { id: 'att-001', staffName: 'Chinedu Okoro', checkIn: '08:00 AM', status: 'ON_TIME', department: 'Executive' },
-  { id: 'att-002', staffName: 'Sarah Williams', checkIn: '08:15 AM', status: 'LATE', department: 'Operations' },
-  { id: 'att-003', staffName: 'David Okafor', checkIn: '07:55 AM', status: 'ON_TIME', department: 'Finance' },
-  { id: 'att-004', staffName: 'Blessing Udoh', checkIn: '09:00 AM', status: 'LATE', department: 'HR' },
-  { id: 'att-005', staffName: 'John Doe', checkIn: '08:05 AM', status: 'ON_TIME', department: 'Engineering' },
+  { id: 'att-001', staffName: 'Chinedu Okoro', checkIn: '08:00 AM', status: 'ON_TIME', department: 'Executive', staffId: 'SUL-001' },
+  { id: 'att-002', staffName: 'Sarah Williams', checkIn: '08:15 AM', status: 'LATE', department: 'Operations', staffId: 'SUL-002' },
+  { id: 'att-003', staffName: 'David Okafor', checkIn: '07:55 AM', status: 'ON_TIME', department: 'Finance', staffId: 'SUL-003' },
+  { id: 'att-004', staffName: 'Blessing Udoh', checkIn: '09:00 AM', status: 'LATE', department: 'HR', staffId: 'SUL-004' },
 ];
 
 export default function AttendancePage() {
   const [data] = useState(MOCK_ATTENDANCE);
+  const [selectedLog, setSelectedLog] = useState<typeof MOCK_ATTENDANCE[0] | null>(null);
 
   const columns = [
     {
       header: "Staff Member",
       accessor: "staffName",
       render: (val: string, row: any) => (
-        <div>
-          <div className="text-[14px] font-black text-slate-900 tracking-tight">{val}</div>
-          <div className="text-[11px] font-bold text-slate-400 mt-0.5">{row.department}</div>
+        <div className="flex items-center gap-4">
+           <div className="w-10 h-10 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-400 font-black text-[10px]">
+              {val.split(' ').map(n => n[0]).join('')}
+           </div>
+           <div>
+              <div className="text-[14px] font-black text-slate-900 tracking-tight leading-none mb-1">{val}</div>
+              <div className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">{row.department}</div>
+           </div>
         </div>
       )
     },
@@ -54,96 +64,145 @@ export default function AttendancePage() {
       header: "Registry Status",
       accessor: "status",
       render: (val: string) => (
-        <div className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full border ${
+        <div className={`inline-flex items-center gap-2 px-2.5 py-1 rounded-lg border ${
           val === 'ON_TIME' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-rose-50 text-rose-600 border-rose-100'
         }`}>
           <div className={`w-1.5 h-1.5 rounded-full ${val === 'ON_TIME' ? 'bg-emerald-500' : 'bg-rose-500'} animate-pulse`} />
           <span className="text-[10px] font-black uppercase tracking-widest">{val.replace('_', ' ')}</span>
         </div>
       )
-    },
-    {
-      header: "Control",
-      accessor: "id",
-      render: () => (
-        <button className="px-4 py-2 bg-slate-50 hover:bg-indigo-600 hover:text-white text-slate-600 rounded-xl text-[11px] font-black uppercase tracking-wider transition-all">
-          Details
-        </button>
-      )
     }
   ];
 
   return (
-    <div className="section-breathing max-w-[1600px] mx-auto animate-in space-y-12">
+    <div className="section-breathing max-w-[1600px] mx-auto animate-in space-y-10">
+      
       {/* Executive Hero */}
-      <div className="bg-white rounded-[32px] p-10 border border-slate-100 shadow-premium relative overflow-hidden">
+      <div className="bg-white rounded-[24px] p-8 border border-slate-200/60 shadow-sm relative overflow-hidden">
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-8">
-          <div className="max-w-[600px]">
+          <div>
             <div className="flex items-center gap-2 mb-3">
-              <div className="px-3 py-1 bg-indigo-50 text-indigo-600 rounded-full text-[9px] font-black uppercase tracking-[0.2em] flex items-center gap-1.5">
+              <div className="px-2.5 py-1 bg-slate-50 text-slate-500 rounded-md text-[9px] font-black uppercase tracking-[0.2em] flex items-center gap-1.5 border border-slate-100">
                 <Fingerprint className="w-3 h-3" />
                 Biometric Sync Active
               </div>
             </div>
-            <h1 className="text-4xl font-black text-slate-900 tracking-tighter leading-none mb-3">
+            <h1 className="text-3xl font-black text-slate-900 tracking-tighter leading-none mb-3">
               Attendance & Presence
             </h1>
-            <p className="text-[14px] font-medium text-slate-400 leading-relaxed max-w-[480px]">
+            <p className="text-[13px] font-medium text-slate-400 leading-relaxed max-w-[480px]">
               Real-time monitoring of workforce presence, punctuality trends, and automated biometric reconciliation.
             </p>
           </div>
 
           <div className="flex items-center gap-3">
-            <button className="bg-slate-50 hover:bg-slate-100 text-slate-600 flex items-center gap-2.5 px-6 py-3.5 rounded-full text-xs font-black uppercase tracking-wider transition-all border border-slate-100">
+            <button className="bg-white border border-slate-200 text-slate-600 hover:border-slate-300 px-6 py-3 rounded-xl text-[11px] font-black uppercase tracking-wider transition-all">
               <Download className="w-4 h-4" />
               Export Logs
             </button>
-            <button className="bg-indigo-600 hover:bg-indigo-700 text-white flex items-center gap-2.5 px-8 py-3.5 rounded-full text-xs font-black uppercase tracking-wider transition-all shadow-xl shadow-indigo-100">
+            <button className="bg-slate-900 hover:bg-black text-white flex items-center gap-2.5 px-6 py-3 rounded-xl text-[11px] font-black uppercase tracking-wider transition-all shadow-md">
               <RefreshCcw className="w-4 h-4" />
               Reconcile Devices
             </button>
           </div>
         </div>
-        <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-50/30 rounded-full -mr-32 -mt-32 blur-3xl" />
       </div>
 
       {/* KPI Layer */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <MetricCard 
-          label="Present Today" 
-          value="1,156" 
-          trend={{ value: 4.2, isPositive: true }}
-          variant="tonal-success"
-          icon="check_circle"
-        />
-        <MetricCard 
-          label="Late Arrivals" 
-          value="12" 
-          trend={{ value: 2.1, isPositive: false }}
-          variant="tonal-warning"
-          icon="history"
-        />
-        <MetricCard 
-          label="Remote Sync" 
-          value="42" 
-          variant="tonal-info"
-          icon="wifi"
-        />
-        <MetricCard 
-          label="System Health" 
-          value="Optimal" 
-          variant="tonal-success"
-          icon="memory"
-        />
+        <MetricCard label="Present Today" value="1,156" trend={{ direction: 'up', value: '4.2%' }} variant="tonal-success" icon={CheckCircle2} />
+        <MetricCard label="Late Arrivals" value="12" trend={{ direction: 'down', value: '2.1%' }} variant="tonal-warning" icon={History} />
+        <MetricCard label="Remote Sync" value="42" variant="tonal-info" icon={Activity} />
+        <MetricCard label="System Health" value="Optimal" variant="tonal-success" icon={ShieldCheck} />
       </div>
 
       {/* Registry Surface */}
-      <DataTable 
-        title="Presence Registry"
-        description="Consolidated log of biometric check-ins and operational presence signals."
-        data={data}
-        columns={columns}
-      />
+      {data.length > 0 ? (
+        <DataTable 
+          title="Presence Registry"
+          description="Consolidated log of biometric check-ins and operational presence signals."
+          data={data}
+          columns={columns}
+          onRowClick={(row) => setSelectedLog(row)}
+        />
+      ) : (
+        <div className="bg-white rounded-[24px] border border-slate-200/60 shadow-sm overflow-hidden p-20">
+           <EmptyState 
+            title="No Attendance Logs Detected" 
+            description="The biometric synchronization has not yet transmitted today's presence datasets for this workspace."
+            actionLabel="Initiate Manual Sync"
+            onAction={() => {}}
+            icon={Fingerprint}
+           />
+        </div>
+      )}
+
+      {/* Attendance Detail Drawer */}
+      <Drawer
+        isOpen={!!selectedLog}
+        onClose={() => setSelectedLog(null)}
+        title={selectedLog?.staffName || ''}
+        subtitle={selectedLog?.staffId}
+      >
+        <div className="space-y-10 animate-in">
+           {/* Summary Card */}
+           <div className="p-7 bg-slate-50 border border-slate-100 rounded-[20px] space-y-6">
+              <div className="flex items-center justify-between">
+                 <div className="flex flex-col">
+                    <span className="text-[14px] font-black text-slate-900">{selectedLog?.staffName}</span>
+                    <span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">{selectedLog?.department}</span>
+                 </div>
+                 <div className={`px-2.5 py-1 rounded-lg border text-[10px] font-black uppercase tracking-widest ${
+                   selectedLog?.status === 'ON_TIME' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-rose-50 text-rose-600 border-rose-100'
+                 }`}>
+                   {selectedLog?.status.replace('_', ' ')}
+                 </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-8 border-t border-slate-200/60 pt-6">
+                 <div className="space-y-1">
+                    <span className="text-[9px] font-black text-slate-300 uppercase tracking-widest">Check-in Time</span>
+                    <p className="text-[14px] font-bold text-slate-900">{selectedLog?.checkIn}</p>
+                 </div>
+                 <div className="space-y-1">
+                    <span className="text-[9px] font-black text-slate-300 uppercase tracking-widest">Device Source</span>
+                    <p className="text-[14px] font-bold text-slate-900">Biometric Terminal 04</p>
+                 </div>
+              </div>
+           </div>
+
+           {/* Precision Timeline */}
+           <div className="space-y-4">
+              <div className="flex items-center gap-2">
+                 <History className="w-4 h-4 text-slate-400" />
+                 <h4 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em]">Operational History</h4>
+              </div>
+              <div className="space-y-4 relative before:absolute before:left-3 before:top-2 before:bottom-2 before:w-px before:bg-slate-100">
+                 {[
+                   { label: 'Check-in Recorded', desc: 'Verified via biometric scan at Main Entrance.', time: '08:00 AM' },
+                   { label: 'System Sync', desc: 'Registry updated across all operational hubs.', time: '08:01 AM' }
+                 ].map((log, i) => (
+                   <div key={i} className="relative pl-10">
+                      <div className="absolute left-2 top-1.5 w-2 h-2 rounded-full bg-slate-900 border-2 border-white" />
+                      <div className="flex justify-between items-start">
+                         <p className="text-[12px] font-black text-slate-900">{log.label}</p>
+                         <span className="text-[10px] font-bold text-slate-300">{log.time}</span>
+                      </div>
+                      <p className="text-[11px] font-medium text-slate-500 mt-0.5 leading-relaxed">{log.desc}</p>
+                   </div>
+                 ))}
+              </div>
+           </div>
+
+           {/* Actions */}
+           <div className="pt-6 border-t border-slate-100 flex gap-3">
+              <button className="flex-1 bg-slate-900 text-white py-3 rounded-xl text-[11px] font-black uppercase tracking-widest">Reconcile Log</button>
+              <button className="px-6 border border-slate-200 text-slate-400 py-3 rounded-xl hover:text-slate-900 hover:border-slate-300 transition-all">
+                 <ArrowRight className="w-4 h-4" />
+              </button>
+           </div>
+        </div>
+      </Drawer>
     </div>
   );
 }
