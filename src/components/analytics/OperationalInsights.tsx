@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { OperationalInsight } from '@/modules/analytics/domain/analytics.model';
-import { Shield, Zap, CheckCircle, AlertCircle, ArrowRight } from 'lucide-react';
+import { Shield, Zap, CheckCircle, AlertCircle, ArrowRight, Activity } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 
 interface OperationalInsightsProps {
@@ -12,59 +12,56 @@ interface OperationalInsightsProps {
 export function OperationalInsights({ insights }: OperationalInsightsProps) {
   const getIcon = (type: string) => {
     switch (type) {
-      case 'SECURITY': return <Shield className="w-4 h-4 text-red-400" />;
-      case 'EFFICIENCY': return <Zap className="w-4 h-4 text-amber-400" />;
-      case 'COMPLIANCE': return <CheckCircle className="w-4 h-4 text-green-400" />;
-      default: return <AlertCircle className="w-4 h-4 text-blue-400" />;
+      case 'SECURITY': return <Shield className="w-4 h-4 text-rose-600" />;
+      case 'EFFICIENCY': return <Zap className="w-4 h-4 text-amber-600" />;
+      case 'COMPLIANCE': return <CheckCircle className="w-4 h-4 text-emerald-600" />;
+      default: return <Activity className="w-4 h-4 text-indigo-600" />;
     }
   };
 
   const getSeverityStyles = (severity: string) => {
     switch (severity) {
-      case 'CRITICAL': return 'bg-red-400/10 border-red-400/20';
-      case 'WARNING': return 'bg-amber-400/10 border-amber-400/20';
-      default: return 'bg-zinc-800/50 border-white/5';
+      case 'CRITICAL': return 'bg-rose-50 border-rose-100';
+      case 'WARNING': return 'bg-amber-50 border-amber-100';
+      default: return 'bg-slate-50 border-slate-100';
     }
   };
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between mb-2">
-        <h3 className="text-sm font-bold text-white tracking-tight uppercase tracking-widest">Operational Insights</h3>
-        <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">{insights.length} Detected</span>
-      </div>
-
+    <div className="space-y-6">
       {insights.map((insight) => (
         <div 
           key={insight.id} 
-          className={`p-5 rounded-2xl border transition-all hover:scale-[1.01] ${getSeverityStyles(insight.severity)}`}
+          className={`p-6 rounded-[28px] border transition-all hover:shadow-md ${getSeverityStyles(insight.severity)} group relative overflow-hidden`}
         >
-          <div className="flex gap-4">
-            <div className={`mt-0.5 w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${getSeverityStyles(insight.severity)}`}>
+          <div className="flex gap-5">
+            <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 border border-current/10 ${getSeverityStyles(insight.severity)}`}>
               {getIcon(insight.type)}
             </div>
             <div className="flex-1 min-w-0">
-              <div className="flex items-center justify-between mb-1">
-                <h4 className="text-sm font-bold text-white tracking-tight">{insight.title}</h4>
-                <span className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest">
-                  {formatDistanceToNow(new Date(insight.timestamp), { addSuffix: true })}
-                </span>
+              <div className="flex flex-col mb-2">
+                <div className="flex items-center justify-between">
+                  <h4 className="text-sm font-black text-slate-900 tracking-tight">{insight.title}</h4>
+                  <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">
+                    {formatDistanceToNow(new Date(insight.timestamp), { addSuffix: true })}
+                  </span>
+                </div>
               </div>
-              <p className="text-xs text-zinc-400 leading-relaxed mb-4">
+              <p className="text-[12px] font-medium text-slate-500 leading-relaxed mb-6">
                 {insight.message}
               </p>
               
               {insight.suggestedAction && (
-                <button className="w-full p-3 rounded-xl bg-white/5 border border-white/5 flex items-center justify-between group hover:border-white/10 transition-all">
+                <button className="w-full p-4 rounded-2xl bg-white border border-slate-100 flex items-center justify-between group/btn hover:border-indigo-200 hover:shadow-sm transition-all">
                   <div className="flex items-center gap-3">
-                    <div className="w-1.5 h-1.5 rounded-full bg-blue-500" />
-                    <span className="text-[10px] font-bold text-zinc-300 uppercase tracking-widest">Suggested Action</span>
+                    <div className="w-2 h-2 rounded-full bg-indigo-600 animate-pulse" />
+                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Recommendation</span>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-[10px] font-bold text-white uppercase tracking-widest group-hover:text-blue-400 transition-colors">
+                  <div className="flex items-center gap-2.5">
+                    <span className="text-[10px] font-black text-indigo-600 uppercase tracking-widest group-hover/btn:text-indigo-700 transition-colors">
                       {insight.suggestedAction}
                     </span>
-                    <ArrowRight className="w-3 h-3 text-zinc-600 group-hover:text-blue-400 group-hover:translate-x-1 transition-all" />
+                    <ArrowRight className="w-4 h-4 text-indigo-300 group-hover/btn:text-indigo-600 group-hover/btn:translate-x-1 transition-all" />
                   </div>
                 </button>
               )}

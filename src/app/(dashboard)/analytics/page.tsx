@@ -1,12 +1,24 @@
 "use client";
 
 import React, { useEffect, useState } from 'react';
-import { KPIGrid } from '@/components/analytics/KPIGrid';
+import { 
+  BarChart2, 
+  Download, 
+  RefreshCcw, 
+  LayoutDashboard, 
+  Clock, 
+  Users, 
+  ShieldCheck, 
+  Sparkles,
+  TrendingUp,
+  BrainCircuit,
+  Activity
+} from 'lucide-react';
 import { OperationalTrends } from '@/components/analytics/OperationalTrends';
 import { WorkflowBottlenecks } from '@/components/analytics/WorkflowBottlenecks';
 import { OperationalInsights } from '@/components/analytics/OperationalInsights';
 import { ReportManager } from '@/modules/analytics/components/ReportManager';
-import { BarChart2, Download, RefreshCcw, FileText, LayoutDashboard, Clock, Users, ShieldCheck } from 'lucide-react';
+import { MetricCard } from '@/components/dashboard/MetricCard';
 
 export default function AnalyticsPage() {
   const [data, setData] = useState<any>(null);
@@ -35,99 +47,151 @@ export default function AnalyticsPage() {
 
   if (loading) {
     return (
-      <div className="flex flex-col items-center justify-center h-[60vh] gap-4">
+      <div className="flex flex-col items-center justify-center h-[70vh] gap-6">
         <div className="relative">
-           <RefreshCcw className="w-10 h-10 text-blue-500 animate-spin" />
-           <div className="absolute inset-0 blur-xl bg-blue-500/20 animate-pulse rounded-full" />
+           <div className="w-16 h-16 border-4 border-indigo-100 border-t-indigo-600 rounded-full animate-spin" />
+           <div className="absolute inset-0 blur-2xl bg-indigo-600/10 rounded-full animate-pulse" />
         </div>
-        <p className="text-sm font-bold text-zinc-500 uppercase tracking-widest animate-pulse">Compiling Intelligence...</p>
+        <div className="flex flex-col items-center gap-2">
+          <p className="text-sm font-black text-slate-900 uppercase tracking-[0.2em]">Compiling Intelligence</p>
+          <p className="text-xs font-bold text-slate-400">Synthesizing real-time operational datasets...</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="max-w-[1600px] mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
-      {/* Header Section */}
-      <div className="relative overflow-hidden p-8 rounded-3xl bg-zinc-900/40 border border-white/5 backdrop-blur-md">
-        <div className="absolute top-0 right-0 -mt-20 -mr-20 w-64 h-64 bg-blue-600/10 blur-[100px] rounded-full" />
-        <div className="absolute bottom-0 left-0 -mb-20 -ml-20 w-64 h-64 bg-indigo-600/10 blur-[100px] rounded-full" />
-        
-        <div className="relative flex flex-col md:flex-row md:items-center justify-between gap-6">
-          <div className="flex items-center gap-5">
-            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-700 flex items-center justify-center shadow-2xl shadow-blue-900/40">
-              <BarChart2 className="w-7 h-7 text-white" />
-            </div>
-            <div>
-              <h1 className="text-3xl font-extrabold text-white tracking-tight">Operational Intelligence</h1>
-              <div className="flex items-center gap-3 mt-1.5">
-                <span className="flex items-center gap-1.5 text-xs font-bold text-green-400 uppercase tracking-widest bg-green-500/10 px-2 py-0.5 rounded-md">
-                  <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-                  Live Stream Active
-                </span>
-                <span className="text-zinc-500 text-xs font-medium">|</span>
-                <p className="text-zinc-500 text-xs font-medium">Real-time organizational performance & governance analytics.</p>
+    <div className="section-breathing max-w-[1600px] mx-auto animate-in space-y-12">
+      {/* Premium Executive Hero */}
+      <div className="bg-white rounded-[32px] p-10 border border-slate-100 shadow-premium relative overflow-hidden">
+        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-8">
+          <div className="max-w-[600px]">
+            <div className="flex items-center gap-2 mb-3">
+              <div className="px-3 py-1 bg-indigo-50 text-indigo-600 rounded-full text-[9px] font-black uppercase tracking-[0.2em] flex items-center gap-1.5">
+                <BrainCircuit className="w-3 h-3" />
+                Cognitive Analytics
               </div>
             </div>
+            <h1 className="text-4xl font-black text-slate-900 tracking-tighter leading-none mb-3">
+              Operational Intelligence
+            </h1>
+            <p className="text-[14px] font-medium text-slate-400 leading-relaxed max-w-[480px]">
+              Advanced visualization of organization-wide performance metrics, resource utilization, and governance signals.
+            </p>
           </div>
-          
+
           <div className="flex items-center gap-3">
             <button 
               onClick={() => fetchAnalytics(true)}
-              className="group flex items-center gap-2 px-5 py-2.5 rounded-xl bg-zinc-900 border border-white/10 text-zinc-300 hover:text-white hover:border-white/20 transition-all text-xs font-bold uppercase tracking-widest"
+              className="group bg-slate-50 hover:bg-slate-100 text-slate-600 flex items-center gap-2.5 px-6 py-3.5 rounded-full text-xs font-black uppercase tracking-wider transition-all border border-slate-100"
             >
-              <RefreshCcw className={`w-4 h-4 transition-transform duration-500 ${refreshing ? 'animate-spin' : 'group-hover:rotate-180'}`} />
-              Refresh Data
+              <RefreshCcw className={`w-4 h-4 transition-transform duration-700 ${refreshing ? 'animate-spin' : 'group-hover:rotate-180'}`} />
+              Refresh
             </button>
-            <button className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-blue-600 text-white hover:bg-blue-500 active:scale-95 transition-all text-xs font-bold uppercase tracking-widest shadow-xl shadow-blue-900/30">
+            <button className="bg-indigo-600 hover:bg-indigo-700 text-white flex items-center gap-2.5 px-8 py-3.5 rounded-full text-xs font-black uppercase tracking-wider transition-all shadow-xl shadow-indigo-100">
               <Download className="w-4 h-4" />
               Generate Report
             </button>
           </div>
         </div>
+
+        {/* Dynamic Background Elements */}
+        <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-50/40 rounded-full -mr-32 -mt-32 blur-3xl animate-pulse" />
+        <div className="absolute bottom-0 left-0 w-48 h-48 bg-emerald-50/30 rounded-full -ml-24 -mb-24 blur-3xl" />
       </div>
 
-      {/* Primary KPIs */}
-      <div className="space-y-4">
-        <div className="flex items-center gap-2 text-zinc-500">
-          <LayoutDashboard className="w-4 h-4" />
-          <h2 className="text-xs font-bold uppercase tracking-[0.2em]">High-Level Performance Indicators</h2>
-        </div>
-        <KPIGrid metrics={data?.workforce || {}} />
+      {/* High-Impact KPI Surface */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <MetricCard 
+          label="Organization Health" 
+          value="94%" 
+          trend={{ value: 2.4, isPositive: true }}
+          variant="tonal-success"
+          icon="verified_user"
+        />
+        <MetricCard 
+          label="Resource Utilization" 
+          value="87.2%" 
+          trend={{ value: 1.2, isPositive: false }}
+          variant="tonal-info"
+          icon="monitoring"
+        />
+        <MetricCard 
+          label="Process Velocity" 
+          value="2.4d" 
+          variant="tonal-warning"
+          icon="bolt"
+        />
+        <MetricCard 
+          label="Risk Signal" 
+          value="Low" 
+          variant="tonal-success"
+          icon="security"
+        />
       </div>
 
-      {/* Main Grid Content */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Left Span: Trends and Workflow Bottlenecks */}
-        <div className="lg:col-span-2 space-y-8">
-          <div className="space-y-4">
-             <div className="flex items-center gap-2 text-zinc-500">
-              <Clock className="w-4 h-4" />
-              <h2 className="text-xs font-bold uppercase tracking-[0.2em]">Efficiency & Utilization Trends</h2>
+      {/* Analytics Command Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
+        <div className="lg:col-span-2 space-y-12">
+          {/* Trends Module */}
+          <div className="bg-white rounded-[32px] p-10 border border-slate-100 shadow-premium">
+            <div className="flex items-center justify-between mb-10">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-2xl bg-indigo-50 flex items-center justify-center text-indigo-600">
+                  <TrendingUp className="w-6 h-6" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-black text-slate-900 tracking-tight">Performance Vectors</h3>
+                  <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">Efficiency & Utilization Trends</p>
+                </div>
+              </div>
+              <div className="flex gap-2">
+                {['7D', '30D', '90D'].map(period => (
+                  <button key={period} className={`px-4 py-1.5 rounded-lg text-[10px] font-black transition-all ${period === '30D' ? 'bg-indigo-600 text-white' : 'text-slate-400 hover:bg-slate-50'}`}>
+                    {period}
+                  </button>
+                ))}
+              </div>
             </div>
             <OperationalTrends />
           </div>
 
-          <div className="space-y-4">
-             <div className="flex items-center gap-2 text-zinc-500">
-              <Users className="w-4 h-4" />
-              <h2 className="text-xs font-bold uppercase tracking-[0.2em]">Departmental Throughput</h2>
+          {/* Workflow Distribution Module */}
+          <div className="bg-white rounded-[32px] p-10 border border-slate-100 shadow-premium">
+            <div className="flex items-center gap-4 mb-10">
+              <div className="w-12 h-12 rounded-2xl bg-emerald-50 flex items-center justify-center text-emerald-600">
+                <Activity className="w-6 h-6" />
+              </div>
+              <div>
+                <h3 className="text-lg font-black text-slate-900 tracking-tight">Departmental Throughput</h3>
+                <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">Workflow Bottleneck Analysis</p>
+              </div>
             </div>
             <WorkflowBottlenecks bottlenecks={data?.bottlenecks || []} />
           </div>
         </div>
 
-        {/* Right Span: Insights and Quick Reports */}
-        <div className="space-y-8">
-          <div className="space-y-4">
-            <div className="flex items-center gap-2 text-zinc-500">
-              <ShieldCheck className="w-4 h-4" />
-              <h2 className="text-xs font-bold uppercase tracking-[0.2em]">Intelligence Signals</h2>
+        {/* Side Intelligence Column */}
+        <div className="space-y-10">
+          <div className="bg-white rounded-[32px] p-8 border border-slate-100 shadow-premium">
+            <div className="flex items-center gap-3 mb-8">
+              <ShieldCheck className="w-5 h-5 text-indigo-600" />
+              <h2 className="text-[11px] font-black text-slate-900 uppercase tracking-[0.2em]">Intelligence Signals</h2>
             </div>
             <OperationalInsights insights={data?.insights || []} />
           </div>
           
-          {/* Real Background Job Report Manager */}
-          <ReportManager userId={data?.userId || ""} />
+          <div className="bg-slate-900 rounded-[32px] p-10 text-white relative overflow-hidden shadow-2xl shadow-slate-900/40">
+             <div className="relative z-10">
+               <div className="flex items-center gap-3 mb-6">
+                 <Sparkles className="w-5 h-5 text-indigo-400" />
+                 <h2 className="text-[10px] font-black uppercase tracking-[0.2em] text-indigo-400">Reporting Engine</h2>
+               </div>
+               <ReportManager userId={data?.userId || ""} />
+             </div>
+             {/* Glowing accent */}
+             <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-600/20 blur-3xl rounded-full -mr-16 -mt-16" />
+          </div>
         </div>
       </div>
     </div>

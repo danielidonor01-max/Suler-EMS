@@ -90,19 +90,19 @@ export default function EmployeesPage() {
   return (
     <div className="section-breathing max-w-[1600px] mx-auto animate-in space-y-12">
       {/* Premium Executive Hero */}
-      <div className="bg-white rounded-[40px] p-12 border border-slate-100 shadow-premium relative overflow-hidden">
+      <div className="bg-white rounded-[32px] p-10 border border-slate-100 shadow-premium relative overflow-hidden">
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-8">
-          <div className="max-w-[640px]">
-            <div className="flex items-center gap-2 mb-4">
-              <div className="px-3 py-1 bg-indigo-50 text-indigo-600 rounded-full text-[10px] font-black uppercase tracking-[0.2em] flex items-center gap-1.5">
+          <div className="max-w-[600px]">
+            <div className="flex items-center gap-2 mb-3">
+              <div className="px-3 py-1 bg-indigo-50 text-indigo-600 rounded-full text-[9px] font-black uppercase tracking-[0.2em] flex items-center gap-1.5">
                 <Sparkles className="w-3 h-3" />
                 Operational Hub
               </div>
             </div>
-            <h1 className="text-5xl font-black text-slate-900 tracking-tighter leading-none mb-4">
+            <h1 className="text-4xl font-black text-slate-900 tracking-tighter leading-none mb-3">
               Staff Management
             </h1>
-            <p className="text-[16px] font-medium text-slate-400 leading-relaxed max-w-[520px]">
+            <p className="text-[14px] font-medium text-slate-400 leading-relaxed max-w-[480px]">
               Executive oversight and granular control of organization staff members, operational roles, and governance policies.
             </p>
           </div>

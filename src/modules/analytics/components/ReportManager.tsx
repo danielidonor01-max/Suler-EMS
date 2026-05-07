@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { FileText, Download, Clock, CheckCircle2, AlertCircle, Loader2, RefreshCcw, History } from 'lucide-react';
+import { FileText, Download, Clock, CheckCircle2, AlertCircle, Loader2, RefreshCcw, History, Sparkles } from 'lucide-react';
 import { ReportType, ReportJobModel } from '../domain/analytics.model';
 
 interface ReportManagerProps {
@@ -10,7 +10,7 @@ interface ReportManagerProps {
 
 /**
  * Report Manager Component
- * Unified interface for triggering and monitoring enterprise reports.
+ * Refined for "Premium Operational Workspace" - high contrast, executive feel.
  */
 export const ReportManager: React.FC<ReportManagerProps> = ({ userId }) => {
   const [jobs, setJobs] = useState<ReportJobModel[]>([]);
@@ -40,7 +40,7 @@ export const ReportManager: React.FC<ReportManagerProps> = ({ userId }) => {
 
   useEffect(() => {
     fetchJobs();
-    const interval = setInterval(fetchJobs, 5000); // Poll every 5s for updates
+    const interval = setInterval(fetchJobs, 5000); 
     return () => clearInterval(interval);
   }, [userId]);
 
@@ -55,7 +55,6 @@ export const ReportManager: React.FC<ReportManagerProps> = ({ userId }) => {
       
       const result = await res.json();
       if (result.success) {
-        // Triggered successfully
         fetchJobs();
       }
     } catch (err) {
@@ -67,76 +66,70 @@ export const ReportManager: React.FC<ReportManagerProps> = ({ userId }) => {
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'COMPLETED': return <CheckCircle2 className="w-4 h-4 text-green-500" />;
-      case 'FAILED': return <AlertCircle className="w-4 h-4 text-red-500" />;
-      case 'PROCESSING': return <Loader2 className="w-4 h-4 text-blue-500 animate-spin" />;
-      default: return <Clock className="w-4 h-4 text-zinc-500" />;
+      case 'COMPLETED': return <CheckCircle2 className="w-4 h-4 text-indigo-400" />;
+      case 'FAILED': return <AlertCircle className="w-4 h-4 text-rose-500" />;
+      case 'PROCESSING': return <Loader2 className="w-4 h-4 text-indigo-400 animate-spin" />;
+      default: return <Clock className="w-4 h-4 text-slate-500" />;
     }
   };
 
   return (
-    <div className="relative group overflow-hidden p-8 rounded-3xl bg-zinc-900/40 border border-white/5 backdrop-blur-md">
-      <div className="absolute inset-0 bg-gradient-to-br from-blue-600/5 to-transparent pointer-events-none" />
-      
-      <div className="relative flex items-center justify-between mb-8">
-        <div className="flex items-center gap-4">
-          <div className="w-12 h-12 rounded-2xl bg-blue-500/10 flex items-center justify-center text-blue-400 group-hover:scale-110 transition-transform">
-            <FileText className="w-6 h-6" />
-          </div>
-          <div>
-            <h3 className="text-sm font-bold text-white tracking-tight">On-Demand Reports</h3>
-            <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest mt-0.5">Enterprise Export Infrastructure</p>
-          </div>
-        </div>
-        <button onClick={fetchJobs} className="p-2 hover:bg-white/5 rounded-lg transition-colors">
-          <RefreshCcw className="w-4 h-4 text-zinc-500" />
-        </button>
-      </div>
-
-      {/* Report Options */}
-      <div className="space-y-3 mb-8">
+    <div className="flex flex-col h-full text-slate-300">
+      <div className="space-y-4 mb-10">
         {reports.map((report) => (
           <button 
             key={report.type}
             disabled={requesting === report.type}
             onClick={() => requestReport(report.type)}
-            className="w-full p-4 flex items-center justify-between rounded-2xl bg-zinc-950/40 border border-white/5 hover:border-blue-500/30 hover:bg-zinc-900 transition-all text-left group/btn disabled:opacity-50"
+            className="w-full p-6 flex items-center justify-between rounded-[24px] bg-white/5 border border-white/5 hover:border-indigo-500/30 hover:bg-white/[0.08] transition-all text-left group/btn disabled:opacity-50"
           >
             <div className="flex flex-col">
-              <span className="text-xs font-bold text-zinc-400 group-hover/btn:text-white transition-colors">{report.name}</span>
-              <span className="text-[9px] text-zinc-600 font-bold uppercase tracking-widest mt-1">
-                {requesting === report.type ? 'Initiating...' : 'Ready for export'}
+              <span className="text-[13px] font-black text-slate-400 group-hover/btn:text-white transition-colors tracking-tight">{report.name}</span>
+              <span className="text-[9px] text-slate-600 font-black uppercase tracking-[0.2em] mt-1.5">
+                {requesting === report.type ? 'Initiating Pipeline...' : 'Ready for Sync'}
               </span>
             </div>
             {requesting === report.type ? (
-              <Loader2 className="w-4 h-4 text-blue-500 animate-spin" />
+              <Loader2 className="w-5 h-5 text-indigo-400 animate-spin" />
             ) : (
-              <Download className="w-4 h-4 text-zinc-700 group-hover/btn:text-blue-400 transition-all" />
+              <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center transition-all group-hover/btn:bg-indigo-600 group-hover/btn:text-white">
+                <Download className="w-4 h-4" />
+              </div>
             )}
           </button>
         ))}
       </div>
 
       {/* Recent Jobs History */}
-      <div className="space-y-4">
-        <div className="flex items-center gap-2 text-zinc-500">
-          <History className="w-3.5 h-3.5" />
-          <h4 className="text-[10px] font-bold uppercase tracking-widest">Recent Activity</h4>
+      <div className="space-y-6 flex-1">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2.5 text-slate-500">
+            <History className="w-4 h-4" />
+            <h4 className="text-[10px] font-black uppercase tracking-[0.2em]">Execution History</h4>
+          </div>
+          <button onClick={fetchJobs} className="p-2 hover:bg-white/5 rounded-full transition-colors">
+            <RefreshCcw className={`w-3.5 h-3.5 text-slate-600 ${loading ? 'animate-spin' : ''}`} />
+          </button>
         </div>
 
-        <div className="space-y-2 max-h-[200px] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-zinc-800">
+        <div className="space-y-3 max-h-[300px] overflow-y-auto custom-scrollbar pr-2">
           {jobs.length === 0 && !loading && (
-            <p className="text-[10px] text-zinc-600 italic py-4">No recent exports found.</p>
+            <div className="flex flex-col items-center justify-center py-10 px-4 border border-dashed border-white/10 rounded-[24px]">
+              <FileText className="w-8 h-8 text-white/5 mb-3" />
+              <p className="text-[10px] text-white/20 font-black uppercase tracking-widest text-center">No recent activity detected</p>
+            </div>
           )}
           {jobs.map((job) => (
-            <div key={job.id} className="flex items-center justify-between p-3 rounded-xl bg-zinc-900/50 border border-white/5">
-              <div className="flex items-center gap-3">
-                {getStatusIcon(job.status)}
+            <div key={job.id} className="flex items-center justify-between p-4 rounded-2xl bg-white/5 border border-white/5 hover:border-white/10 transition-all">
+              <div className="flex items-center gap-4">
+                <div className="w-9 h-9 rounded-xl bg-white/5 flex items-center justify-center">
+                  {getStatusIcon(job.status)}
+                </div>
                 <div className="flex flex-col">
-                  <span className="text-[10px] font-bold text-zinc-300 truncate max-w-[120px]">
+                  <span className="text-[11px] font-black text-slate-200 truncate max-w-[140px] tracking-tight">
                     {job.type.replace(/_/g, ' ')}
                   </span>
-                  <span className="text-[8px] text-zinc-600 font-medium">
+                  <span className="text-[9px] text-slate-600 font-bold uppercase tracking-widest mt-0.5">
                     {new Date(job.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                   </span>
                 </div>
@@ -146,25 +139,23 @@ export const ReportManager: React.FC<ReportManagerProps> = ({ userId }) => {
                 <a 
                   href={job.downloadUrl}
                   download
-                  className="p-1.5 rounded-lg bg-blue-500/10 text-blue-400 hover:bg-blue-500 hover:text-white transition-all"
-                  title="Download Report"
+                  className="w-8 h-8 rounded-full bg-indigo-600/20 text-indigo-400 hover:bg-indigo-600 hover:text-white flex items-center justify-center transition-all shadow-lg shadow-indigo-900/20"
                 >
                   <Download className="w-3.5 h-3.5" />
                 </a>
-              )}
-              {job.status === 'FAILED' && (
-                <div className="p-1.5 text-red-500/50" title={job.error}>
-                  <AlertCircle className="w-3.5 h-3.5" />
-                </div>
               )}
             </div>
           ))}
         </div>
       </div>
 
-      <div className="mt-8 p-4 rounded-2xl bg-blue-500/5 border border-blue-500/10">
-        <p className="text-[10px] text-zinc-500 leading-relaxed italic">
-          * Reports are retained for 7 days. Large exports are processed in the background.
+      <div className="mt-10 p-6 rounded-[24px] bg-indigo-500/5 border border-indigo-500/10">
+        <div className="flex items-center gap-3 mb-2">
+          <Sparkles className="w-3 h-3 text-indigo-400" />
+          <span className="text-[9px] font-black text-indigo-400 uppercase tracking-widest">Retention Policy</span>
+        </div>
+        <p className="text-[10px] text-slate-500 leading-relaxed font-medium">
+          On-demand datasets are retained for 168 operational hours. Large-scale aggregates are processed in background threads.
         </p>
       </div>
     </div>

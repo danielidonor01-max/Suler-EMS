@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { WorkflowBottleneck } from '@/modules/analytics/domain/analytics.model';
-import { Clock, AlertTriangle, ChevronRight } from 'lucide-react';
+import { Clock, AlertTriangle, ChevronRight, Activity } from 'lucide-react';
 
 interface WorkflowBottlenecksProps {
   bottlenecks: WorkflowBottleneck[];
@@ -11,51 +11,47 @@ interface WorkflowBottlenecksProps {
 export function WorkflowBottlenecks({ bottlenecks }: WorkflowBottlenecksProps) {
   const getStatusStyles = (status: string) => {
     switch (status) {
-      case 'CRITICAL': return 'text-red-400 bg-red-400/10 border-red-400/20';
-      case 'WARNING': return 'text-amber-400 bg-amber-400/10 border-amber-400/20';
-      default: return 'text-blue-400 bg-blue-400/10 border-blue-400/20';
+      case 'CRITICAL': return 'text-rose-600 bg-rose-50 border-rose-100';
+      case 'WARNING': return 'text-amber-600 bg-amber-50 border-amber-100';
+      default: return 'text-indigo-600 bg-indigo-50 border-indigo-100';
     }
   };
 
   return (
-    <div className="bg-zinc-900/50 border border-white/5 rounded-2xl backdrop-blur-xl overflow-hidden flex flex-col h-full">
-      <div className="p-5 border-b border-white/5 flex items-center justify-between bg-zinc-900/20">
-        <div>
-          <h3 className="text-sm font-bold text-white tracking-tight">Process Bottlenecks</h3>
-          <p className="text-[10px] text-zinc-500 uppercase tracking-widest font-bold">Approval Turnaround Analysis</p>
-        </div>
-      </div>
-
-      <div className="divide-y divide-white/5 overflow-y-auto custom-scrollbar flex-1">
+    <div className="flex flex-col h-full">
+      <div className="space-y-6 overflow-y-auto custom-scrollbar flex-1">
         {bottlenecks.map((item) => (
-          <div key={item.departmentId} className="p-5 hover:bg-white/[0.02] transition-colors group">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-3">
-                <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-bold text-xs ${getStatusStyles(item.status)}`}>
+          <div key={item.departmentId} className="p-8 rounded-[28px] border border-slate-100 hover:border-indigo-200 hover:shadow-md transition-all group relative overflow-hidden">
+            {/* Status Indicator Bar */}
+            <div className={`absolute top-0 left-0 bottom-0 w-1.5 ${item.status === 'CRITICAL' ? 'bg-rose-500' : item.status === 'WARNING' ? 'bg-amber-500' : 'bg-indigo-500'} opacity-0 group-hover:opacity-100 transition-opacity`} />
+            
+            <div className="flex items-center justify-between mb-8">
+              <div className="flex items-center gap-5">
+                <div className={`w-14 h-14 rounded-2xl flex items-center justify-center font-black text-lg border-2 ${getStatusStyles(item.status)}`}>
                   {item.departmentName[0]}
                 </div>
                 <div>
-                  <p className="text-sm font-bold text-white tracking-tight">{item.departmentName}</p>
-                  <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">{item.pendingCount} Pending Requests</p>
+                  <p className="text-base font-black text-slate-900 tracking-tight">{item.departmentName}</p>
+                  <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">{item.pendingCount} Active Requests</p>
                 </div>
               </div>
               <div className="text-right">
-                <p className={`text-sm font-bold tracking-tight ${item.status === 'CRITICAL' ? 'text-red-400' : 'text-white'}`}>
+                <p className={`text-xl font-black tracking-tighter leading-none ${item.status === 'CRITICAL' ? 'text-rose-600' : 'text-slate-900'}`}>
                   {item.averageApprovalHours}h
                 </p>
-                <p className="text-[10px] font-bold text-zinc-600 uppercase tracking-widest">Avg Delay</p>
+                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">Avg Lead Time</p>
               </div>
             </div>
 
-            <div className="space-y-3">
+            <div className="space-y-6">
               <div>
-                <div className="flex items-center justify-between text-[10px] font-bold uppercase tracking-widest text-zinc-500 mb-1.5">
+                <div className="flex items-center justify-between text-[11px] font-black uppercase tracking-[0.1em] text-slate-400 mb-2.5">
                   <span>Rejection Rate</span>
-                  <span>{item.rejectionRate.toFixed(1)}%</span>
+                  <span className="text-slate-900">{item.rejectionRate.toFixed(1)}%</span>
                 </div>
-                <div className="h-1.5 w-full bg-zinc-800 rounded-full overflow-hidden">
+                <div className="h-2.5 w-full bg-slate-50 rounded-full overflow-hidden">
                   <div 
-                    className="h-full bg-blue-500 rounded-full" 
+                    className={`h-full rounded-full transition-all duration-1000 ${item.status === 'CRITICAL' ? 'bg-rose-500' : 'bg-indigo-500'}`} 
                     style={{ width: `${Math.min(item.rejectionRate * 5, 100)}%` }} 
                   />
                 </div>
@@ -63,14 +59,14 @@ export function WorkflowBottlenecks({ bottlenecks }: WorkflowBottlenecksProps) {
             </div>
 
             {item.status !== 'NORMAL' && (
-              <div className="mt-4 flex items-center justify-between">
-                <div className="flex items-center gap-2 px-2 py-1 rounded-md bg-zinc-950/50 border border-white/5">
-                  <AlertTriangle className={`w-3 h-3 ${item.status === 'CRITICAL' ? 'text-red-400' : 'text-amber-400'}`} />
-                  <span className={`text-[9px] font-bold uppercase tracking-widest ${item.status === 'CRITICAL' ? 'text-red-400' : 'text-amber-400'}`}>
-                    Operational Friction Detected
+              <div className="mt-8 pt-6 border-t border-slate-50 flex items-center justify-between">
+                <div className="flex items-center gap-2.5 px-3 py-1.5 rounded-full bg-slate-50 border border-slate-100">
+                  <AlertTriangle className={`w-3.5 h-3.5 ${item.status === 'CRITICAL' ? 'text-rose-500' : 'text-amber-500'}`} />
+                  <span className={`text-[9px] font-black uppercase tracking-widest ${item.status === 'CRITICAL' ? 'text-rose-600' : 'text-amber-600'}`}>
+                    {item.status} Operational Friction
                   </span>
                 </div>
-                <button className="p-1 rounded-md hover:bg-white/5 text-zinc-600 hover:text-white transition-all">
+                <button className="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 hover:bg-indigo-600 hover:text-white transition-all group-hover:translate-x-1">
                   <ChevronRight className="w-4 h-4" />
                 </button>
               </div>
@@ -79,9 +75,9 @@ export function WorkflowBottlenecks({ bottlenecks }: WorkflowBottlenecksProps) {
         ))}
       </div>
 
-      <div className="p-4 bg-zinc-950/30 border-t border-white/5 text-center">
-        <button className="text-[10px] uppercase tracking-widest font-bold text-blue-500 hover:text-blue-400 transition-colors">
-          View Detailed Flow Metrics
+      <div className="mt-8">
+        <button className="w-full py-4 rounded-2xl bg-indigo-50 text-indigo-600 text-xs font-black uppercase tracking-widest hover:bg-indigo-600 hover:text-white transition-all">
+          View Detailed Analytics
         </button>
       </div>
     </div>
