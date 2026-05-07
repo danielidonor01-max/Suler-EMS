@@ -1,4 +1,3 @@
-import prisma from "@/lib/prisma";
 import { SystemEventContract } from "@/modules/notifications/domain/notification.model";
 import { EventPublisher } from "@/lib/events/event.publisher";
 import { realtimeEmitter } from "@/lib/events/realtime.emitter";
@@ -30,6 +29,7 @@ export class NotificationDispatcher {
   }
 
   private static async handleLeaveRequested(event: SystemEventContract) {
+    const { default: prisma } = await import("@/lib/prisma");
     const template = NotificationTemplates[event.type];
     
     const requester = await prisma.employee.findUnique({
@@ -64,6 +64,7 @@ export class NotificationDispatcher {
   }
 
   private static async handleWorkflowUpdate(event: SystemEventContract) {
+    const { default: prisma } = await import("@/lib/prisma");
     const template = NotificationTemplates[event.type];
     const { requesterId } = event.payload;
 
@@ -92,6 +93,7 @@ export class NotificationDispatcher {
   }
 
   private static async handleSecurityAlert(event: SystemEventContract) {
+    const { default: prisma } = await import("@/lib/prisma");
     const template = NotificationTemplates[event.type];
     const admins = await prisma.user.findMany({
       where: { role: { name: 'SUPER_ADMIN' } }

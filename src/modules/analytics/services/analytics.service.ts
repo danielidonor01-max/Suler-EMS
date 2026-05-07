@@ -1,4 +1,3 @@
-import prisma from "@/lib/prisma";
 import { AggregationService } from "./aggregation.service";
 import { AnalyticsSnapshotModel, AnalyticsGranularity } from "../domain/analytics.model";
 import { SystemEventContract } from "@/modules/notifications/domain/notification.model";
@@ -22,6 +21,7 @@ export class AnalyticsService {
    * Get Dashboard Analytics (Read-Optimized)
    */
   static async getDashboardSnapshot(userId: string): Promise<Result<any>> {
+    const { default: prisma } = await import("@/lib/prisma");
     try {
       // 1. Try to get the latest Daily snapshot
       const latestSnapshot = await prisma.analyticsSnapshot.findFirst({
@@ -46,6 +46,7 @@ export class AnalyticsService {
    * Generate and persist a new snapshot
    */
   static async generateFullSnapshot(granularity: AnalyticsGranularity = 'DAILY'): Promise<any> {
+    const { default: prisma } = await import("@/lib/prisma");
     const workforce = await AggregationService.computeWorkforceKPIs();
     const compliance = await AggregationService.computeAttendanceCompliance(new Date());
     const bottlenecks = await AggregationService.getWorkflowBottlenecks();
@@ -93,6 +94,7 @@ export class AnalyticsService {
    * Handle incoming system events to update immutable metrics
    */
   static async handleSystemEvent(event: SystemEventContract) {
+    const { default: prisma } = await import("@/lib/prisma");
     if (event.type === 'LEAVE_APPROVED_EVENT' || event.type === 'LEAVE_REJECTED_EVENT') {
       // Record immutable workflow fact
       const requestDate = new Date(event.payload.createdAt || event.timestamp);

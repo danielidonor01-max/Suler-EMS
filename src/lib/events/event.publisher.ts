@@ -1,4 +1,3 @@
-import prisma from "@/lib/prisma";
 import { SystemEventContract } from "@/modules/notifications/domain/notification.model";
 
 type EventSubscriber = (event: SystemEventContract) => Promise<void>;
@@ -26,6 +25,9 @@ export class EventPublisher {
     const correlationId = event.correlationId || crypto.randomUUID();
 
     try {
+      // Lazy import to break circular dependency with prisma initialization
+      const { default: prisma } = await import("@/lib/prisma");
+
       // 1. Persist Event (Audit-aware)
       await prisma.systemEvent.create({
         data: {
