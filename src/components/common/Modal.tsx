@@ -1,0 +1,79 @@
+"use client";
+
+import React, { useEffect, useState } from 'react';
+import { X } from 'lucide-react';
+
+interface ModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  title: string;
+  subtitle?: string;
+  children: React.ReactNode;
+  size?: 'sm' | 'md' | 'lg' | 'xl';
+}
+
+export const Modal: React.FC<ModalProps> = ({ 
+  isOpen, 
+  onClose, 
+  title, 
+  subtitle, 
+  children,
+  size = 'md' 
+}) => {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => { document.body.style.overflow = 'unset'; };
+  }, [isOpen]);
+
+  if (!mounted || !isOpen) return null;
+
+  const sizeClasses = {
+    sm: 'max-w-[480px]',
+    md: 'max-w-[640px]',
+    lg: 'max-w-[820px]',
+    xl: 'max-w-[1024px]'
+  };
+
+  return (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 sm:p-10">
+      {/* Backdrop with Executive Blur */}
+      <div 
+        className="absolute inset-0 bg-slate-900/40 backdrop-blur-md animate-in fade-in duration-300"
+        onClick={onClose}
+      />
+      
+      {/* Modal Surface: Centered Workflow Architecture */}
+      <div 
+        className={`w-full ${sizeClasses[size]} bg-white rounded-[24px] shadow-floating relative z-10 flex flex-col max-h-full animate-in zoom-in-95 fade-in duration-300 ease-out`}
+      >
+        {/* Header Layer */}
+        <div className="px-8 py-6 border-b border-slate-100 flex items-center justify-between">
+          <div className="space-y-1">
+            <h3 className="text-xl font-black text-slate-900 tracking-tighter leading-none">{title}</h3>
+            {subtitle && (
+              <p className="text-[11px] font-black text-slate-400 uppercase tracking-widest leading-none mt-1.5">{subtitle}</p>
+            )}
+          </div>
+          <button 
+            onClick={onClose}
+            className="w-10 h-10 flex items-center justify-center rounded-xl text-slate-400 hover:text-slate-900 hover:bg-slate-50 transition-all"
+          >
+            <X className="w-5 h-5 stroke-[1.5px]" />
+          </button>
+        </div>
+
+        {/* Content Canvas */}
+        <div className="flex-1 overflow-y-auto custom-scrollbar p-8">
+          {children}
+        </div>
+      </div>
+    </div>
+  );
+};

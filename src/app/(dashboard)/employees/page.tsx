@@ -5,6 +5,7 @@ import { MetricCard } from "@/components/dashboard/MetricCard";
 import { CapabilityIntelligence } from "@/components/dashboard/CapabilityIntelligence";
 import { DataTable } from "@/components/tables/DataTable";
 import { Drawer } from "@/components/common/Drawer";
+import { Modal } from "@/components/common/Modal";
 import { 
   Users, 
   UserCheck, 
@@ -33,6 +34,7 @@ export default function EmployeesPage() {
   const [totalItems, setTotalItems] = useState(0);
   const [loading, setLoading] = useState(true);
   const [selectedEmployee, setSelectedEmployee] = useState<EmployeeResponseDTO | null>(null);
+  const [isOnboardingOpen, setIsOnboardingOpen] = useState(false);
 
   React.useEffect(() => {
     let isMounted = true;
@@ -129,7 +131,10 @@ export default function EmployeesPage() {
               <Layout className="w-4 h-4" />
               View Org Chart
            </button>
-           <button className="bg-slate-900 hover:bg-black text-white flex items-center gap-2.5 px-6 py-3 rounded-xl text-[11px] font-black uppercase tracking-wider transition-all shadow-md">
+           <button 
+             onClick={() => setIsOnboardingOpen(true)}
+             className="bg-slate-900 hover:bg-black text-white flex items-center gap-2.5 px-6 py-3 rounded-xl text-[11px] font-black uppercase tracking-wider transition-all shadow-md"
+           >
               <UserPlus className="w-4 h-4" />
               Onboard Member
            </button>
@@ -152,6 +157,67 @@ export default function EmployeesPage() {
         columns={columns}
         onRowClick={(row) => setSelectedEmployee(row)}
       />
+
+      {/* Onboarding Workflow - Centered Modal */}
+      <Modal 
+        isOpen={isOnboardingOpen} 
+        onClose={() => setIsOnboardingOpen(false)}
+        title="Onboard Principal Staff"
+        subtitle="Identity & Access Governance"
+        size="lg"
+      >
+        <div className="space-y-8 animate-in">
+           <div className="grid grid-cols-2 gap-8">
+              <div className="space-y-2.5">
+                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Full Legal Name</label>
+                 <input type="text" className="w-full bg-slate-50 border border-slate-100 focus:border-slate-300 focus:bg-white rounded-xl p-4 text-[13px] font-bold outline-none transition-all" placeholder="e.g. John Doe" />
+              </div>
+              <div className="space-y-2.5">
+                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Corporate Identity (Email)</label>
+                 <input type="email" className="w-full bg-slate-50 border border-slate-100 focus:border-slate-300 focus:bg-white rounded-xl p-4 text-[13px] font-bold outline-none transition-all" placeholder="j.doe@sulerglobal.com" />
+              </div>
+           </div>
+
+           <div className="grid grid-cols-2 gap-8">
+              <div className="space-y-2.5">
+                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Operational Hub</label>
+                 <select className="w-full bg-slate-50 border border-slate-100 focus:border-slate-300 focus:bg-white rounded-xl p-4 text-[13px] font-bold outline-none transition-all appearance-none cursor-pointer">
+                    <option>Lagos HQ</option>
+                    <option>Abuja Operations</option>
+                    <option>Port Harcourt Hub</option>
+                 </select>
+              </div>
+              <div className="space-y-2.5">
+                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Principal Designation</label>
+                 <select className="w-full bg-slate-50 border border-slate-100 focus:border-slate-300 focus:bg-white rounded-xl p-4 text-[13px] font-bold outline-none transition-all appearance-none cursor-pointer">
+                    <option>Senior Engineer</option>
+                    <option>Operational Lead</option>
+                    <option>Finance Controller</option>
+                 </select>
+              </div>
+           </div>
+
+           <div className="p-6 bg-slate-50 rounded-[20px] border border-slate-100 flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                 <div className="w-10 h-10 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-indigo-600">
+                    <Sparkles className="w-5 h-5" />
+                 </div>
+                 <div className="space-y-1">
+                    <p className="text-[12px] font-black text-slate-900 leading-none">Automated Security Provisioning</p>
+                    <p className="text-[10px] font-bold text-slate-400 leading-none">Standard identity protocols will be applied immediately.</p>
+                 </div>
+              </div>
+              <div className="flex items-center gap-2 px-3 py-1 bg-emerald-50 text-emerald-600 rounded-lg border border-emerald-100 text-[9px] font-black uppercase tracking-widest">
+                 System Active
+              </div>
+           </div>
+
+           <div className="flex items-center justify-end gap-4 pt-4">
+              <button onClick={() => setIsOnboardingOpen(false)} className="px-8 py-4 rounded-xl text-[11px] font-black uppercase tracking-wider text-slate-400 hover:text-slate-900 transition-all">Cancel</button>
+              <button className="bg-slate-900 hover:bg-black text-white px-10 py-4 rounded-xl text-[11px] font-black uppercase tracking-wider transition-all shadow-lg shadow-slate-900/10">Initialize Member</button>
+           </div>
+        </div>
+      </Modal>
 
       {/* Contextual Intelligence Surface (Drawer) */}
       <Drawer 
