@@ -123,28 +123,28 @@ export default function PayrollPage() {
         <MetricCard 
           label="Total Payroll" 
           value="₦42.8M" 
-          trend={{ value: 1.2, isPositive: false }}
+          trend={{ direction: 'down', value: '1.2%' }}
           variant="tonal-info"
-          icon="payments"
+          icon={DollarSign}
         />
         <MetricCard 
           label="Disbursements" 
           value="84%" 
-          trend={{ value: 5.4, isPositive: true }}
+          trend={{ direction: 'up', value: '5.4%' }}
           variant="tonal-success"
-          icon="account_balance"
+          icon={Activity}
         />
         <MetricCard 
           label="Pending Sync" 
           value="12" 
           variant="tonal-warning"
-          icon="sync_problem"
+          icon={RefreshCcw}
         />
         <MetricCard 
           label="Audit Score" 
           value="98%" 
           variant="tonal-success"
-          icon="policy"
+          icon={ShieldCheck}
         />
       </div>
 

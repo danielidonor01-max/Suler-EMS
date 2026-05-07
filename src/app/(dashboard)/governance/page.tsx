@@ -115,26 +115,26 @@ export default function GovernancePage() {
           label="Audit Integrity" 
           value="100%" 
           variant="tonal-success"
-          icon="verified"
+          icon={ShieldCheck}
         />
         <MetricCard 
           label="Access Denials" 
           value="4" 
-          trend={{ value: 12, isPositive: false }}
+          trend={{ direction: 'down', value: '12%' }}
           variant="tonal-warning"
-          icon="block"
+          icon={ShieldAlert}
         />
         <MetricCard 
           label="Active Policies" 
           value="24" 
           variant="tonal-info"
-          icon="policy"
+          icon={FileCheck}
         />
         <MetricCard 
           label="Last Audit" 
           value="2m ago" 
           variant="tonal-success"
-          icon="schedule"
+          icon={History}
         />
       </div>
 
