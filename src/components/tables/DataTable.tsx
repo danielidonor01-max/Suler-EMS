@@ -15,6 +15,8 @@ import {
   UserCog
 } from 'lucide-react';
 
+import { Portal } from '../common/Portal';
+
 interface Column {
   header: string;
   accessor: string;
@@ -38,7 +40,13 @@ export const DataTable: React.FC<DataTableProps> = ({
   onRowClick,
   totalItems = 284 // Default mock for demo
 }) => {
-  const [isActionsOpen, setIsActionsOpen] = useState<string | null>(null);
+  const [activeActions, setActiveActions] = useState<{ id: string, rect: DOMRect } | null>(null);
+
+  const handleActionClick = (e: React.MouseEvent, id: string) => {
+    e.stopPropagation();
+    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+    setActiveActions(activeActions?.id === id ? null : { id, rect });
+  };
 
   return (
     <div className="space-y-5 animate-in">
@@ -60,8 +68,8 @@ export const DataTable: React.FC<DataTableProps> = ({
               className="bg-white border border-slate-200 rounded-xl py-2 pl-11 pr-4 text-[12px] font-bold text-slate-900 placeholder:text-slate-300 outline-none focus:border-slate-400 transition-all w-64 shadow-sm"
             />
           </div>
-          <button className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-xl text-[11px] font-black text-slate-500 uppercase tracking-widest hover:text-slate-900 hover:border-slate-300 transition-all shadow-sm">
-            <Filter className="w-3.5 h-3.5" />
+          <button className="flex items-center gap-2 h-[40px] px-4 py-2 bg-white border border-slate-200 rounded-xl text-[11px] font-black text-slate-500 uppercase tracking-widest hover:text-slate-900 hover:border-slate-300 transition-all shadow-sm flex items-center">
+            <Filter className="w-3.5 h-3.5 stroke-[1.5px]" />
             Filters
           </button>
         </div>
@@ -97,29 +105,21 @@ export const DataTable: React.FC<DataTableProps> = ({
                     </td>
                   ))}
                   <td className="px-8 py-4 text-right relative">
-                    {/* Hover Reveal Actions: Enterprise Maturity */}
                     <div className="flex items-center justify-end gap-1 opacity-0 group-hover/row:opacity-100 transition-all translate-x-2 group-hover/row:translate-x-0">
                        <button className="p-2 text-slate-400 hover:text-slate-900 hover:bg-white rounded-lg border border-transparent hover:border-slate-200 transition-all shadow-sm">
-                          <Eye className="w-4 h-4" />
+                          <Eye className="w-4 h-4 stroke-[1.5px]" />
                        </button>
                        <div className="relative">
                           <button 
-                            onClick={() => setIsActionsOpen(isActionsOpen === row.id ? null : row.id)}
-                            className="p-2 text-slate-400 hover:text-slate-900 hover:bg-white rounded-lg border border-transparent hover:border-slate-200 transition-all shadow-sm"
+                            onClick={(e) => handleActionClick(e, row.id)}
+                            className={`p-2 rounded-lg border transition-all shadow-sm ${
+                              activeActions?.id === row.id 
+                                ? 'bg-slate-900 text-white border-slate-900' 
+                                : 'text-slate-400 hover:text-slate-900 hover:bg-white border-transparent hover:border-slate-200'
+                            }`}
                           >
-                             <MoreHorizontal className="w-4 h-4" />
+                             <MoreHorizontal className="w-4 h-4 stroke-[1.5px]" />
                           </button>
-                          
-                          {/* Contextual Action Menu */}
-                          {isActionsOpen === row.id && (
-                            <div className="absolute right-0 top-full mt-2 w-48 bg-white border border-slate-200 rounded-xl shadow-xl z-50 py-1.5 animate-in slide-in-from-top-2">
-                               <ActionMenuItem icon={Edit3} label="Edit Identity" />
-                               <ActionMenuItem icon={UserCog} label="Modify Role" />
-                               <ActionMenuItem icon={History} label="Audit Trail" />
-                               <div className="h-px bg-slate-100 my-1.5" />
-                               <ActionMenuItem icon={UserMinus} label="Suspend Access" variant="danger" />
-                            </div>
-                          )}
                        </div>
                     </div>
                   </td>
@@ -128,6 +128,34 @@ export const DataTable: React.FC<DataTableProps> = ({
             </tbody>
           </table>
         </div>
+
+        {/* Global Action Menu Portal */}
+        {activeActions && (
+          <Portal>
+            <div 
+              className="fixed inset-0 z-[100]" 
+              onClick={() => setActiveActions(null)}
+            />
+            <div 
+              className="fixed z-[101] w-52 bg-white border border-slate-200 rounded-[18px] shadow-floating py-2 animate-in zoom-in-95 duration-200"
+              style={{ 
+                top: activeActions.rect.bottom + 8, 
+                left: activeActions.rect.right - 208,
+                // Adjust if too close to bottom
+                ...(activeActions.rect.bottom + 250 > window.innerHeight && {
+                   top: 'auto',
+                   bottom: window.innerHeight - activeActions.rect.top + 8,
+                })
+              }}
+            >
+               <ActionMenuItem icon={Edit3} label="Edit Identity" />
+               <ActionMenuItem icon={UserCog} label="Modify Role" />
+               <ActionMenuItem icon={History} label="Audit Trail" />
+               <div className="h-px bg-slate-100 my-1.5 mx-2" />
+               <ActionMenuItem icon={UserMinus} label="Suspend Access" variant="danger" />
+            </div>
+          </Portal>
+        )}
         
         {/* Enterprise Pagination: Tighter Segmented Treatment */}
         <div className="px-8 py-3 bg-slate-50/50 border-t border-slate-100 flex items-center justify-between">
@@ -173,10 +201,10 @@ const PageButton = ({ label, active }: { label: string, active?: boolean }) => (
 );
 
 const ActionMenuItem = ({ icon: Icon, label, variant }: any) => (
-  <button className={`w-full flex items-center gap-3 px-4 py-2 text-[12px] font-bold transition-all hover:bg-slate-50 ${
+  <button className={`w-full flex items-center gap-3 px-4 py-2.5 text-[12px] font-bold transition-all hover:bg-slate-50 ${
     variant === 'danger' ? 'text-rose-500' : 'text-slate-600 hover:text-slate-900'
   }`}>
-    <Icon className="w-3.5 h-3.5" />
+    <Icon className="w-4 h-4 stroke-[1.5px]" />
     {label}
   </button>
 );

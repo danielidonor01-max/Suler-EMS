@@ -98,24 +98,23 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle }) => {
         </div>
       </div>
 
-      {/* Utility Rail */}
-      <div className="px-3 pb-6 space-y-4">
-        <SidebarLink 
-          item={{ name: 'Settings', icon: Settings, href: '/settings' }} 
-          isActive={pathname === '/settings'} 
-          isCollapsed={isCollapsed} 
-        />
-        
-        <div className={`p-3 rounded-xl bg-slate-50 border border-slate-100 flex items-center gap-3 ${isCollapsed ? 'justify-center' : ''}`}>
-          <div className="w-8 h-8 rounded-lg bg-slate-900 flex items-center justify-center text-white text-[10px] font-black shrink-0">
-            CO
-          </div>
-          {!isCollapsed && (
-            <div className="flex-1 min-w-0 animate-in fade-in duration-500">
-              <div className="text-[12px] font-black text-slate-900 truncate tracking-tight">C. Okoro</div>
-              <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest leading-none mt-1">Lagos Hub</div>
-            </div>
-          )}
+      {/* Utility Rail: Executive Minimalism */}
+      <div className={`px-4 pb-8 space-y-4`}>
+        <div className={`flex items-center gap-2 ${isCollapsed ? 'flex-col' : 'justify-between'}`}>
+          <Link
+            href="/settings"
+            className={`flex items-center justify-center w-10 h-10 rounded-xl text-slate-400 hover:text-slate-900 hover:bg-slate-50 transition-all ${isCollapsed ? '' : 'flex-1 border border-transparent hover:border-slate-200'}`}
+          >
+            <Settings className="w-[18px] h-[18px] stroke-[1.5px]" />
+            {!isCollapsed && <span className="ml-3 text-[12px] font-black tracking-tight">Settings</span>}
+          </Link>
+
+          <button
+            className={`flex items-center justify-center w-10 h-10 rounded-xl text-slate-400 hover:text-rose-600 hover:bg-rose-50/50 transition-all ${isCollapsed ? '' : 'flex-1 border border-transparent hover:border-rose-100/50'}`}
+          >
+            <LogOut className="w-[18px] h-[18px] stroke-[1.5px]" />
+            {!isCollapsed && <span className="ml-3 text-[12px] font-black tracking-tight">Sign Out</span>}
+          </button>
         </div>
       </div>
 

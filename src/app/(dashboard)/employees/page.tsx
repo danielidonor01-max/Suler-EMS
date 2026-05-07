@@ -127,15 +127,15 @@ export default function EmployeesPage() {
         </div>
         
         <div className="flex items-center gap-3">
-           <button className="bg-white border border-slate-200 text-slate-600 hover:border-slate-300 px-6 py-3 rounded-xl text-[11px] font-black uppercase tracking-wider transition-all shadow-sm">
-              <Layout className="w-4 h-4" />
+           <button className="bg-white border border-slate-200 text-slate-600 hover:border-slate-300 px-6 py-2.5 h-[44px] rounded-xl text-[11px] font-black uppercase tracking-wider transition-all shadow-sm flex items-center gap-2.5">
+              <Layout className="w-4 h-4 stroke-[1.5px]" />
               View Org Chart
            </button>
            <button 
              onClick={() => setIsOnboardingOpen(true)}
-             className="bg-slate-900 hover:bg-black text-white flex items-center gap-2.5 px-6 py-3 rounded-xl text-[11px] font-black uppercase tracking-wider transition-all shadow-md"
+             className="bg-slate-900 hover:bg-black text-white flex items-center gap-2.5 px-6 py-2.5 h-[44px] rounded-xl text-[11px] font-black uppercase tracking-wider transition-all shadow-md"
            >
-              <UserPlus className="w-4 h-4" />
+              <UserPlus className="w-4 h-4 stroke-[1.5px]" />
               Onboard Member
            </button>
         </div>
