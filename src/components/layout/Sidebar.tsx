@@ -1,104 +1,109 @@
-"use client";
+'use client';
 
-import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { signOut } from "next-auth/react";
-import { useAccess } from "@/context/AccessContext";
-import { Permissions, PermissionType } from "@/modules/auth/domain/permission.model";
+import React from 'react';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { 
+  LayoutDashboard, 
+  Users, 
+  Calendar, 
+  FileText, 
+  CreditCard, 
+  Settings,
+  ShieldCheck,
+  ChevronRight,
+  LogOut,
+  Bell,
+  Activity
+} from 'lucide-react';
 
-interface NavItem {
-  href: string;
-  label: string;
-  icon: string;
-  permission?: PermissionType;
-}
-
-const NAV_ITEMS: NavItem[] = [
-  { href: "/employees", label: "Staff", icon: "group", permission: Permissions.EMPLOYEE_VIEW },
-  { href: "/attendance", label: "Attendance", icon: "event_available", permission: Permissions.ATTENDANCE_VIEW },
-  { href: "/leave", label: "Leave", icon: "event_busy", permission: Permissions.LEAVE_VIEW },
-  { href: "/payroll", label: "Payroll", icon: "payments", permission: Permissions.PAYROLL_VIEW },
-  { href: "/settings", label: "Settings", icon: "settings", permission: Permissions.SETTINGS_MANAGE },
-];
-
-export default function Sidebar() {
+const Sidebar = () => {
   const pathname = usePathname();
-  const { checkPermission, user } = useAccess();
 
-  // Filter items based on permissions
-  const filteredNav = NAV_ITEMS.filter(item => {
-    if (!item.permission) return true;
-    return checkPermission(item.permission).allowed;
-  });
+  const menuItems = [
+    { name: 'Dashboard', icon: LayoutDashboard, href: '/employees' },
+    { name: 'Workforce', icon: Users, href: '/staff' },
+    { name: 'Attendance', icon: Calendar, href: '/attendance' },
+    { name: 'Governance', icon: ShieldCheck, href: '/governance' },
+    { name: 'Workflows', icon: Activity, href: '/leave' },
+    { name: 'Financials', icon: CreditCard, href: '/payroll' },
+    { name: 'Compliance', icon: FileText, href: '/audit' },
+  ];
 
   return (
-    <aside className="h-screen w-[var(--sidebar-width)] border-r fixed left-0 top-0 bg-[var(--sidebar-bg)] border-[var(--color-border)] z-50 overflow-y-auto transition-transform duration-300">
-      <div className="flex flex-col h-full pt-4 pb-8">
-        {/* Branding */}
-        <div className="px-6 mb-8 flex items-center gap-3">
-          <div className="w-10 h-10 bg-primary-container rounded-lg flex items-center justify-center">
-            <span className="material-symbols-outlined text-white" data-icon="corporate_fare">corporate_fare</span>
+    <aside className="w-[280px] h-screen bg-white border-r border-slate-100 flex flex-col fixed left-0 top-0 z-40 transition-all duration-300">
+      {/* Brand Workspace Identity */}
+      <div className="p-8 pb-10">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center text-white shadow-lg shadow-indigo-100 shrink-0">
+            <ShieldCheck className="w-6 h-6" />
           </div>
-          <div>
-            <h2 className="text-lg font-black text-blue-600 leading-none">Suler EMS</h2>
-            <span className="text-label-sm text-secondary">System Portal</span>
+          <div className="flex flex-col">
+            <span className="text-sm font-bold text-slate-900 tracking-tight">Suler EMS</span>
+            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Enterprise Ops</span>
           </div>
         </div>
+      </div>
+
+      {/* Operational Rail Navigation */}
+      <nav className="flex-1 px-4 space-y-1.5 overflow-y-auto custom-scrollbar">
+        <div className="mb-4 px-4">
+          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.15em]">Main Workspace</span>
+        </div>
         
-        {/* Navigation Links */}
-        <nav className="flex-1 px-4 space-y-1">
-          <Link 
-            href="/dashboard" 
-            className={`flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-              pathname === "/dashboard" 
-                ? "text-sidebar-active-text bg-sidebar-active" 
-                : "text-sidebar-text hover:bg-sidebar-hover"
-            }`}
-          >
-            <span className="material-symbols-outlined">dashboard</span>
-            Dashboard
-          </Link>
-          
-          {filteredNav.map(item => (
-            <Link 
-              key={item.href}
-              href={item.href} 
-              className={`flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                pathname.startsWith(item.href)
-                  ? "text-sidebar-active-text bg-sidebar-active" 
-                  : "text-sidebar-text hover:bg-sidebar-hover"
+        {menuItems.map((item) => {
+          const isActive = pathname === item.href;
+          return (
+            <Link
+              key={item.name}
+              href={item.href}
+              className={`group flex items-center justify-between px-4 py-3 rounded-xl transition-all duration-200 ${
+                isActive 
+                  ? 'bg-indigo-50 text-indigo-700 shadow-sm' 
+                  : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'
               }`}
             >
-              <span className="material-symbols-outlined">{item.icon}</span>
-              {item.label}
+              <div className="flex items-center gap-3.5">
+                <item.icon className={`w-5 h-5 ${isActive ? 'text-indigo-600' : 'text-slate-400 group-hover:text-slate-600'} transition-colors`} />
+                <span className={`text-[13px] font-semibold ${isActive ? 'font-bold' : ''}`}>
+                  {item.name}
+                </span>
+              </div>
+              {isActive && <div className="w-1.5 h-1.5 rounded-full bg-indigo-600" />}
+              {!isActive && <ChevronRight className="w-3.5 h-3.5 text-slate-300 opacity-0 group-hover:opacity-100 transition-all -translate-x-1 group-hover:translate-x-0" />}
             </Link>
-          ))}
-        </nav>
-        
-        {/* Footer & User Profile */}
-        <div className="px-4 mt-auto border-t border-slate-100 pt-6">
-          {user && (
-            <div className="mb-6 px-3 flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold">
-                {user.name?.[0]}
-              </div>
-              <div className="overflow-hidden">
-                <p className="text-sm font-bold text-slate-800 truncate">{user.name}</p>
-                <p className="text-[10px] font-bold text-blue-600 uppercase tracking-wider">{user.role}</p>
-              </div>
-            </div>
-          )}
+          );
+        })}
+      </nav>
 
-          <button 
-            onClick={() => signOut({ callbackUrl: '/login' })}
-            className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-bold text-slate-600 hover:bg-red-50 hover:text-red-600 transition-all"
-          >
-            <span className="material-symbols-outlined">logout</span>
-            Logout
+      {/* Executive Quick Actions */}
+      <div className="p-6 border-t border-slate-50 space-y-6">
+        <div className="flex items-center justify-between px-2">
+          <button className="relative p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition-all">
+            <Bell className="w-5 h-5" />
+            <span className="absolute top-2 right-2 w-2 h-2 bg-rose-500 border-2 border-white rounded-full" />
+          </button>
+          <button className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition-all">
+            <Settings className="w-5 h-5" />
+          </button>
+        </div>
+
+        {/* User Workspace Profile */}
+        <div className="bg-slate-50 rounded-2xl p-4 flex items-center gap-3.5 border border-slate-100/50">
+          <div className="w-10 h-10 rounded-xl bg-white shadow-sm flex items-center justify-center text-indigo-600 font-bold border border-slate-100">
+            CO
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="text-[12px] font-bold text-slate-900 truncate">Chinedu Okoro</div>
+            <div className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">Super Admin</div>
+          </div>
+          <button className="p-1.5 text-slate-300 hover:text-rose-500 transition-colors">
+            <LogOut className="w-4 h-4" />
           </button>
         </div>
       </div>
     </aside>
   );
-}
+};
 
+export default Sidebar;

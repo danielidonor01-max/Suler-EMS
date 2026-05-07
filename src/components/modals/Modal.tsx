@@ -1,4 +1,8 @@
+'use client';
+
 import React, { useEffect } from 'react';
+import { X } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 export interface ModalProps {
   isOpen: boolean;
@@ -12,7 +16,6 @@ export function Modal({ isOpen, onClose, size = 'md', children, zIndex = 1000 }:
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden';
-      
       const handleEscape = (e: KeyboardEvent) => {
         if (e.key === 'Escape') onClose();
       };
@@ -24,46 +27,59 @@ export function Modal({ isOpen, onClose, size = 'md', children, zIndex = 1000 }:
     }
   }, [isOpen, onClose]);
 
-  if (!isOpen) return null;
-
   const sizeClasses = {
     sm: 'max-w-[400px]',
-    md: 'max-w-[520px]',
+    md: 'max-w-[560px]',
     lg: 'max-w-[800px]',
-    xl: 'max-w-[1000px]'
+    xl: 'max-w-[1100px]'
   };
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center p-4" style={{ zIndex }}>
-      {/* Backdrop */}
-      <div 
-        className="absolute inset-0 bg-black/40" 
-        onClick={onClose}
-        aria-hidden="true"
-      />
-      
-      {/* Content */}
-      <div 
-        className={`relative bg-surface rounded-xl shadow-3 w-full ${sizeClasses[size]} overflow-hidden flex flex-col max-h-[90vh]`}
-        role="dialog"
-        aria-modal="true"
-      >
-        {children}
-      </div>
-    </div>
+    <AnimatePresence>
+      {isOpen && (
+        <div className="fixed inset-0 flex items-center justify-center p-6" style={{ zIndex }}>
+          {/* Premium Backdrop */}
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.15 }}
+            className="absolute inset-0 bg-slate-900/40 backdrop-blur-[2px]" 
+            onClick={onClose}
+            aria-hidden="true"
+          />
+          
+          {/* Premium Modal Surface */}
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.98, y: 10 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.98, y: 10 }}
+            transition={{ type: 'spring', damping: 25, stiffness: 400, mass: 0.8 }}
+            className={`relative bg-white rounded-[32px] shadow- premium w-full ${sizeClasses[size]} overflow-hidden flex flex-col max-h-[90vh] shadow-[0_20px_70px_-10px_rgba(0,0,0,0.15)]`}
+            role="dialog"
+            aria-modal="true"
+          >
+            {children}
+          </motion.div>
+        </div>
+      )}
+    </AnimatePresence>
   );
 }
 
-export function ModalHeader({ children, onClose }: { children: React.ReactNode, onClose?: () => void }) {
+export function ModalHeader({ children, onClose, description }: { children: React.ReactNode, onClose?: () => void, description?: string }) {
   return (
-    <div className="px-6 py-4 border-b border-border flex items-center justify-between shrink-0">
-      <div className="flex-1">{children}</div>
+    <div className="px-10 py-8 border-b border-slate-50 flex items-start justify-between shrink-0 bg-white">
+      <div>
+        <h3 className="text-xl font-extrabold text-slate-900 tracking-tight">{children}</h3>
+        {description && <p className="text-[13px] font-medium text-slate-400 mt-1">{description}</p>}
+      </div>
       {onClose && (
         <button 
           onClick={onClose}
-          className="text-text-muted hover:text-text-primary transition-colors p-1 rounded-md hover:bg-bg"
+          className="text-slate-300 hover:text-slate-900 transition-all p-2 rounded-xl hover:bg-slate-50"
         >
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          <X className="w-5 h-5" />
         </button>
       )}
     </div>
@@ -72,7 +88,7 @@ export function ModalHeader({ children, onClose }: { children: React.ReactNode, 
 
 export function ModalBody({ children, className = '' }: { children: React.ReactNode, className?: string }) {
   return (
-    <div className={`p-6 overflow-y-auto ${className}`}>
+    <div className={`px-10 py-8 overflow-y-auto custom-scrollbar ${className}`}>
       {children}
     </div>
   );
@@ -80,7 +96,7 @@ export function ModalBody({ children, className = '' }: { children: React.ReactN
 
 export function ModalFooter({ children, className = '' }: { children: React.ReactNode, className?: string }) {
   return (
-    <div className={`px-6 py-4 border-t border-border bg-surface flex items-center justify-end gap-3 shrink-0 ${className}`}>
+    <div className={`px-10 py-6 border-t border-slate-50 bg-slate-50/30 flex items-center justify-end gap-4 shrink-0 ${className}`}>
       {children}
     </div>
   );

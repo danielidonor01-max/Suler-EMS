@@ -1,69 +1,62 @@
-import { NotificationCenter } from "../notifications/NotificationCenter";
-import { useAccess } from "@/context/AccessContext";
-import { LogOut, User as UserIcon, Settings, ChevronDown } from "lucide-react";
-import { signOut } from "next-auth/react";
+'use client';
 
-export default function Header() {
-  const { user } = useAccess();
+import React from 'react';
+import { 
+  Search, 
+  Plus, 
+  ChevronDown, 
+  Activity, 
+  ShieldCheck, 
+  Globe,
+  Command
+} from 'lucide-react';
 
+const Header = () => {
   return (
-    <header className="h-[var(--topbar-height)] bg-[#0a0a0a] border-b border-white/5 flex items-center justify-between px-8 sticky top-0 z-40 shadow-2xl shrink-0 backdrop-blur-xl">
-      {/* LEFT: Page title */}
-      <div className="flex items-center gap-4 min-w-0 flex-1">
-        <h2 className="text-lg font-bold text-white tracking-tight m-0 leading-[var(--topbar-height)]">
-          Dashboard Control
-        </h2>
-      </div>
-
-      {/* CENTER: Search */}
-      <div className="flex-1 max-w-[400px] mx-8 hidden md:block">
-        <div className="relative group">
-          <span className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500 group-focus-within:text-blue-500 transition-colors">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-          </span>
-          <input
-            type="text"
-            placeholder="Search staff, workflows, or logs..."
-            className="w-full h-10 bg-zinc-900 border border-white/5 rounded-xl pl-12 pr-4 text-sm text-zinc-300 placeholder:text-zinc-600 outline-none transition-all focus:border-blue-500/50 focus:ring-4 focus:ring-blue-500/10"
+    <header className="h-[72px] bg-white/80 backdrop-blur-xl border-b border-slate-100/50 sticky top-0 z-30 px-8 flex items-center justify-between transition-all duration-300">
+      {/* Global Command Search */}
+      <div className="flex-1 max-w-[480px] group">
+        <div className="relative">
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-indigo-600 transition-colors" />
+          <input 
+            type="text" 
+            placeholder="Search records, workflows, or people..." 
+            className="w-full bg-slate-50 border border-slate-200/50 rounded-xl py-2.5 pl-11 pr-16 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:bg-white focus:ring-4 focus:ring-indigo-600/5 focus:border-indigo-600 transition-all font-medium"
           />
+          <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1.5 px-2 py-1 bg-white border border-slate-200 rounded-md shadow-sm">
+            <Command className="w-2.5 h-2.5 text-slate-400" />
+            <span className="text-[10px] font-bold text-slate-400">K</span>
+          </div>
         </div>
       </div>
 
-      {/* RIGHT: Notifications + User */}
-      <div className="flex items-center gap-4 shrink-0">
-        
-        {/* Notifications */}
-        <NotificationCenter />
-
-        {/* Divider */}
-        <div className="w-[1px] h-6 bg-white/5 mx-2"></div>
-
-        {/* User Account */}
-        <div className="flex items-center gap-3 pl-2 group cursor-pointer relative">
-          <div className="flex flex-col items-end leading-tight">
-            <span className="text-sm font-semibold text-white group-hover:text-blue-400 transition-colors">
-              {user?.name || 'Authorized Personnel'}
-            </span>
-            <span className="text-[10px] uppercase tracking-widest font-bold text-zinc-500">
-              {user?.role?.replace('_', ' ') || 'IDENTITY PENDING'}
-            </span>
+      {/* Executive Operational Context */}
+      <div className="flex items-center gap-6">
+        <div className="hidden md:flex items-center gap-4">
+          {/* Status Chips */}
+          <div className="flex items-center gap-2 px-3 py-1.5 bg-emerald-50 border border-emerald-100 rounded-full">
+            <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+            <span className="text-[10px] font-bold text-emerald-700 uppercase tracking-widest">System Optimal</span>
           </div>
           
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-600 to-indigo-700 flex items-center justify-center text-sm font-bold text-white shadow-lg shadow-blue-900/20 group-hover:scale-105 transition-transform">
-            {user?.name?.split(' ').map(n => n[0]).join('') || '??'}
+          <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-50 border border-slate-100 rounded-full">
+            <Globe className="w-3 h-3 text-slate-400" />
+            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Lagos HQ</span>
           </div>
-
-          {/* Action Menu (Partial implementation for UI) */}
-          <button 
-            onClick={() => signOut()}
-            className="p-2 rounded-lg bg-zinc-900 border border-white/5 text-zinc-500 hover:text-red-400 hover:border-red-500/20 transition-all ml-2"
-            title="Secure Logout"
-          >
-            <LogOut className="w-4 h-4" />
-          </button>
         </div>
 
+        <div className="w-px h-6 bg-slate-100" />
+
+        {/* Global Action Trigger */}
+        <button className="bg-indigo-600 hover:bg-indigo-700 text-white flex items-center gap-2.5 px-5 py-2.5 rounded-xl text-xs font-bold transition-all shadow-lg shadow-indigo-100 active:scale-[0.98]">
+          <Plus className="w-4 h-4" />
+          Quick Action
+          <div className="w-px h-3 bg-white/20 mx-1" />
+          <ChevronDown className="w-3.5 h-3.5 opacity-60" />
+        </button>
       </div>
     </header>
   );
-}
+};
+
+export default Header;

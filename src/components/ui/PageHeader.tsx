@@ -1,3 +1,5 @@
+'use client';
+
 import React from 'react';
 
 export interface PageHeaderProps {
@@ -9,15 +11,19 @@ export interface PageHeaderProps {
 
 export function PageHeader({ title, description, actions, className = '' }: PageHeaderProps) {
   return (
-    <div className={`module-header ${className}`}>
-      <div>
-        <h2 className="text-[var(--text-2xl)] font-semibold mb-1 text-text-primary">{title}</h2>
+    <div className={`flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12 ${className}`}>
+      <div className="max-w-[720px]">
+        <h1 className="text-4xl font-extrabold text-slate-900 tracking-tight leading-none mb-3">
+          {title}
+        </h1>
         {description && (
-          <p className="text-[var(--text-sm)] text-secondary m-0">{description}</p>
+          <p className="text-[15px] font-medium text-slate-400 leading-relaxed tracking-tight">
+            {description}
+          </p>
         )}
       </div>
       {actions && (
-        <div className="module-header-actions">
+        <div className="flex items-center gap-3 shrink-0">
           {actions}
         </div>
       )}

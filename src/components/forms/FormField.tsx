@@ -1,27 +1,31 @@
+'use client';
+
 import React from 'react';
 
-export interface FormFieldProps {
+interface FormFieldProps {
   label: string;
-  htmlFor?: string;
   description?: string;
-  error?: string;
   children: React.ReactNode;
-  className?: string;
+  required?: boolean;
 }
 
-export function FormField({ label, htmlFor, description, error, children, className = '' }: FormFieldProps) {
+export const FormField: React.FC<FormFieldProps> = ({ label, description, children, required }) => {
   return (
-    <div className={`form-group ${className}`}>
-      <label htmlFor={htmlFor} className="form-label">
-        {label}
-      </label>
-      {description && (
-        <p className="text-xs text-text-muted mb-2">{description}</p>
-      )}
-      {children}
-      {error && (
-        <p className="text-xs text-danger mt-1 font-medium">{error}</p>
-      )}
+    <div className="space-y-2.5">
+      <div className="flex flex-col gap-0.5 ml-1">
+        <label className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.15em] flex items-center gap-1.5">
+          {label}
+          {required && <span className="text-rose-400 font-black">*</span>}
+        </label>
+        {description && (
+          <p className="text-[11px] font-medium text-slate-400 tracking-tight">
+            {description}
+          </p>
+        )}
+      </div>
+      <div className="relative">
+        {children}
+      </div>
     </div>
   );
-}
+};
