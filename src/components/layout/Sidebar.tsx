@@ -14,41 +14,41 @@ import {
   ChevronRight,
   LogOut,
   Bell,
-  Activity
+  Activity,
+  Box
 } from 'lucide-react';
 
 const Sidebar = () => {
   const pathname = usePathname();
 
   const menuItems = [
-    { name: 'Dashboard', icon: LayoutDashboard, href: '/employees' },
+    { name: 'Hub', icon: LayoutDashboard, href: '/employees' },
     { name: 'Workforce', icon: Users, href: '/staff' },
     { name: 'Attendance', icon: Calendar, href: '/attendance' },
     { name: 'Governance', icon: ShieldCheck, href: '/governance' },
     { name: 'Workflows', icon: Activity, href: '/leave' },
     { name: 'Financials', icon: CreditCard, href: '/payroll' },
-    { name: 'Compliance', icon: FileText, href: '/audit' },
   ];
 
   return (
     <aside className="w-[280px] h-screen bg-white border-r border-slate-100 flex flex-col fixed left-0 top-0 z-40 transition-all duration-300">
-      {/* Brand Workspace Identity */}
-      <div className="p-8 pb-10">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center text-white shadow-lg shadow-indigo-100 shrink-0">
-            <ShieldCheck className="w-6 h-6" />
+      {/* Premium Workspace Identity */}
+      <div className="p-10 pb-12">
+        <div className="flex items-center gap-4">
+          <div className="w-12 h-12 rounded-[18px] bg-indigo-600 flex items-center justify-center text-white shadow-xl shadow-indigo-100 shrink-0">
+            <Box className="w-7 h-7" />
           </div>
           <div className="flex flex-col">
-            <span className="text-sm font-bold text-slate-900 tracking-tight">Suler EMS</span>
-            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Enterprise Ops</span>
+            <span className="text-lg font-black text-slate-900 tracking-tight leading-none">Suler</span>
+            <span className="text-[10px] font-black text-indigo-500 uppercase tracking-[0.2em] mt-1.5">Ops OS</span>
           </div>
         </div>
       </div>
 
-      {/* Operational Rail Navigation */}
-      <nav className="flex-1 px-4 space-y-1.5 overflow-y-auto custom-scrollbar">
-        <div className="mb-4 px-4">
-          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.15em]">Main Workspace</span>
+      {/* Nav Rail (Inspired by Tidio Inbox) */}
+      <nav className="flex-1 px-6 space-y-2 overflow-y-auto custom-scrollbar">
+        <div className="mb-6 px-4">
+          <span className="text-[10px] font-black text-slate-300 uppercase tracking-[0.25em]">Operational Hub</span>
         </div>
         
         {menuItems.map((item) => {
@@ -57,47 +57,44 @@ const Sidebar = () => {
             <Link
               key={item.name}
               href={item.href}
-              className={`group flex items-center justify-between px-4 py-3 rounded-xl transition-all duration-200 ${
+              className={`group flex items-center gap-4 px-5 py-4 rounded-[20px] transition-all duration-300 ${
                 isActive 
-                  ? 'bg-indigo-50 text-indigo-700 shadow-sm' 
-                  : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'
+                  ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-100' 
+                  : 'text-slate-400 hover:bg-slate-50 hover:text-slate-900'
               }`}
             >
-              <div className="flex items-center gap-3.5">
-                <item.icon className={`w-5 h-5 ${isActive ? 'text-indigo-600' : 'text-slate-400 group-hover:text-slate-600'} transition-colors`} />
-                <span className={`text-[13px] font-semibold ${isActive ? 'font-bold' : ''}`}>
-                  {item.name}
-                </span>
-              </div>
-              {isActive && <div className="w-1.5 h-1.5 rounded-full bg-indigo-600" />}
-              {!isActive && <ChevronRight className="w-3.5 h-3.5 text-slate-300 opacity-0 group-hover:opacity-100 transition-all -translate-x-1 group-hover:translate-x-0" />}
+              <item.icon className={`w-5.5 h-5.5 ${isActive ? 'text-white' : 'text-slate-300 group-hover:text-slate-600'} transition-colors`} />
+              <span className={`text-[14px] font-bold tracking-tight ${isActive ? 'text-white' : ''}`}>
+                {item.name}
+              </span>
             </Link>
           );
         })}
       </nav>
 
-      {/* Executive Quick Actions */}
-      <div className="p-6 border-t border-slate-50 space-y-6">
-        <div className="flex items-center justify-between px-2">
-          <button className="relative p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition-all">
+      {/* System Quick Actions */}
+      <div className="p-8 space-y-8">
+        <div className="bg-slate-50/50 rounded-[28px] p-2 flex items-center justify-around border border-slate-100/50">
+          <button className="relative p-3 text-slate-400 hover:text-indigo-600 hover:bg-white hover:shadow-sm rounded-2xl transition-all">
             <Bell className="w-5 h-5" />
-            <span className="absolute top-2 right-2 w-2 h-2 bg-rose-500 border-2 border-white rounded-full" />
+            <span className="absolute top-3 right-3 w-2.5 h-2.5 bg-rose-500 border-2 border-white rounded-full shadow-sm" />
           </button>
-          <button className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition-all">
+          <div className="w-px h-6 bg-slate-200/50" />
+          <button className="p-3 text-slate-400 hover:text-indigo-600 hover:bg-white hover:shadow-sm rounded-2xl transition-all">
             <Settings className="w-5 h-5" />
           </button>
         </div>
 
-        {/* User Workspace Profile */}
-        <div className="bg-slate-50 rounded-2xl p-4 flex items-center gap-3.5 border border-slate-100/50">
-          <div className="w-10 h-10 rounded-xl bg-white shadow-sm flex items-center justify-center text-indigo-600 font-bold border border-slate-100">
+        {/* User Intelligence Profile */}
+        <div className="flex items-center gap-4 px-2">
+          <div className="w-12 h-12 rounded-2xl bg-indigo-50 border-2 border-white shadow-sm flex items-center justify-center text-indigo-600 font-black text-sm">
             CO
           </div>
           <div className="flex-1 min-w-0">
-            <div className="text-[12px] font-bold text-slate-900 truncate">Chinedu Okoro</div>
-            <div className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">Super Admin</div>
+            <div className="text-[13px] font-extrabold text-slate-900 truncate tracking-tight">Chinedu Okoro</div>
+            <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">Principal Admin</div>
           </div>
-          <button className="p-1.5 text-slate-300 hover:text-rose-500 transition-colors">
+          <button className="p-2 text-slate-300 hover:text-rose-500 transition-colors">
             <LogOut className="w-4 h-4" />
           </button>
         </div>
