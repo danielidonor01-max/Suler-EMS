@@ -18,7 +18,8 @@ import {
   MessageSquare,
   Settings,
   Target,
-  Command
+  PanelLeftClose,
+  PanelLeft
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -46,30 +47,30 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle }) => {
 
   return (
     <aside 
-      className={`glass-surface h-full rounded-[24px] flex flex-col transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] overflow-hidden ${
-        isCollapsed ? 'w-[88px]' : 'w-[280px]'
+      className={`bg-white h-screen border-r border-slate-200/60 flex flex-col transition-all duration-500 ease-[cubic-bezier(0.2,0,0,1)] relative z-50 ${
+        isCollapsed ? 'w-[80px]' : 'w-[280px]'
       }`}
     >
       {/* Brand Mark Layer */}
-      <div className={`p-8 ${isCollapsed ? 'flex justify-center' : ''}`}>
-        <div className="flex items-center gap-4">
-          <div className="w-10 h-10 rounded-xl bg-slate-900 flex items-center justify-center text-white shadow-lg shadow-slate-200 shrink-0">
-            <Box className="w-5 h-5" />
+      <div className={`h-[72px] flex items-center px-6 border-b border-slate-200/40`}>
+        <div className="flex items-center gap-3.5">
+          <div className="w-9 h-9 rounded-lg bg-slate-900 flex items-center justify-center text-white shadow-sm shrink-0">
+            <Box className="w-5 h-5 stroke-[1.5px]" />
           </div>
           {!isCollapsed && (
-            <div className="flex flex-col animate-in">
-              <span className="text-base font-black text-slate-900 tracking-tighter leading-none">Suler EMS</span>
-              <span className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] mt-1.5">Operational OS</span>
+            <div className="flex flex-col animate-in slide-in-from-left-2">
+              <span className="text-sm font-black text-slate-900 tracking-tight leading-none">Suler EMS</span>
+              <span className="text-[8px] font-black text-slate-400 uppercase tracking-[0.2em] mt-1.5">Operational OS</span>
             </div>
           )}
         </div>
       </div>
 
       {/* Navigation Rails */}
-      <div className="flex-1 px-4 space-y-8 overflow-y-auto custom-scrollbar pt-2">
+      <div className="flex-1 px-3 space-y-8 overflow-y-auto custom-scrollbar pt-6">
         
         {/* Operations Layer */}
-        <div className="space-y-1.5">
+        <div className="space-y-1">
           {!isCollapsed && (
             <div className="px-4 mb-3">
               <span className="text-[9px] font-black text-slate-300 uppercase tracking-[0.2em]">Operations</span>
@@ -83,7 +84,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle }) => {
         </div>
 
         {/* Intelligence Layer */}
-        <div className="space-y-1.5">
+        <div className="space-y-1">
           {!isCollapsed && (
             <div className="px-4 mb-3">
               <span className="text-[9px] font-black text-slate-300 uppercase tracking-[0.2em]">Intelligence</span>
@@ -98,34 +99,33 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle }) => {
       </div>
 
       {/* Utility Rail */}
-      <div className="p-4 pt-6 mt-auto border-t border-slate-200/40">
+      <div className="px-3 pb-6 space-y-4">
         <SidebarLink 
           item={{ name: 'Settings', icon: Settings, href: '/settings' }} 
           isActive={pathname === '/settings'} 
           isCollapsed={isCollapsed} 
         />
         
-        {/* Collapse Control */}
-        <button 
-          onClick={onToggle}
-          className={`w-full flex items-center gap-3.5 px-4 py-3 rounded-xl text-slate-400 hover:text-slate-900 hover:bg-slate-50 transition-all ${isCollapsed ? 'justify-center' : ''}`}
-        >
-          {isCollapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
-          {!isCollapsed && <span className="text-[13px] font-bold tracking-tight">Collapse View</span>}
-        </button>
-
-        <div className={`mt-4 p-3 rounded-xl bg-slate-50/50 flex items-center gap-3 ${isCollapsed ? 'justify-center' : 'border border-slate-100'}`}>
+        <div className={`p-3 rounded-xl bg-slate-50 border border-slate-100 flex items-center gap-3 ${isCollapsed ? 'justify-center' : ''}`}>
           <div className="w-8 h-8 rounded-lg bg-slate-900 flex items-center justify-center text-white text-[10px] font-black shrink-0">
             CO
           </div>
           {!isCollapsed && (
-            <div className="flex-1 min-w-0 animate-in">
+            <div className="flex-1 min-w-0 animate-in fade-in duration-500">
               <div className="text-[12px] font-black text-slate-900 truncate tracking-tight">C. Okoro</div>
-              <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest leading-none mt-1">Admin</div>
+              <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest leading-none mt-1">Lagos Hub</div>
             </div>
           )}
         </div>
       </div>
+
+      {/* Edge-Mounted Collapse Trigger */}
+      <button 
+        onClick={onToggle}
+        className="absolute -right-3 top-[88px] w-6 h-6 bg-white border border-slate-200 rounded-full flex items-center justify-center text-slate-400 hover:text-slate-900 hover:border-slate-400 transition-all shadow-sm z-[60]"
+      >
+        {isCollapsed ? <ChevronRight className="w-3 h-3" /> : <ChevronLeft className="w-3 h-3" />}
+      </button>
     </aside>
   );
 };
@@ -133,15 +133,15 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle }) => {
 const SidebarLink = ({ item, isActive, isCollapsed }: any) => (
   <Link
     href={item.href}
-    className={`group flex items-center gap-4 px-4 py-3 rounded-xl transition-all duration-300 relative ${
+    className={`group flex items-center gap-3.5 px-4 py-2.5 rounded-xl transition-all duration-200 relative ${
       isActive 
         ? 'bg-slate-900 text-white shadow-lg shadow-slate-900/10' 
-        : 'text-slate-400 hover:bg-slate-50 hover:text-slate-900'
-    } ${isCollapsed ? 'justify-center h-[48px] w-[48px] mx-auto px-0' : ''}`}
+        : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'
+    } ${isCollapsed ? 'justify-center h-[44px] w-[44px] mx-auto px-0' : ''}`}
   >
     <item.icon className={`w-[18px] h-[18px] transition-colors stroke-[1.5px] ${isActive ? 'text-white' : 'text-slate-400 group-hover:text-slate-900'}`} />
     {!isCollapsed && (
-      <span className={`text-[13px] font-bold tracking-tight animate-in ${isActive ? 'text-white' : ''}`}>
+      <span className={`text-[13px] font-bold tracking-tight ${isActive ? 'text-white' : ''}`}>
         {item.name}
       </span>
     )}

@@ -16,6 +16,7 @@ import {
   ArrowRight
 } from 'lucide-react';
 import { MetricCard } from '@/components/dashboard/MetricCard';
+import { CapabilityIntelligence } from '@/components/dashboard/CapabilityIntelligence';
 
 const MOCK_TEAM = [
   { id: '1', name: 'Alex Okereke', role: 'DevOps Engineer', status: 'ON_TIME', load: 85, skills: ['Cloud', 'Security'] },
@@ -111,27 +112,19 @@ export default function TeamPage() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
-         {/* Team Competency Summary */}
-         <div className="bg-white p-8 rounded-[24px] border border-slate-200/60 shadow-sm">
-            <div className="flex items-center gap-4 mb-8">
-               <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400 border border-slate-100">
-                  <ShieldCheck className="w-5 h-5" />
-               </div>
-               <div>
-                  <h3 className="text-base font-black text-slate-900 tracking-tight">Competency Metrics</h3>
-                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">Skills distribution & Gap analysis</p>
-               </div>
-            </div>
-            <div className="space-y-4">
-               {['Governance', 'Operational Strategy', 'Financial Oversight'].map(skill => (
-                 <div key={skill} className="flex items-center justify-between p-4 bg-slate-50/50 rounded-xl border border-slate-100">
-                    <span className="text-[12px] font-black text-slate-700">{skill}</span>
-                    <div className="flex gap-1">
-                       {[1,2,3,4,5].map(i => <div key={i} className={`w-2 h-2 rounded-full ${i <= 4 ? 'bg-indigo-600' : 'bg-slate-200'}`} />)}
-                    </div>
-                 </div>
-               ))}
-            </div>
+         {/* Team Capability Intelligence */}
+         <div className="lg:col-span-1">
+            <CapabilityIntelligence 
+              title="Team Capability Profile"
+              data={[
+                { category: 'Technical', value: 85 },
+                { category: 'Comm.', value: 70 },
+                { category: 'Lead.', value: 92 },
+                { category: 'Creativity', value: 65 },
+                { category: 'Ops.', value: 88 },
+              ]}
+              insight="Team leadership readiness exceeds organization average by 14%. Communication proficiency identifies a mentorship opportunity for junior analysts."
+            />
          </div>
 
          {/* Upcoming Availability */}

@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { MetricCard } from "@/components/dashboard/MetricCard";
+import { CapabilityIntelligence } from "@/components/dashboard/CapabilityIntelligence";
 import { DataTable } from "@/components/tables/DataTable";
 import { Drawer } from "@/components/common/Drawer";
 import { 
@@ -186,6 +187,19 @@ export default function EmployeesPage() {
                  <p className="text-[14px] font-bold text-slate-900">{selectedEmployee?.departmentName}</p>
               </div>
            </div>
+
+           {/* Capability Intelligence - Strategic Visual */}
+           <CapabilityIntelligence 
+              title="Individual Capability Profile"
+              data={[
+                { category: 'Technical', value: 92 },
+                { category: 'Comm.', value: 78 },
+                { category: 'Lead.', value: 65 },
+                { category: 'Creativity', value: 88 },
+                { category: 'Problem Solving', value: 95 },
+              ]}
+              insight={`${selectedEmployee?.fullName} displays high technical proficiency and exceptional problem-solving capabilities. Recommended for senior technical leadership track in Q3.`}
+           />
 
            {/* Intelligence Timeline */}
            <div className="space-y-5">
