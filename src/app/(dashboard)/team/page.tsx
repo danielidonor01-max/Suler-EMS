@@ -48,10 +48,12 @@ export default function TeamPage() {
           </div>
 
           <div className="flex items-center gap-3">
-             <button className="bg-white border border-slate-200 text-slate-600 px-6 py-3 rounded-xl text-[11px] font-black uppercase tracking-wider transition-all">
+             <button className="bg-white border border-slate-200 text-slate-600 hover:border-slate-300 px-6 h-[44px] rounded-xl text-[11px] font-black uppercase tracking-wider transition-all shadow-sm flex items-center gap-2">
+                <Calendar className="w-[18px] h-[18px] stroke-[1.5px]" />
                 Team Schedule
              </button>
-             <button className="bg-slate-900 hover:bg-black text-white px-6 py-3 rounded-xl text-[11px] font-black uppercase tracking-wider transition-all shadow-md">
+             <button className="bg-slate-900 hover:bg-black text-white flex items-center gap-2 px-6 h-[44px] rounded-xl text-[11px] font-black uppercase tracking-wider transition-all shadow-md">
+                <Zap className="w-[18px] h-[18px] stroke-[1.5px]" />
                 Allocate Resources
              </button>
           </div>

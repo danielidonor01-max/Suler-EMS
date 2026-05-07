@@ -32,6 +32,8 @@ interface DataTableProps {
   totalItems?: number;
 }
 
+import { Select } from '../forms/Select';
+
 export const DataTable: React.FC<DataTableProps> = ({ 
   title, 
   description, 
@@ -41,6 +43,7 @@ export const DataTable: React.FC<DataTableProps> = ({
   totalItems = 284 // Default mock for demo
 }) => {
   const [activeActions, setActiveActions] = useState<{ id: string, rect: DOMRect } | null>(null);
+  const [pageSize, setPageSize] = useState('10');
 
   const handleActionClick = (e: React.MouseEvent, id: string) => {
     e.stopPropagation();
@@ -68,7 +71,7 @@ export const DataTable: React.FC<DataTableProps> = ({
               className="bg-white border border-slate-200 rounded-xl py-2 pl-11 pr-4 text-[12px] font-bold text-slate-900 placeholder:text-slate-300 outline-none focus:border-slate-400 transition-all w-64 shadow-sm"
             />
           </div>
-          <button className="flex items-center gap-2 h-[40px] px-4 py-2 bg-white border border-slate-200 rounded-xl text-[11px] font-black text-slate-500 uppercase tracking-widest hover:text-slate-900 hover:border-slate-300 transition-all shadow-sm flex items-center">
+          <button className="flex items-center gap-2 h-[40px] px-4 py-2 bg-white border border-slate-200 rounded-xl text-[11px] font-black text-slate-500 uppercase tracking-widest hover:text-slate-900 hover:border-slate-300 transition-all shadow-sm">
             <Filter className="w-3.5 h-3.5 stroke-[1.5px]" />
             Filters
           </button>
@@ -164,11 +167,17 @@ export const DataTable: React.FC<DataTableProps> = ({
               Showing <span className="text-slate-900 font-black">1–10</span> of <span className="text-slate-900 font-black">{totalItems}</span> records
             </span>
             <div className="h-4 w-px bg-slate-200" />
-            <select className="bg-transparent text-[11px] font-black text-slate-500 uppercase tracking-widest outline-none cursor-pointer hover:text-slate-900 transition-colors">
-               <option>10 per page</option>
-               <option>25 per page</option>
-               <option>50 per page</option>
-            </select>
+            <Select 
+              variant="minimal"
+              value={pageSize}
+              onChange={setPageSize}
+              options={[
+                { label: '10 Per Page', value: '10' },
+                { label: '25 Per Page', value: '25' },
+                { label: '50 Per Page', value: '50' }
+              ]}
+              className="w-36"
+            />
           </div>
 
           <div className="flex items-center gap-1">

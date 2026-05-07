@@ -100,12 +100,12 @@ export default function AttendancePage() {
         </div>
         
         <div className="flex items-center gap-3">
-           <button className="bg-white border border-slate-200 text-slate-600 hover:border-slate-300 px-6 py-3 rounded-xl text-[11px] font-black uppercase tracking-wider transition-all shadow-sm">
-              <Download className="w-4 h-4" />
+           <button className="bg-white border border-slate-200 text-slate-600 hover:border-slate-300 px-6 h-[44px] rounded-xl text-[11px] font-black uppercase tracking-wider transition-all shadow-sm flex items-center gap-2">
+              <Download className="w-[18px] h-[18px] stroke-[1.5px]" />
               Export Logs
            </button>
-           <button className="bg-slate-900 hover:bg-black text-white flex items-center gap-2.5 px-6 py-3 rounded-xl text-[11px] font-black uppercase tracking-wider transition-all shadow-md">
-              <RefreshCcw className="w-4 h-4" />
+           <button className="bg-slate-900 hover:bg-black text-white flex items-center gap-2 px-6 h-[44px] rounded-xl text-[11px] font-black uppercase tracking-wider transition-all shadow-md">
+              <RefreshCcw className="w-[18px] h-[18px] stroke-[1.5px]" />
               Reconcile Devices
            </button>
         </div>
@@ -199,9 +199,12 @@ export default function AttendancePage() {
 
            {/* Actions Intelligence */}
            <div className="pt-6 border-t border-slate-100 flex gap-3">
-              <button className="flex-1 bg-slate-900 text-white py-3 rounded-xl text-[11px] font-black uppercase tracking-widest shadow-md">Reconcile Log</button>
-              <button className="px-5 border border-slate-200 text-slate-400 py-3 rounded-xl hover:text-slate-900 hover:border-slate-300 transition-all">
-                 <ArrowRight className="w-4 h-4" />
+              <button className="flex-1 bg-slate-900 hover:bg-black text-white h-[44px] rounded-xl text-[11px] font-black uppercase tracking-widest shadow-md transition-all flex items-center justify-center gap-2">
+                 <RefreshCcw className="w-4 h-4 stroke-[1.5px]" />
+                 Reconcile Log
+              </button>
+              <button className="w-[44px] h-[44px] flex items-center justify-center border border-slate-200 text-slate-400 rounded-xl hover:text-slate-900 hover:border-slate-300 transition-all shadow-sm">
+                 <ArrowRight className="w-4 h-4 stroke-[1.5px]" />
               </button>
            </div>
         </div>

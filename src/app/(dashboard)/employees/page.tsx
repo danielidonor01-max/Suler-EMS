@@ -28,6 +28,8 @@ import {
 import { EmployeeService } from "@/modules/employees/services/employee.service";
 import { EmployeeResponseDTO } from "@/modules/employees/dto/employee.dto";
 
+import { Select } from "@/components/forms/Select";
+
 export default function EmployeesPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [employees, setEmployees] = useState<EmployeeResponseDTO[]>([]);
@@ -35,6 +37,10 @@ export default function EmployeesPage() {
   const [loading, setLoading] = useState(true);
   const [selectedEmployee, setSelectedEmployee] = useState<EmployeeResponseDTO | null>(null);
   const [isOnboardingOpen, setIsOnboardingOpen] = useState(false);
+
+  // Form State for Onboarding
+  const [hub, setHub] = useState('lagos');
+  const [designation, setDesignation] = useState('engineer');
 
   React.useEffect(() => {
     let isMounted = true;
@@ -127,15 +133,15 @@ export default function EmployeesPage() {
         </div>
         
         <div className="flex items-center gap-3">
-           <button className="bg-white border border-slate-200 text-slate-600 hover:border-slate-300 px-6 py-2.5 h-[44px] rounded-xl text-[11px] font-black uppercase tracking-wider transition-all shadow-sm flex items-center gap-2.5">
-              <Layout className="w-4 h-4 stroke-[1.5px]" />
+           <button className="bg-white border border-slate-200 text-slate-600 hover:border-slate-300 px-6 h-[44px] rounded-xl text-[11px] font-black uppercase tracking-wider transition-all shadow-sm flex items-center gap-2">
+              <Layout className="w-[18px] h-[18px] stroke-[1.5px]" />
               View Org Chart
            </button>
            <button 
              onClick={() => setIsOnboardingOpen(true)}
-             className="bg-slate-900 hover:bg-black text-white flex items-center gap-2.5 px-6 py-2.5 h-[44px] rounded-xl text-[11px] font-black uppercase tracking-wider transition-all shadow-md"
+             className="bg-slate-900 hover:bg-black text-white flex items-center gap-2 px-6 h-[44px] rounded-xl text-[11px] font-black uppercase tracking-wider transition-all shadow-md"
            >
-              <UserPlus className="w-4 h-4 stroke-[1.5px]" />
+              <UserPlus className="w-[18px] h-[18px] stroke-[1.5px]" />
               Onboard Member
            </button>
         </div>
@@ -170,37 +176,41 @@ export default function EmployeesPage() {
            <div className="grid grid-cols-2 gap-8">
               <div className="space-y-2.5">
                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Full Legal Name</label>
-                 <input type="text" className="w-full bg-slate-50 border border-slate-100 focus:border-slate-300 focus:bg-white rounded-xl p-4 text-[13px] font-bold outline-none transition-all" placeholder="e.g. John Doe" />
+                 <input type="text" className="w-full bg-slate-50 border border-slate-100 focus:border-slate-300 focus:bg-white rounded-xl p-4 h-[48px] text-[13px] font-bold outline-none transition-all" placeholder="e.g. John Doe" />
               </div>
               <div className="space-y-2.5">
                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Corporate Identity (Email)</label>
-                 <input type="email" className="w-full bg-slate-50 border border-slate-100 focus:border-slate-300 focus:bg-white rounded-xl p-4 text-[13px] font-bold outline-none transition-all" placeholder="j.doe@sulerglobal.com" />
+                 <input type="email" className="w-full bg-slate-50 border border-slate-100 focus:border-slate-300 focus:bg-white rounded-xl p-4 h-[48px] text-[13px] font-bold outline-none transition-all" placeholder="j.doe@sulerglobal.com" />
               </div>
            </div>
 
            <div className="grid grid-cols-2 gap-8">
-              <div className="space-y-2.5">
-                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Operational Hub</label>
-                 <select className="w-full bg-slate-50 border border-slate-100 focus:border-slate-300 focus:bg-white rounded-xl p-4 text-[13px] font-bold outline-none transition-all appearance-none cursor-pointer">
-                    <option>Lagos HQ</option>
-                    <option>Abuja Operations</option>
-                    <option>Port Harcourt Hub</option>
-                 </select>
-              </div>
-              <div className="space-y-2.5">
-                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Principal Designation</label>
-                 <select className="w-full bg-slate-50 border border-slate-100 focus:border-slate-300 focus:bg-white rounded-xl p-4 text-[13px] font-bold outline-none transition-all appearance-none cursor-pointer">
-                    <option>Senior Engineer</option>
-                    <option>Operational Lead</option>
-                    <option>Finance Controller</option>
-                 </select>
-              </div>
+              <Select 
+                label="Operational Hub"
+                value={hub}
+                onChange={setHub}
+                options={[
+                  { label: 'Lagos HQ', value: 'lagos' },
+                  { label: 'Abuja Operations', value: 'abuja' },
+                  { label: 'Port Harcourt Hub', value: 'ph' }
+                ]}
+              />
+              <Select 
+                label="Principal Designation"
+                value={designation}
+                onChange={setDesignation}
+                options={[
+                  { label: 'Senior Engineer', value: 'engineer' },
+                  { label: 'Operational Lead', value: 'lead' },
+                  { label: 'Finance Controller', value: 'finance' }
+                ]}
+              />
            </div>
 
-           <div className="p-6 bg-slate-50 rounded-[20px] border border-slate-100 flex items-center justify-between">
+           <div className="p-6 bg-slate-50 rounded-[24px] border border-slate-100 flex items-center justify-between">
               <div className="flex items-center gap-4">
-                 <div className="w-10 h-10 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-indigo-600">
-                    <Sparkles className="w-5 h-5" />
+                 <div className="w-10 h-10 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-indigo-600 shadow-sm">
+                    <Sparkles className="w-5 h-5 stroke-[1.5px]" />
                  </div>
                  <div className="space-y-1">
                     <p className="text-[12px] font-black text-slate-900 leading-none">Automated Security Provisioning</p>
@@ -213,8 +223,8 @@ export default function EmployeesPage() {
            </div>
 
            <div className="flex items-center justify-end gap-4 pt-4">
-              <button onClick={() => setIsOnboardingOpen(false)} className="px-8 py-4 rounded-xl text-[11px] font-black uppercase tracking-wider text-slate-400 hover:text-slate-900 transition-all">Cancel</button>
-              <button className="bg-slate-900 hover:bg-black text-white px-10 py-4 rounded-xl text-[11px] font-black uppercase tracking-wider transition-all shadow-lg shadow-slate-900/10">Initialize Member</button>
+              <button onClick={() => setIsOnboardingOpen(false)} className="px-8 h-[44px] rounded-xl text-[11px] font-black uppercase tracking-wider text-slate-400 hover:text-slate-900 transition-all">Cancel</button>
+              <button className="bg-slate-900 hover:bg-black text-white px-10 h-[44px] rounded-xl text-[11px] font-black uppercase tracking-wider transition-all shadow-lg shadow-slate-900/10">Initialize Member</button>
            </div>
         </div>
       </Modal>
@@ -292,12 +302,12 @@ export default function EmployeesPage() {
 
            {/* Actions Intelligence */}
            <div className="grid grid-cols-2 gap-4">
-              <button className="flex items-center justify-center gap-3 p-4 rounded-xl border border-slate-200 hover:bg-slate-50 text-[10px] font-black text-slate-600 uppercase tracking-widest transition-all">
-                 <ShieldCheck className="w-4 h-4" />
+              <button className="flex items-center justify-center gap-3 h-[44px] rounded-xl border border-slate-200 hover:bg-slate-50 text-[10px] font-black text-slate-600 uppercase tracking-widest transition-all shadow-sm">
+                 <ShieldCheck className="w-4 h-4 stroke-[1.5px]" />
                  Security Audit
               </button>
-              <button className="flex items-center justify-center gap-3 p-4 rounded-xl border border-slate-200 hover:bg-slate-50 text-[10px] font-black text-slate-600 uppercase tracking-widest transition-all">
-                 <Calendar className="w-4 h-4" />
+              <button className="flex items-center justify-center gap-3 h-[44px] rounded-xl border border-slate-200 hover:bg-slate-50 text-[10px] font-black text-slate-600 uppercase tracking-widest transition-all shadow-sm">
+                 <Calendar className="w-4 h-4 stroke-[1.5px]" />
                  Shift Registry
               </button>
            </div>

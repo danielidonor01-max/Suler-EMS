@@ -94,12 +94,12 @@ export default function WorkforcePage() {
           </div>
 
           <div className="flex items-center gap-3">
-             <button className="bg-white border border-slate-200 text-slate-600 hover:border-slate-300 px-6 py-3 rounded-xl text-[11px] font-black uppercase tracking-wider transition-all">
-                <Layout className="w-4 h-4" />
+             <button className="bg-white border border-slate-200 text-slate-600 hover:border-slate-300 px-6 h-[44px] rounded-xl text-[11px] font-black uppercase tracking-wider transition-all shadow-sm flex items-center gap-2">
+                <Layout className="w-[18px] h-[18px] stroke-[1.5px]" />
                 Org Chart
              </button>
-            <button className="bg-slate-900 hover:bg-black text-white flex items-center gap-2.5 px-6 py-3 rounded-xl text-[11px] font-black uppercase tracking-wider transition-all shadow-md">
-              <UserPlus className="w-4 h-4" />
+            <button className="bg-slate-900 hover:bg-black text-white flex items-center gap-2 px-6 h-[44px] rounded-xl text-[11px] font-black uppercase tracking-wider transition-all shadow-md">
+              <UserPlus className="w-[18px] h-[18px] stroke-[1.5px]" />
               Onboard Staff
             </button>
           </div>
@@ -185,10 +185,12 @@ export default function WorkforcePage() {
 
            {/* Actions */}
            <div className="grid grid-cols-2 gap-4">
-              <button className="bg-slate-900 text-white p-4 rounded-xl text-[11px] font-black uppercase tracking-widest shadow-md hover:bg-black transition-all">
+              <button className="bg-slate-900 hover:bg-black text-white h-[44px] rounded-xl text-[11px] font-black uppercase tracking-widest shadow-md transition-all flex items-center justify-center gap-2">
+                 <Target className="w-4 h-4 stroke-[1.5px]" />
                  Initiate Transfer
               </button>
-              <button className="bg-white border border-slate-200 text-slate-600 p-4 rounded-xl text-[11px] font-black uppercase tracking-widest hover:border-slate-300 transition-all">
+              <button className="bg-white border border-slate-200 text-slate-600 h-[44px] rounded-xl text-[11px] font-black uppercase tracking-widest hover:border-slate-300 transition-all shadow-sm flex items-center justify-center gap-2">
+                 <ShieldCheck className="w-4 h-4 stroke-[1.5px]" />
                  Modify Access
               </button>
            </div>

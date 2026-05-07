@@ -105,12 +105,12 @@ export default function PayrollPage() {
           </div>
 
           <div className="flex items-center gap-3">
-            <button className="bg-slate-50 hover:bg-slate-100 text-slate-600 flex items-center gap-2.5 px-6 py-3.5 rounded-full text-xs font-black uppercase tracking-wider transition-all border border-slate-100">
-              <Receipt className="w-4 h-4" />
+            <button className="bg-slate-50 hover:bg-slate-100 text-slate-600 flex items-center gap-2 px-6 h-[44px] rounded-xl text-xs font-black uppercase tracking-wider transition-all border border-slate-100 shadow-sm">
+              <Receipt className="w-[18px] h-[18px] stroke-[1.5px]" />
               Tax Filing
             </button>
-            <button className="bg-indigo-600 hover:bg-indigo-700 text-white flex items-center gap-2.5 px-8 py-3.5 rounded-full text-xs font-black uppercase tracking-wider transition-all shadow-xl shadow-indigo-100">
-              <Wallet className="w-4 h-4" />
+            <button className="bg-indigo-600 hover:bg-indigo-700 text-white flex items-center gap-2 px-8 h-[44px] rounded-xl text-xs font-black uppercase tracking-wider transition-all shadow-xl shadow-indigo-100/20">
+              <Wallet className="w-[18px] h-[18px] stroke-[1.5px]" />
               Execute Batch
             </button>
           </div>
