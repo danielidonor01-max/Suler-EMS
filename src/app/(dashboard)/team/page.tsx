@@ -13,7 +13,8 @@ import {
   Zap,
   TrendingUp,
   Mail,
-  ArrowRight
+  ArrowRight,
+  Calendar
 } from 'lucide-react';
 import { MetricCard } from '@/components/dashboard/MetricCard';
 import { CapabilityIntelligence } from '@/components/dashboard/CapabilityIntelligence';

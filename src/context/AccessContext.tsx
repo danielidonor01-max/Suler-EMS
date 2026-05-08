@@ -1,47 +1,65 @@
 "use client";
 
-import React, { createContext, useContext, ReactNode, useMemo } from 'react';
+import React, { createContext, useContext, ReactNode, useMemo, useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
-import { RoleName } from '@/modules/auth/domain/role.model';
-import { PermissionType, PolicyContext, PolicyResult } from '@/modules/auth/domain/permission.model';
-import { BaseEvaluator } from '@/policies/base.evaluator';
+
+export type RoleName = 'SUPER_ADMIN' | 'HR_ADMIN' | 'FINANCE_ADMIN' | 'MANAGER' | 'STAFF';
 
 interface AccessContextType {
   user: any;
-  checkPermission: (permission: PermissionType) => PolicyResult;
   isLoading: boolean;
   status: 'authenticated' | 'unauthenticated' | 'loading';
+  userRole: RoleName;
+  setRole: (role: RoleName) => void;
 }
 
 const AccessContext = createContext<AccessContextType | undefined>(undefined);
 
 export function AccessProvider({ children }: { children: ReactNode }) {
   const { data: session, status } = useSession();
+  const [mockRole, setMockRole] = useState<RoleName>('SUPER_ADMIN');
+
+  useEffect(() => {
+    const loadRole = () => {
+      const saved = localStorage.getItem('suler_mock_role');
+      if (saved) setMockRole(saved as RoleName);
+    };
+
+    loadRole();
+
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'suler_mock_role') {
+        loadRole();
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, []);
+
+  const userRole = useMemo(() => {
+    if (session?.user?.role) return session.user.role as RoleName;
+    return mockRole;
+  }, [session, mockRole]);
+
+  const setRole = (role: RoleName) => {
+    setMockRole(role);
+    localStorage.setItem('suler_mock_role', role);
+    // In a real app, this would trigger a session refresh or re-auth
+  };
 
   const user = useMemo(() => {
-    if (!session?.user) return null;
     return {
-      id: session.user.id,
-      name: session.user.name,
-      role: session.user.role as RoleName,
-      permissions: session.user.permissions as PermissionType[],
-      departmentId: session.user.departmentId,
-      employeeId: session.user.employeeId,
+      id: session?.user?.id || 'MOCK-USER',
+      name: session?.user?.name || (mockRole === 'SUPER_ADMIN' ? 'Chinedu Okoro' : 'Enterprise User'),
+      role: userRole,
     };
-  }, [session]);
-
-  const checkPermission = (permission: PermissionType): PolicyResult => {
-    if (!user) return { success: false, error: { code: 'UNAUTHORIZED', message: 'Not logged in' } };
-    
-    const context: PolicyContext = {
-      user: user,
-    };
-    return BaseEvaluator.hasPermission(context, permission);
-  };
+  }, [session, userRole, mockRole]);
 
   const value = {
     user,
-    checkPermission,
+    userRole,
+    setRole,
     isLoading: status === 'loading',
     status: status as any
   };

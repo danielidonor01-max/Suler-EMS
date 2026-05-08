@@ -22,13 +22,13 @@ import {
 import { MetricCard } from '@/components/dashboard/MetricCard';
 
 const MOCK_BROADCASTS = [
-  { id: 'br-001', title: 'Q2 Operational Strategy Update', author: 'Executive Office', time: '2h ago', category: 'STRATEGY' },
-  { id: 'br-002', title: 'Maintenance Window: Biometric Sync', author: 'System Admin', time: '5h ago', category: 'SYSTEM' },
+  { id: 'br-001', title: 'Q2 Operational Strategy Update', author: 'Executive Office', context: 'Lagos HQ • HR Governance', time: '2h ago', category: 'STRATEGY' },
+  { id: 'br-002', title: 'Maintenance Window: Biometric Sync', author: 'System Admin', context: 'Global • Infrastructure', time: '5h ago', category: 'SYSTEM' },
 ];
 
 const MOCK_THREADS = [
-  { id: 'th-001', title: 'Leave Approval: Alex Okereke', participants: 3, lastMessage: 'Reviewing documentation now.', status: 'ACTIVE', time: '10m ago' },
-  { id: 'th-002', title: 'Payroll Reconciliation Q1', participants: 5, lastMessage: 'Tax discrepancies resolved.', status: 'RESOLVED', time: '1d ago' },
+  { id: 'th-001', title: 'Leave Approval: Alex Okereke', context: 'Abuja Ops • HR', participants: 3, lastMessage: 'Reviewing documentation now.', status: 'ACTIVE', time: '10m ago' },
+  { id: 'th-002', title: 'Payroll Reconciliation Q1', context: 'Benin Branch • Finance', participants: 5, lastMessage: 'Tax discrepancies resolved.', status: 'RESOLVED', time: '1d ago' },
 ];
 
 export default function CommunicationPage() {
@@ -56,12 +56,12 @@ export default function CommunicationPage() {
         </div>
         
         <div className="flex items-center gap-3">
-           <button className="bg-white border border-slate-200 text-slate-600 hover:border-slate-300 px-6 py-3 rounded-xl text-[11px] font-black uppercase tracking-wider transition-all shadow-sm">
-              <Activity className="w-4 h-4" />
+           <button className="bg-white border border-slate-200 text-slate-600 hover:border-slate-300 px-6 h-[44px] rounded-xl text-[11px] font-black uppercase tracking-wider transition-all shadow-sm flex items-center gap-2 whitespace-nowrap">
+              <Activity className="w-[18px] h-[18px] stroke-[1.5px]" />
               Channel Analytics
            </button>
-           <button className="bg-slate-900 hover:bg-black text-white flex items-center gap-2.5 px-6 py-3 rounded-xl text-[11px] font-black uppercase tracking-wider transition-all shadow-md">
-              <Megaphone className="w-4 h-4" />
+           <button className="bg-slate-900 hover:bg-black text-white flex items-center gap-2 px-6 h-[44px] rounded-xl text-[11px] font-black uppercase tracking-wider transition-all shadow-md whitespace-nowrap">
+              <Megaphone className="w-[18px] h-[18px] stroke-[1.5px]" />
               New Broadcast
            </button>
         </div>
@@ -102,7 +102,11 @@ export default function CommunicationPage() {
                       <span className="text-[10px] font-bold text-slate-300 uppercase tracking-widest">{item.time}</span>
                     </div>
                     <h3 className="text-lg font-black text-slate-900 tracking-tight leading-none">{item.title}</h3>
-                    <p className="text-[12px] font-bold text-slate-400 uppercase tracking-widest">Authorized by: <span className="text-slate-600">{item.author}</span></p>
+                    <div className="flex items-center gap-2">
+                       <p className="text-[11px] font-black text-indigo-600 uppercase tracking-widest">{item.context}</p>
+                       <div className="w-1 h-1 rounded-full bg-slate-200" />
+                       <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">Authorized by: <span className="text-slate-600">{item.author}</span></p>
+                    </div>
                   </div>
                 </div>
                 <button className="p-3 text-slate-200 group-hover:text-slate-900 transition-all">
@@ -132,7 +136,8 @@ export default function CommunicationPage() {
                     </div>
                     <span className="text-[10px] font-bold text-slate-300 uppercase tracking-widest">{thread.time}</span>
                   </div>
-                  <h4 className="text-[14px] font-black text-slate-900 tracking-tight mb-2 leading-tight">{thread.title}</h4>
+                  <h4 className="text-[14px] font-black text-slate-900 tracking-tight mb-1 leading-tight">{thread.title}</h4>
+                  <p className="text-[10px] font-black text-indigo-500 uppercase tracking-widest mb-3">{thread.context}</p>
                   <p className="text-[12px] font-medium text-slate-500 line-clamp-1 italic">"{thread.lastMessage}"</p>
                   
                   <div className="mt-5 flex items-center justify-between border-t border-slate-50 pt-4">

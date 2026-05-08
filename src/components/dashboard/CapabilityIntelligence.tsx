@@ -25,11 +25,14 @@ export const CapabilityIntelligence: React.FC<CapabilityIntelligenceProps> = ({
   const radius = 70;
   const angleStep = (Math.PI * 2) / data.length;
 
+  // Helper for rounding coordinates to avoid hydration mismatches
+  const round = (num: number) => Math.round(num * 1000) / 1000;
+
   // Calculate points for the polygon
   const points = data.map((d, i) => {
     const r = (d.value / 100) * radius;
-    const x = centerX + r * Math.sin(i * angleStep);
-    const y = centerY - r * Math.cos(i * angleStep);
+    const x = round(centerX + r * Math.sin(i * angleStep));
+    const y = round(centerY - r * Math.cos(i * angleStep));
     return `${x},${y}`;
   }).join(' ');
 
@@ -61,7 +64,7 @@ export const CapabilityIntelligence: React.FC<CapabilityIntelligenceProps> = ({
               key={idx}
               cx={centerX}
               cy={centerY}
-              r={level * radius}
+              r={round(level * radius)}
               fill="none"
               stroke="#F1F5F9"
               strokeWidth="0.5"
@@ -70,8 +73,8 @@ export const CapabilityIntelligence: React.FC<CapabilityIntelligenceProps> = ({
           
           {/* Axis Lines */}
           {data.map((_, i) => {
-            const x = centerX + radius * Math.sin(i * angleStep);
-            const y = centerY - radius * Math.cos(i * angleStep);
+            const x = round(centerX + radius * Math.sin(i * angleStep));
+            const y = round(centerY - radius * Math.cos(i * angleStep));
             return (
               <line
                 key={i}
@@ -88,8 +91,8 @@ export const CapabilityIntelligence: React.FC<CapabilityIntelligenceProps> = ({
           {/* Labels */}
           {data.map((d, i) => {
             const labelRadius = radius + 20;
-            const x = centerX + labelRadius * Math.sin(i * angleStep);
-            const y = centerY - labelRadius * Math.cos(i * angleStep);
+            const x = round(centerX + labelRadius * Math.sin(i * angleStep));
+            const y = round(centerY - labelRadius * Math.cos(i * angleStep));
             return (
               <text
                 key={i}
@@ -117,8 +120,8 @@ export const CapabilityIntelligence: React.FC<CapabilityIntelligenceProps> = ({
           {/* Points */}
           {data.map((d, i) => {
             const r = (d.value / 100) * radius;
-            const x = centerX + r * Math.sin(i * angleStep);
-            const y = centerY - r * Math.cos(i * angleStep);
+            const x = round(centerX + r * Math.sin(i * angleStep));
+            const y = round(centerY - r * Math.cos(i * angleStep));
             return (
               <circle
                 key={i}

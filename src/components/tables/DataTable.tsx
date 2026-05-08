@@ -30,6 +30,13 @@ interface DataTableProps {
   columns: Column[];
   onRowClick?: (row: any) => void;
   totalItems?: number;
+  isLoading?: boolean;
+  emptyMessage?: string;
+  recoveryAction?: {
+    label: string;
+    onClick: () => void;
+    icon?: any;
+  };
 }
 
 import { Select } from '../forms/Select';
@@ -40,7 +47,10 @@ export const DataTable: React.FC<DataTableProps> = ({
   data, 
   columns,
   onRowClick,
-  totalItems = 284 // Default mock for demo
+  totalItems = 284,
+  isLoading = false,
+  emptyMessage = "No records found in this registry.",
+  recoveryAction
 }) => {
   const [activeActions, setActiveActions] = useState<{ id: string, rect: DOMRect } | null>(null);
   const [pageSize, setPageSize] = useState('10');
@@ -93,41 +103,83 @@ export const DataTable: React.FC<DataTableProps> = ({
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-50/50">
-              {data.map((row, rowIdx) => (
-                <tr 
-                  key={rowIdx} 
-                  className="group/row transition-all hover:bg-slate-50/80 cursor-pointer"
-                >
-                  {columns.map((col, colIdx) => (
-                    <td key={colIdx} className="px-8 py-4" onClick={() => onRowClick?.(row)}>
-                      <div className="transition-transform group-hover/row:translate-x-0.5 duration-300">
-                        {col.render ? col.render(row[col.accessor], row) : (
-                          <span className="text-[13px] font-bold text-slate-600">{row[col.accessor]}</span>
-                        )}
+              {isLoading ? (
+                // Loading Skeletons
+                Array.from({ length: 5 }).map((_, idx) => (
+                  <tr key={`skeleton-${idx}`} className="animate-pulse">
+                    {columns.map((_, colIdx) => (
+                      <td key={colIdx} className="px-8 py-5">
+                         <div className="h-4 bg-slate-50 rounded-lg w-full" />
+                      </td>
+                    ))}
+                    <td className="px-8 py-5">
+                       <div className="h-8 w-8 bg-slate-50 rounded-lg ml-auto" />
+                    </td>
+                  </tr>
+                ))
+              ) : data.length > 0 ? (
+                data.map((row, rowIdx) => (
+                  <tr 
+                    key={rowIdx} 
+                    className="group/row transition-all hover:bg-slate-50/80 cursor-pointer"
+                  >
+                    {columns.map((col, colIdx) => (
+                      <td key={colIdx} className="px-8 py-4" onClick={() => onRowClick?.(row)}>
+                        <div className="transition-transform group-hover/row:translate-x-0.5 duration-300">
+                          {col.render ? col.render(row[col.accessor], row) : (
+                            <span className="text-[13px] font-bold text-slate-600">{row[col.accessor]}</span>
+                          )}
+                        </div>
+                      </td>
+                    ))}
+                    <td className="px-8 py-4 text-right relative">
+                      <div className="flex items-center justify-end gap-1 opacity-0 group-hover/row:opacity-100 transition-all translate-x-2 group-hover/row:translate-x-0">
+                         <button className="p-2 text-slate-400 hover:text-slate-900 hover:bg-white rounded-lg border border-transparent hover:border-slate-200 transition-all shadow-sm">
+                            <Eye className="w-4 h-4 stroke-[1.5px]" />
+                         </button>
+                         <div className="relative">
+                            <button 
+                              onClick={(e) => handleActionClick(e, row.id)}
+                              className={`p-2 rounded-lg border transition-all shadow-sm ${
+                                activeActions?.id === row.id 
+                                  ? 'bg-slate-900 text-white border-slate-900' 
+                                  : 'text-slate-400 hover:text-slate-900 hover:bg-white border-transparent hover:border-slate-200'
+                              }`}
+                            >
+                               <MoreHorizontal className="w-4 h-4 stroke-[1.5px]" />
+                            </button>
+                         </div>
                       </div>
                     </td>
-                  ))}
-                  <td className="px-8 py-4 text-right relative">
-                    <div className="flex items-center justify-end gap-1 opacity-0 group-hover/row:opacity-100 transition-all translate-x-2 group-hover/row:translate-x-0">
-                       <button className="p-2 text-slate-400 hover:text-slate-900 hover:bg-white rounded-lg border border-transparent hover:border-slate-200 transition-all shadow-sm">
-                          <Eye className="w-4 h-4 stroke-[1.5px]" />
-                       </button>
-                       <div className="relative">
+                  </tr>
+                ))
+              ) : (
+                // Empty State
+                <tr>
+                  <td colSpan={columns.length + 1} className="px-8 py-24 text-center">
+                     <div className="flex flex-col items-center justify-center space-y-6">
+                        <div className="w-20 h-20 rounded-[32px] bg-slate-50 flex items-center justify-center text-slate-200 border border-slate-100/50">
+                           <Search className="w-10 h-10 stroke-[1.5px]" />
+                        </div>
+                        <div className="space-y-2">
+                           <p className="text-[17px] font-black text-slate-900 tracking-tight">{emptyMessage}</p>
+                           <p className="text-[13px] font-medium text-slate-400 leading-relaxed max-w-[360px] mx-auto">
+                              Ensure your operational filters are accurate or initialize a new record to begin tracking organizational data.
+                           </p>
+                        </div>
+                        {recoveryAction && (
                           <button 
-                            onClick={(e) => handleActionClick(e, row.id)}
-                            className={`p-2 rounded-lg border transition-all shadow-sm ${
-                              activeActions?.id === row.id 
-                                ? 'bg-slate-900 text-white border-slate-900' 
-                                : 'text-slate-400 hover:text-slate-900 hover:bg-white border-transparent hover:border-slate-200'
-                            }`}
+                            onClick={recoveryAction.onClick}
+                            className="bg-slate-900 hover:bg-black text-white px-8 h-[44px] rounded-xl text-[11px] font-black uppercase tracking-wider transition-all shadow-lg shadow-slate-900/10 flex items-center gap-2"
                           >
-                             <MoreHorizontal className="w-4 h-4 stroke-[1.5px]" />
+                             {recoveryAction.icon && <recoveryAction.icon className="w-4 h-4 stroke-[1.5px]" />}
+                             {recoveryAction.label}
                           </button>
-                       </div>
-                    </div>
+                        )}
+                     </div>
                   </td>
                 </tr>
-              ))}
+              )}
             </tbody>
           </table>
         </div>

@@ -49,12 +49,12 @@ export default function AnalyticsPage() {
           </div>
 
           <div className="flex items-center gap-3">
-            <button className="bg-white border border-slate-200 text-slate-600 hover:border-slate-300 px-6 py-3 rounded-xl text-[11px] font-black uppercase tracking-wider transition-all">
-              <RefreshCcw className="w-4 h-4" />
+            <button className="bg-white border border-slate-200 text-slate-600 hover:border-slate-300 px-6 h-[44px] rounded-xl text-[11px] font-black uppercase tracking-wider transition-all shadow-sm flex items-center gap-2 whitespace-nowrap">
+              <RefreshCcw className="w-[18px] h-[18px] stroke-[1.5px]" />
               Refresh
             </button>
-            <button className="bg-slate-900 hover:bg-black text-white flex items-center gap-2.5 px-6 py-3 rounded-xl text-[11px] font-black uppercase tracking-wider transition-all shadow-md">
-              <Download className="w-4 h-4" />
+            <button className="bg-slate-900 hover:bg-black text-white flex items-center gap-2 px-6 h-[44px] rounded-xl text-[11px] font-black uppercase tracking-wider transition-all shadow-md whitespace-nowrap">
+              <Download className="w-[18px] h-[18px] stroke-[1.5px]" />
               Generate Report
             </button>
           </div>

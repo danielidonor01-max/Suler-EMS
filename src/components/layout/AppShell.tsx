@@ -7,6 +7,23 @@ import Header from './Header';
 export default function AppShell({ children }: { children: React.ReactNode }) {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
+  // Responsive default state: collapse on small screens
+  React.useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth < 1024) {
+        setIsSidebarCollapsed(true);
+      } else {
+        setIsSidebarCollapsed(false);
+      }
+    };
+    
+    // Initial check
+    handleResize();
+    
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   return (
     <div className="flex h-screen bg-[#F8FAFC] overflow-hidden">
       {/* Sidebar: Anchored Operational Rail */}
@@ -17,7 +34,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
 
       <div className="flex-1 flex flex-col min-w-0 h-screen">
         {/* Header: Anchored Command Layer */}
-        <Header />
+        <Header onToggleSidebar={() => setIsSidebarCollapsed(!isSidebarCollapsed)} />
 
         {/* Main Workspace: Anchored Content Canvas */}
         <main className="flex-1 overflow-y-auto custom-scrollbar bg-[#F8FAFC]">

@@ -13,11 +13,17 @@ import {
   Sparkles,
   MapPin,
   ShieldCheck,
-  MoreVertical,
+  TrendingUp,
+  BrainCircuit,
+  MessageSquare,
+  Settings,
+  PanelLeftClose,
+  PanelLeft,
+  Layout,
   Mail,
-  Phone,
-  Layout
+  Phone
 } from 'lucide-react';
+import { Target } from 'lucide-react';
 import { DataTable } from "@/components/tables/DataTable";
 import { MetricCard } from '@/components/dashboard/MetricCard';
 import { Drawer } from '@/components/common/Drawer';
