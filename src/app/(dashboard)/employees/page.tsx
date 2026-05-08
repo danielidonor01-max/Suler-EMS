@@ -22,6 +22,7 @@ import {
   Clock,
   History,
   Layout,
+<<<<<<< Updated upstream
   Target
 } from 'lucide-react';
 
@@ -37,6 +38,72 @@ export default function EmployeesPage() {
   const [loading, setLoading] = useState(true);
   const [selectedEmployee, setSelectedEmployee] = useState<EmployeeResponseDTO | null>(null);
   const [isOnboardingOpen, setIsOnboardingOpen] = useState(false);
+=======
+  Target,
+  AlertTriangle,
+  Edit3,
+  UserCog,
+  UserMinus
+} from 'lucide-react';
+
+import { useWorkforce, Employee } from "@/context/WorkforceContext";
+import { InviteUserModal } from "@/components/modals/InviteUserModal";
+import { EditEmployeeModal, SuspendAccessModal, ModifyRoleModal } from "@/components/modals/WorkforceModals";
+import { ForensicTimelineDrawer } from "@/components/drawers/ForensicTimelineDrawer";
+import { ConflictResolutionPortal } from "@/components/common/ConflictResolutionPortal";
+import { useMutation } from "@/hooks/useMutation";
+
+export default function EmployeesPage() {
+  const { employees, updateEmployee, undoMutation, canUndo } = useWorkforce();
+  const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
+  const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
+  
+  // Governance Interaction State
+  const [activeGovernance, setActiveGovernance] = useState<{ 
+    type: 'EDIT' | 'ROLE' | 'SUSPEND' | 'AUDIT' | null, 
+    employee: Employee | null 
+  }>({ type: null, employee: null });
+  
+  // Governance Row Actions
+  const rowActions = [
+    { 
+      label: 'Edit Identity', 
+      icon: Edit3, 
+      onClick: (emp: Employee) => setActiveGovernance({ type: 'EDIT', employee: emp }) 
+    },
+    { 
+      label: 'Modify Role', 
+      icon: UserCog, 
+      onClick: (emp: Employee) => setActiveGovernance({ type: 'ROLE', employee: emp }) 
+    },
+    { 
+      label: 'Audit Trail', 
+      icon: History, 
+      onClick: (emp: Employee) => setActiveGovernance({ type: 'AUDIT', employee: emp }) 
+    },
+    { 
+      label: 'Suspend Access', 
+      icon: UserMinus, 
+      onClick: (emp: Employee) => setActiveGovernance({ type: 'SUSPEND', employee: emp }), 
+      variant: 'danger' as const 
+    },
+  ];
+
+  // Conflict State
+  const [conflictData, setConflictData] = useState<{
+    isOpen: boolean;
+    entityName: string;
+    localState: any;
+    serverState: any;
+    id: string;
+  }>({
+    isOpen: false,
+    entityName: '',
+    localState: null,
+    serverState: null,
+    id: ''
+  });
+>>>>>>> Stashed changes
 
   // Form State for Onboarding
   const [hub, setHub] = useState('lagos');
@@ -161,6 +228,7 @@ export default function EmployeesPage() {
         description="Comprehensive record of organizational entities, departmental hubs, and operational designations."
         data={employees}
         columns={columns}
+        rowActions={rowActions}
         onRowClick={(row) => setSelectedEmployee(row)}
       />
 
@@ -184,6 +252,7 @@ export default function EmployeesPage() {
               </div>
            </div>
 
+<<<<<<< Updated upstream
            <div className="grid grid-cols-2 gap-8">
               <Select 
                 label="Operational Hub"
@@ -228,6 +297,59 @@ export default function EmployeesPage() {
            </div>
         </div>
       </Modal>
+=======
+      {/* Governance command Surface Modals */}
+      {activeGovernance.type === 'EDIT' && activeGovernance.employee && (
+        <EditEmployeeModal 
+          isOpen={true}
+          onClose={() => setActiveGovernance({ type: null, employee: null })}
+          employee={activeGovernance.employee}
+        />
+      )}
+
+      {activeGovernance.type === 'ROLE' && activeGovernance.employee && (
+        <ModifyRoleModal 
+          isOpen={true}
+          onClose={() => setActiveGovernance({ type: null, employee: null })}
+          employee={activeGovernance.employee}
+        />
+      )}
+
+      {activeGovernance.type === 'SUSPEND' && activeGovernance.employee && (
+        <SuspendAccessModal 
+          isOpen={true}
+          onClose={() => setActiveGovernance({ type: null, employee: null })}
+          employee={activeGovernance.employee}
+        />
+      )}
+
+      {activeGovernance.type === 'AUDIT' && activeGovernance.employee && (
+        <ForensicTimelineDrawer 
+          isOpen={true}
+          onClose={() => setActiveGovernance({ type: null, employee: null })}
+          employee={activeGovernance.employee}
+        />
+      )}
+
+      {/* Governance Conflict Resolution Portal */}
+      <ConflictResolutionPortal 
+        isOpen={conflictData.isOpen}
+        onClose={() => setConflictData(prev => ({ ...prev, isOpen: false }))}
+        entityName={conflictData.entityName}
+        localState={conflictData.localState}
+        serverState={conflictData.serverState}
+        onResolve={(action) => {
+          if (action === 'RELOAD') {
+            window.location.reload();
+          } else if (action === 'OVERWRITE') {
+            updateEmployee(conflictData.id, { ...conflictData.localState, _v: conflictData.serverState._v });
+            setConflictData(prev => ({ ...prev, isOpen: false }));
+          } else {
+            setConflictData(prev => ({ ...prev, isOpen: false }));
+          }
+        }}
+      />
+>>>>>>> Stashed changes
 
       {/* Contextual Intelligence Surface (Drawer) */}
       <Drawer 

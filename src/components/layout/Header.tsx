@@ -41,6 +41,7 @@ const Header = () => {
         </div>
       </div>
 
+<<<<<<< Updated upstream
       {/* Center: System Intelligence Indicators (Thinner, Quieter) */}
       <div className="hidden lg:flex items-center gap-8 border-x border-slate-100 px-10 h-full">
         <div className="flex items-center gap-2">
@@ -57,6 +58,26 @@ const Header = () => {
         <button className="hidden md:flex items-center gap-2 px-5 py-2.5 bg-slate-900 hover:bg-black text-white rounded-xl text-[11px] font-black uppercase tracking-wider transition-all shadow-sm">
           <PlusCircle className="w-4 h-4" />
           Quick Action
+=======
+      {/* Right: Quick Actions & Notifications */}
+      <div className="flex items-center gap-4 flex-1 justify-end">
+        <div className="hidden md:flex items-center gap-3 mr-4 py-1.5 px-3 bg-slate-50 border border-slate-100 rounded-xl">
+           <div className="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-pulse" />
+           <span className="text-[10px] font-black text-indigo-500 uppercase tracking-widest leading-none">
+             {userRole.replace('_', ' ')}
+           </span>
+        </div>
+
+        <button 
+          onClick={() => setIsCommandModalOpen(true)}
+          className="w-10 h-10 flex items-center justify-center rounded-xl text-slate-400 hover:text-slate-900 hover:bg-slate-50 transition-all group relative"
+          title="Quick Action (Ctrl+K)"
+        >
+          <PlusCircle className="w-[18px] h-[18px] stroke-[1.5px]" />
+          <div className="absolute -bottom-12 left-1/2 -translate-x-1/2 px-2 py-1 bg-slate-900 text-white text-[9px] font-black uppercase tracking-widest rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none shadow-xl">
+            Quick Actions
+          </div>
+>>>>>>> Stashed changes
         </button>
 
         <div className="flex items-center gap-1.5">
