@@ -99,23 +99,43 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle }) => {
       </div>
 
       {/* Utility Rail: Executive Minimalism */}
-      <div className={`px-4 pb-8 space-y-4`}>
-        <div className={`flex items-center gap-2 ${isCollapsed ? 'flex-col' : 'justify-between'}`}>
-          <Link
-            href="/settings"
-            className={`flex items-center justify-center w-10 h-10 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition-all ${isCollapsed ? '' : 'flex-1 border border-transparent hover:border-slate-700'}`}
-          >
-            <Settings className="w-[18px] h-[18px] stroke-[1.5px]" />
-            {!isCollapsed && <span className="ml-3 text-[12px] font-bold tracking-tight">Settings</span>}
-          </Link>
+      <div className={`px-4 pb-8 space-y-2`}>
+        <Link
+          href="/settings"
+          className={`flex items-center gap-3.5 px-4 py-2.5 rounded-xl transition-all duration-200 ${
+            pathname === '/settings' 
+              ? 'bg-indigo-600 text-white shadow-premium' 
+              : 'text-slate-400 hover:bg-slate-800 hover:text-white'
+          } ${isCollapsed ? 'justify-center h-[44px] w-[44px] mx-auto px-0' : ''}`}
+        >
+          <Settings className={`w-[18px] h-[18px] stroke-[1.5px] ${pathname === '/settings' ? 'text-white' : 'text-slate-500'}`} />
+          {!isCollapsed && (
+            <span className="text-[13px] font-bold tracking-tight">
+              Settings
+            </span>
+          )}
+          {isCollapsed && (
+            <div className="absolute left-full ml-4 px-3 py-2 bg-slate-950 text-white text-[10px] font-bold rounded-lg opacity-0 group-hover:opacity-100 pointer-events-none transition-all z-[100] whitespace-nowrap shadow-premium">
+              Settings
+            </div>
+          )}
+        </Link>
 
-          <button
-            className={`flex items-center justify-center w-10 h-10 rounded-xl text-slate-400 hover:text-rose-400 hover:bg-rose-900/20 transition-all ${isCollapsed ? '' : 'flex-1 border border-transparent hover:border-rose-900/30'}`}
-          >
-            <LogOut className="w-[18px] h-[18px] stroke-[1.5px]" />
-            {!isCollapsed && <span className="ml-3 text-[12px] font-bold tracking-tight">Sign Out</span>}
-          </button>
-        </div>
+        <button
+          className={`flex items-center gap-3.5 px-4 py-2.5 rounded-xl transition-all duration-200 text-slate-400 hover:bg-rose-900/20 hover:text-rose-400 ${isCollapsed ? 'justify-center h-[44px] w-[44px] mx-auto px-0' : ''}`}
+        >
+          <LogOut className="w-[18px] h-[18px] stroke-[1.5px] text-slate-500" />
+          {!isCollapsed && (
+            <span className="text-[13px] font-bold tracking-tight">
+              Sign Out
+            </span>
+          )}
+          {isCollapsed && (
+            <div className="absolute left-full ml-4 px-3 py-2 bg-slate-950 text-white text-[10px] font-bold rounded-lg opacity-0 group-hover:opacity-100 pointer-events-none transition-all z-[100] whitespace-nowrap shadow-premium">
+              Sign Out
+            </div>
+          )}
+        </button>
       </div>
 
       {/* Edge-Mounted Collapse Trigger */}

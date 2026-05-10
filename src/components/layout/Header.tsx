@@ -23,7 +23,7 @@ const Header = ({ onToggleSidebar }: { onToggleSidebar: () => void }) => {
   const [isCommandModalOpen, setIsCommandModalOpen] = useState(false);
   const { presenceCount } = useActivity();
   const { userRole } = useAccess();
-  const { currentHub } = useOrganization();
+  const { currentHub, hubs } = useOrganization();
 
   return (
     <header className="h-[72px] bg-white border-b border-slate-200 flex items-center justify-between px-4 md:px-8 sticky top-0 z-40">
@@ -37,28 +37,29 @@ const Header = ({ onToggleSidebar }: { onToggleSidebar: () => void }) => {
           <Menu className="w-5 h-5" />
         </button>
 
-        <div className="hidden sm:flex items-center gap-4 group cursor-pointer border-r border-slate-100 pr-8">
-          <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center text-white text-[11px] font-bold shadow-sm group-hover:scale-105 transition-transform">
+        <div className="hidden sm:flex items-center gap-4 border-r border-slate-100 pr-8">
+          <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center text-white text-[11px] font-bold shadow-sm">
              S
           </div>
           <div className="flex flex-col">
             <span className="text-[10px] font-bold text-indigo-400 uppercase tracking-[0.2em] leading-none mb-1">Organization</span>
             <div className="flex items-center gap-1.5">
               <span className="text-[13px] font-bold text-slate-900 tracking-tight leading-none">Suler Global</span>
-              <ChevronDown className="w-3.5 h-3.5 text-slate-400 group-hover:text-slate-900 transition-colors" />
             </div>
           </div>
         </div>
 
-        <div className="hidden lg:flex items-center gap-3 group cursor-pointer">
+        <div className={`hidden lg:flex items-center gap-3 min-w-[180px] ${hubs.length > 1 ? 'cursor-pointer group' : ''}`}>
           <div className="w-7 h-7 rounded-lg bg-slate-100 flex items-center justify-center text-slate-900 text-[10px] font-bold group-hover:bg-slate-200 transition-colors">
             {currentHub[0]}
           </div>
           <div className="flex flex-col">
             <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest leading-none mb-1">Office Hub</span>
             <div className="flex items-center gap-1">
-              <span className="text-[12px] font-bold text-slate-600 tracking-tight leading-none">{currentHub}</span>
-              <ChevronDown className="w-3.5 h-3.5 text-slate-300 group-hover:text-slate-600 transition-colors" />
+              <span className="text-[12px] font-bold text-slate-600 tracking-tight leading-none whitespace-nowrap">{currentHub}</span>
+              {hubs.length > 1 && (
+                <ChevronDown className="w-3.5 h-3.5 text-slate-300 group-hover:text-slate-600 transition-colors" />
+              )}
             </div>
           </div>
         </div>
