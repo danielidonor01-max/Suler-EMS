@@ -26,25 +26,39 @@ import {
   AlertTriangle,
   Edit3,
   UserCog,
-  UserMinus
+  UserMinus,
+  Zap
 } from 'lucide-react';
 
-import { useWorkforce, Employee } from "@/context/WorkforceContext";
-import { EditEmployeeModal, SuspendAccessModal, ModifyRoleModal } from "@/components/modals/WorkforceModals";
+import { 
+  EditEmployeeModal, 
+  SuspendAccessModal, 
+  ModifyRoleModal,
+  OnboardMemberModal,
+  PromoteEmployeeModal
+} from "@/components/modals/WorkforceModals";
+import { OrgChart } from "@/components/organization/OrgChart";
 import { ForensicTimelineDrawer } from "@/components/drawers/ForensicTimelineDrawer";
-import { ConflictResolutionPortal } from "@/components/common/ConflictResolutionPortal";
-import { Select } from "@/components/forms/Select";
+import { useWorkforce, Employee } from "@/context/WorkforceContext";
+import { useOrganization } from "@/context/OrganizationContext";
 
 export default function EmployeesPage() {
-  const { employees, updateEmployee } = useWorkforce();
+  const { employees, metrics } = useWorkforce();
+  const { currentHub } = useOrganization();
   const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
-  const [isOnboardingOpen, setIsOnboardingOpen] = useState(false);
+  const [viewMode, setViewMode] = useState<'REGISTRY' | 'CHART'>('REGISTRY');
+
+  const filteredEmployees = employees.filter(emp => 
+    currentHub === 'All Regions' || emp.hub === currentHub
+  );
   
   // Governance Interaction State
   const [activeGovernance, setActiveGovernance] = useState<{ 
-    type: 'EDIT' | 'ROLE' | 'SUSPEND' | 'AUDIT' | null, 
+    type: 'EDIT' | 'ROLE' | 'SUSPEND' | 'AUDIT' | 'PROMOTE' | null, 
     employee: Employee | null 
   }>({ type: null, employee: null });
+
+  const [isOnboardingOpen, setIsOnboardingOpen] = useState(false);
 
   // Onboarding Form State
   const [hub, setHub] = useState('lagos');
@@ -66,6 +80,11 @@ export default function EmployeesPage() {
       label: 'Audit Trail', 
       icon: History, 
       onClick: (emp: Employee) => setActiveGovernance({ type: 'AUDIT', employee: emp }) 
+    },
+    { 
+      label: 'Promote Member', 
+      icon: Zap, 
+      onClick: (emp: Employee) => setActiveGovernance({ type: 'PROMOTE', employee: emp }) 
     },
     { 
       label: 'Suspend Access', 
@@ -92,8 +111,8 @@ export default function EmployeesPage() {
       )
     },
     {
-      header: "Department",
-      accessor: "office",
+      header: "Hub / Location",
+      accessor: "hub",
       render: (val: string) => (
         <div className="flex items-center gap-2">
           <div className="w-1.5 h-1.5 rounded-full bg-slate-200" />
@@ -138,18 +157,25 @@ export default function EmployeesPage() {
           </div>
           <div className="space-y-1">
             <h1 className="text-4xl font-bold text-slate-900 tracking-tighter leading-none">
-              Workforce Registry
+              {viewMode === 'REGISTRY' ? 'Workforce Registry' : 'Organization Chart'}
             </h1>
             <p className="text-[13px] font-medium text-slate-400 leading-relaxed max-w-[480px]">
-              Advanced executive control over organizational staff entities, operational designations, and governance protocols.
+              {viewMode === 'REGISTRY' 
+                ? 'Advanced executive control over organizational staff entities, operational designations, and governance protocols.'
+                : 'Visual structural hierarchy of Suler Global, mapping reporting lines and leadership clusters.'}
             </p>
           </div>
         </div>
         
         <div className="flex items-center gap-3">
-           <button className="bg-white border border-slate-200 text-slate-600 hover:border-slate-300 px-6 h-[44px] rounded-xl text-[11px] font-bold uppercase tracking-wider transition-all shadow-sm flex items-center gap-2">
+           <button 
+             onClick={() => setViewMode(viewMode === 'REGISTRY' ? 'CHART' : 'REGISTRY')}
+             className={`px-6 h-[44px] rounded-xl text-[11px] font-bold uppercase tracking-wider transition-all shadow-sm flex items-center gap-2 border ${
+               viewMode === 'CHART' ? 'bg-slate-950 text-white border-slate-950' : 'bg-white border-slate-200 text-slate-600 hover:border-slate-300'
+             }`}
+           >
               <Layout className="w-[18px] h-[18px] stroke-[1.5px]" />
-              View Org Chart
+              {viewMode === 'REGISTRY' ? 'Org Chart' : 'Registry View'}
            </button>
            <button 
              onClick={() => setIsOnboardingOpen(true)}
@@ -163,90 +189,31 @@ export default function EmployeesPage() {
 
       {/* Strategic Intelligence Layer */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <MetricCard label="Total Entities" value="1,284" trend={{ direction: 'up', value: '12%' }} icon={Users} variant="tonal-info" />
-        <MetricCard label="Active Status" value="1,156" trend={{ direction: 'neutral', value: 'LIVE' }} icon={UserCheck} variant="tonal-success" />
-        <MetricCard label="Role Readiness" value="42" variant="tonal-info" icon={Briefcase} />
-        <MetricCard label="System Sync" value="Nominal" trend={{ direction: 'up', value: 'QUEUE' }} icon={Activity} variant="tonal-success" />
+        <MetricCard label="Total Workforce" value={metrics.totalEmployees.toString()} trend={{ direction: 'up', value: '12%' }} icon={Users} variant="tonal-info" />
+        <MetricCard label="Active Status" value={metrics.activeCount.toString()} trend={{ direction: 'neutral', value: 'LIVE' }} icon={UserCheck} variant="tonal-success" />
+        <MetricCard label="Operational Hubs" value="3" variant="tonal-info" icon={Briefcase} />
+        <MetricCard label="New Hires (Month)" value={metrics.newHiresThisMonth.toString()} trend={{ direction: 'up', value: 'QUEUE' }} icon={Activity} variant="tonal-success" />
       </div>
 
-      {/* Operational Registry Stream */}
-      <DataTable 
-        title="Principal Staff Registry"
-        description="Comprehensive record of organizational entities, departmental hubs, and operational designations."
-        data={employees}
-        columns={columns}
-        rowActions={rowActions}
-        onRowClick={(row) => setSelectedEmployee(row)}
-      />
+      {viewMode === 'REGISTRY' ? (
+        <DataTable 
+          title="Principal Staff Registry"
+          description="Comprehensive record of organizational entities, departmental hubs, and operational designations."
+          data={filteredEmployees}
+          columns={columns}
+          rowActions={rowActions}
+          onRowClick={(row) => setSelectedEmployee(row)}
+        />
+      ) : (
+        <OrgChart />
+      )}
 
-      {/* Onboarding Workflow - Centered Modal */}
-      <Modal 
+      {/* Modals & Command Surfaces */}
+      <OnboardMemberModal 
         isOpen={isOnboardingOpen} 
         onClose={() => setIsOnboardingOpen(false)}
-      >
-        <div className="modal-content-padding space-y-8 animate-in">
-           <div className="space-y-1">
-              <h3 className="text-xl font-bold text-slate-900 tracking-tight">Onboard Principal Staff</h3>
-              <p className="text-[13px] font-medium text-slate-400">Identity & Access Governance</p>
-           </div>
+      />
 
-           <div className="grid grid-cols-2 gap-8">
-              <div className="space-y-2.5">
-                 <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Full Legal Name</label>
-                 <input type="text" className="w-full bg-slate-50 border border-slate-100 focus:border-slate-300 focus:bg-white rounded-xl p-4 h-[48px] text-[13px] font-bold outline-none transition-all" placeholder="e.g. John Doe" />
-              </div>
-              <div className="space-y-2.5">
-                 <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Corporate Identity (Email)</label>
-                 <input type="email" className="w-full bg-slate-50 border border-slate-100 focus:border-slate-300 focus:bg-white rounded-xl p-4 h-[48px] text-[13px] font-bold outline-none transition-all" placeholder="j.doe@sulerglobal.com" />
-              </div>
-           </div>
-
-           <div className="grid grid-cols-2 gap-8">
-              <Select 
-                label="Operational Hub"
-                value={hub}
-                onChange={setHub}
-                options={[
-                  { label: 'Lagos HQ', value: 'lagos' },
-                  { label: 'Abuja Operations', value: 'abuja' },
-                  { label: 'Port Harcourt Hub', value: 'ph' }
-                ]}
-              />
-              <Select 
-                label="Principal Designation"
-                value={designation}
-                onChange={setDesignation}
-                options={[
-                  { label: 'Senior Engineer', value: 'engineer' },
-                  { label: 'Operational Lead', value: 'lead' },
-                  { label: 'Finance Controller', value: 'finance' }
-                ]}
-              />
-           </div>
-
-           <div className="p-6 bg-slate-50 rounded-[24px] border border-slate-100 flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                 <div className="w-10 h-10 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-indigo-600 shadow-sm">
-                    <Sparkles className="w-5 h-5 stroke-[1.5px]" />
-                 </div>
-                 <div className="space-y-1">
-                    <p className="text-[12px] font-bold text-slate-900 leading-none">Automated Security Provisioning</p>
-                    <p className="text-[10px] font-bold text-slate-400 leading-none">Standard identity protocols will be applied immediately.</p>
-                 </div>
-              </div>
-              <div className="flex items-center gap-2 px-3 py-1 bg-emerald-50 text-emerald-600 rounded-lg border border-emerald-100 text-[9px] font-bold uppercase tracking-widest">
-                 System Active
-              </div>
-           </div>
-
-           <div className="flex items-center justify-end gap-4 pt-4 border-t border-slate-100">
-              <button onClick={() => setIsOnboardingOpen(false)} className="px-8 h-[44px] rounded-xl text-[11px] font-bold uppercase tracking-wider text-slate-400 hover:text-slate-900 transition-all">Cancel</button>
-              <button className="bg-slate-950 hover:bg-slate-900 text-white px-10 h-[44px] rounded-xl text-[11px] font-bold uppercase tracking-wider transition-all shadow-lg shadow-slate-950/10">Initialize Member</button>
-           </div>
-        </div>
-      </Modal>
-
-      {/* Governance command Surface Modals */}
       {activeGovernance.type === 'EDIT' && activeGovernance.employee && (
         <EditEmployeeModal 
           isOpen={true}
@@ -257,6 +224,14 @@ export default function EmployeesPage() {
 
       {activeGovernance.type === 'ROLE' && activeGovernance.employee && (
         <ModifyRoleModal 
+          isOpen={true}
+          onClose={() => setActiveGovernance({ type: null, employee: null })}
+          employee={activeGovernance.employee}
+        />
+      )}
+
+      {activeGovernance.type === 'PROMOTE' && activeGovernance.employee && (
+        <PromoteEmployeeModal 
           isOpen={true}
           onClose={() => setActiveGovernance({ type: null, employee: null })}
           employee={activeGovernance.employee}
@@ -310,7 +285,7 @@ export default function EmployeesPage() {
               </div>
               <div className="space-y-1.5">
                  <span className="text-[9px] font-bold text-slate-300 uppercase tracking-widest">Operational Hub</span>
-                 <p className="text-[14px] font-bold text-slate-900">{selectedEmployee?.office}</p>
+                 <p className="text-[14px] font-bold text-slate-900">{selectedEmployee?.hub}</p>
               </div>
            </div>
 

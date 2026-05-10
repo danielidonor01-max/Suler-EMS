@@ -10,6 +10,7 @@ export interface Hub {
   status: 'ACTIVE' | 'INITIALIZING';
   departments: number;
   staff: number;
+  manager?: string;
   _v: number;
 }
 
@@ -27,9 +28,13 @@ interface OrganizationContextType {
   hubs: Hub[];
   departments: Department[];
   currentHub: string;
-  setCurrentHub: (name: string) => void;
+  switchHub: (id: string) => void;
   addHub: (hub: Omit<Hub, 'id' | 'status' | 'departments' | 'staff' | '_v'>) => void;
+  updateHub: (id: string, updates: Partial<Hub>) => void;
+  deleteHub: (id: string) => void;
   addDepartment: (dept: Omit<Department, 'id' | 'staff' | '_v'>) => void;
+  updateDepartment: (id: string, updates: Partial<Department>) => void;
+  deleteDepartment: (id: string) => void;
   undoMutation: () => void;
   canUndo: boolean;
 }
@@ -37,6 +42,7 @@ interface OrganizationContextType {
 const OrganizationContext = createContext<OrganizationContextType | undefined>(undefined);
 
 const SEEDED_HUBS: Hub[] = [
+  { id: 'HUB-00', name: 'All Regions', geography: 'Global Organization', category: 'Enterprise View', status: 'ACTIVE', departments: 25, staff: 1280, _v: 1 },
   { id: 'HUB-01', name: 'Lagos HQ', geography: 'Nigeria (South-West)', category: 'Primary HQ', status: 'ACTIVE', departments: 12, staff: 840, _v: 1 },
   { id: 'HUB-02', name: 'Abuja Operations', geography: 'Nigeria (North-Central)', category: 'Regional Operations', status: 'ACTIVE', departments: 8, staff: 320, _v: 1 },
   { id: 'HUB-03', name: 'Benin Branch', geography: 'Nigeria (South-South)', category: 'Satellite Branch', status: 'ACTIVE', departments: 5, staff: 120, _v: 1 },
@@ -93,9 +99,31 @@ export const OrganizationProvider: React.FC<{ children: ReactNode }> = ({ childr
     return () => window.removeEventListener('storage', handleStorageChange);
   }, []);
 
-  const setCurrentHub = (name: string) => {
-    setCurrentHubState(name);
-    localStorage.setItem('suler_active_hub', name);
+  const switchHub = (id: string) => {
+    const hub = hubs.find(h => h.id === id);
+    if (hub) {
+      setCurrentHubState(hub.name);
+      localStorage.setItem('suler_active_hub', hub.name);
+      
+      pushActivity({
+        type: 'SYSTEM',
+        label: 'Context Switched',
+        message: `Operational focus shifted to [${hub.name}]. UI context synchronized.`,
+        author: userRole,
+        status: 'SUCCESS'
+      } as any);
+    } else if (id === 'HUB-00') {
+      setCurrentHubState('All Regions');
+      localStorage.setItem('suler_active_hub', 'All Regions');
+      
+      pushActivity({
+        type: 'SYSTEM',
+        label: 'Global Context Activated',
+        message: 'Enterprise-wide operational view enabled. All regional nodes visible.',
+        author: userRole,
+        status: 'SUCCESS'
+      } as any);
+    }
   };
 
   const syncState = React.useCallback((nextHubs: Hub[], nextDepts: Department[]) => {
@@ -170,14 +198,80 @@ export const OrganizationProvider: React.FC<{ children: ReactNode }> = ({ childr
     } as any);
   }, [hubs, departments, syncState, userRole, pushActivity]);
 
+  const updateHub = React.useCallback((id: string, updates: Partial<Hub>) => {
+    const nextHubs = hubs.map(h => h.id === id ? { ...h, ...updates, _v: h._v + 1 } : h);
+    syncState(nextHubs, departments);
+
+    pushActivity({
+      type: 'GOVERNANCE',
+      label: 'Hub Identity Mutated',
+      message: `Configuration for [${hubs.find(h => h.id === id)?.name}] synchronized by Administrator.`,
+      author: userRole,
+      status: 'SUCCESS'
+    } as any);
+  }, [hubs, departments, syncState, userRole, pushActivity]);
+
+  const deleteHub = React.useCallback((id: string) => {
+    const hubToDelete = hubs.find(h => h.id === id);
+    if (!hubToDelete) return;
+
+    const nextHubs = hubs.filter(h => h.id !== id);
+    const nextDepts = departments.filter(d => d.parentHub !== hubToDelete.name);
+    
+    syncState(nextHubs, nextDepts);
+
+    pushActivity({
+      type: 'GOVERNANCE',
+      label: 'Regional Hub Dissolved',
+      message: `Operational node [${hubToDelete.name}] has been decommissioned. Associated departments archived.`,
+      author: userRole,
+      status: 'SUCCESS'
+    } as any);
+  }, [hubs, departments, syncState, userRole, pushActivity]);
+
+  const updateDepartment = React.useCallback((id: string, updates: Partial<Department>) => {
+    const nextDepts = departments.map(d => d.id === id ? { ...d, ...updates, _v: d._v + 1 } : d);
+    syncState(hubs, nextDepts);
+
+    pushActivity({
+      type: 'GOVERNANCE',
+      label: 'Departmental Mutation',
+      message: `Operational parameters for [${departments.find(d => d.id === id)?.name}] updated.`,
+      author: userRole,
+      status: 'SUCCESS'
+    } as any);
+  }, [hubs, departments, syncState, userRole, pushActivity]);
+
+  const deleteDepartment = React.useCallback((id: string) => {
+    const deptToDelete = departments.find(d => d.id === id);
+    if (!deptToDelete) return;
+
+    const nextDepts = departments.filter(d => d.id !== id);
+    const nextHubs = hubs.map(h => h.name === deptToDelete.parentHub ? { ...h, departments: Math.max(0, h.departments - 1), _v: h._v + 1 } : h);
+    
+    syncState(nextHubs, nextDepts);
+
+    pushActivity({
+      type: 'GOVERNANCE',
+      label: 'Department Dissolved',
+      message: `Operational unit [${deptToDelete.name}] removed from organizational structure.`,
+      author: userRole,
+      status: 'SUCCESS'
+    } as any);
+  }, [hubs, departments, syncState, userRole, pushActivity]);
+
   return (
     <OrganizationContext.Provider value={{ 
       hubs, 
       departments, 
       currentHub, 
-      setCurrentHub, 
+      switchHub, 
       addHub, 
+      updateHub,
+      deleteHub,
       addDepartment, 
+      updateDepartment,
+      deleteDepartment,
       undoMutation,
       canUndo: history.length > 0
     }}>

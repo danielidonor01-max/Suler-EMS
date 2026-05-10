@@ -28,6 +28,7 @@ export interface RowAction {
   icon: any;
   onClick: (row: any) => void;
   variant?: 'default' | 'danger';
+  hidden?: boolean | ((row: any) => boolean);
 }
 
 interface DataTableProps {
@@ -183,21 +184,26 @@ export const DataTable: React.FC<DataTableProps> = ({
                 })
               }}
             >
-               {rowActions ? rowActions.map((action, aIdx) => (
-                 <React.Fragment key={aIdx}>
-                   {action.variant === 'danger' && aIdx > 0 && <div className="h-px bg-slate-100 my-1.5 mx-2" />}
-                   <ActionMenuItem 
-                     icon={action.icon} 
-                     label={action.label} 
-                     variant={action.variant}
-                     onClick={(e: React.MouseEvent) => {
-                       e.stopPropagation();
-                       action.onClick(activeActions.row);
-                       setActiveActions(null);
-                     }}
-                   />
-                 </React.Fragment>
-               )) : (
+               {rowActions ? rowActions.map((action, aIdx) => {
+                 const isHidden = typeof action.hidden === 'function' ? action.hidden(activeActions.row) : action.hidden;
+                 if (isHidden) return null;
+                 
+                 return (
+                   <React.Fragment key={aIdx}>
+                     {action.variant === 'danger' && aIdx > 0 && <div className="h-px bg-slate-100 my-1.5 mx-2" />}
+                     <ActionMenuItem 
+                       icon={action.icon} 
+                       label={action.label} 
+                       variant={action.variant}
+                       onClick={(e: React.MouseEvent) => {
+                         e.stopPropagation();
+                         action.onClick(activeActions.row);
+                         setActiveActions(null);
+                       }}
+                     />
+                   </React.Fragment>
+                 );
+               }) : (
                  <>
                    <ActionMenuItem icon={Edit3} label="Edit Identity" />
                    <ActionMenuItem icon={UserCog} label="Modify Role" />

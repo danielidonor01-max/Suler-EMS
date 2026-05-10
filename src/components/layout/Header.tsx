@@ -23,7 +23,7 @@ const Header = ({ onToggleSidebar }: { onToggleSidebar: () => void }) => {
   const [isCommandModalOpen, setIsCommandModalOpen] = useState(false);
   const { presenceCount } = useActivity();
   const { userRole } = useAccess();
-  const { currentHub, hubs } = useOrganization();
+  const { currentHub, hubs, switchHub } = useOrganization();
 
   return (
     <header className="h-[72px] bg-white border-b border-slate-200 flex items-center justify-between px-4 md:px-8 sticky top-0 z-40">
@@ -49,16 +49,55 @@ const Header = ({ onToggleSidebar }: { onToggleSidebar: () => void }) => {
           </div>
         </div>
 
-        <div className={`hidden lg:flex items-center gap-3 min-w-[180px] ${hubs.length > 1 ? 'cursor-pointer group' : ''}`}>
+        <div className="hidden lg:flex items-center gap-3 min-w-[200px] relative group">
           <div className="w-7 h-7 rounded-lg bg-slate-100 flex items-center justify-center text-slate-900 text-[10px] font-bold group-hover:bg-slate-200 transition-colors">
             {currentHub[0]}
           </div>
           <div className="flex flex-col">
             <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest leading-none mb-1">Office Hub</span>
             <div className="flex items-center gap-1">
-              <span className="text-[12px] font-bold text-slate-600 tracking-tight leading-none whitespace-nowrap">{currentHub}</span>
-              {hubs.length > 1 && (
-                <ChevronDown className="w-3.5 h-3.5 text-slate-300 group-hover:text-slate-600 transition-colors" />
+              {userRole === 'SUPER_ADMIN' ? (
+                <div className="relative group/hub">
+                  <button className="flex items-center gap-1 text-[12px] font-bold text-slate-600 tracking-tight leading-none whitespace-nowrap hover:text-indigo-600 transition-colors">
+                    {currentHub}
+                    <ChevronDown className="w-3.5 h-3.5 text-slate-300" />
+                  </button>
+                  
+                  {/* Hub Switcher Dropdown */}
+                  <div className="absolute top-full left-0 mt-4 w-[220px] bg-white border border-slate-200 rounded-[20px] shadow-premium opacity-0 translate-y-2 pointer-events-none group-hover/hub:opacity-100 group-hover/hub:translate-y-0 group-hover/hub:pointer-events-auto transition-all duration-300 p-2 overflow-hidden">
+                     <div className="px-3 py-2 border-b border-slate-50 mb-1">
+                        <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Select Operational Context</span>
+                     </div>
+                     <div className="space-y-0.5">
+                        {hubs.map((hub) => (
+                          <button 
+                            key={hub.id}
+                            onClick={() => switchHub(hub.id)}
+                            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all ${
+                              currentHub === hub.name ? 'bg-indigo-50 text-indigo-600' : 'hover:bg-slate-50 text-slate-600'
+                            }`}
+                          >
+                             <Globe className={`w-3.5 h-3.5 ${currentHub === hub.name ? 'text-indigo-500' : 'text-slate-400'}`} />
+                             <div className="flex flex-col items-start">
+                                <span className="text-[12px] font-bold leading-none mb-1">{hub.name}</span>
+                                <span className="text-[9px] font-medium opacity-60 leading-none">{hub.category}</span>
+                             </div>
+                          </button>
+                        ))}
+                        <button 
+                          onClick={() => switchHub('HUB-00')}
+                          className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all border-t border-slate-50 mt-1 ${
+                            currentHub === 'All Regions' ? 'bg-indigo-50 text-indigo-600' : 'hover:bg-slate-50 text-slate-400'
+                          }`}
+                        >
+                           <Activity className={`w-3.5 h-3.5 ${currentHub === 'All Regions' ? 'text-indigo-500' : 'text-slate-400'}`} />
+                           <span className="text-[11px] font-bold">All Regions View</span>
+                        </button>
+                     </div>
+                  </div>
+                </div>
+              ) : (
+                <span className="text-[12px] font-bold text-slate-600 tracking-tight leading-none whitespace-nowrap">{currentHub}</span>
               )}
             </div>
           </div>

@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import React from 'react';
 import Link from 'next/link';
@@ -19,7 +19,12 @@ import {
   Settings,
   Target,
   PanelLeftClose,
-  PanelLeft
+  PanelLeft,
+  Banknote,
+  DollarSign,
+  History,
+  Lock,
+  Scale
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -30,19 +35,30 @@ interface SidebarProps {
 const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle }) => {
   const pathname = usePathname();
 
-  const primaryModules = [
+  const operationsModules = [
     { name: 'Hub', icon: LayoutDashboard, href: '/employees' },
     { name: 'Workforce', icon: Users, href: '/staff' },
     { name: 'Team', icon: Target, href: '/team' },
     { name: 'Attendance', icon: Calendar, href: '/attendance' },
-    { name: 'Governance', icon: ShieldCheck, href: '/governance' },
     { name: 'Workflows', icon: Activity, href: '/leave' },
   ];
 
-  const secondaryTools = [
+  const governanceModules = [
+    { name: 'Payroll', icon: Banknote, href: '/payroll' },
+    { name: 'Finance', icon: DollarSign, href: '/finance' },
+    { name: 'Governance', icon: ShieldCheck, href: '/governance' },
+    { name: 'Audit Registry', icon: History, href: '/governance' },
+  ];
+
+  const intelligenceModules = [
     { name: 'Analytics', icon: TrendingUp, href: '/analytics' },
     { name: 'Forecasting', icon: BrainCircuit, href: '/forecasting' },
     { name: 'Communication', icon: MessageSquare, href: '/communication' },
+  ];
+
+  const settingSubModules = [
+    { name: 'Compliance & Tax', icon: Scale, href: '/settings/compliance' },
+    { name: 'Security', icon: Lock, href: '/settings/security' },
   ];
 
   return (
@@ -60,7 +76,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle }) => {
           {!isCollapsed && (
             <div className="flex flex-col animate-in slide-in-from-left-2">
               <span className="text-sm font-bold text-white tracking-tight leading-none">Suler EMS</span>
-              <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Suler Operational OS</span>
+              <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Enterprise Operating System</span>
             </div>
           )}
         </div>
@@ -77,7 +93,21 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle }) => {
             </div>
           )}
           <div className="space-y-1">
-            {primaryModules.map((item) => (
+            {operationsModules.map((item) => (
+              <SidebarLink key={item.name} item={item} isActive={pathname === item.href} isCollapsed={isCollapsed} />
+            ))}
+          </div>
+        </div>
+
+        {/* Governance Layer */}
+        <div className="space-y-1">
+          {!isCollapsed && (
+            <div className="px-4 mb-3">
+              <span className="text-[9px] font-bold text-slate-500 uppercase tracking-[0.2em]">Governance</span>
+            </div>
+          )}
+          <div className="space-y-1">
+            {governanceModules.map((item) => (
               <SidebarLink key={item.name} item={item} isActive={pathname === item.href} isCollapsed={isCollapsed} />
             ))}
           </div>
@@ -91,7 +121,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle }) => {
             </div>
           )}
           <div className="space-y-1">
-            {secondaryTools.map((item) => (
+            {intelligenceModules.map((item) => (
               <SidebarLink key={item.name} item={item} isActive={pathname === item.href} isCollapsed={isCollapsed} />
             ))}
           </div>
@@ -100,40 +130,38 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle }) => {
 
       {/* Utility Rail: Executive Minimalism */}
       <div className={`px-4 pb-8 space-y-2`}>
-        <Link
-          href="/settings"
-          className={`flex items-center gap-3.5 px-4 py-2.5 rounded-xl transition-all duration-200 ${
-            pathname === '/settings' 
-              ? 'bg-indigo-600 text-white shadow-premium' 
-              : 'text-slate-400 hover:bg-slate-800 hover:text-white'
-          } ${isCollapsed ? 'justify-center h-[44px] w-[44px] mx-auto px-0' : ''}`}
-        >
-          <Settings className={`w-[18px] h-[18px] stroke-[1.5px] ${pathname === '/settings' ? 'text-white' : 'text-slate-500'}`} />
-          {!isCollapsed && (
-            <span className="text-[13px] font-bold tracking-tight">
-              Settings
-            </span>
-          )}
-          {isCollapsed && (
-            <div className="absolute left-full ml-4 px-3 py-2 bg-slate-950 text-white text-[10px] font-bold rounded-lg opacity-0 group-hover:opacity-100 pointer-events-none transition-all z-[100] whitespace-nowrap shadow-premium">
-              Settings
-            </div>
-          )}
-        </Link>
+        {!isCollapsed && (
+          <div className="px-4 mb-2">
+             <span className="text-[9px] font-bold text-slate-600 uppercase tracking-[0.2em]">System Control</span>
+          </div>
+        )}
+        
+        <div className="space-y-1">
+           <SidebarLink 
+             item={{ name: 'Global Settings', icon: Settings, href: '/settings' }} 
+             isActive={pathname === '/settings'} 
+             isCollapsed={isCollapsed} 
+           />
+           {!isCollapsed && settingSubModules.map(item => (
+             <Link 
+               key={item.name}
+               href={item.href}
+               className={`flex items-center gap-3.5 px-4 py-2 rounded-xl transition-all ${pathname === item.href ? 'text-indigo-400 bg-indigo-500/5' : 'text-slate-500 hover:text-slate-300'}`}
+             >
+                <div className="w-1.5 h-1.5 rounded-full bg-current opacity-20" />
+                <span className="text-[11px] font-bold tracking-tight uppercase">{item.name}</span>
+             </Link>
+           ))}
+        </div>
 
         <button
-          className={`flex items-center gap-3.5 px-4 py-2.5 rounded-xl transition-all duration-200 text-slate-400 hover:bg-rose-900/20 hover:text-rose-400 ${isCollapsed ? 'justify-center h-[44px] w-[44px] mx-auto px-0' : ''}`}
+          className={`flex items-center gap-3.5 px-4 py-2.5 rounded-xl transition-all duration-200 text-slate-400 hover:bg-rose-900/20 hover:text-rose-400 w-full ${isCollapsed ? 'justify-center h-[44px] w-[44px] mx-auto px-0' : ''}`}
         >
           <LogOut className="w-[18px] h-[18px] stroke-[1.5px] text-slate-500" />
           {!isCollapsed && (
             <span className="text-[13px] font-bold tracking-tight">
               Sign Out
             </span>
-          )}
-          {isCollapsed && (
-            <div className="absolute left-full ml-4 px-3 py-2 bg-slate-950 text-white text-[10px] font-bold rounded-lg opacity-0 group-hover:opacity-100 pointer-events-none transition-all z-[100] whitespace-nowrap shadow-premium">
-              Sign Out
-            </div>
           )}
         </button>
       </div>

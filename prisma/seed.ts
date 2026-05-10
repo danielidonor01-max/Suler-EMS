@@ -84,7 +84,23 @@ async function main() {
     }
   });
 
-  console.log('Nigerian staff records seeded: admin@suler.ems (password123)');
+  // 4. Global Super Admin (Blueprint Identity)
+  await prisma.user.upsert({
+    where: { email: 'superadmin@sulerglobal.com' },
+    update: {
+      passwordHash: await bcrypt.hash('Password123!', 12),
+      roleId: adminRole.id,
+    },
+    create: {
+      email: 'superadmin@sulerglobal.com',
+      name: 'Global Super Admin',
+      passwordHash: await bcrypt.hash('Password123!', 12),
+      roleId: adminRole.id,
+    }
+  });
+
+  console.log('Global Super Admin seeded: superadmin@sulerglobal.com (Password123!)');
+  console.log('Nigerian staff records seeded: chinedu.okoro@suler.ems (password123)');
   console.log('--- Localization Seed Complete ---');
 }
 

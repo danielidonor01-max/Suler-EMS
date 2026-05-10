@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   UserCircle, 
   ShieldAlert, 
@@ -14,11 +14,13 @@ import {
   Loader2,
   ShieldCheck,
   Activity,
-  History
+  History,
+  Zap
 } from 'lucide-react';
 import { Modal } from '../common/Modal';
 import { useWorkforce, Employee } from '@/context/WorkforceContext';
 import { useToast } from '../common/ToastContext';
+import { useOrganization } from '@/context/OrganizationContext';
 import { Select } from '../forms/Select';
 
 interface EditEmployeeModalProps {
@@ -96,8 +98,8 @@ export const EditEmployeeModal: React.FC<EditEmployeeModalProps> = ({ isOpen, on
             />
             <Select 
               label="Designated Hub"
-              value={formData.office}
-              onChange={val => setFormData({...formData, office: val})}
+              value={formData.hub}
+              onChange={val => setFormData({...formData, hub: val})}
               options={[
                 { label: 'Lagos HQ', value: 'Lagos HQ' },
                 { label: 'Abuja Operations', value: 'Abuja Operations' },
@@ -292,18 +294,29 @@ interface OnboardMemberModalProps {
 }
 
 export const OnboardMemberModal: React.FC<OnboardMemberModalProps> = ({ isOpen, onClose }) => {
+  const { hubs, departments, currentHub } = useOrganization();
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     phone: '',
     role: 'Staff Practitioner',
-    office: 'Lagos HQ',
-    department: 'Operations',
+    hub: currentHub !== 'All Regions' ? currentHub : (hubs[0]?.name || 'Lagos HQ'),
+    department: departments[0]?.name || 'Operations',
     designation: '',
     staffId: '',
     employmentType: 'FULL_TIME',
     startDate: new Date().toISOString().split('T')[0]
   });
+
+  // Sync office if context changes while modal is closed
+  useEffect(() => {
+    if (!isOpen) {
+      setFormData(prev => ({
+        ...prev,
+        hub: currentHub !== 'All Regions' ? currentHub : (hubs[0]?.name || 'Lagos HQ')
+      }));
+    }
+  }, [currentHub, isOpen, hubs]);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { createEmployee } = useWorkforce();
@@ -319,19 +332,28 @@ export const OnboardMemberModal: React.FC<OnboardMemberModalProps> = ({ isOpen, 
     toast({ type: 'loading', message: 'Initializing Member Identity...', description: `Creating organizational record for ${formData.name}.` });
     
     setTimeout(() => {
-      createEmployee({
+      const result = createEmployee({
         ...formData,
         status: 'ACTIVE',
         id: formData.staffId || `SUL-${Math.floor(Math.random() * 1000).toString().padStart(3, '0')}`
       } as any);
       
       setIsSubmitting(false);
-      onClose();
-      toast({ 
-        type: 'success', 
-        message: 'Member Onboarded', 
-        description: `Successfully onboarded to ${formData.office} as ${formData.designation}.` 
-      });
+      
+      if (result.success) {
+        onClose();
+        toast({ 
+          type: 'success', 
+          message: 'Member Onboarded', 
+          description: `Successfully onboarded to ${formData.hub} as ${formData.designation}.` 
+        });
+      } else {
+        toast({ 
+          type: 'error', 
+          message: 'Onboarding Failed', 
+          description: result.error || 'An organizational policy prevented this action.' 
+        });
+      }
     }, 2000);
   };
 
@@ -402,26 +424,19 @@ export const OnboardMemberModal: React.FC<OnboardMemberModalProps> = ({ isOpen, 
             </div>
             <div className="grid grid-cols-2 gap-4">
                <Select 
-                 label="Designated Office Hub"
-                 value={formData.office}
-                 onChange={val => setFormData({...formData, office: val})}
-                 options={[
-                   { label: 'Lagos HQ', value: 'Lagos HQ' },
-                   { label: 'Abuja Operations', value: 'Abuja Operations' },
-                   { label: 'Benin Branch', value: 'Benin Branch' },
-                 ]}
+                 label="Designated Hub"
+                 value={formData.hub}
+                 onChange={val => setFormData({...formData, hub: val})}
+                 options={hubs.map(h => ({ label: h.name, value: h.name }))}
                />
                <Select 
                  label="Department"
                  value={formData.department}
                  onChange={val => setFormData({...formData, department: val})}
-                 options={[
-                   { label: 'Human Resources', value: 'Human Resources' },
-                   { label: 'Finance & Treasury', value: 'Finance & Treasury' },
-                   { label: 'Operations', value: 'Operations' },
-                   { label: 'Engineering', value: 'Engineering' },
-                   { label: 'Legal & Compliance', value: 'Legal & Compliance' },
-                 ]}
+                 options={departments
+                   .filter(d => d.parentHub === formData.hub)
+                   .map(d => ({ label: d.name, value: d.name }))
+                 }
                />
             </div>
             <div className="space-y-2">
@@ -469,6 +484,96 @@ export const OnboardMemberModal: React.FC<OnboardMemberModalProps> = ({ isOpen, 
               className="bg-indigo-600 hover:bg-indigo-700 text-white flex items-center gap-2 px-8 h-[48px] rounded-xl text-[11px] font-bold uppercase tracking-widest transition-all shadow-lg shadow-indigo-600/20"
             >
                {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Confirm Onboarding'}
+            </button>
+         </div>
+      </div>
+    </Modal>
+  );
+};
+
+interface PromoteEmployeeModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  employee: Employee;
+}
+
+export const PromoteEmployeeModal: React.FC<PromoteEmployeeModalProps> = ({ isOpen, onClose, employee }) => {
+  const [designation, setDesignation] = useState(employee.designation || '');
+  const [role, setRole] = useState(employee.role);
+  const [isPromoting, setIsPromoting] = useState(false);
+  const { promoteEmployee } = useWorkforce();
+  const { toast } = useToast();
+
+  const handlePromote = () => {
+    setIsPromoting(true);
+    toast({ type: 'loading', message: 'Executing Rank Escalation...', description: `Promoting ${employee.name} to ${designation}.` });
+    
+    setTimeout(() => {
+      promoteEmployee(employee.id, designation, role);
+      setIsPromoting(false);
+      onClose();
+      toast({ 
+        type: 'success', 
+        message: 'Promotion Successful', 
+        description: 'New organizational rank and authority levels established.' 
+      });
+    }, 2000);
+  };
+
+  return (
+    <Modal 
+      isOpen={isOpen} 
+      onClose={onClose} 
+      title="Execute Rank Escalation" 
+      subtitle={`Career Governance: ${employee.name}`}
+      size="sm"
+    >
+      <div className="space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-500">
+         <div className="flex flex-col items-center text-center space-y-4">
+            <div className="w-16 h-16 rounded-[24px] bg-indigo-50 text-indigo-600 flex items-center justify-center border-2 border-indigo-100 shadow-sm">
+               <Zap className="w-8 h-8" />
+            </div>
+            <div className="space-y-2">
+               <h3 className="text-lg font-bold text-slate-900 tracking-tight">Promote Member?</h3>
+               <p className="text-[13px] text-slate-500 font-medium leading-relaxed">
+                 You are escalating the organizational rank for **{employee.name}**. This mutation affects the org chart and IAM permissions.
+               </p>
+            </div>
+         </div>
+
+         <div className="space-y-6">
+            <div className="space-y-2">
+               <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">New Principal Designation</label>
+               <input 
+                 placeholder="e.g. Finance Manager"
+                 value={designation} 
+                 onChange={e => setDesignation(e.target.value)}
+                 className="w-full h-[48px] bg-slate-50 border border-slate-200 rounded-xl px-4 text-[13px] font-bold outline-none focus:border-indigo-500 transition-all shadow-sm"
+               />
+            </div>
+            <Select 
+               label="Assign New System Role"
+               value={role}
+               onChange={setRole}
+               options={[
+                 { label: 'Operations Manager', value: 'Operations Manager' },
+                 { label: 'HR Admin', value: 'HR Admin' },
+                 { label: 'Finance Admin', value: 'Finance Admin' },
+                 { label: 'Super Administrator', value: 'Super Administrator' },
+               ]}
+            />
+         </div>
+
+         <div className="flex flex-col gap-3 pt-4 border-t border-slate-50">
+            <button 
+              onClick={handlePromote}
+              disabled={isPromoting}
+              className="bg-indigo-600 hover:bg-indigo-700 text-white w-full h-[52px] rounded-xl text-[11px] font-bold uppercase tracking-widest transition-all shadow-lg shadow-indigo-600/20 flex items-center justify-center gap-2"
+            >
+               {isPromoting ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Confirm Promotion'}
+            </button>
+            <button onClick={onClose} disabled={isPromoting} className="w-full h-[48px] text-[11px] font-bold uppercase tracking-widest text-slate-400 hover:text-slate-600 transition-colors">
+               Abort Escalation
             </button>
          </div>
       </div>

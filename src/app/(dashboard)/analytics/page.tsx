@@ -18,6 +18,8 @@ import { WorkflowBottlenecks } from '@/components/analytics/WorkflowBottlenecks'
 import { OperationalInsights } from '@/components/analytics/OperationalInsights';
 import { MetricCard } from '@/components/dashboard/MetricCard';
 
+import { useOrganization } from '@/context/OrganizationContext';
+
 const MOCK_COMPETENCY = [
   { skill: 'Operational Governance', score: 92, target: 95 },
   { skill: 'Workflow Optimization', score: 78, target: 90 },
@@ -26,6 +28,7 @@ const MOCK_COMPETENCY = [
 ];
 
 export default function AnalyticsPage() {
+  const { currentHub } = useOrganization();
   const [loading, setLoading] = useState(false);
 
   return (
@@ -37,14 +40,14 @@ export default function AnalyticsPage() {
             <div className="flex items-center gap-2 mb-3">
               <div className="px-2.5 py-1 bg-slate-900 text-white rounded-md text-[9px] font-bold uppercase tracking-[0.2em] flex items-center gap-1.5">
                 <BrainCircuit className="w-3 h-3" />
-                Cognitive Analytics Active
+                Cognitive Analytics Active: {currentHub}
               </div>
             </div>
             <h1 className="text-3xl font-bold text-slate-900 tracking-tighter leading-none mb-3">
               Operational Intelligence
             </h1>
             <p className="text-[13px] font-medium text-slate-400 leading-relaxed max-w-[480px]">
-              Advanced visualization of organization-wide performance metrics, resource utilization, and governance signals.
+              Advanced visualization of {currentHub === 'All Regions' ? 'organization-wide' : `${currentHub}-specific`} performance metrics, resource utilization, and governance signals.
             </p>
           </div>
 

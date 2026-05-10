@@ -10,6 +10,9 @@ import { OrganizationProvider } from "@/context/OrganizationContext";
 import { GuardianProvider } from "@/context/GuardianContext";
 import { ForecastingProvider } from "@/context/ForecastingContext";
 import { SettingsProvider } from "@/context/SettingsContext";
+import { TeamProvider } from "@/context/TeamContext";
+import { FinanceProvider } from "@/context/FinanceContext";
+import { PayrollProvider } from "@/context/PayrollContext";
 import { AuthPersistence } from "@/components/auth/AuthPersistence";
 
 export function Providers({ children }: { children: React.ReactNode }) {
@@ -22,13 +25,19 @@ export function Providers({ children }: { children: React.ReactNode }) {
               <WorkforceProvider>
                 <OrganizationProvider>
                   <SettingsProvider>
-                    <GuardianProvider>
-                      <ForecastingProvider>
-                        <AuthPersistence>
-                          {children}
-                        </AuthPersistence>
-                      </ForecastingProvider>
-                    </GuardianProvider>
+                    <TeamProvider>
+                      <FinanceProvider>
+                        <PayrollProvider>
+                          <GuardianProvider>
+                            <ForecastingProvider>
+                              <AuthPersistence>
+                                {children}
+                              </AuthPersistence>
+                            </ForecastingProvider>
+                          </GuardianProvider>
+                        </PayrollProvider>
+                      </FinanceProvider>
+                    </TeamProvider>
                   </SettingsProvider>
                 </OrganizationProvider>
               </WorkforceProvider>
