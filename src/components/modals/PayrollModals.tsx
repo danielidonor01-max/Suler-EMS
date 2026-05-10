@@ -183,15 +183,22 @@ export const BulkAdjustmentModal: React.FC<{ isOpen: boolean; onClose: () => voi
   };
 
   const toggleFilter = (key: keyof typeof formData.filters, value: string) => {
-    setFormData(prev => ({
-      ...prev,
-      filters: {
-        ...prev.filters,
-        [key]: prev.filters[key as keyof typeof prev.filters]?.includes(value)
-          ? (prev.filters[key as keyof typeof prev.filters] as string[]).filter(v => v !== value)
-          : [...(prev.filters[key as keyof typeof prev.filters] as string[] || []), value]
-      }
-    }));
+    setFormData(prev => {
+      const currentValue = prev.filters[key as keyof typeof prev.filters];
+      const currentValues = Array.isArray(currentValue) ? currentValue : [];
+      
+      const nextValues = currentValues.includes(value)
+        ? currentValues.filter(v => v !== value)
+        : [...currentValues, value];
+
+      return {
+        ...prev,
+        filters: {
+          ...prev.filters,
+          [key]: nextValues,
+        },
+      };
+    });
   };
 
   return (
