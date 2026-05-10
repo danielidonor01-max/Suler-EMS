@@ -14,14 +14,11 @@ export function ActivityFeed() {
   const [activities, setActivities] = useState<any[]>([]);
 
   useEffect(() => {
-    // Initial fetch of system events (audit log)
     const fetchEvents = async () => {
       try {
         const res = await fetch('/api/events');
         const result = await res.json();
-        if (result.success) {
-          setActivities(result.data);
-        }
+        if (result.success) setActivities(result.data);
       } catch (err) {
         console.error('Failed to fetch activity');
       }
@@ -29,7 +26,6 @@ export function ActivityFeed() {
     fetchEvents();
   }, []);
 
-  // Update feed with new notifications that are of category 'WORKFLOW' or 'SECURITY'
   useEffect(() => {
     if (notifications.length > 0) {
       const latest = notifications[0];
@@ -39,62 +35,66 @@ export function ActivityFeed() {
     }
   }, [notifications]);
 
+  const getActivityColors = (type: string) => {
+    switch (type) {
+      case 'SECURITY': return 'bg-rose-50 text-rose-600';
+      case 'SUCCESS':  return 'bg-emerald-50 text-emerald-600';
+      default:         return 'bg-slate-100 text-slate-500';
+    }
+  };
+
   return (
-    <div className="bg-zinc-900/50 border border-white/5 rounded-2xl overflow-hidden backdrop-blur-xl">
-      <div className="p-5 border-b border-white/5 flex items-center justify-between">
+    <div className="bg-white border border-slate-200 rounded-[24px] overflow-hidden shadow-[0_1px_3px_rgba(15,23,42,0.06)]">
+      <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="p-2 rounded-lg bg-blue-500/10 text-blue-400">
-            <Activity className="w-5 h-5" />
+          <div className="p-2 rounded-xl bg-indigo-50 text-indigo-600">
+            <Activity className="w-4 h-4" />
           </div>
           <div>
-            <h3 className="text-sm font-bold text-white tracking-tight">Operational Activity</h3>
-            <p className="text-[10px] text-zinc-500 uppercase tracking-widest font-bold">Real-time Audit Log</p>
+            <h3 className="text-sm font-bold text-slate-900 tracking-tight">Operational Activity</h3>
+            <p className="text-[10px] text-slate-400 uppercase tracking-widest font-bold">Real-time Audit Log</p>
           </div>
         </div>
       </div>
 
-      <div className="divide-y divide-white/5 max-h-[500px] overflow-y-auto custom-scrollbar">
+      <div className="divide-y divide-slate-100 max-h-[500px] overflow-y-auto custom-scrollbar">
         {activities.length === 0 ? (
           <div className="p-12 text-center">
-            <Clock className="w-10 h-10 text-zinc-800 mx-auto mb-4" />
-            <p className="text-sm text-zinc-500">No recent activity detected.</p>
+            <Clock className="w-10 h-10 text-slate-200 mx-auto mb-4" />
+            <p className="text-sm text-slate-400 font-medium">No recent activity detected.</p>
           </div>
         ) : (
           activities.map((activity, idx) => (
-            <div key={activity.id || idx} className="p-4 hover:bg-white/[0.02] transition-colors group">
+            <div key={activity.id || idx} className="px-5 py-4 hover:bg-slate-50 transition-colors group">
               <div className="flex gap-4">
                 <div className="relative flex flex-col items-center">
-                  <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 shadow-lg ${
-                    activity.type === 'SECURITY' ? 'bg-red-500/20 text-red-400' : 
-                    activity.type === 'SUCCESS' ? 'bg-green-500/20 text-green-400' :
-                    'bg-zinc-800 text-zinc-400'
-                  }`}>
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${getActivityColors(activity.type)}`}>
                     <Activity className="w-4 h-4" />
                   </div>
                   {idx !== activities.length - 1 && (
-                    <div className="w-[1px] flex-1 bg-white/5 my-2" />
+                    <div className="w-px flex-1 bg-slate-100 my-2" />
                   )}
                 </div>
-                
+
                 <div className="flex-1 min-w-0 py-0.5">
                   <div className="flex items-center justify-between mb-1">
-                    <span className="text-[10px] uppercase tracking-widest font-bold text-zinc-600">
+                    <span className="text-[10px] uppercase tracking-widest font-bold text-slate-400">
                       {activity.category || 'SYSTEM'}
                     </span>
-                    <span className="text-[10px] text-zinc-500 flex items-center gap-1">
+                    <span className="text-[10px] text-slate-400 flex items-center gap-1">
                       <Clock className="w-3 h-3" />
                       {formatDistanceToNow(new Date(activity.createdAt || activity.timestamp), { addSuffix: true })}
                     </span>
                   </div>
-                  
-                  <p className="text-sm text-zinc-300 font-medium mb-1">
+
+                  <p className="text-sm text-slate-700 font-medium mb-1">
                     {activity.title || activity.description || 'System Event'}
                   </p>
-                  
-                  <div className="flex items-center gap-2 text-xs text-zinc-500">
+
+                  <div className="flex items-center gap-2 text-xs text-slate-400">
                     <User className="w-3 h-3" />
                     <span>{activity.actorName || 'System'}</span>
-                    <ArrowRight className="w-3 h-3 text-zinc-700" />
+                    <ArrowRight className="w-3 h-3 text-slate-300" />
                     <span className="truncate">{activity.message || activity.type}</span>
                   </div>
                 </div>
@@ -104,8 +104,8 @@ export function ActivityFeed() {
         )}
       </div>
 
-      <div className="p-4 bg-zinc-950/30 border-t border-white/5 text-center">
-        <button className="text-[10px] uppercase tracking-widest font-bold text-blue-500 hover:text-blue-400 transition-colors">
+      <div className="px-5 py-4 bg-slate-50 border-t border-slate-100 text-center">
+        <button className="text-[10px] uppercase tracking-widest font-bold text-indigo-600 hover:text-indigo-700 transition-colors">
           View Full Audit Trail
         </button>
       </div>

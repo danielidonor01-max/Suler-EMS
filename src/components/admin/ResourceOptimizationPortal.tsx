@@ -62,7 +62,7 @@ export const ResourceOptimizationPortal: React.FC<{ isOpen: boolean, onClose: ()
                     <span className="text-[10px] font-black uppercase tracking-widest text-indigo-200 block mb-1">Global Efficiency</span>
                     <span className="text-3xl font-black">84%</span>
                  </div>
-                 <div className="w-px h-12 bg-white/10" />
+                 <div className="w-px h-12 bg-indigo-400" />
                  <div className="text-center">
                     <span className="text-[10px] font-black uppercase tracking-widest text-indigo-200 block mb-1">Projected Gain</span>
                     <span className="text-3xl font-black text-emerald-300">+12%</span>
@@ -70,8 +70,6 @@ export const ResourceOptimizationPortal: React.FC<{ isOpen: boolean, onClose: ()
               </div>
            </div>
            
-           {/* Ambient Decorative */}
-           <div className="absolute -bottom-12 -right-12 w-64 h-64 bg-white/10 blur-[80px] rounded-full" />
         </div>
 
         {/* Recommendations Stream */}

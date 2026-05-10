@@ -11,11 +11,11 @@ interface RecommendationFeedProps {
 export const RecommendationFeed: React.FC<RecommendationFeedProps> = ({ recommendations }) => {
   if (recommendations.length === 0) {
     return (
-      <div className="p-16 rounded-[32px] bg-white border border-slate-100 shadow-premium flex flex-col items-center justify-center text-center">
-        <div className="w-16 h-16 rounded-[22px] bg-emerald-50 flex items-center justify-center text-emerald-600 mb-6">
+      <div className="p-16 rounded-[24px] bg-white border border-slate-200 shadow-premium flex flex-col items-center justify-center text-center">
+        <div className="w-16 h-16 rounded-[16px] bg-emerald-50 flex items-center justify-center text-emerald-600 mb-6">
           <ShieldCheck className="w-8 h-8" />
         </div>
-        <p className="text-slate-900 text-[14px] font-black uppercase tracking-widest mb-2">Systems Nominal</p>
+        <p className="text-slate-900 text-[14px] font-bold uppercase tracking-widest mb-2">Systems Nominal</p>
         <p className="text-slate-400 text-xs font-medium max-w-[240px]">No operational risks detected. All organizational parameters are within optimal thresholds.</p>
       </div>
     );
@@ -26,7 +26,7 @@ export const RecommendationFeed: React.FC<RecommendationFeedProps> = ({ recommen
       {recommendations.map((rec) => (
         <div 
           key={rec.id}
-          className="group relative overflow-hidden p-8 rounded-[32px] bg-white border border-slate-100 shadow-premium hover:border-indigo-200 transition-all hover:shadow-xl hover:shadow-indigo-100/20"
+          className="group relative overflow-hidden p-8 rounded-[24px] bg-white border border-slate-200 shadow-premium hover:border-indigo-200 transition-all hover:shadow-raised"
         >
           <div className="relative flex flex-col gap-6">
             <div className="flex items-start justify-between gap-4">
@@ -41,8 +41,8 @@ export const RecommendationFeed: React.FC<RecommendationFeedProps> = ({ recommen
                 
                 <div className="space-y-2">
                   <div className="flex items-center gap-3">
-                    <h3 className="text-base font-black text-slate-900 tracking-tight leading-none">{rec.title}</h3>
-                    <div className="px-2.5 py-1 rounded-full bg-slate-50 text-slate-400 text-[9px] font-black uppercase tracking-widest border border-slate-100">
+                    <h3 className="text-base font-bold text-slate-900 tracking-tight leading-none">{rec.title}</h3>
+                    <div className="px-2.5 py-1 rounded-full bg-slate-50 text-slate-400 text-[9px] font-medium uppercase tracking-widest border border-slate-100">
                       Impact: {(rec.impactScore * 100).toFixed(0)}%
                     </div>
                   </div>
@@ -50,17 +50,17 @@ export const RecommendationFeed: React.FC<RecommendationFeedProps> = ({ recommen
                 </div>
               </div>
 
-              <button className="hidden md:flex items-center gap-2 px-6 py-3 rounded-full bg-slate-50 hover:bg-indigo-600 hover:text-white text-slate-600 transition-all text-[11px] font-black uppercase tracking-wider active:scale-95 shadow-sm">
+              <button className="hidden md:flex items-center gap-2 px-6 py-3 rounded-[12px] bg-slate-50 hover:bg-indigo-600 hover:text-white text-slate-600 transition-all text-[11px] font-bold uppercase tracking-wider active:scale-95 shadow-sm">
                 Review Action
                 <ArrowRight className="w-3.5 h-3.5" />
               </button>
             </div>
 
             {/* Explainability / Reasoning Surface */}
-            <div className="p-5 rounded-[22px] bg-slate-50/50 border border-slate-100 relative overflow-hidden">
+            <div className="p-5 rounded-[16px] bg-slate-50 border border-slate-100 relative overflow-hidden">
               <div className="relative z-10 flex gap-3">
                 <BrainCircuit className="w-4 h-4 text-indigo-600 shrink-0 mt-0.5" />
-                <p className="text-[11px] text-slate-500 leading-relaxed font-bold">
+                <p className="text-[11px] text-slate-500 leading-relaxed font-medium">
                   <span className="text-indigo-600 uppercase tracking-widest mr-2">Reasoning:</span>
                   {rec.reasoning.replace('Explainability: ', '')}
                 </p>
@@ -70,7 +70,7 @@ export const RecommendationFeed: React.FC<RecommendationFeedProps> = ({ recommen
               </div>
             </div>
 
-            <button className="md:hidden w-full py-4 rounded-2xl bg-indigo-600 text-white text-[11px] font-black uppercase tracking-wider">
+            <button className="md:hidden w-full py-4 rounded-[12px] bg-indigo-600 text-white text-[11px] font-bold uppercase tracking-wider">
               Execute Action
             </button>
           </div>

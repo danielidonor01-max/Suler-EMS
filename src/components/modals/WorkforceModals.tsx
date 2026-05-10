@@ -173,7 +173,7 @@ export const SuspendAccessModal: React.FC<SuspendAccessModalProps> = ({ isOpen, 
     >
       <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-500">
          <div className="flex flex-col items-center text-center space-y-4">
-            <div className="w-16 h-16 rounded-3xl bg-rose-50 text-rose-500 flex items-center justify-center border-2 border-rose-100 shadow-sm">
+            <div className="w-16 h-16 rounded-[24px] bg-rose-50 text-rose-500 flex items-center justify-center border-2 border-rose-100 shadow-sm">
                <ShieldAlert className="w-8 h-8" />
             </div>
             <div className="space-y-2">

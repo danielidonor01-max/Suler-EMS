@@ -33,12 +33,12 @@ export default function SettingsPage() {
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-8">
           <div>
             <div className="flex items-center gap-2 mb-3">
-              <div className="px-2.5 py-1 bg-slate-900 text-white rounded-md text-[9px] font-black uppercase tracking-[0.2em] flex items-center gap-1.5">
+              <div className="px-2.5 py-1 bg-slate-900 text-white rounded-md text-[9px] font-bold uppercase tracking-[0.2em] flex items-center gap-1.5">
                 <Database className="w-3 h-3" />
                 Root Configuration Active
               </div>
             </div>
-            <h1 className="text-3xl font-black text-slate-900 tracking-tighter leading-none mb-3">
+            <h1 className="text-3xl font-bold text-slate-900 tracking-tighter leading-none mb-3">
               System Configuration
             </h1>
             <p className="text-[13px] font-medium text-slate-400 leading-relaxed max-w-[480px]">
@@ -46,7 +46,7 @@ export default function SettingsPage() {
             </p>
           </div>
 
-          <button className="bg-slate-900 hover:bg-black text-white flex items-center gap-2.5 px-8 py-3 rounded-xl text-[11px] font-black uppercase tracking-wider transition-all shadow-md">
+          <button className="bg-slate-900 hover:bg-black text-white flex items-center gap-2.5 px-8 py-3 rounded-xl text-[11px] font-bold uppercase tracking-wider transition-all shadow-md">
             <Save className="w-4 h-4" />
             Persist Changes
           </button>
@@ -67,7 +67,7 @@ export default function SettingsPage() {
               }`}
             >
               <tab.icon className={`w-5 h-5 ${activeTab === tab.id ? 'text-indigo-600' : 'text-slate-300'}`} />
-              <span className="text-[13px] font-black tracking-tight">{tab.label}</span>
+              <span className="text-[13px] font-bold tracking-tight">{tab.label}</span>
               {activeTab === tab.id && <ChevronRight className="ml-auto w-4 h-4 text-slate-300" />}
             </button>
           ))}
@@ -83,18 +83,18 @@ export default function SettingsPage() {
                          <Globe className="w-5 h-5" />
                       </div>
                       <div>
-                         <h3 className="text-base font-black text-slate-900 tracking-tight">Organization Profile</h3>
+                         <h3 className="text-base font-bold text-slate-900 tracking-tight">Organization Profile</h3>
                          <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mt-1">Core Identity Parameters</p>
                       </div>
                    </div>
 
                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                       <div className="space-y-2">
-                         <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Organization Name</label>
+                         <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Organization Name</label>
                          <input type="text" defaultValue="Suler Operational OS" className="w-full bg-slate-50 border border-slate-100 rounded-xl py-3 px-4 text-sm font-bold text-slate-900 focus:outline-none focus:bg-white focus:border-indigo-600 transition-all" />
                       </div>
                       <div className="space-y-2">
-                         <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Primary Domain</label>
+                         <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Primary Domain</label>
                          <input type="text" defaultValue="ops.suler.com" className="w-full bg-slate-50 border border-slate-100 rounded-xl py-3 px-4 text-sm font-bold text-slate-900 focus:outline-none focus:bg-white focus:border-indigo-600 transition-all" />
                       </div>
                    </div>
@@ -106,17 +106,17 @@ export default function SettingsPage() {
                          <Zap className="w-5 h-5" />
                       </div>
                       <div>
-                         <h3 className="text-base font-black text-slate-900 tracking-tight">Operational Hours</h3>
+                         <h3 className="text-base font-bold text-slate-900 tracking-tight">Operational Hours</h3>
                          <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mt-1">Timeframe Protocols</p>
                       </div>
                    </div>
                    
                    <div className="flex items-center justify-between p-4 bg-slate-50 rounded-xl border border-slate-100">
                       <div className="space-y-1">
-                         <p className="text-[13px] font-black text-slate-900">Standard Business Week</p>
+                         <p className="text-[13px] font-bold text-slate-900">Standard Business Week</p>
                          <p className="text-[11px] font-bold text-slate-400">Monday - Friday, 08:00 AM - 05:00 PM</p>
                       </div>
-                      <button className="text-[11px] font-black text-indigo-600 uppercase tracking-widest hover:underline">Edit Protocol</button>
+                      <button className="text-[11px] font-bold text-indigo-600 uppercase tracking-widest hover:underline">Edit Protocol</button>
                    </div>
                 </section>
              </div>
@@ -127,7 +127,7 @@ export default function SettingsPage() {
                <div className="w-16 h-16 rounded-2xl bg-white border border-slate-200 shadow-sm flex items-center justify-center text-slate-300 mb-6">
                   <Activity className="w-8 h-8" />
                </div>
-               <h3 className="text-lg font-black text-slate-900 tracking-tight mb-2">Protocol Interface Loading</h3>
+               <h3 className="text-lg font-bold text-slate-900 tracking-tight mb-2">Protocol Interface Loading</h3>
                <p className="text-sm font-medium text-slate-400">Fetching sub-system configuration surfaces...</p>
             </div>
           )}

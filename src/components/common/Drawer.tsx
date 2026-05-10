@@ -41,15 +41,15 @@ export const Drawer: React.FC<DrawerProps> = ({
 
   return (
     <div className="fixed inset-0 z-[100] flex justify-end transition-all duration-500 ease-in-out">
-      {/* Backdrop */}
+      {/* Backdrop — solid overlay, no blur */}
       <div 
-        className="absolute inset-0 bg-slate-900/10 backdrop-blur-sm animate-in fade-in duration-500"
+        className="absolute inset-0 bg-slate-900/30 animate-in fade-in duration-500"
         onClick={onClose}
       />
       
       {/* Drawer Surface */}
       <div 
-        className="relative w-full max-w-[580px] h-full bg-white shadow-2xl border-l border-slate-200 animate-in slide-in-from-right duration-500 flex flex-col"
+        className="relative w-full max-w-[580px] h-full bg-white shadow-premium border-l border-slate-200 animate-in slide-in-from-right duration-500 flex flex-col"
       >
         {/* Header - Mature Operational Control */}
         <div className="px-10 py-8 border-b border-slate-50 flex items-center justify-between shrink-0">
@@ -58,7 +58,7 @@ export const Drawer: React.FC<DrawerProps> = ({
                <button onClick={onClose} className="p-1.5 -ml-1.5 hover:bg-slate-50 rounded-lg text-slate-400 hover:text-slate-900 transition-all">
                   <ArrowLeft className="w-4 h-4" />
                </button>
-               <h2 className="text-xl font-black text-slate-900 tracking-tight">{title}</h2>
+               <h2 className="text-xl font-bold text-slate-900 tracking-tight">{title}</h2>
             </div>
             {subtitle && <p className="text-[12px] font-bold text-slate-400 uppercase tracking-widest pl-7">{subtitle}</p>}
           </div>
@@ -76,14 +76,14 @@ export const Drawer: React.FC<DrawerProps> = ({
         </div>
 
         {/* Footer Actions (Optional) */}
-        <div className="px-10 py-6 border-t border-slate-50 flex items-center justify-end gap-3 shrink-0 bg-slate-50/30">
+        <div className="px-10 py-6 border-t border-slate-100 flex items-center justify-end gap-3 shrink-0 bg-slate-50">
           <button 
             onClick={onClose}
-            className="px-6 py-2.5 rounded-xl text-[11px] font-black text-slate-500 hover:text-slate-900 transition-all uppercase tracking-wider"
+            className="px-6 py-2.5 rounded-xl text-[11px] font-bold text-slate-500 hover:text-slate-900 transition-all uppercase tracking-wider"
           >
             Close Panel
           </button>
-          <button className="bg-slate-900 hover:bg-black text-white px-8 py-2.5 rounded-xl text-[11px] font-black uppercase tracking-wider transition-all shadow-md">
+          <button className="bg-slate-900 hover:bg-black text-white px-8 py-2.5 rounded-xl text-[11px] font-bold uppercase tracking-wider transition-all shadow-md">
             Execute Actions
           </button>
         </div>

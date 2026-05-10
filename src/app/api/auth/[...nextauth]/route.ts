@@ -1,2 +1,2 @@
-import { GET, POST } from "@/lib/auth/auth.config";
-export { GET, POST };
+import { handlers } from "@/auth";
+export const { GET, POST } = handlers;

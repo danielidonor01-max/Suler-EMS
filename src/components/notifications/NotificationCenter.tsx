@@ -79,7 +79,7 @@ export function NotificationCenter() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="fixed inset-0 z-40 bg-slate-900/5 backdrop-blur-[1px]" 
+              className="fixed inset-0 z-40 bg-slate-900/5" 
               onClick={() => setIsOpen(false)} 
             />
             <motion.div 
@@ -87,11 +87,11 @@ export function NotificationCenter() {
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 10 }}
               transition={{ type: 'spring', damping: 20, stiffness: 300 }}
-              className="absolute right-0 mt-4 w-[420px] bg-white/90 backdrop-blur-xl border border-slate-100 rounded-[32px] shadow-[0_20px_50px_-12px_rgba(0,0,0,0.15)] z-50 overflow-hidden"
+              className="absolute right-0 mt-4 w-[420px] bg-white border border-slate-200 rounded-[24px] shadow-[0_20px_50px_-12px_rgba(0,0,0,0.15)] z-50 overflow-hidden"
             >
               <div className="p-6 border-b border-slate-50 flex items-center justify-between">
                 <div>
-                  <h3 className="text-sm font-extrabold text-slate-900 tracking-tight">Activity Feed</h3>
+                  <h3 className="text-sm font-bold text-slate-900 tracking-tight">Activity Feed</h3>
                   <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Operational Updates</p>
                 </div>
                 <button 
@@ -116,7 +116,7 @@ export function NotificationCenter() {
                       <div 
                         key={n.id}
                         onClick={() => markAsRead(n.id)}
-                        className={`p-4 rounded-2xl cursor-pointer transition-all hover:bg-white hover:shadow-md hover:shadow-slate-200/50 group relative ${n.status !== 'READ' ? 'bg-indigo-50/30' : ''}`}
+                        className={`p-4 rounded-2xl cursor-pointer transition-all hover:bg-slate-50 relative ${n.status !== 'READ' ? 'bg-indigo-50/50' : ''}`}
                       >
                         <div className="flex gap-4">
                           <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 border transition-colors ${
@@ -148,7 +148,7 @@ export function NotificationCenter() {
                 )}
               </div>
 
-              <div className="p-4 bg-slate-50/50 border-t border-slate-50 text-center">
+              <div className="p-4 bg-slate-50 border-t border-slate-100 text-center">
                 <button className="w-full py-2.5 bg-white border border-slate-100 rounded-xl text-[10px] font-bold text-slate-400 uppercase tracking-widest hover:text-indigo-600 hover:border-indigo-100 transition-all shadow-sm">
                   View Management Audit
                 </button>

@@ -144,14 +144,14 @@ export default function ECCPage() {
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 px-2">
         <div className="space-y-4">
           <div className="flex items-center gap-2.5">
-             <div className="px-2.5 py-1 bg-slate-950 text-white rounded-md text-[9px] font-bold uppercase tracking-[0.2em] flex items-center gap-1.5">
+             <div className="px-2.5 py-1 bg-slate-900 text-white rounded-md text-[9px] font-bold uppercase tracking-[0.2em] flex items-center gap-1.5">
                 <ShieldCheck className="w-3 h-3" />
                 Executive War Room
              </div>
              <div className="w-1 h-1 rounded-full bg-slate-200" />
              <div className="flex items-center gap-1.5">
                <div className={`w-2 h-2 rounded-full ${isRecovering ? 'bg-amber-500 animate-pulse' : (syncHealth === 'HEALTHY' ? 'bg-emerald-500' : 'bg-rose-500')}`} />
-               <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+               <span className="text-[10px] font-medium text-slate-400 uppercase tracking-widest">
                  {isRecovering ? 'Autonomous Recovery Active' : `Global Status: ${syncHealth}`}
                </span>
              </div>
@@ -160,7 +160,7 @@ export default function ECCPage() {
                  <div className="w-1 h-1 rounded-full bg-slate-200" />
                  <div className="flex items-center gap-1.5">
                    <ShieldAlert className={`w-3.5 h-3.5 ${alertLevel === 'CRITICAL' ? 'text-rose-600 animate-bounce' : 'text-amber-500'}`} />
-                   <span className={`text-[10px] font-bold uppercase tracking-widest ${alertLevel === 'CRITICAL' ? 'text-rose-600' : 'text-amber-500'}`}>
+                   <span className={`text-[10px] font-medium uppercase tracking-widest ${alertLevel === 'CRITICAL' ? 'text-rose-600' : 'text-amber-500'}`}>
                      Governance Alert: {alertLevel}
                    </span>
                  </div>
@@ -180,16 +180,16 @@ export default function ECCPage() {
         <div className="flex items-center gap-3">
            <button 
              onClick={() => setIsSimulatorOpen(true)}
-             className="bg-indigo-600 text-white px-6 h-[44px] rounded-xl text-[11px] font-bold uppercase tracking-wider transition-all shadow-lg shadow-indigo-600/20 flex items-center gap-2"
+             className="bg-indigo-600 text-white px-6 h-[44px] rounded-[12px] text-[11px] font-bold uppercase tracking-wider transition-all shadow-premium flex items-center gap-2"
            >
               <Play className="w-[18px] h-[18px] stroke-[1.5px]" />
               Strategy Simulator
            </button>
-           <button className="bg-white border border-slate-200 text-slate-600 hover:border-slate-300 px-6 h-[44px] rounded-xl text-[11px] font-bold uppercase tracking-wider transition-all shadow-sm flex items-center gap-2">
+           <button className="bg-white border border-slate-200 text-slate-600 hover:border-slate-300 px-6 h-[44px] rounded-[12px] text-[11px] font-bold uppercase tracking-wider transition-all shadow-sm flex items-center gap-2">
               <BarChart3 className="w-[18px] h-[18px] stroke-[1.5px]" />
               Strategic Report
            </button>
-           <button className="bg-indigo-600 hover:bg-indigo-700 text-white flex items-center gap-2 px-6 h-[44px] rounded-xl text-[11px] font-bold uppercase tracking-wider transition-all shadow-lg shadow-indigo-600/20">
+           <button className="bg-indigo-600 hover:bg-indigo-700 text-white flex items-center gap-2 px-6 h-[44px] rounded-[12px] text-[11px] font-bold uppercase tracking-wider transition-all shadow-premium">
               <Target className="w-[18px] h-[18px] stroke-[1.5px]" />
               Executive Sync
            </button>
@@ -204,7 +204,7 @@ export default function ECCPage() {
           ))}
         </div>
       ) : (
-        <div className="bg-slate-50 border border-slate-100 rounded-[32px] p-12">
+        <div className="bg-slate-50 border border-slate-200 rounded-[24px] p-12">
           <EmptyState 
             title="No Strategic Signals Detected"
             description="The organizational monitoring system is currently scanning for anomalies. No high-priority alerts or predictive risks are currently registered."
@@ -217,13 +217,13 @@ export default function ECCPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
         
         {/* Operational Heatmap: Branch vs Dept */}
-        <div className="lg:col-span-2 bg-white rounded-[32px] p-10 border border-slate-200/60 shadow-sm">
+        <div className="lg:col-span-2 bg-white rounded-[24px] p-10 border border-slate-200 shadow-premium">
            <div className="flex items-center justify-between mb-10">
               <div className="space-y-1">
-                 <h2 className="text-xl font-black text-slate-900 tracking-tight leading-none">Operational Density Heatmap</h2>
+                 <h2 className="text-xl font-bold text-slate-900 tracking-tight leading-none">Operational Density Heatmap</h2>
                  <p className="text-[12px] font-medium text-slate-400 uppercase tracking-widest">Cross-Hub Performance Comparison</p>
               </div>
-              <button className="text-[10px] font-black text-indigo-600 uppercase tracking-widest hover:text-indigo-700 transition-colors flex items-center gap-1.5">
+              <button className="text-[10px] font-medium text-indigo-600 uppercase tracking-widest hover:text-indigo-700 transition-colors flex items-center gap-1.5">
                  <Maximize2 className="w-3.5 h-3.5" />
                  View Full Matrix
               </button>
@@ -234,22 +234,22 @@ export default function ECCPage() {
                 <table className="w-full">
                    <thead>
                       <tr>
-                         <th className="text-left pb-6 px-4 text-[9px] font-black text-slate-300 uppercase tracking-widest">Hub Location</th>
-                         <th className="pb-6 px-4 text-[9px] font-black text-slate-300 uppercase tracking-widest">HR Gov</th>
-                         <th className="pb-6 px-4 text-[9px] font-black text-slate-300 uppercase tracking-widest">Operations</th>
-                         <th className="pb-6 px-4 text-[9px] font-black text-slate-300 uppercase tracking-widest">Finance</th>
-                         <th className="pb-6 px-4 text-[9px] font-black text-slate-300 uppercase tracking-widest">Technical</th>
+                         <th className="text-left pb-6 px-4 text-[9px] font-medium text-slate-300 uppercase tracking-widest">Hub Location</th>
+                         <th className="pb-6 px-4 text-[9px] font-medium text-slate-300 uppercase tracking-widest">HR Gov</th>
+                         <th className="pb-6 px-4 text-[9px] font-medium text-slate-300 uppercase tracking-widest">Operations</th>
+                         <th className="pb-6 px-4 text-[9px] font-medium text-slate-300 uppercase tracking-widest">Finance</th>
+                         <th className="pb-6 px-4 text-[9px] font-medium text-slate-300 uppercase tracking-widest">Technical</th>
                       </tr>
                    </thead>
-                   <tbody className="divide-y divide-slate-50">
+                   <tbody className="divide-y divide-slate-100">
                       {HUB_HEATMAP_DATA.map((row) => (
                         <tr key={row.hub} className="group">
                            <td className="py-5 px-4">
                               <div className="flex items-center gap-3">
-                                 <div className="w-8 h-8 rounded-lg bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-400 text-[10px] font-black">
+                                 <div className="w-8 h-8 rounded-[8px] bg-slate-50 border border-slate-200 flex items-center justify-center text-slate-400 text-[10px] font-bold">
                                     {row.hub[0]}
                                  </div>
-                                 <span className="text-[13px] font-black text-slate-900 tracking-tight">{row.hub}</span>
+                                 <span className="text-[13px] font-bold text-slate-900 tracking-tight">{row.hub}</span>
                               </div>
                            </td>
                            <td className="py-2 px-2"><HeatmapCell value={row.hr} /></td>
@@ -284,21 +284,21 @@ export default function ECCPage() {
                     <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Risk Signal</span>
                  </div>
               </div>
-              <div className="text-[10px] font-black text-slate-300 uppercase tracking-widest italic">
+              <div className="text-[10px] font-medium text-slate-300 uppercase tracking-widest italic">
                  Live sync updated 2m ago
               </div>
            </div>
         </div>
 
         {/* Strategic Radar: Enterprise Risk Profile */}
-        <div className="bg-slate-950 rounded-[32px] p-10 text-white relative overflow-hidden shadow-2xl shadow-slate-900/40">
+        <div className="bg-white rounded-[24px] p-10 border border-slate-200 shadow-premium relative overflow-hidden">
            <div className="relative z-10">
               <div className="flex items-center justify-between mb-10">
                  <div className="space-y-1">
-                    <h3 className="text-xl font-black text-white tracking-tight leading-none">Enterprise Risk Radar</h3>
-                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-indigo-400">Trust & Stability Index</p>
+                    <h3 className="text-xl font-bold text-slate-900 tracking-tight leading-none">Enterprise Risk Radar</h3>
+                    <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-indigo-600">Trust & Stability Index</p>
                  </div>
-                 <Zap className="w-5 h-5 text-indigo-400 animate-pulse" />
+                 <Zap className="w-5 h-5 text-indigo-600 animate-pulse" />
               </div>
 
               <div className="h-[300px] w-full mt-4">
@@ -310,7 +310,7 @@ export default function ECCPage() {
                       data={dynamicRadarData}
                       margin={{ top: 30, right: 60, bottom: 30, left: 60 }}
                     >
-                       <PolarGrid stroke="#334155" />
+                       <PolarGrid stroke="#f1f5f9" />
                        <PolarAngleAxis 
                          dataKey="subject" 
                          tick={{ fill: '#94a3b8', fontSize: 10, fontWeight: 500 }}
@@ -328,12 +328,12 @@ export default function ECCPage() {
               </div>
 
               <div className="mt-10 space-y-4">
-                 <div className="flex items-center justify-between p-4 bg-white/5 rounded-2xl border border-white/5">
+                 <div className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl border border-slate-200">
                     <div className="flex items-center gap-3">
-                       <Sparkles className="w-4 h-4 text-indigo-400" />
-                       <span className="text-[11px] font-black uppercase tracking-widest">AI Consensus</span>
+                       <Sparkles className="w-4 h-4 text-indigo-600" />
+                       <span className="text-[11px] font-medium uppercase tracking-widest">AI Consensus</span>
                     </div>
-                    <span className="text-[11px] font-black text-emerald-400">STABLE</span>
+                    <span className="text-[11px] font-medium text-emerald-400">STABLE</span>
                  </div>
                  <p className="text-[11px] text-slate-500 font-medium leading-relaxed italic px-2">
                     "Organizational trust boundaries are secure. Operational continuity risks in Abuja hub require monitoring due to workload density."
@@ -341,18 +341,16 @@ export default function ECCPage() {
               </div>
            </div>
 
-           {/* Ambient Glow */}
-           <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-600/10 blur-[100px] rounded-full -mr-32 -mt-32" />
         </div>
 
         {/* System Integrity & Sync Health Surface */}
-        <div className="bg-white rounded-[32px] p-10 border border-slate-200/60 shadow-sm space-y-8">
+        <div className="bg-white rounded-[24px] p-10 border border-slate-200 shadow-premium space-y-8">
            <div className="flex items-center justify-between">
               <div className="space-y-1">
-                 <h3 className="text-[15px] font-black text-slate-900 uppercase tracking-tight leading-none">System Integrity Node</h3>
-                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Realtime Sync Health</p>
+                 <h3 className="text-[15px] font-bold text-slate-900 uppercase tracking-tight leading-none">System Integrity Node</h3>
+                 <p className="text-[10px] font-medium text-slate-400 uppercase tracking-widest">Realtime Sync Health</p>
               </div>
-              <div className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border flex items-center gap-2 ${
+              <div className={`px-3 py-1 rounded-full text-[9px] font-medium uppercase tracking-widest border flex items-center gap-2 ${
                 syncHealth === 'HEALTHY' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 
                 syncHealth === 'DEGRADED' ? 'bg-amber-50 text-amber-600 border-amber-100' : 
                 'bg-rose-50 text-rose-600 border-rose-100'
@@ -363,8 +361,8 @@ export default function ECCPage() {
            </div>
 
            <div className="space-y-6">
-              <div className="p-5 bg-slate-50 rounded-[24px] border border-slate-100 space-y-4">
-                 <div className="flex items-center justify-between text-[10px] font-black uppercase tracking-widest text-slate-400">
+              <div className="p-5 bg-slate-50 rounded-[24px] border border-slate-200 space-y-4">
+                 <div className="flex items-center justify-between text-[10px] font-medium uppercase tracking-widest text-slate-400">
                     <span>Reconciliation Heartbeat</span>
                     <span className="text-slate-900">{(Date.now() - lastHeartbeat) / 1000}s ago</span>
                  </div>
@@ -377,19 +375,19 @@ export default function ECCPage() {
               </div>
 
               <div className="grid grid-cols-2 gap-4">
-                 <div className="p-4 rounded-2xl bg-indigo-50/50 border border-indigo-100">
-                    <span className="text-[9px] font-black text-indigo-400 uppercase tracking-widest block mb-1">Active Traces</span>
-                    <span className="text-xl font-black text-indigo-600">{traces.filter(t => t.status === 'PENDING').length}</span>
+                 <div className="p-4 rounded-2xl bg-indigo-50 border border-indigo-100">
+                    <span className="text-[9px] font-medium text-indigo-400 uppercase tracking-widest block mb-1">Active Traces</span>
+                    <span className="text-xl font-bold text-indigo-600">{traces.filter(t => t.status === 'PENDING').length}</span>
                  </div>
-                 <div className="p-4 rounded-2xl bg-rose-50/50 border border-rose-100">
-                    <span className="text-[9px] font-black text-rose-400 uppercase tracking-widest block mb-1">Sync Faults</span>
-                    <span className="text-xl font-black text-rose-600">{reconciliationFailures}</span>
+                 <div className="p-4 rounded-2xl bg-rose-50 border border-rose-200">
+                    <span className="text-[9px] font-medium text-rose-400 uppercase tracking-widest block mb-1">Sync Faults</span>
+                    <span className="text-xl font-bold text-rose-600">{reconciliationFailures}</span>
                  </div>
               </div>
            </div>
 
            <div className="pt-6 border-t border-slate-100">
-              <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">Mutation Latency Feed</h4>
+              <h4 className="text-[10px] font-medium text-slate-400 uppercase tracking-widest mb-4">Mutation Latency Feed</h4>
               <div className="space-y-3 max-h-[120px] overflow-auto pr-2 custom-scrollbar">
                  {traces.slice(0, 5).map(trace => (
                    <div key={trace.id} className="flex items-center justify-between py-1.5 border-b border-slate-50 last:border-0">
@@ -397,7 +395,7 @@ export default function ECCPage() {
                          <div className={`w-1.5 h-1.5 rounded-full ${trace.status === 'SUCCESS' ? 'bg-emerald-400' : trace.status === 'CONFLICT' ? 'bg-amber-400' : 'bg-slate-300'}`} />
                          <span className="text-[11px] font-bold text-slate-600 truncate max-w-[120px]">{trace.label}</span>
                       </div>
-                      <span className="text-[10px] font-black text-slate-400">{trace.latency ? `${trace.latency}ms` : '---'}</span>
+                      <span className="text-[10px] font-medium text-slate-400">{trace.latency ? `${trace.latency}ms` : '---'}</span>
                    </div>
                  ))}
                  {traces.length === 0 && (
@@ -409,16 +407,16 @@ export default function ECCPage() {
       </div>
 
       {/* Strategic Foresight: Trend Visualization */}
-      <div className="bg-white rounded-[32px] p-10 border border-slate-200/60 shadow-sm">
+      <div className="bg-white rounded-[24px] p-10 border border-slate-200 shadow-premium">
          <div className="flex items-center justify-between mb-10">
             <div className="space-y-1">
-               <h2 className="text-xl font-black text-slate-900 tracking-tight leading-none">Operational Foresight</h2>
+               <h2 className="text-xl font-bold text-slate-900 tracking-tight leading-none">Operational Foresight</h2>
                <p className="text-[12px] font-medium text-slate-400 uppercase tracking-widest">Predictive Productivity & Engagement Projections</p>
             </div>
             <div className="flex items-center gap-2">
-               <div className="flex items-center gap-2 px-4 py-2 bg-slate-50 rounded-xl border border-slate-100">
+               <div className="flex items-center gap-2 px-4 py-2 bg-slate-50 rounded-[12px] border border-slate-200">
                   <Activity className="w-4 h-4 text-indigo-600" />
-                  <span className="text-[10px] font-black uppercase tracking-widest text-slate-900">Deterministic Model Active</span>
+                  <span className="text-[10px] font-medium uppercase tracking-widest text-slate-900">Deterministic Model Active</span>
                </div>
             </div>
          </div>
@@ -491,11 +489,11 @@ export default function ECCPage() {
          {/* Global Strategy Footer */}
          <div className="mt-20 pt-10 border-t border-slate-100 flex flex-col md:flex-row items-center justify-between gap-6">
             <div className="flex items-center gap-4">
-               <div className="w-12 h-12 rounded-2xl bg-indigo-600 flex items-center justify-center text-white shadow-lg shadow-indigo-600/20">
+               <div className="w-12 h-12 rounded-[16px] bg-indigo-600 flex items-center justify-center text-white shadow-premium">
                   <Zap className="w-6 h-6" />
                </div>
                <div className="space-y-0.5">
-                  <p className="text-[13px] font-black text-slate-900 uppercase tracking-tight">Suler Guardian Protocol</p>
+                  <p className="text-[13px] font-bold text-slate-900 uppercase tracking-tight">Suler Guardian Protocol</p>
                   <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Enterprise Strategic Defense Active</p>
                </div>
             </div>
@@ -503,12 +501,12 @@ export default function ECCPage() {
             <div className="flex items-center gap-4">
                <button 
                  onClick={() => setIsOptimizationOpen(true)}
-                 className="h-[52px] px-8 bg-slate-900 text-white rounded-2xl text-[11px] font-black uppercase tracking-widest hover:bg-indigo-600 transition-all shadow-xl shadow-slate-900/10 flex items-center gap-3"
+                 className="h-[52px] px-8 bg-slate-900 text-white rounded-[16px] text-[11px] font-bold uppercase tracking-widest hover:bg-indigo-600 transition-all shadow-premium flex items-center gap-3"
                >
                   <ArrowRightLeft className="w-4 h-4" />
                   Optimize Regional Resources
                </button>
-               <button className="h-[52px] px-8 bg-white border border-slate-200 text-slate-900 rounded-2xl text-[11px] font-black uppercase tracking-widest hover:bg-slate-50 transition-all">
+               <button className="h-[52px] px-8 bg-white border border-slate-200 text-slate-900 rounded-[16px] text-[11px] font-bold uppercase tracking-widest hover:bg-slate-50 transition-all">
                   Download Strategy Brief
                </button>
             </div>
@@ -532,9 +530,9 @@ export default function ECCPage() {
 
 const StrategicSignalCard = ({ signal }: any) => {
   const severityStyles: Record<string, string> = {
-    HIGH: 'border-rose-200 bg-rose-50/30 text-rose-600',
-    MEDIUM: 'border-amber-200 bg-amber-50/30 text-amber-600',
-    STABLE: 'border-indigo-200 bg-indigo-50/30 text-indigo-600',
+    HIGH: 'border-rose-200 bg-rose-50 text-rose-600',
+    MEDIUM: 'border-amber-200 bg-amber-50 text-amber-600',
+    STABLE: 'border-indigo-200 bg-indigo-50 text-indigo-600',
   };
 
   const iconMap: Record<string, any> = {
@@ -549,14 +547,14 @@ const StrategicSignalCard = ({ signal }: any) => {
     <div className={`p-6 rounded-[24px] border transition-all hover:shadow-md cursor-pointer group ${severityStyles[signal.severity]}`}>
        <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
-             <div className="w-8 h-8 rounded-lg bg-white border border-inherit flex items-center justify-center">
+             <div className="w-8 h-8 rounded-[8px] bg-white border border-inherit flex items-center justify-center">
                 <Icon className="w-4 h-4" />
              </div>
-             <span className="text-[10px] font-black uppercase tracking-widest">{signal.label}</span>
+             <span className="text-[10px] font-medium uppercase tracking-widest">{signal.label}</span>
           </div>
           <ArrowUpRight className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-all translate-y-1 group-hover:translate-y-0" />
        </div>
-       <p className="text-[14px] font-black tracking-tight mb-2 leading-tight">{signal.msg}</p>
+       <p className="text-[14px] font-bold tracking-tight mb-2 leading-tight">{signal.msg}</p>
        <div className="flex items-center gap-2">
           <Globe className="w-3 h-3 opacity-60" />
           <span className="text-[10px] font-bold uppercase tracking-widest opacity-60">{signal.hub}</span>
@@ -574,7 +572,7 @@ const HeatmapCell = ({ value }: { value: number }) => {
   };
 
   return (
-    <div className={`w-full h-10 rounded-xl flex items-center justify-center text-[12px] font-black transition-all hover:scale-105 cursor-pointer shadow-sm ${getStyle(value)}`}>
+    <div className={`w-full h-10 rounded-[12px] flex items-center justify-center text-[12px] font-bold transition-all hover:scale-105 cursor-pointer shadow-sm ${getStyle(value)}`}>
        {value}%
     </div>
   );

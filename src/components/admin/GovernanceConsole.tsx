@@ -129,9 +129,6 @@ const GovernanceConsole = () => {
               View Governance Policy
             </button>
           </div>
-          {/* Abstract Glassmorphic Decoration */}
-          <div className="absolute -right-20 -bottom-20 w-64 h-64 bg-white/10 rounded-full blur-3xl" />
-          <div className="absolute right-10 top-10 w-20 h-20 bg-indigo-400/20 rounded-full blur-xl" />
         </div>
       </div>
     </div>

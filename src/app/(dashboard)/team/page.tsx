@@ -35,7 +35,7 @@ export default function TeamPage() {
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-8">
           <div>
             <div className="flex items-center gap-2 mb-3">
-              <div className="px-2.5 py-1 bg-slate-900 text-white rounded-md text-[9px] font-black uppercase tracking-[0.2em] flex items-center gap-1.5">
+              <div className="px-2.5 py-1 bg-slate-900 text-white rounded-md text-[9px] font-bold uppercase tracking-[0.2em] flex items-center gap-1.5">
                 <Target className="w-3 h-3" />
                 Manager Command Active
               </div>
@@ -74,7 +74,7 @@ export default function TeamPage() {
          {MOCK_TEAM.map(member => (
            <div key={member.id} className="bg-white p-6 rounded-[24px] border border-slate-200 shadow-[0_8px_30px_rgba(15,23,42,0.06)] hover:shadow-md transition-all group">
               <div className="flex justify-between items-start mb-6">
-                 <div className="w-12 h-12 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-400 text-sm font-black">
+                 <div className="w-12 h-12 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-400 text-sm font-bold">
                     {member.name.split(' ').map(n => n[0]).join('')}
                  </div>
                  <button className="text-slate-300 hover:text-slate-900">
@@ -89,8 +89,8 @@ export default function TeamPage() {
 
               <div className="space-y-4">
                  <div className="flex items-center justify-between">
-                    <span className="text-[9px] font-black text-slate-300 uppercase tracking-widest">Workload</span>
-                    <span className={`text-[10px] font-black ${member.load > 90 ? 'text-rose-500' : 'text-slate-900'}`}>{member.load}%</span>
+                    <span className="text-[9px] font-bold text-slate-300 uppercase tracking-widest">Workload</span>
+                    <span className={`text-[10px] font-bold ${member.load > 90 ? 'text-rose-500' : 'text-slate-900'}`}>{member.load}%</span>
                  </div>
                  <div className="h-1.5 w-full bg-slate-50 rounded-full overflow-hidden border border-slate-100">
                     <div 
@@ -100,7 +100,7 @@ export default function TeamPage() {
                  </div>
 
                  <div className="flex items-center justify-between pt-2">
-                    <div className={`px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-widest border ${
+                    <div className={`px-2 py-0.5 rounded text-[8px] font-bold uppercase tracking-widest border ${
                       member.status === 'ON_TIME' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-rose-50 text-rose-600 border-rose-100'
                     }`}>
                       {member.status.replace('_', ' ')}
@@ -137,8 +137,8 @@ export default function TeamPage() {
                   <Clock className="w-5 h-5" />
                </div>
                <div>
-                  <h3 className="text-base font-black text-slate-900 tracking-tight">Team Availability</h3>
-                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">Upcoming absences & Schedule sync</p>
+                  <h3 className="text-base font-bold text-slate-900 tracking-tight">Team Availability</h3>
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Upcoming absences & Schedule sync</p>
                </div>
             </div>
             <div className="space-y-3">
@@ -148,13 +148,13 @@ export default function TeamPage() {
                ].map((item, i) => (
                  <div key={i} className="flex items-center justify-between p-4 border border-slate-100 rounded-xl hover:bg-slate-50 transition-all cursor-pointer">
                     <div className="flex items-center gap-3">
-                       <div className="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center text-[10px] font-black">
+                       <div className="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center text-[10px] font-bold">
                           {item.name[0]}
                        </div>
                        <span className="text-[13px] font-bold text-slate-900">{item.name}</span>
                     </div>
                     <div className="text-right">
-                       <p className="text-[11px] font-black text-slate-400 uppercase tracking-widest">{item.date}</p>
+                       <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">{item.date}</p>
                        <p className="text-[10px] font-bold text-indigo-500/70 uppercase tracking-widest mt-0.5">{item.type}</p>
                     </div>
                  </div>

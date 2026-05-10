@@ -98,11 +98,11 @@ export const DataTable: React.FC<DataTableProps> = ({
       </div>
 
       {/* Table Surface: Anchored Operational Registry */}
-      <div className="bg-white border border-slate-200/60 rounded-[20px] shadow-sm overflow-hidden group">
+      <div className="bg-white border border-slate-200/60 rounded-[24px] shadow-premium overflow-hidden group">
         <div className="overflow-x-auto no-scrollbar">
           <table className="w-full text-left border-collapse table-fixed">
             <thead>
-              <tr className="border-b border-slate-100 bg-slate-50/30">
+              <tr className="border-b border-slate-100 bg-slate-50">
                 {columns.map((col, idx) => (
                   <th key={idx} className="px-8 py-4 text-[9px] font-bold text-slate-400 uppercase tracking-[0.2em] first:w-[40%]">
                     {col.header}
@@ -111,7 +111,7 @@ export const DataTable: React.FC<DataTableProps> = ({
                 <th className="w-[96px] pr-8 py-4 text-[9px] font-bold text-slate-400 uppercase tracking-[0.2em] text-right">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-50/50">
+            <tbody className="divide-y divide-slate-50">
               {isLoading ? (
                 // Loading Skeletons
                 Array.from({ length: 5 }).map((_, idx) => (
@@ -131,7 +131,7 @@ export const DataTable: React.FC<DataTableProps> = ({
                   <tr 
                     key={rowIdx} 
                     onClick={() => onRowClick?.(row)}
-                    className="group/row transition-all hover:bg-slate-50/80 cursor-pointer"
+                    className="group/row transition-all hover:bg-slate-50 cursor-pointer"
                   >
                     {columns.map((col, colIdx) => (
                       <td key={colIdx} className="px-8 py-4 align-middle">
@@ -173,7 +173,7 @@ export const DataTable: React.FC<DataTableProps> = ({
               onClick={() => setActiveActions(null)}
             />
             <div 
-              className="fixed z-[101] w-52 bg-white border border-slate-200 rounded-[18px] shadow-floating py-2 animate-in zoom-in-95 duration-200"
+              className="fixed z-[101] w-52 bg-white border border-slate-200 rounded-[16px] shadow-premium py-2 animate-in zoom-in-95 duration-200"
               style={{ 
                 top: activeActions.rect.bottom + 8, 
                 left: activeActions.rect.right - 208,
@@ -211,7 +211,7 @@ export const DataTable: React.FC<DataTableProps> = ({
         )}
         
         {/* Enterprise Pagination: Tighter Segmented Treatment */}
-        <div className="px-8 py-3 bg-slate-50/50 border-t border-slate-100 flex items-center justify-between">
+        <div className="px-8 py-3 bg-slate-50 border-t border-slate-100 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <span className="text-[11px] font-bold text-slate-400 tracking-tight">
               Showing <span className="text-slate-900 font-bold">1–{pageSize}</span> of <span className="text-slate-900 font-bold">{totalItems}</span> records

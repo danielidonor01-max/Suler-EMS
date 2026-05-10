@@ -85,11 +85,11 @@ export default function LeaveRequestsPage() {
       accessor: "employeeName",
       render: (val: string, row: any) => (
         <div className="flex items-center gap-4">
-           <div className="w-10 h-10 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-400 font-black text-[10px]">
+           <div className="w-10 h-10 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-400 font-bold text-[10px]">
               {val.split(' ').map(n => n[0]).join('')}
            </div>
            <div>
-              <div className="text-[14px] font-black text-slate-900 tracking-tight leading-none mb-1">{val}</div>
+              <div className="text-[14px] font-bold text-slate-900 tracking-tight leading-none mb-1">{val}</div>
               <div className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">{row.type}</div>
            </div>
         </div>
@@ -111,7 +111,7 @@ export default function LeaveRequestsPage() {
       render: (val: string) => {
         const d = new Date(val);
         const formatted = new Intl.DateTimeFormat('en-NG', { day: '2-digit', month: '2-digit' }).format(d);
-        return <span className="text-[11px] font-black text-slate-400 uppercase tracking-widest">{formatted}</span>;
+        return <span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">{formatted}</span>;
       }
     }
   ];
@@ -124,12 +124,12 @@ export default function LeaveRequestsPage() {
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-8">
           <div>
             <div className="flex items-center gap-2 mb-3">
-              <div className="px-2.5 py-1 bg-slate-900 text-white rounded-md text-[9px] font-black uppercase tracking-[0.2em] flex items-center gap-1.5">
+              <div className="px-2.5 py-1 bg-slate-900 text-white rounded-md text-[9px] font-bold uppercase tracking-[0.2em] flex items-center gap-1.5">
                 <ShieldCheck className="w-3 h-3" />
                 Workflow Engine Active
               </div>
             </div>
-            <h1 className="text-3xl font-black text-slate-900 tracking-tighter leading-none mb-3">
+            <h1 className="text-3xl font-bold text-slate-900 tracking-tighter leading-none mb-3">
               Leave Management
             </h1>
             <p className="text-[13px] font-medium text-slate-400 leading-relaxed max-w-[480px]">
@@ -138,10 +138,10 @@ export default function LeaveRequestsPage() {
           </div>
 
           <div className="flex items-center gap-3">
-            <button className="bg-white border border-slate-200 text-slate-600 hover:border-slate-300 px-6 py-3 rounded-xl text-[11px] font-black uppercase tracking-wider transition-all">
+            <button className="bg-white border border-slate-200 text-slate-600 hover:border-slate-300 px-6 py-3 rounded-xl text-[11px] font-bold uppercase tracking-wider transition-all">
               Export Registry
             </button>
-            <button className="bg-slate-900 hover:bg-black text-white flex items-center gap-2.5 px-6 py-3 rounded-xl text-[11px] font-black uppercase tracking-wider transition-all shadow-md">
+            <button className="bg-slate-900 hover:bg-black text-white flex items-center gap-2.5 px-6 py-3 rounded-xl text-[11px] font-bold uppercase tracking-wider transition-all shadow-md">
               <Plus className="w-4 h-4" />
               New Request
             </button>
@@ -179,18 +179,18 @@ export default function LeaveRequestsPage() {
               <div className="flex items-center justify-between">
                  <div className="flex items-center gap-3">
                     <User className="w-5 h-5 text-slate-400" />
-                    <span className="text-[13px] font-black text-slate-900">{selectedRequest?.employeeName}</span>
+                    <span className="text-[13px] font-bold text-slate-900">{selectedRequest?.employeeName}</span>
                  </div>
                  <WorkflowStatusBadge state={selectedRequest?.currentState || ''} />
               </div>
 
               <div className="grid grid-cols-2 gap-8">
                  <div className="space-y-1">
-                    <span className="text-[9px] font-black text-slate-300 uppercase tracking-widest">Leave Type</span>
+                    <span className="text-[9px] font-bold text-slate-300 uppercase tracking-widest">Leave Type</span>
                     <p className="text-[14px] font-bold text-slate-900">{selectedRequest?.type}</p>
                  </div>
                  <div className="space-y-1">
-                    <span className="text-[9px] font-black text-slate-300 uppercase tracking-widest">Operational Period</span>
+                    <span className="text-[9px] font-bold text-slate-300 uppercase tracking-widest">Operational Period</span>
                     <p className="text-[14px] font-bold text-slate-900">{selectedRequest?.dates}</p>
                  </div>
               </div>
@@ -200,7 +200,7 @@ export default function LeaveRequestsPage() {
            <div className="space-y-4">
               <div className="flex items-center gap-2">
                  <ShieldCheck className="w-4 h-4 text-slate-400" />
-                 <h4 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em]">Governance Authorization</h4>
+                 <h4 className="text-[11px] font-bold text-slate-400 uppercase tracking-[0.2em]">Governance Authorization</h4>
               </div>
               <WorkflowActionBar 
                 instance={selectedRequest as any} 
@@ -213,7 +213,7 @@ export default function LeaveRequestsPage() {
            <div className="space-y-4">
               <div className="flex items-center gap-2">
                  <History className="w-4 h-4 text-slate-400" />
-                 <h4 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em]">Approval Timeline</h4>
+                 <h4 className="text-[11px] font-bold text-slate-400 uppercase tracking-[0.2em]">Approval Timeline</h4>
               </div>
               <div className="p-2 border border-slate-100 rounded-[20px]">
                  <ApprovalTimeline instance={selectedRequest as any} />

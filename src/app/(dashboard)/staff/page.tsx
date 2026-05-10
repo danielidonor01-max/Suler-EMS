@@ -41,11 +41,11 @@ export default function WorkforcePage() {
       accessor: "name",
       render: (val: string, row: any) => (
         <div className="flex items-center gap-4">
-          <div className="w-10 h-10 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-400 font-black text-[10px] uppercase">
+          <div className="w-10 h-10 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-400 font-bold text-[10px] uppercase">
             {val.split(' ').map(n => n[0]).join('')}
           </div>
           <div>
-            <div className="text-[14px] font-black text-slate-900 tracking-tight leading-none mb-1">{val}</div>
+            <div className="text-[14px] font-bold text-slate-900 tracking-tight leading-none mb-1">{val}</div>
             <div className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">{row.id}</div>
           </div>
         </div>
@@ -56,8 +56,8 @@ export default function WorkforcePage() {
       accessor: "role",
       render: (val: string, row: any) => (
         <div>
-          <div className="text-[13px] font-black text-slate-700 tracking-tight leading-none mb-1.5">{val}</div>
-          <div className="text-[10px] font-black text-indigo-600 uppercase tracking-[0.15em]">{row.department}</div>
+          <div className="text-[13px] font-bold text-slate-700 tracking-tight leading-none mb-1.5">{val}</div>
+          <div className="text-[10px] font-bold text-indigo-600 uppercase tracking-[0.15em]">{row.department}</div>
         </div>
       )
     },
@@ -81,12 +81,12 @@ export default function WorkforcePage() {
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-8">
           <div>
             <div className="flex items-center gap-2 mb-3">
-              <div className="px-2.5 py-1 bg-slate-50 text-slate-500 rounded-md text-[9px] font-black uppercase tracking-[0.2em] flex items-center gap-1.5 border border-slate-100">
+              <div className="px-2.5 py-1 bg-slate-50 text-slate-500 rounded-md text-[9px] font-bold uppercase tracking-[0.2em] flex items-center gap-1.5 border border-slate-100">
                 <ShieldCheck className="w-3 h-3" />
                 Organizational Intelligence
               </div>
             </div>
-            <h1 className="text-3xl font-black text-slate-900 tracking-tighter leading-none mb-3">
+            <h1 className="text-3xl font-bold text-slate-900 tracking-tighter leading-none mb-3">
               Workforce Registry
             </h1>
             <p className="text-[13px] font-medium text-slate-400 leading-relaxed max-w-[480px]">
@@ -95,11 +95,11 @@ export default function WorkforcePage() {
           </div>
 
           <div className="flex items-center gap-3">
-             <button className="bg-white border border-slate-200 text-slate-600 hover:border-slate-300 px-6 h-[44px] rounded-xl text-[11px] font-black uppercase tracking-wider transition-all shadow-sm flex items-center gap-2">
+             <button className="bg-white border border-slate-200 text-slate-600 hover:border-slate-300 px-6 h-[44px] rounded-xl text-[11px] font-bold uppercase tracking-wider transition-all shadow-sm flex items-center gap-2">
                 <Layout className="w-[18px] h-[18px] stroke-[1.5px]" />
                 Org Chart
              </button>
-            <button className="bg-slate-900 hover:bg-black text-white flex items-center gap-2 px-6 h-[44px] rounded-xl text-[11px] font-black uppercase tracking-wider transition-all shadow-md">
+            <button className="bg-slate-900 hover:bg-black text-white flex items-center gap-2 px-6 h-[44px] rounded-xl text-[11px] font-bold uppercase tracking-wider transition-all shadow-md">
               <UserPlus className="w-[18px] h-[18px] stroke-[1.5px]" />
               Onboard Staff
             </button>
@@ -135,22 +135,22 @@ export default function WorkforcePage() {
            {/* Summary Card */}
            <div className="p-7 bg-slate-50 border border-slate-100 rounded-[20px] space-y-6">
               <div className="flex items-center gap-5">
-                 <div className="w-16 h-16 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-slate-900 text-xl font-black">
+                 <div className="w-16 h-16 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-slate-900 text-xl font-bold">
                    {selectedStaff?.name.split(' ').map(n => n[0]).join('')}
                  </div>
                  <div className="space-y-1">
-                    <h3 className="text-xl font-black text-slate-900 tracking-tight">{selectedStaff?.name}</h3>
+                    <h3 className="text-xl font-bold text-slate-900 tracking-tight">{selectedStaff?.name}</h3>
                     <p className="text-[13px] font-bold text-slate-500 uppercase tracking-widest">{selectedStaff?.role}</p>
                  </div>
               </div>
 
               <div className="grid grid-cols-2 gap-8">
                  <div className="space-y-1">
-                    <span className="text-[9px] font-black text-slate-300 uppercase tracking-widest">Department</span>
+                    <span className="text-[9px] font-bold text-slate-300 uppercase tracking-widest">Department</span>
                     <p className="text-[14px] font-bold text-slate-900">{selectedStaff?.department}</p>
                  </div>
                  <div className="space-y-1">
-                    <span className="text-[9px] font-black text-slate-300 uppercase tracking-widest">Primary Hub</span>
+                    <span className="text-[9px] font-bold text-slate-300 uppercase tracking-widest">Primary Hub</span>
                     <p className="text-[14px] font-bold text-slate-900">{selectedStaff?.location}</p>
                  </div>
               </div>
@@ -160,7 +160,7 @@ export default function WorkforcePage() {
            <div className="space-y-4">
               <div className="flex items-center gap-2">
                  <ShieldCheck className="w-4 h-4 text-slate-400" />
-                 <h4 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em]">Contact Intelligence</h4>
+                 <h4 className="text-[11px] font-bold text-slate-400 uppercase tracking-[0.2em]">Contact Intelligence</h4>
               </div>
               <div className="grid grid-cols-1 gap-4">
                  <div className="flex items-center gap-4 p-4 rounded-xl bg-white border border-slate-100 shadow-sm">
@@ -168,7 +168,7 @@ export default function WorkforcePage() {
                        <Mail className="w-4.5 h-4.5" />
                     </div>
                     <div>
-                       <p className="text-[10px] font-black text-slate-300 uppercase tracking-widest">Work Email</p>
+                       <p className="text-[10px] font-bold text-slate-300 uppercase tracking-widest">Work Email</p>
                        <p className="text-[13px] font-bold text-slate-900">{selectedStaff?.email}</p>
                     </div>
                  </div>
@@ -177,7 +177,7 @@ export default function WorkforcePage() {
                        <Phone className="w-4.5 h-4.5" />
                     </div>
                     <div>
-                       <p className="text-[10px] font-black text-slate-300 uppercase tracking-widest">Operational Mobile</p>
+                       <p className="text-[10px] font-bold text-slate-300 uppercase tracking-widest">Operational Mobile</p>
                        <p className="text-[13px] font-bold text-slate-900">{selectedStaff?.phone}</p>
                     </div>
                  </div>
@@ -186,11 +186,11 @@ export default function WorkforcePage() {
 
            {/* Actions */}
            <div className="grid grid-cols-2 gap-4">
-              <button className="bg-slate-900 hover:bg-black text-white h-[44px] rounded-xl text-[11px] font-black uppercase tracking-widest shadow-md transition-all flex items-center justify-center gap-2">
+              <button className="bg-slate-900 hover:bg-black text-white h-[44px] rounded-xl text-[11px] font-bold uppercase tracking-widest shadow-md transition-all flex items-center justify-center gap-2">
                  <Target className="w-4 h-4 stroke-[1.5px]" />
                  Initiate Transfer
               </button>
-              <button className="bg-white border border-slate-200 text-slate-600 h-[44px] rounded-xl text-[11px] font-black uppercase tracking-widest hover:border-slate-300 transition-all shadow-sm flex items-center justify-center gap-2">
+              <button className="bg-white border border-slate-200 text-slate-600 h-[44px] rounded-xl text-[11px] font-bold uppercase tracking-widest hover:border-slate-300 transition-all shadow-sm flex items-center justify-center gap-2">
                  <ShieldCheck className="w-4 h-4 stroke-[1.5px]" />
                  Modify Access
               </button>

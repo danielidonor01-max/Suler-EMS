@@ -41,12 +41,12 @@ export default function AttendancePage() {
       accessor: "staffName",
       render: (val: string, row: any) => (
         <div className="flex items-center gap-4">
-           <div className="w-10 h-10 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-400 font-black text-[10px]">
+           <div className="w-10 h-10 rounded-lg bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-400 font-bold text-[10px]">
               {val.split(' ').map(n => n[0]).join('')}
            </div>
            <div>
-              <div className="text-[14px] font-black text-slate-900 tracking-tight leading-none mb-1">{val}</div>
-              <div className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">{row.department}</div>
+              <div className="text-[14px] font-bold text-slate-900 tracking-tight leading-none mb-1">{val}</div>
+              <div className="text-[11px] font-medium text-slate-400 uppercase tracking-widest">{row.department}</div>
            </div>
         </div>
       )
@@ -69,7 +69,7 @@ export default function AttendancePage() {
           val === 'ON_TIME' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-rose-50 text-rose-600 border-rose-100'
         }`}>
           <div className={`w-1 h-1 rounded-full ${val === 'ON_TIME' ? 'bg-emerald-500' : 'bg-rose-500'} animate-pulse`} />
-          <span className="text-[9px] font-black uppercase tracking-widest">{val.replace('_', ' ')}</span>
+          <span className="text-[9px] font-medium uppercase tracking-widest">{val.replace('_', ' ')}</span>
         </div>
       )
     }
@@ -82,15 +82,15 @@ export default function AttendancePage() {
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 px-2">
         <div className="space-y-4">
           <div className="flex items-center gap-2.5">
-             <div className="px-2.5 py-1 bg-slate-900 text-white rounded-md text-[9px] font-black uppercase tracking-[0.2em] flex items-center gap-1.5">
+             <div className="px-2.5 py-1 bg-slate-900 text-white rounded-md text-[9px] font-bold uppercase tracking-[0.2em] flex items-center gap-1.5">
                 <Fingerprint className="w-3 h-3" />
                 Biometric Sync Active
              </div>
              <div className="w-1 h-1 rounded-full bg-slate-200" />
-             <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Network Status: Stable</span>
+             <span className="text-[10px] font-medium text-slate-400 uppercase tracking-widest">Network Status: Stable</span>
           </div>
           <div className="space-y-1">
-            <h1 className="text-4xl font-black text-slate-900 tracking-tighter leading-none">
+            <h1 className="text-4xl font-bold text-slate-900 tracking-tighter leading-none">
               Attendance & Presence
             </h1>
             <p className="text-[13px] font-medium text-slate-400 leading-relaxed max-w-[480px]">
@@ -100,11 +100,11 @@ export default function AttendancePage() {
         </div>
         
         <div className="flex items-center gap-3">
-           <button className="bg-white border border-slate-200 text-slate-600 hover:border-slate-300 px-6 h-[44px] rounded-xl text-[11px] font-black uppercase tracking-wider transition-all shadow-sm flex items-center gap-2">
+           <button className="bg-white border border-slate-200 text-slate-600 hover:border-slate-300 px-6 h-[44px] rounded-[12px] text-[11px] font-bold uppercase tracking-wider transition-all shadow-sm flex items-center gap-2">
               <Download className="w-[18px] h-[18px] stroke-[1.5px]" />
               Export Logs
            </button>
-           <button className="bg-slate-900 hover:bg-black text-white flex items-center gap-2 px-6 h-[44px] rounded-xl text-[11px] font-black uppercase tracking-wider transition-all shadow-md">
+           <button className="bg-slate-900 hover:bg-black text-white flex items-center gap-2 px-6 h-[44px] rounded-[12px] text-[11px] font-bold uppercase tracking-wider transition-all shadow-premium">
               <RefreshCcw className="w-[18px] h-[18px] stroke-[1.5px]" />
               Reconcile Devices
            </button>
@@ -129,7 +129,7 @@ export default function AttendancePage() {
           onRowClick={(row) => setSelectedLog(row)}
         />
       ) : (
-        <div className="p-20 bg-white border border-slate-200/60 rounded-[24px] shadow-sm">
+        <div className="p-20 bg-white border border-slate-200 rounded-[24px] shadow-premium">
            <EmptyState 
             title="No Attendance Logs Detected" 
             description="The biometric synchronization has not yet transmitted today's presence datasets for this workspace hub."
@@ -147,39 +147,39 @@ export default function AttendancePage() {
         title={selectedLog?.staffName || ''}
         subtitle={selectedLog?.staffId}
       >
-        <div className="space-y-10 animate-in">
-           {/* Summary Block */}
-           <div className="p-7 bg-slate-50 border border-slate-100 rounded-[20px] space-y-6">
-              <div className="flex items-center justify-between">
-                 <div className="flex flex-col">
-                    <span className="text-[14px] font-black text-slate-900">{selectedLog?.staffName}</span>
-                    <span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">{selectedLog?.department}</span>
-                 </div>
-                 <div className={`px-2.5 py-1 rounded-lg border text-[9px] font-black uppercase tracking-widest ${
-                   selectedLog?.status === 'ON_TIME' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-rose-50 text-rose-600 border-rose-100'
-                 }`}>
-                   {selectedLog?.status.replace('_', ' ')}
-                 </div>
-              </div>
+         <div className="space-y-10 animate-in">
+            {/* Summary Block */}
+            <div className="p-7 bg-slate-50 border border-slate-200 rounded-[16px] space-y-6">
+               <div className="flex items-center justify-between">
+                  <div className="flex flex-col">
+                     <span className="text-[14px] font-bold text-slate-900">{selectedLog?.staffName}</span>
+                     <span className="text-[11px] font-medium text-slate-400 uppercase tracking-widest">{selectedLog?.department}</span>
+                  </div>
+                  <div className={`px-2.5 py-1 rounded-lg border text-[9px] font-medium uppercase tracking-widest ${
+                    selectedLog?.status === 'ON_TIME' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-rose-50 text-rose-600 border-rose-100'
+                  }`}>
+                    {selectedLog?.status.replace('_', ' ')}
+                  </div>
+               </div>
+ 
+               <div className="grid grid-cols-2 gap-8 border-t border-slate-200 pt-6">
+                  <div className="space-y-1.5">
+                     <span className="text-[9px] font-medium text-slate-300 uppercase tracking-widest">Check-in Time</span>
+                     <p className="text-[14px] font-bold text-slate-900">{selectedLog?.checkIn}</p>
+                  </div>
+                  <div className="space-y-1.5">
+                     <span className="text-[9px] font-medium text-slate-300 uppercase tracking-widest">Device Source</span>
+                     <p className="text-[14px] font-bold text-slate-900">Terminal 04 (HQ)</p>
+                  </div>
+               </div>
+            </div>
 
-              <div className="grid grid-cols-2 gap-8 border-t border-slate-200/60 pt-6">
-                 <div className="space-y-1.5">
-                    <span className="text-[9px] font-black text-slate-300 uppercase tracking-widest">Check-in Time</span>
-                    <p className="text-[14px] font-bold text-slate-900">{selectedLog?.checkIn}</p>
-                 </div>
-                 <div className="space-y-1.5">
-                    <span className="text-[9px] font-black text-slate-300 uppercase tracking-widest">Device Source</span>
-                    <p className="text-[14px] font-bold text-slate-900">Terminal 04 (HQ)</p>
-                 </div>
-              </div>
-           </div>
-
-           {/* Precision Timeline */}
-           <div className="space-y-5">
-              <div className="flex items-center gap-2">
-                 <History className="w-4 h-4 text-slate-400" />
-                 <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Operational History</h4>
-              </div>
+            {/* Precision Timeline */}
+            <div className="space-y-5">
+               <div className="flex items-center gap-2">
+                  <History className="w-4 h-4 text-slate-400" />
+                  <h4 className="text-[10px] font-semibold text-slate-400 uppercase tracking-[0.2em]">Operational History</h4>
+               </div>
               <div className="space-y-4 relative before:absolute before:left-2.5 before:top-2 before:bottom-2 before:w-px before:bg-slate-100">
                  {[
                    { label: 'Check-in Recorded', desc: 'Verified via biometric scan at Main Entrance.', time: '08:00 AM' },
@@ -188,25 +188,25 @@ export default function AttendancePage() {
                    <div key={i} className="relative pl-10">
                       <div className="absolute left-2 top-1.5 w-1.5 h-1.5 rounded-full bg-slate-900 ring-4 ring-slate-50" />
                       <div className="flex justify-between items-start">
-                         <p className="text-[12px] font-black text-slate-900">{log.label}</p>
-                         <span className="text-[10px] font-bold text-slate-300">{log.time}</span>
-                      </div>
+                        <p className="text-[12px] font-bold text-slate-900">{log.label}</p>
+                        <span className="text-[10px] font-medium text-slate-300">{log.time}</span>
+                     </div>
                       <p className="text-[11px] font-medium text-slate-500 mt-0.5 leading-relaxed">{log.desc}</p>
                    </div>
                  ))}
               </div>
            </div>
 
-           {/* Actions Intelligence */}
-           <div className="pt-6 border-t border-slate-100 flex gap-3">
-              <button className="flex-1 bg-slate-900 hover:bg-black text-white h-[44px] rounded-xl text-[11px] font-black uppercase tracking-widest shadow-md transition-all flex items-center justify-center gap-2">
-                 <RefreshCcw className="w-4 h-4 stroke-[1.5px]" />
-                 Reconcile Log
-              </button>
-              <button className="w-[44px] h-[44px] flex items-center justify-center border border-slate-200 text-slate-400 rounded-xl hover:text-slate-900 hover:border-slate-300 transition-all shadow-sm">
-                 <ArrowRight className="w-4 h-4 stroke-[1.5px]" />
-              </button>
-           </div>
+            {/* Actions Intelligence */}
+            <div className="pt-6 border-t border-slate-100 flex gap-3">
+               <button className="flex-1 bg-slate-900 hover:bg-black text-white h-[44px] rounded-[12px] text-[11px] font-bold uppercase tracking-widest shadow-premium transition-all flex items-center justify-center gap-2">
+                  <RefreshCcw className="w-4 h-4 stroke-[1.5px]" />
+                  Reconcile Log
+               </button>
+               <button className="w-[44px] h-[44px] flex items-center justify-center border border-slate-200 text-slate-400 rounded-[12px] hover:text-slate-900 hover:border-slate-300 transition-all shadow-sm">
+                  <ArrowRight className="w-4 h-4 stroke-[1.5px]" />
+               </button>
+            </div>
         </div>
       </Drawer>
     </div>

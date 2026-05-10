@@ -82,23 +82,23 @@ export const Modal: React.FC<ModalProps> = ({
         aria-modal="true"
         aria-labelledby="modal-title"
       >
-        {/* Backdrop with Executive Blur */}
+        {/* Backdrop — solid overlay, no blur */}
         <div 
-          className="absolute inset-0 bg-slate-900/40 backdrop-blur-md animate-in fade-in duration-300"
+          className="absolute inset-0 bg-slate-900/30 animate-in fade-in duration-300"
           onClick={onClose}
         />
         
         {/* Modal Surface: Centered Workflow Architecture */}
         <div 
           ref={modalRef}
-          className={`w-full ${sizeClasses[size]} bg-white rounded-[24px] shadow-floating relative z-10 flex flex-col max-h-full animate-in zoom-in-95 fade-in duration-300 ease-out`}
+          className={`w-full ${sizeClasses[size]} bg-white rounded-[24px] shadow-premium relative z-10 flex flex-col max-h-full animate-in zoom-in-95 fade-in duration-300 ease-out`}
         >
           {/* Header Layer */}
           <div className="px-8 py-6 border-b border-slate-100 flex items-center justify-between shrink-0">
             <div className="space-y-1">
-              <h3 id="modal-title" className="text-xl font-black text-slate-900 tracking-tighter leading-none">{title}</h3>
+              <h3 id="modal-title" className="text-xl font-bold text-slate-900 tracking-tighter leading-none">{title}</h3>
               {subtitle && (
-                <p className="text-[11px] font-black text-slate-400 uppercase tracking-widest leading-none mt-1.5">{subtitle}</p>
+                <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest leading-none mt-1.5">{subtitle}</p>
               )}
             </div>
             <button 

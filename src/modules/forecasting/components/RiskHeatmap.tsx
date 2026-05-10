@@ -44,7 +44,7 @@ export const RiskHeatmap: React.FC<RiskHeatmapProps> = ({ data }) => {
         return (
           <div 
             key={item.department}
-            className={`p-8 rounded-[32px] border-2 transition-all hover:shadow-xl hover:-translate-y-1 ${styles.bg} ${styles.border} group relative overflow-hidden`}
+            className={`p-8 rounded-[24px] border-2 transition-all hover:shadow-raised hover:-translate-y-1 ${styles.bg} ${styles.border} group relative overflow-hidden`}
           >
             {/* Background pattern */}
             <div className="absolute top-0 right-0 p-4 opacity-[0.03]">
@@ -53,7 +53,7 @@ export const RiskHeatmap: React.FC<RiskHeatmapProps> = ({ data }) => {
 
             <div className="relative z-10">
               <div className="flex items-center justify-between mb-8">
-                <span className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-400">{item.department}</span>
+                <span className="text-[11px] font-medium uppercase tracking-[0.2em] text-slate-400">{item.department}</span>
                 {item.trend === 'UP' ? (
                   <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center shadow-sm">
                     <TrendingUp className="w-4 h-4 text-rose-500" />
@@ -67,15 +67,15 @@ export const RiskHeatmap: React.FC<RiskHeatmapProps> = ({ data }) => {
               
               <div className="flex items-end justify-between gap-4 mb-8">
                 <div>
-                  <div className={`text-4xl font-black tracking-tighter leading-none mb-2 ${styles.text}`}>
+                  <div className={`text-4xl font-bold tracking-tighter leading-none mb-2 ${styles.text}`}>
                     {(item.score * 100).toFixed(0)}
                   </div>
-                  <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 opacity-80">Composite Risk</p>
+                  <p className="text-[10px] font-medium uppercase tracking-widest text-slate-400 opacity-80">Composite Risk</p>
                 </div>
                 
                 <div className="flex flex-col gap-2 items-end">
                   {item.risks.slice(0, 2).map((risk, i) => (
-                    <span key={i} className={`text-[9px] font-black px-2.5 py-1 rounded-lg uppercase tracking-tight shadow-sm ${styles.tag}`}>
+                    <span key={i} className={`text-[9px] font-bold px-2.5 py-1 rounded-lg uppercase tracking-tight shadow-sm ${styles.tag}`}>
                       {risk}
                     </span>
                   ))}
@@ -83,11 +83,11 @@ export const RiskHeatmap: React.FC<RiskHeatmapProps> = ({ data }) => {
               </div>
 
               <div className="space-y-3">
-                <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest text-slate-400">
+                <div className="flex justify-between items-center text-[10px] font-medium uppercase tracking-widest text-slate-400">
                   <span>Intensity</span>
                   <span className={styles.text}>{(item.score * 100).toFixed(0)}%</span>
                 </div>
-                <div className="h-2.5 w-full bg-white/50 rounded-full overflow-hidden p-0.5">
+                <div className="h-2.5 w-full bg-white border border-slate-200 rounded-full overflow-hidden p-0.5">
                   <div 
                     className={`h-full rounded-full transition-all duration-1000 ${styles.bar} shadow-sm`}
                     style={{ width: `${item.score * 100}%` }}

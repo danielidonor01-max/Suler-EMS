@@ -1,20 +1,26 @@
 @import "tailwindcss";
 
 @theme {
-  /* --- Premium Typography Hierarchy --- */
+  /* --- Typography --- */
   --font-inter: "Inter", system-ui, sans-serif;
-  
-  /* --- High-Trust Operational Palette --- */
+
+  /* --- Operational Palette --- */
   --color-indigo-50: #eef2ff;
   --color-indigo-100: #e0e7ff;
+  --color-indigo-200: #c7d2fe;
   --color-indigo-500: #6366f1;
   --color-indigo-600: #4f46e5;
   --color-indigo-700: #4338ca;
-  
+
   --color-emerald-50: #ecfdf5;
   --color-emerald-100: #d1fae5;
   --color-emerald-500: #10b981;
   --color-emerald-600: #059669;
+
+  --color-amber-50: #fffbeb;
+  --color-amber-100: #fef3c7;
+  --color-amber-500: #f59e0b;
+  --color-amber-600: #d97706;
 
   --color-rose-50: #fef2f2;
   --color-rose-100: #fee2e2;
@@ -27,35 +33,51 @@
   --color-slate-300: #cbd5e1;
   --color-slate-400: #94a3b8;
   --color-slate-500: #64748b;
+  --color-slate-600: #475569;
+  --color-slate-700: #334155;
+  --color-slate-800: #1e293b;
   --color-slate-900: #0f172a;
   --color-slate-950: #020617;
 
-  /* --- Tailwind 4 Semantic Color Aliases --- */
+  /* --- Semantic Aliases --- */
   --color-bg: #f8fafc;
+  --color-surface: #ffffff;
   --color-text-primary: #0f172a;
-  --color-secondary: #64748b;
+  --color-text-secondary: #64748b;
   --color-border: #e2e8f0;
-  --color-authority: var(--color-indigo-600);
+  --color-border-subtle: #f1f5f9;
+  --color-authority: #4f46e5;
 
-  /* --- Premium Radius System --- */
-  --radius-xl: 1rem;
-  --radius-2xl: 1.5rem;
-  --radius-3xl: 2rem;
+  /* --- 24px Radius System --- */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
   --radius-card: 24px;
   --radius-modal: 24px;
 
-  /* --- Premium Operational Shadow --- */
+  /* --- Shadow System (Subtle, premium) --- */
+  --shadow-card: 0 1px 3px rgba(15, 23, 42, 0.06), 0 1px 2px rgba(15, 23, 42, 0.04);
   --shadow-premium: 0 8px 30px rgba(15, 23, 42, 0.06);
-  --shadow-floating: 0 0 0 1px rgba(0, 0, 0, 0.05), 0 20px 50px -12px rgba(0, 0, 0, 0.12);
+  --shadow-raised: 0 8px 30px rgba(15, 23, 42, 0.06);
+  --shadow-overlay: 0 20px 50px -12px rgba(15, 23, 42, 0.12);
 }
 
-/* Force CSS Variables for legacy/raw CSS usage */
+/* ========================================
+   ROOT VARIABLES
+   ======================================== */
 :root {
   --bg: var(--color-bg);
+  --surface: var(--color-surface);
   --text-primary: var(--color-text-primary);
-  --secondary: var(--color-secondary);
+  --text-secondary: var(--color-text-secondary);
+  --border: var(--color-border);
+  --secondary: var(--color-text-secondary);
 }
 
+/* ========================================
+   BASE
+   ======================================== */
 body {
   background-color: var(--color-bg);
   color: var(--color-text-primary);
@@ -66,79 +88,114 @@ body {
 }
 
 /* ========================================
-   PREMIUM WORKSPACE CANVAS
+   SURFACE SYSTEM
+   Solid, no transparency, no blur
    ======================================== */
 
-.workspace-canvas {
-  background-color: #f8fafc;
-  min-height: 100vh;
+/* Primary card surface */
+.surface-card {
+  background: #ffffff;
+  border-radius: var(--radius-card);
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-card);
 }
 
-.surface-premium {
-  background: white;
+/* Raised surface (modals, dropdowns) */
+.surface-raised {
+  background: #ffffff;
   border-radius: var(--radius-card);
-  border: 1px solid var(--color-slate-200);
-  box-shadow: var(--shadow-premium);
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-raised);
+}
+
+/* Inset surface (secondary panels within cards) */
+.surface-inset {
+  background: var(--color-slate-50);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border);
+}
+
+/* Legacy aliases — mapped to new system */
+.surface-premium {
+  background: #ffffff;
+  border-radius: var(--radius-card);
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-card);
 }
 
 .surface-floating {
-  background: white;
+  background: #ffffff;
   border-radius: var(--radius-card);
-  border: 1px solid var(--color-slate-200);
-  box-shadow: var(--shadow-premium);
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-overlay);
+}
+
+/* ========================================
+   WORKSPACE
+   ======================================== */
+.workspace-canvas {
+  background-color: var(--color-bg);
+  min-height: 100vh;
 }
 
 .workspace-safe-zone {
   padding: 24px;
 }
 
+/* ========================================
+   ANIMATIONS
+   ======================================== */
 .animate-in {
-  animation: fade-in 400ms cubic-bezier(0.16, 1, 0.3, 1);
+  animation: fade-in 300ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 @keyframes fade-in {
-  from { opacity: 0; transform: translateY(8px); }
-  to { opacity: 1; transform: translateY(0); }
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
-/* Custom Scrollbar for Workspace Density */
+@keyframes slide-up {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes scale-in {
+  from { opacity: 0; transform: scale(0.97); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+/* ========================================
+   SCROLLBARS
+   ======================================== */
 .custom-scrollbar::-webkit-scrollbar {
   width: 4px;
 }
-
 .custom-scrollbar::-webkit-scrollbar-track {
   background: transparent;
 }
-
 .custom-scrollbar::-webkit-scrollbar-thumb {
   background: #e2e8f0;
   border-radius: 10px;
 }
-
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
   background: #cbd5e1;
 }
 
-/* Hide Horizontal Sliders when everything fits */
-.no-scrollbar::-webkit-scrollbar {
-  display: none;
-}
-
+.no-scrollbar::-webkit-scrollbar { display: none; }
 .no-scrollbar {
-  -ms-overflow-style: none;  /* IE and Edge */
-  scrollbar-width: none;  /* Firefox */
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
 
 /* ========================================
    MODAL STRUCTURAL INTEGRITY
    ======================================== */
-
 .modal-surface {
-  background: white;
+  background: #ffffff;
   border-radius: var(--radius-modal);
-  box-shadow: var(--shadow-premium);
+  box-shadow: var(--shadow-overlay);
   overflow: hidden;
-  border: 1px solid var(--color-slate-200);
+  border: 1px solid var(--color-border);
 }
 
 .modal-content-padding {
@@ -148,3 +205,18 @@ body {
 .modal-section-gap {
   margin-top: 24px;
 }
+
+/* ========================================
+   STATUS INDICATORS
+   ======================================== */
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.status-dot-active  { background-color: #10b981; }
+.status-dot-warning { background-color: #f59e0b; }
+.status-dot-error   { background-color: #e11d48; }
+.status-dot-idle    { background-color: #94a3b8; }

@@ -5,7 +5,7 @@ import { PasswordService } from './password.service';
 import { AuthService } from './auth.service';
 
 export const { 
-  handlers: { GET, POST }, 
+  handlers, 
   auth, 
   signIn, 
   signOut 

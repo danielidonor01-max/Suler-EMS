@@ -67,12 +67,12 @@ export default function WorkforceIntelligenceHub() {
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 px-2">
         <div className="space-y-4">
           <div className="flex items-center gap-2.5">
-             <div className="px-2.5 py-1 bg-slate-950 text-white rounded-md text-[9px] font-bold uppercase tracking-[0.2em] flex items-center gap-1.5">
+             <div className="px-2.5 py-1 bg-slate-900 text-white rounded-md text-[9px] font-bold uppercase tracking-[0.2em] flex items-center gap-1.5">
                 <BrainCircuit className="w-3 h-3" />
                 Workforce Intelligence Hub
              </div>
              <div className="w-1 h-1 rounded-full bg-slate-200" />
-             <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Model: Behavioral Analysis v4.2</span>
+             <span className="text-[10px] font-medium text-slate-400 uppercase tracking-widest">Model: Behavioral Analysis v4.2</span>
           </div>
           <div className="space-y-1">
             <h1 className="text-4xl font-bold text-slate-900 tracking-tighter leading-none">
@@ -85,11 +85,11 @@ export default function WorkforceIntelligenceHub() {
         </div>
 
         <div className="flex items-center gap-3">
-           <button className="bg-white border border-slate-200 text-slate-600 hover:border-slate-300 px-6 h-[44px] rounded-xl text-[11px] font-bold uppercase tracking-wider transition-all shadow-sm flex items-center gap-2">
+           <button className="bg-white border border-slate-200 text-slate-600 hover:border-slate-300 px-6 h-[44px] rounded-[12px] text-[11px] font-bold uppercase tracking-wider transition-all shadow-sm flex items-center gap-2">
               <PieChartIcon className="w-[18px] h-[18px] stroke-[1.5px]" />
               Skill Registry
            </button>
-           <button className="bg-slate-950 hover:bg-slate-900 text-white flex items-center gap-2 px-6 h-[44px] rounded-xl text-[11px] font-bold uppercase tracking-wider transition-all shadow-md">
+           <button className="bg-slate-900 hover:bg-slate-800 text-white flex items-center gap-2 px-6 h-[44px] rounded-[12px] text-[11px] font-bold uppercase tracking-wider transition-all shadow-md">
               <Fingerprint className="w-[18px] h-[18px] stroke-[1.5px]" />
               Member Profile
            </button>
@@ -100,7 +100,7 @@ export default function WorkforceIntelligenceHub() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
          
          {/* Capability Matrix: Radar Storytelling */}
-         <div className="lg:col-span-2 bg-white rounded-[32px] p-10 border border-slate-200/60 shadow-sm relative overflow-hidden">
+         <div className="lg:col-span-2 bg-white rounded-[24px] p-10 border border-slate-200 shadow-premium relative overflow-hidden">
             <div className="flex items-center justify-between mb-12 relative z-10">
                <div className="space-y-1">
                   <h2 className="text-xl font-bold text-slate-900 tracking-tight leading-none">Organizational Capability Matrix</h2>
@@ -109,11 +109,11 @@ export default function WorkforceIntelligenceHub() {
                <div className="flex items-center gap-4">
                   <div className="flex items-center gap-2">
                      <div className="w-2 h-2 rounded-full bg-indigo-600" />
-                     <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Suler Global</span>
+                     <span className="text-[10px] font-medium text-slate-400 uppercase tracking-widest">Suler Global</span>
                   </div>
                   <div className="flex items-center gap-2">
                      <div className="w-2 h-2 rounded-full bg-slate-200" />
-                     <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Target Index</span>
+                     <span className="text-[10px] font-medium text-slate-400 uppercase tracking-widest">Target Index</span>
                   </div>
                </div>
             </div>
@@ -154,10 +154,10 @@ export default function WorkforceIntelligenceHub() {
                </ResponsiveContainer>
             </div>
 
-            <div className="mt-8 p-6 bg-slate-50 rounded-[24px] border border-slate-100 flex items-start gap-4 relative z-10">
+            <div className="mt-8 p-6 bg-slate-50 rounded-[16px] border border-slate-100 flex items-start gap-4 relative z-10">
                <Sparkles className="w-5 h-5 text-indigo-500 shrink-0 mt-1" />
                <p className="text-[13px] font-medium text-slate-500 leading-relaxed">
-                 <span className="font-black text-slate-900 uppercase tracking-tighter">Strategic Gap Detected:</span> The organization displays exceptional technical proficiency (120% of benchmark) but shows a latent gap in leadership and communication scores compared to Q3 targets.
+                 <span className="font-bold text-slate-900 uppercase tracking-tighter">Strategic Gap Detected:</span> The organization displays exceptional technical proficiency (120% of benchmark) but shows a latent gap in leadership and communication scores compared to Q3 targets.
                </p>
             </div>
          </div>
@@ -165,11 +165,11 @@ export default function WorkforceIntelligenceHub() {
          {/* Side Analysis Column */}
          <div className="space-y-10">
             {/* Performance Clusters */}
-            <div className="bg-slate-900 rounded-[32px] p-8 text-white relative overflow-hidden shadow-xl shadow-slate-900/40">
+            <div className="bg-white rounded-[24px] p-8 border border-slate-200 shadow-premium relative overflow-hidden">
                <div className="relative z-10">
                   <div className="flex items-center justify-between mb-8">
-                     <h3 className="text-lg font-black tracking-tight">Performance Clusters</h3>
-                     <PieChartIcon className="w-5 h-5 text-indigo-400" />
+                     <h3 className="text-lg font-bold text-slate-900 tracking-tight">Performance Clusters</h3>
+                     <PieChartIcon className="w-5 h-5 text-indigo-600" />
                   </div>
 
                   <div className="h-[220px] w-full">
@@ -197,28 +197,26 @@ export default function WorkforceIntelligenceHub() {
                        <div key={cluster.name} className="flex items-center justify-between group cursor-pointer">
                           <div className="flex items-center gap-3">
                              <div className="w-2 h-2 rounded-full" style={{ backgroundColor: cluster.color }} />
-                             <span className="text-[11px] font-bold text-slate-400 group-hover:text-white transition-colors uppercase tracking-widest">{cluster.name}</span>
+                             <span className="text-[11px] font-medium text-slate-400 group-hover:text-white transition-colors uppercase tracking-widest">{cluster.name}</span>
                           </div>
-                          <span className="text-[13px] font-black">{cluster.value}%</span>
+                          <span className="text-[13px] font-bold text-slate-900">{cluster.value}%</span>
                        </div>
                      ))}
                   </div>
 
-                  <div className="mt-8 pt-6 border-t border-white/10">
+                  <div className="mt-8 pt-6 border-t border-slate-100">
                      <div className="flex items-center gap-2 mb-2">
                         <Zap className="w-4 h-4 text-rose-500" />
-                        <span className="text-[10px] font-black uppercase tracking-widest text-rose-500">Burnout Threshold Rising</span>
+                        <span className="text-[10px] font-bold uppercase tracking-widest text-rose-500">Burnout Threshold Rising</span>
                      </div>
                      <p className="text-[11px] text-slate-500 font-medium">8% of workforce currently in high-risk zones.</p>
                   </div>
                </div>
-               {/* Detail Grid */}
-               <div className="absolute inset-0 bg-[radial-gradient(#ffffff08_1px,transparent_1px)] [background-size:20px_20px] pointer-events-none" />
             </div>
 
             {/* Insight Action Block */}
-            <div className="bg-white border border-slate-200/60 rounded-[32px] p-8 shadow-sm">
-               <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-6">Proactive Intelligence</h4>
+            <div className="bg-white border border-slate-200 rounded-[24px] p-8 shadow-premium">
+               <h4 className="text-[10px] font-medium text-slate-400 uppercase tracking-widest mb-6">Proactive Intelligence</h4>
                <div className="space-y-6">
                   {[
                     { label: 'Leadership Development', action: 'Initiate Program', risk: 'High Success' },
@@ -226,10 +224,10 @@ export default function WorkforceIntelligenceHub() {
                   ].map((item, i) => (
                     <div key={i} className="group cursor-pointer">
                        <div className="flex items-center justify-between mb-2">
-                          <span className="text-[14px] font-black text-slate-900 tracking-tight">{item.label}</span>
-                          <span className="text-[9px] font-black text-emerald-500 uppercase tracking-widest bg-emerald-50 px-2 py-0.5 rounded-md">{item.risk}</span>
+                          <span className="text-[14px] font-bold text-slate-900 tracking-tight">{item.label}</span>
+                          <span className="text-[9px] font-medium text-emerald-500 uppercase tracking-widest bg-emerald-50 px-2 py-0.5 rounded-md">{item.risk}</span>
                        </div>
-                       <button className="flex items-center gap-2 text-[10px] font-black text-indigo-600 uppercase tracking-widest group-hover:gap-4 transition-all">
+                       <button className="flex items-center gap-2 text-[10px] font-medium text-indigo-600 uppercase tracking-widest group-hover:gap-4 transition-all">
                           {item.action} <ChevronRight className="w-3.5 h-3.5" />
                        </button>
                     </div>
@@ -240,16 +238,16 @@ export default function WorkforceIntelligenceHub() {
       </div>
 
       {/* Behavioral Analytics: Responsive Trends */}
-      <div className="bg-white rounded-[32px] p-10 border border-slate-200/60 shadow-sm overflow-hidden relative">
+      <div className="bg-white rounded-[24px] p-10 border border-slate-200 shadow-premium overflow-hidden relative">
          <div className="flex items-center justify-between mb-12">
             <div className="space-y-1">
-               <h2 className="text-xl font-black text-slate-900 tracking-tight leading-none">Organizational Behavior Analytics</h2>
+               <h2 className="text-xl font-bold text-slate-900 tracking-tight leading-none">Organizational Behavior Analytics</h2>
                <p className="text-[12px] font-medium text-slate-400 uppercase tracking-widest">Engagement Trends vs Responsiveness Index</p>
             </div>
             <div className="flex items-center gap-4">
-               <div className="p-1 bg-slate-50 rounded-xl border border-slate-100 flex">
-                  <button className="px-4 py-1.5 rounded-lg bg-white shadow-sm text-[10px] font-black uppercase tracking-widest text-slate-900">Engagement</button>
-                  <button className="px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-slate-600 transition-colors">Responsiveness</button>
+               <div className="p-1 bg-slate-50 rounded-[12px] border border-slate-100 flex">
+                  <button className="px-4 py-1.5 rounded-lg bg-white shadow-sm text-[10px] font-medium uppercase tracking-widest text-slate-900">Engagement</button>
+                  <button className="px-4 py-1.5 rounded-lg text-[10px] font-medium uppercase tracking-widest text-slate-400 hover:text-slate-600 transition-colors">Responsiveness</button>
                </div>
             </div>
          </div>
@@ -299,9 +297,9 @@ export default function WorkforceIntelligenceHub() {
               { label: 'Participation Index', value: '88/100', trend: 'up', trendVal: '6%' },
             ].map((stat) => (
               <div key={stat.label} className="space-y-1">
-                 <p className="text-[9px] font-black text-slate-300 uppercase tracking-widest">{stat.label}</p>
+                 <p className="text-[9px] font-medium text-slate-300 uppercase tracking-widest">{stat.label}</p>
                  <div className="flex items-end gap-3">
-                    <span className="text-xl font-black text-slate-900 tracking-tight leading-none">{stat.value}</span>
+                    <span className="text-xl font-bold text-slate-900 tracking-tight leading-none">{stat.value}</span>
                     <span className={`text-[10px] font-bold ${stat.trend === 'up' ? 'text-emerald-500' : stat.trend === 'down' ? 'text-rose-500' : 'text-slate-400'}`}>
                        {stat.trendVal}
                     </span>

@@ -36,7 +36,7 @@ export default function PayrollPage() {
       accessor: "staffName",
       render: (val: string, row: any) => (
         <div>
-          <div className="text-[14px] font-black text-slate-900 tracking-tight">{val}</div>
+          <div className="text-[14px] font-bold text-slate-900 tracking-tight">{val}</div>
           <div className="text-[11px] font-bold text-slate-400 mt-0.5">Reference: {row.id}</div>
         </div>
       )
@@ -45,7 +45,7 @@ export default function PayrollPage() {
       header: "Disbursement",
       accessor: "amount",
       render: (val: string) => (
-        <span className="text-[14px] font-black text-slate-900 tracking-tighter">{val}</span>
+        <span className="text-[14px] font-bold text-slate-900 tracking-tighter">{val}</span>
       )
     },
     {
@@ -62,7 +62,7 @@ export default function PayrollPage() {
             val === 'PENDING' ? 'bg-amber-500' : 
             'bg-rose-500'
           } animate-pulse`} />
-          <span className="text-[10px] font-black uppercase tracking-widest">{val}</span>
+          <span className="text-[10px] font-bold uppercase tracking-widest">{val}</span>
         </div>
       )
     },
@@ -77,7 +77,7 @@ export default function PayrollPage() {
       header: "Control",
       accessor: "id",
       render: () => (
-        <button className="px-4 py-2 bg-slate-50 hover:bg-indigo-600 hover:text-white text-slate-600 rounded-xl text-[11px] font-black uppercase tracking-wider transition-all">
+        <button className="px-4 py-2 bg-slate-50 hover:bg-indigo-600 hover:text-white text-slate-600 rounded-xl text-[11px] font-bold uppercase tracking-wider transition-all">
           Audit
         </button>
       )
@@ -91,12 +91,12 @@ export default function PayrollPage() {
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-8">
           <div className="max-w-[600px]">
             <div className="flex items-center gap-2 mb-3">
-              <div className="px-3 py-1 bg-emerald-50 text-emerald-600 rounded-full text-[9px] font-black uppercase tracking-[0.2em] flex items-center gap-1.5">
+              <div className="px-3 py-1 bg-emerald-50 text-emerald-600 rounded-full text-[9px] font-bold uppercase tracking-[0.2em] flex items-center gap-1.5">
                 <ShieldCheck className="w-3 h-3" />
                 Governance Secure
               </div>
             </div>
-            <h1 className="text-4xl font-black text-slate-900 tracking-tighter leading-none mb-3">
+            <h1 className="text-4xl font-bold text-slate-900 tracking-tighter leading-none mb-3">
               Financial Registry
             </h1>
             <p className="text-[14px] font-medium text-slate-400 leading-relaxed max-w-[480px]">
@@ -105,11 +105,11 @@ export default function PayrollPage() {
           </div>
 
           <div className="flex items-center gap-3">
-            <button className="bg-slate-50 hover:bg-slate-100 text-slate-600 flex items-center gap-2 px-6 h-[44px] rounded-xl text-xs font-black uppercase tracking-wider transition-all border border-slate-100 shadow-sm">
+            <button className="bg-slate-50 hover:bg-slate-100 text-slate-600 flex items-center gap-2 px-6 h-[44px] rounded-xl text-xs font-bold uppercase tracking-wider transition-all border border-slate-100 shadow-sm">
               <Receipt className="w-[18px] h-[18px] stroke-[1.5px]" />
               Tax Filing
             </button>
-            <button className="bg-indigo-600 hover:bg-indigo-700 text-white flex items-center gap-2 px-8 h-[44px] rounded-xl text-xs font-black uppercase tracking-wider transition-all shadow-xl shadow-indigo-100/20">
+            <button className="bg-indigo-600 hover:bg-indigo-700 text-white flex items-center gap-2 px-8 h-[44px] rounded-xl text-xs font-bold uppercase tracking-wider transition-all shadow-xl shadow-indigo-100/20">
               <Wallet className="w-[18px] h-[18px] stroke-[1.5px]" />
               Execute Batch
             </button>
