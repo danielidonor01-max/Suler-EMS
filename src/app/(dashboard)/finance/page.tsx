@@ -38,7 +38,7 @@ export default function FinanceDashboard() {
   // Access Control: Hub Managers can only see data for their hub.
   const isHubManager = userRole === 'HUB_MANAGER';
   const userEmployee = employees.find(e => e.id === user?.employeeId);
-  const effectiveHub = isHubManager ? userEmployee?.office || 'All Regions' : currentHub;
+  const effectiveHub = isHubManager ? userEmployee?.hub || 'All Regions' : currentHub;
 
   // Hub Filtering
   const filteredBudgets = budgets.filter(b => effectiveHub === 'All Regions' || b.hub === effectiveHub);
