@@ -10,6 +10,9 @@ export interface Employee {
   role: string;
   office: string;
   status: string;
+  department?: string;
+  designation?: string;
+  phone?: string;
 }
 
 interface WorkforceMetrics {
@@ -44,11 +47,11 @@ export const useWorkforce = () => {
 
 // Initial Mock Data
 const INITIAL_EMPLOYEES: Employee[] = [
-  { id: 'EMP-001', name: 'Alex Simmons', email: 'alex.s@sulerms.com', role: 'Software Engineer', office: 'Lagos HQ', status: 'ACTIVE' },
-  { id: 'EMP-002', name: 'Rachel Meyer', email: 'r.meyer@sulerms.com', role: 'Lead Researcher', office: 'Abuja Operations', status: 'ACTIVE' },
-  { id: 'EMP-003', name: 'James Taggart', email: 'j.taggart@sulerms.com', role: 'Account Manager', office: 'Benin Branch', status: 'ON_LEAVE' },
-  { id: 'EMP-004', name: 'Linda Blair', email: 'l.blair@sulerms.com', role: 'HR Specialist', office: 'Lagos HQ', status: 'ACTIVE' },
-  { id: 'EMP-005', name: 'Marcus Johnson', email: 'm.johnson@sulerms.com', role: 'Logistics Coordinator', office: 'Port Harcourt', status: 'INACTIVE' },
+  { id: 'SUL-001', name: 'Alex Simmons', email: 'alex.s@sulerms.com', role: 'Staff Practitioner', office: 'Lagos HQ', status: 'ACTIVE', department: 'Engineering', designation: 'Software Engineer', phone: '+234 801 234 5678' },
+  { id: 'SUL-002', name: 'Rachel Meyer', email: 'r.meyer@sulerms.com', role: 'Operations Manager', office: 'Abuja Operations', status: 'ACTIVE', department: 'Intelligence', designation: 'Lead Researcher', phone: '+234 802 345 6789' },
+  { id: 'SUL-003', name: 'James Taggart', email: 'j.taggart@sulerms.com', role: 'Staff Practitioner', office: 'Benin Branch', status: 'ACTIVE', department: 'Sales', designation: 'Account Manager', phone: '+234 803 456 7890' },
+  { id: 'SUL-004', name: 'Linda Blair', email: 'l.blair@sulerms.com', role: 'HR Admin', office: 'Lagos HQ', status: 'ACTIVE', department: 'Human Resources', designation: 'HR Specialist', phone: '+234 804 567 8901' },
+  { id: 'SUL-005', name: 'Marcus Johnson', email: 'm.johnson@sulerms.com', role: 'Operations Manager', office: 'Port Harcourt', status: 'INACTIVE', department: 'Logistics', designation: 'Logistics Coordinator', phone: '+234 805 678 9012' },
 ];
 
 export const WorkforceProvider: React.FC<{ children: ReactNode }> = ({ children }) => {

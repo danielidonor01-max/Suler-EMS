@@ -285,3 +285,193 @@ export const ModifyRoleModal: React.FC<ModifyRoleModalProps> = ({ isOpen, onClos
     </Modal>
   );
 };
+
+interface OnboardMemberModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+export const OnboardMemberModal: React.FC<OnboardMemberModalProps> = ({ isOpen, onClose }) => {
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    role: 'Staff Practitioner',
+    office: 'Lagos HQ',
+    department: 'Operations',
+    designation: '',
+    staffId: '',
+    employmentType: 'FULL_TIME',
+    startDate: new Date().toISOString().split('T')[0]
+  });
+
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { createEmployee } = useWorkforce();
+  const { toast } = useToast();
+
+  const handleSubmit = () => {
+    if (!formData.name || !formData.email || !formData.designation) {
+      toast({ type: 'error', message: 'Validation Error', description: 'Identity and Organizational Placement fields are required.' });
+      return;
+    }
+
+    setIsSubmitting(true);
+    toast({ type: 'loading', message: 'Initializing Member Identity...', description: `Creating organizational record for ${formData.name}.` });
+    
+    setTimeout(() => {
+      createEmployee({
+        ...formData,
+        status: 'ACTIVE',
+        id: formData.staffId || `SUL-${Math.floor(Math.random() * 1000).toString().padStart(3, '0')}`
+      } as any);
+      
+      setIsSubmitting(false);
+      onClose();
+      toast({ 
+        type: 'success', 
+        message: 'Member Onboarded', 
+        description: `Successfully onboarded to ${formData.office} as ${formData.designation}.` 
+      });
+    }, 2000);
+  };
+
+  return (
+    <Modal 
+      isOpen={isOpen} 
+      onClose={onClose} 
+      title="Onboard New Organization Member" 
+      subtitle="Identity & Organizational Placement"
+      size="lg"
+    >
+      <div className="space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-500 max-h-[70vh] overflow-y-auto pr-2 custom-scrollbar">
+         
+         {/* Section: Identity */}
+         <div className="space-y-4">
+            <div className="flex items-center gap-2 mb-2">
+               <UserCircle className="w-4 h-4 text-slate-400" />
+               <h4 className="text-[11px] font-bold text-slate-400 uppercase tracking-[0.2em]">Personal Identity</h4>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+               <div className="space-y-2">
+                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Full Name</label>
+                  <input 
+                    placeholder="e.g. Jane Doe"
+                    value={formData.name} 
+                    onChange={e => setFormData({...formData, name: e.target.value})}
+                    className="w-full h-[48px] bg-slate-50 border border-slate-200 rounded-xl px-4 text-[13px] font-bold outline-none focus:border-indigo-500 transition-all shadow-sm"
+                  />
+               </div>
+               <div className="space-y-2">
+                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Email Address</label>
+                  <input 
+                    type="email"
+                    placeholder="jane@sulerglobal.com"
+                    value={formData.email} 
+                    onChange={e => setFormData({...formData, email: e.target.value})}
+                    className="w-full h-[48px] bg-slate-50 border border-slate-200 rounded-xl px-4 text-[13px] font-bold outline-none focus:border-indigo-500 transition-all shadow-sm"
+                  />
+               </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+               <div className="space-y-2">
+                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Operational Mobile</label>
+                  <input 
+                    placeholder="+234 ..."
+                    value={formData.phone} 
+                    onChange={e => setFormData({...formData, phone: e.target.value})}
+                    className="w-full h-[48px] bg-slate-50 border border-slate-200 rounded-xl px-4 text-[13px] font-bold outline-none focus:border-indigo-500 transition-all shadow-sm"
+                  />
+               </div>
+               <div className="space-y-2">
+                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Staff ID (Optional)</label>
+                  <input 
+                    placeholder="SUL-..."
+                    value={formData.staffId} 
+                    onChange={e => setFormData({...formData, staffId: e.target.value})}
+                    className="w-full h-[48px] bg-slate-50 border border-slate-200 rounded-xl px-4 text-[13px] font-bold outline-none focus:border-indigo-500 transition-all shadow-sm"
+                  />
+               </div>
+            </div>
+         </div>
+
+         {/* Section: Organizational Placement */}
+         <div className="space-y-4">
+            <div className="flex items-center gap-2 mb-2">
+               <Briefcase className="w-4 h-4 text-slate-400" />
+               <h4 className="text-[11px] font-bold text-slate-400 uppercase tracking-[0.2em]">Organizational Placement</h4>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+               <Select 
+                 label="Designated Office Hub"
+                 value={formData.office}
+                 onChange={val => setFormData({...formData, office: val})}
+                 options={[
+                   { label: 'Lagos HQ', value: 'Lagos HQ' },
+                   { label: 'Abuja Operations', value: 'Abuja Operations' },
+                   { label: 'Benin Branch', value: 'Benin Branch' },
+                 ]}
+               />
+               <Select 
+                 label="Department"
+                 value={formData.department}
+                 onChange={val => setFormData({...formData, department: val})}
+                 options={[
+                   { label: 'Human Resources', value: 'Human Resources' },
+                   { label: 'Finance & Treasury', value: 'Finance & Treasury' },
+                   { label: 'Operations', value: 'Operations' },
+                   { label: 'Engineering', value: 'Engineering' },
+                   { label: 'Legal & Compliance', value: 'Legal & Compliance' },
+                 ]}
+               />
+            </div>
+            <div className="space-y-2">
+               <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Principal Designation</label>
+               <input 
+                 placeholder="e.g. Electrical Maintenance Engineer"
+                 value={formData.designation} 
+                 onChange={e => setFormData({...formData, designation: e.target.value})}
+                 className="w-full h-[48px] bg-slate-50 border border-slate-200 rounded-xl px-4 text-[13px] font-bold outline-none focus:border-indigo-500 transition-all shadow-sm"
+               />
+            </div>
+         </div>
+
+         {/* Section: System Access */}
+         <div className="space-y-4">
+            <div className="flex items-center gap-2 mb-2">
+               <ShieldCheck className="w-4 h-4 text-slate-400" />
+               <h4 className="text-[11px] font-bold text-slate-400 uppercase tracking-[0.2em]">Access & Authority</h4>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+               <Select 
+                 label="System Role"
+                 value={formData.role}
+                 onChange={val => setFormData({...formData, role: val})}
+                 options={[
+                   { label: 'Super Administrator', value: 'Super Administrator' },
+                   { label: 'HR Admin', value: 'HR Admin' },
+                   { label: 'Finance Admin', value: 'Finance Admin' },
+                   { label: 'Operations Manager', value: 'Operations Manager' },
+                   { label: 'Staff Practitioner', value: 'Staff Practitioner' },
+                 ]}
+               />
+               <div className="flex items-center gap-3 px-4 h-[48px] bg-indigo-50/50 border border-indigo-100 rounded-xl mt-6">
+                  <input type="checkbox" id="sendInvite" className="w-4 h-4 rounded border-indigo-200 text-indigo-600 focus:ring-indigo-500" defaultChecked />
+                  <label htmlFor="sendInvite" className="text-[12px] font-bold text-indigo-900">Send Invitation Email</label>
+               </div>
+            </div>
+         </div>
+
+         <div className="flex items-center justify-end gap-3 pt-6 border-t border-slate-100 sticky bottom-0 bg-white">
+            <button onClick={onClose} disabled={isSubmitting} className="px-6 h-[44px] text-[11px] font-bold uppercase tracking-widest text-slate-400 hover:text-slate-600 transition-colors">Cancel</button>
+            <button 
+              onClick={handleSubmit}
+              disabled={isSubmitting}
+              className="bg-indigo-600 hover:bg-indigo-700 text-white flex items-center gap-2 px-8 h-[48px] rounded-xl text-[11px] font-bold uppercase tracking-widest transition-all shadow-lg shadow-indigo-600/20"
+            >
+               {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Confirm Onboarding'}
+            </button>
+         </div>
+      </div>
+    </Modal>
+  );
+};
