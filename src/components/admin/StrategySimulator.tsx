@@ -138,7 +138,7 @@ export const StrategySimulator: React.FC<{ isOpen: boolean, onClose: () => void 
                          <div className="flex items-center gap-2">
                             <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">{emp.role}</span>
                             <div className="w-1 h-1 rounded-full bg-slate-200" />
-                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">{emp.office}</span>
+                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">{emp.hub}</span>
                          </div>
                       </div>
                    </div>
