@@ -25,11 +25,13 @@ export const CapabilityIntelligence: React.FC<CapabilityIntelligenceProps> = ({
   const radius = 70;
   const angleStep = (Math.PI * 2) / data.length;
 
+  const round = (n: number) => Number(n.toFixed(2));
+
   // Calculate points for the polygon
   const points = data.map((d, i) => {
     const r = (d.value / 100) * radius;
-    const x = centerX + r * Math.sin(i * angleStep);
-    const y = centerY - r * Math.cos(i * angleStep);
+    const x = round(centerX + r * Math.sin(i * angleStep));
+    const y = round(centerY - r * Math.cos(i * angleStep));
     return `${x},${y}`;
   }).join(' ');
 
@@ -37,19 +39,19 @@ export const CapabilityIntelligence: React.FC<CapabilityIntelligenceProps> = ({
   const gridLevels = [0.2, 0.4, 0.6, 0.8, 1];
 
   return (
-    <div className="bg-white p-8 rounded-[24px] border border-slate-200/60 shadow-sm flex flex-col h-full animate-in fade-in slide-in-from-bottom-4 duration-700">
+    <div className="bg-white p-8 rounded-[24px] border border-slate-200 shadow-sm flex flex-col h-full animate-in fade-in slide-in-from-bottom-4 duration-700">
       <div className="flex items-center justify-between mb-8">
         <div className="flex items-center gap-4">
           <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400 border border-slate-100 group-hover:scale-110 transition-transform">
             <Target className="w-5 h-5" />
           </div>
           <div>
-            <h3 className="text-base font-black text-slate-900 tracking-tight">{title}</h3>
-            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">Workforce Readiness Index</p>
+            <h3 className="text-base font-bold text-slate-900 tracking-tight">{title}</h3>
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Workforce Readiness Index</p>
           </div>
         </div>
         <div className="px-3 py-1 bg-indigo-50 rounded-lg border border-indigo-100">
-           <span className="text-[10px] font-black text-indigo-600 uppercase tracking-widest">Optimized</span>
+           <span className="text-[10px] font-bold text-indigo-600 uppercase tracking-widest">Optimized</span>
         </div>
       </div>
 
@@ -61,7 +63,7 @@ export const CapabilityIntelligence: React.FC<CapabilityIntelligenceProps> = ({
               key={idx}
               cx={centerX}
               cy={centerY}
-              r={level * radius}
+              r={round(level * radius)}
               fill="none"
               stroke="#F1F5F9"
               strokeWidth="0.5"
@@ -70,8 +72,8 @@ export const CapabilityIntelligence: React.FC<CapabilityIntelligenceProps> = ({
           
           {/* Axis Lines */}
           {data.map((_, i) => {
-            const x = centerX + radius * Math.sin(i * angleStep);
-            const y = centerY - radius * Math.cos(i * angleStep);
+            const x = round(centerX + radius * Math.sin(i * angleStep));
+            const y = round(centerY - radius * Math.cos(i * angleStep));
             return (
               <line
                 key={i}
@@ -88,8 +90,8 @@ export const CapabilityIntelligence: React.FC<CapabilityIntelligenceProps> = ({
           {/* Labels */}
           {data.map((d, i) => {
             const labelRadius = radius + 20;
-            const x = centerX + labelRadius * Math.sin(i * angleStep);
-            const y = centerY - labelRadius * Math.cos(i * angleStep);
+            const x = round(centerX + labelRadius * Math.sin(i * angleStep));
+            const y = round(centerY - labelRadius * Math.cos(i * angleStep));
             return (
               <text
                 key={i}
@@ -97,7 +99,7 @@ export const CapabilityIntelligence: React.FC<CapabilityIntelligenceProps> = ({
                 y={y}
                 textAnchor="middle"
                 dominantBaseline="middle"
-                className="text-[9px] font-black fill-slate-400 uppercase tracking-[0.1em]"
+                className="text-[9px] font-bold fill-slate-400 uppercase tracking-[0.1em]"
               >
                 {d.category}
               </text>
@@ -117,8 +119,8 @@ export const CapabilityIntelligence: React.FC<CapabilityIntelligenceProps> = ({
           {/* Points */}
           {data.map((d, i) => {
             const r = (d.value / 100) * radius;
-            const x = centerX + r * Math.sin(i * angleStep);
-            const y = centerY - r * Math.cos(i * angleStep);
+            const x = round(centerX + r * Math.sin(i * angleStep));
+            const y = round(centerY - r * Math.cos(i * angleStep));
             return (
               <circle
                 key={i}
@@ -142,7 +144,7 @@ export const CapabilityIntelligence: React.FC<CapabilityIntelligenceProps> = ({
              <Zap className="w-3.5 h-3.5 text-indigo-600" />
           </div>
           <div className="space-y-1">
-             <span className="text-[10px] font-black text-indigo-600 uppercase tracking-widest">Capability Intelligence Summary</span>
+             <span className="text-[10px] font-bold text-indigo-600 uppercase tracking-widest">Capability Intelligence Summary</span>
              <p className="text-[12px] font-medium text-slate-500 leading-relaxed italic">
                "{insight}"
              </p>

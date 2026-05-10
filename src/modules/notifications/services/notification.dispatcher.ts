@@ -109,8 +109,7 @@ export class NotificationDispatcher {
           category: 'SECURITY',
           priority: 'URGENT',
           status: 'PENDING',
-          correlationId: event.correlationId,
-          metadata: { eventId: event.eventId }
+          metadata: { eventId: event.eventId, correlationId: event.correlationId }
         }
       });
 

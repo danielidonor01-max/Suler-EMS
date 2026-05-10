@@ -6,9 +6,9 @@ import { AnnouncementService } from "@/modules/communication/services/announceme
  * POST /api/communication/announcements/[id]/acknowledge
  * Acknowledge an announcement
  */
-export const POST = withAuth(async (req, session, { params }) => {
+export const POST = withAuth(async (req, session, context) => {
   try {
-    const { id } = params;
+    const { id } = await context.params;
     const ack = await AnnouncementService.acknowledge(id, session.user.id);
     return successResponse(ack);
   } catch (err: any) {

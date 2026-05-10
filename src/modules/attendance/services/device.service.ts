@@ -1,5 +1,6 @@
 import prisma from "@/lib/prisma";
 import { DeviceTrustLevel, DeviceType } from "../domain/attendance.types";
+import { realtimeEmitter } from "@/lib/events/realtime.emitter";
 
 export class DeviceService {
   /**

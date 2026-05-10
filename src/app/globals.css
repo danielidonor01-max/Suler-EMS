@@ -28,22 +28,25 @@
   --color-slate-400: #94a3b8;
   --color-slate-500: #64748b;
   --color-slate-900: #0f172a;
+  --color-slate-950: #020617;
 
   /* --- Tailwind 4 Semantic Color Aliases --- */
   --color-bg: #f8fafc;
   --color-text-primary: #0f172a;
   --color-secondary: #64748b;
   --color-border: #e2e8f0;
+  --color-authority: var(--color-indigo-600);
 
   /* --- Premium Radius System --- */
   --radius-xl: 1rem;
   --radius-2xl: 1.5rem;
   --radius-3xl: 2rem;
+  --radius-card: 24px;
+  --radius-modal: 24px;
 
-  /* --- Custom Shadows --- */
-  --shadow-premium: 0 0 0 1px rgba(0, 0, 0, 0.03), 0 2px 4px rgba(0, 0, 0, 0.02), 0 12px 24px rgba(0, 0, 0, 0.04);
+  /* --- Premium Operational Shadow --- */
+  --shadow-premium: 0 8px 30px rgba(15, 23, 42, 0.06);
   --shadow-floating: 0 0 0 1px rgba(0, 0, 0, 0.05), 0 20px 50px -12px rgba(0, 0, 0, 0.12);
-  --shadow-glass: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
 }
 
 /* Force CSS Variables for legacy/raw CSS usage */
@@ -71,18 +74,17 @@ body {
   min-height: 100vh;
 }
 
-.glass-surface {
-  background: rgba(255, 255, 255, 0.72);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  box-shadow: var(--shadow-glass);
+.surface-premium {
+  background: white;
+  border-radius: var(--radius-card);
+  border: 1px solid var(--color-slate-200);
+  box-shadow: var(--shadow-premium);
 }
 
 .surface-floating {
   background: white;
-  border-radius: 1.25rem;
-  border: 1px solid rgba(226, 232, 240, 0.8);
+  border-radius: var(--radius-card);
+  border: 1px solid var(--color-slate-200);
   box-shadow: var(--shadow-premium);
 }
 
@@ -125,4 +127,24 @@ body {
 .no-scrollbar {
   -ms-overflow-style: none;  /* IE and Edge */
   scrollbar-width: none;  /* Firefox */
+}
+
+/* ========================================
+   MODAL STRUCTURAL INTEGRITY
+   ======================================== */
+
+.modal-surface {
+  background: white;
+  border-radius: var(--radius-modal);
+  box-shadow: var(--shadow-premium);
+  overflow: hidden;
+  border: 1px solid var(--color-slate-200);
+}
+
+.modal-content-padding {
+  padding: 32px;
+}
+
+.modal-section-gap {
+  margin-top: 24px;
 }

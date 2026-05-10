@@ -15,7 +15,7 @@ export class AnomalyService {
     // 1. Detect Workflow Stagnation
     const stagnantWorkflows = await prisma.workflowInstance.findMany({
       where: {
-        status: { not: 'COMPLETED' },
+        currentState: { not: 'COMPLETED' },
         updatedAt: { lt: new Date(Date.now() - 48 * 60 * 60 * 1000) } // Older than 48 hours
       }
     });

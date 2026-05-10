@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@/lib/auth';
+import { auth } from '@/lib/auth/auth.config';
 import prisma from '@/lib/prisma';
 import { StorageService } from '@/lib/storage/storage.service';
 import fs from 'fs';
@@ -10,7 +10,7 @@ import fs from 'fs';
  */
 export async function GET(
   req: NextRequest,
-  { params }: { params: { jobId: string } }
+  { params }: { params: Promise<{ jobId: string }> }
 ) {
   try {
     const session = await auth();
@@ -18,7 +18,7 @@ export async function GET(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { jobId } = params;
+    const { jobId } = await params;
 
     // 1. Fetch Job Metadata
     const job = await prisma.reportJob.findUnique({

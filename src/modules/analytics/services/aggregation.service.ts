@@ -72,7 +72,7 @@ export class AggregationService {
       const instances = await prisma.workflowInstance.findMany({
         where: { 
           resourceId: { in: employeeIds },
-          status: { not: 'COMPLETED' }
+          currentState: { not: 'COMPLETED' }
         }
       });
 

@@ -37,8 +37,6 @@ interface DataTableProps {
   columns: Column[];
   onRowClick?: (row: any) => void;
   totalItems?: number;
-<<<<<<< Updated upstream
-=======
   isLoading?: boolean;
   emptyMessage?: string;
   rowActions?: RowAction[];
@@ -47,7 +45,6 @@ interface DataTableProps {
     onClick: () => void;
     icon?: any;
   };
->>>>>>> Stashed changes
 }
 
 import { Select } from '../forms/Select';
@@ -58,15 +55,11 @@ export const DataTable: React.FC<DataTableProps> = ({
   data, 
   columns,
   onRowClick,
-<<<<<<< Updated upstream
-  totalItems = 284 // Default mock for demo
-=======
   totalItems = 284,
   isLoading = false,
   emptyMessage = "No records found in this registry.",
   rowActions,
   recoveryAction
->>>>>>> Stashed changes
 }) => {
   const [activeActions, setActiveActions] = useState<{ id: string, rect: DOMRect, row: any } | null>(null);
   const [pageSize, setPageSize] = useState('10');
@@ -82,7 +75,7 @@ export const DataTable: React.FC<DataTableProps> = ({
       {/* Header Layer: Contextual Workspace Controls */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 px-1">
         <div className="space-y-1">
-          <h2 className="text-xl font-black text-slate-900 tracking-tighter">{title}</h2>
+          <h2 className="text-xl font-bold text-slate-900 tracking-tighter">{title}</h2>
           {description && (
             <p className="text-[13px] font-medium text-slate-400 leading-relaxed max-w-[480px]">{description}</p>
           )}
@@ -97,7 +90,7 @@ export const DataTable: React.FC<DataTableProps> = ({
               className="bg-white border border-slate-200 rounded-xl py-2 pl-11 pr-4 text-[12px] font-bold text-slate-900 placeholder:text-slate-300 outline-none focus:border-slate-400 transition-all w-64 shadow-sm"
             />
           </div>
-          <button className="flex items-center gap-2 h-[40px] px-4 py-2 bg-white border border-slate-200 rounded-xl text-[11px] font-black text-slate-500 uppercase tracking-widest hover:text-slate-900 hover:border-slate-300 transition-all shadow-sm">
+          <button className="flex items-center gap-2 h-[40px] px-4 py-2 bg-white border border-slate-200 rounded-xl text-[11px] font-bold text-slate-500 uppercase tracking-widest hover:text-slate-900 hover:border-slate-300 transition-all shadow-sm">
             <Filter className="w-3.5 h-3.5 stroke-[1.5px]" />
             Filters
           </button>
@@ -111,28 +104,14 @@ export const DataTable: React.FC<DataTableProps> = ({
             <thead>
               <tr className="border-b border-slate-100 bg-slate-50/30">
                 {columns.map((col, idx) => (
-                  <th key={idx} className="px-8 py-4 text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] first:w-[40%]">
+                  <th key={idx} className="px-8 py-4 text-[9px] font-bold text-slate-400 uppercase tracking-[0.2em] first:w-[40%]">
                     {col.header}
                   </th>
                 ))}
-                <th className="px-8 py-4 text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] w-20 text-right">Actions</th>
+                <th className="w-[96px] pr-8 py-4 text-[9px] font-bold text-slate-400 uppercase tracking-[0.2em] text-right">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-50/50">
-<<<<<<< Updated upstream
-              {data.map((row, rowIdx) => (
-                <tr 
-                  key={rowIdx} 
-                  className="group/row transition-all hover:bg-slate-50/80 cursor-pointer"
-                >
-                  {columns.map((col, colIdx) => (
-                    <td key={colIdx} className="px-8 py-4" onClick={() => onRowClick?.(row)}>
-                      <div className="transition-transform group-hover/row:translate-x-0.5 duration-300">
-                        {col.render ? col.render(row[col.accessor], row) : (
-                          <span className="text-[13px] font-bold text-slate-600">{row[col.accessor]}</span>
-                        )}
-                      </div>
-=======
               {isLoading ? (
                 // Loading Skeletons
                 Array.from({ length: 5 }).map((_, idx) => (
@@ -142,60 +121,46 @@ export const DataTable: React.FC<DataTableProps> = ({
                          <div className="h-4 bg-slate-50 rounded-lg w-full" />
                       </td>
                     ))}
-                    <td className="px-8 py-5">
+                    <td className="w-[96px] pr-8 py-5">
                        <div className="h-8 w-8 bg-slate-50 rounded-lg ml-auto" />
                     </td>
                   </tr>
                 ))
               ) : data.length > 0 ? (
-                data.map((row, idx) => (
+                data.map((row, rowIdx) => (
                   <tr 
-                    key={idx} 
+                    key={rowIdx} 
                     onClick={() => onRowClick?.(row)}
-                    className="group/row border-b border-slate-50 hover:bg-slate-50/50 transition-colors cursor-pointer"
+                    className="group/row transition-all hover:bg-slate-50/80 cursor-pointer"
                   >
-                    {columns.map((col, cIdx) => (
-                      <td key={cIdx} className="px-8 py-4 align-middle">
+                    {columns.map((col, colIdx) => (
+                      <td key={colIdx} className="px-8 py-4 align-middle">
                         {col.render ? col.render(row[col.accessor], row) : (
                           <span className="text-[13px] font-bold text-slate-600">{row[col.accessor]}</span>
                         )}
                       </td>
                     ))}
-                    <td className="px-8 py-4 text-right align-middle">
+                    <td className="w-[96px] pr-8 py-4 text-right align-middle">
                        <div className="flex justify-end">
                           <button 
-                            onClick={(e) => handleActionClick(e, `row-${idx}`, row)}
+                            onClick={(e) => handleActionClick(e, `row-${rowIdx}`, row)}
                             className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all ${
-                              activeActions?.id === `row-${idx}` ? 'bg-slate-900 text-white shadow-md' : 'text-slate-300 hover:text-slate-900 hover:bg-white border border-transparent hover:border-slate-200'
-                            }`}
-                          >
-                             <MoreHorizontal className="w-4 h-4" />
-                          </button>
-                       </div>
->>>>>>> Stashed changes
-                    </td>
-                  ))}
-                  <td className="px-8 py-4 text-right relative">
-                    <div className="flex items-center justify-end gap-1 opacity-0 group-hover/row:opacity-100 transition-all translate-x-2 group-hover/row:translate-x-0">
-                       <button className="p-2 text-slate-400 hover:text-slate-900 hover:bg-white rounded-lg border border-transparent hover:border-slate-200 transition-all shadow-sm">
-                          <Eye className="w-4 h-4 stroke-[1.5px]" />
-                       </button>
-                       <div className="relative">
-                          <button 
-                            onClick={(e) => handleActionClick(e, row.id)}
-                            className={`p-2 rounded-lg border transition-all shadow-sm ${
-                              activeActions?.id === row.id 
-                                ? 'bg-slate-900 text-white border-slate-900' 
-                                : 'text-slate-400 hover:text-slate-900 hover:bg-white border-transparent hover:border-slate-200'
+                              activeActions?.id === `row-${rowIdx}` ? 'bg-slate-900 text-white shadow-md' : 'text-slate-300 hover:text-slate-900 hover:bg-white border border-transparent hover:border-slate-200'
                             }`}
                           >
                              <MoreHorizontal className="w-4 h-4 stroke-[1.5px]" />
                           </button>
                        </div>
-                    </div>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan={columns.length + 1} className="px-8 py-24 text-center">
+                    <p className="text-[15px] font-bold text-slate-400">{emptyMessage}</p>
                   </td>
                 </tr>
-              ))}
+              )}
             </tbody>
           </table>
         </div>
@@ -249,7 +214,7 @@ export const DataTable: React.FC<DataTableProps> = ({
         <div className="px-8 py-3 bg-slate-50/50 border-t border-slate-100 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <span className="text-[11px] font-bold text-slate-400 tracking-tight">
-              Showing <span className="text-slate-900 font-black">1–{pageSize}</span> of <span className="text-slate-900 font-black">{totalItems}</span> records
+              Showing <span className="text-slate-900 font-bold">1–{pageSize}</span> of <span className="text-slate-900 font-bold">{totalItems}</span> records
             </span>
             <div className="h-4 w-px bg-slate-200" />
             <Select 
@@ -273,7 +238,7 @@ export const DataTable: React.FC<DataTableProps> = ({
                <PageButton label="1" active />
                <PageButton label="2" />
                <PageButton label="3" />
-               <span className="px-2 text-slate-300 text-[11px] font-black">...</span>
+               <span className="px-2 text-slate-300 text-[11px] font-bold">...</span>
                <PageButton label="28" />
             </div>
             <button className="p-1.5 text-slate-400 hover:text-slate-900 hover:bg-white rounded-lg border border-transparent hover:border-slate-200 transition-all shadow-sm">
@@ -287,7 +252,7 @@ export const DataTable: React.FC<DataTableProps> = ({
 };
 
 const PageButton = ({ label, active }: { label: string, active?: boolean }) => (
-  <button className={`w-8 h-8 flex items-center justify-center rounded-lg text-[11px] font-black transition-all ${
+  <button className={`w-8 h-8 flex items-center justify-center rounded-lg text-[11px] font-bold transition-all ${
     active ? 'bg-slate-900 text-white shadow-md' : 'text-slate-500 hover:bg-slate-100'
   }`}>
     {label}

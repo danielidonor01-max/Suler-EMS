@@ -52,7 +52,7 @@ export class AttendanceSyncService {
         if (!employee) {
           await prisma.rawAttendanceLog.update({
             where: { id: rawLog.id },
-            data: { status: 'REJECTED', metadata: { error: 'Employee not found' } }
+            data: { status: 'REJECTED' }
           });
           result.failed++;
           continue;

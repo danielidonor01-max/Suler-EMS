@@ -38,9 +38,9 @@ const CAPABILITY_DATA = [
   { subject: 'Technical Proficiency', A: 120, B: 110, fullMark: 150 },
   { subject: 'Strategic Leadership', A: 98, B: 130, fullMark: 150 },
   { subject: 'Institutional Communication', A: 86, B: 130, fullMark: 150 },
-  { subject: 'Problem Solving', A: 115, B: 110, fullMark: 150 },
+  { subject: 'Complex Problem Solving', A: 115, B: 110, fullMark: 150 },
   { subject: 'Operational Readiness', A: 99, B: 100, fullMark: 150 },
-  { subject: 'Strategic Vision', A: 85, B: 90, fullMark: 150 },
+  { subject: 'Organizational Strategy', A: 85, B: 90, fullMark: 150 },
 ];
 
 const BEHAVIORAL_TRENDS = [
@@ -67,15 +67,15 @@ export default function WorkforceIntelligenceHub() {
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 px-2">
         <div className="space-y-4">
           <div className="flex items-center gap-2.5">
-             <div className="px-2.5 py-1 bg-slate-900 text-white rounded-md text-[9px] font-black uppercase tracking-[0.2em] flex items-center gap-1.5">
+             <div className="px-2.5 py-1 bg-slate-950 text-white rounded-md text-[9px] font-bold uppercase tracking-[0.2em] flex items-center gap-1.5">
                 <BrainCircuit className="w-3 h-3" />
                 Workforce Intelligence Hub
              </div>
              <div className="w-1 h-1 rounded-full bg-slate-200" />
-             <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Model: Behavioral Analysis v4.2</span>
+             <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Model: Behavioral Analysis v4.2</span>
           </div>
           <div className="space-y-1">
-            <h1 className="text-4xl font-black text-slate-900 tracking-tighter leading-none">
+            <h1 className="text-4xl font-bold text-slate-900 tracking-tighter leading-none">
               Intelligence Hub
             </h1>
             <p className="text-[13px] font-medium text-slate-400 leading-relaxed max-w-[480px]">
@@ -85,11 +85,11 @@ export default function WorkforceIntelligenceHub() {
         </div>
 
         <div className="flex items-center gap-3">
-           <button className="bg-white border border-slate-200 text-slate-600 hover:border-slate-300 px-6 h-[44px] rounded-xl text-[11px] font-black uppercase tracking-wider transition-all shadow-sm flex items-center gap-2">
+           <button className="bg-white border border-slate-200 text-slate-600 hover:border-slate-300 px-6 h-[44px] rounded-xl text-[11px] font-bold uppercase tracking-wider transition-all shadow-sm flex items-center gap-2">
               <PieChartIcon className="w-[18px] h-[18px] stroke-[1.5px]" />
               Skill Registry
            </button>
-           <button className="bg-slate-900 hover:bg-black text-white flex items-center gap-2 px-6 h-[44px] rounded-xl text-[11px] font-black uppercase tracking-wider transition-all shadow-md">
+           <button className="bg-slate-950 hover:bg-slate-900 text-white flex items-center gap-2 px-6 h-[44px] rounded-xl text-[11px] font-bold uppercase tracking-wider transition-all shadow-md">
               <Fingerprint className="w-[18px] h-[18px] stroke-[1.5px]" />
               Member Profile
            </button>
@@ -103,35 +103,35 @@ export default function WorkforceIntelligenceHub() {
          <div className="lg:col-span-2 bg-white rounded-[32px] p-10 border border-slate-200/60 shadow-sm relative overflow-hidden">
             <div className="flex items-center justify-between mb-12 relative z-10">
                <div className="space-y-1">
-                  <h2 className="text-xl font-black text-slate-900 tracking-tight leading-none">Organizational Capability Matrix</h2>
+                  <h2 className="text-xl font-bold text-slate-900 tracking-tight leading-none">Organizational Capability Matrix</h2>
                   <p className="text-[12px] font-medium text-slate-400 uppercase tracking-widest">Skill Distribution vs Industry Benchmark</p>
                </div>
                <div className="flex items-center gap-4">
                   <div className="flex items-center gap-2">
                      <div className="w-2 h-2 rounded-full bg-indigo-600" />
-                     <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Suler Global</span>
+                     <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Suler Global</span>
                   </div>
                   <div className="flex items-center gap-2">
                      <div className="w-2 h-2 rounded-full bg-slate-200" />
-                     <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Target Index</span>
+                     <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Target Index</span>
                   </div>
                </div>
             </div>
 
             <div className="h-[450px] w-full relative z-10">
                <ResponsiveContainer width="100%" height="100%">
-                  <RadarChart 
-                    cx="50%" 
-                    cy="50%" 
-                    outerRadius="70%" 
-                    data={CAPABILITY_DATA}
-                    margin={{ top: 30, right: 60, bottom: 30, left: 60 }}
-                  >
-                    <PolarGrid stroke="#f1f5f9" />
-                    <PolarAngleAxis 
-                      dataKey="subject" 
-                      tick={{ fill: '#94a3b8', fontSize: 11, fontWeight: 500 }} 
-                    />
+                <RadarChart 
+                  cx="50%" 
+                  cy="50%" 
+                  outerRadius="65%" 
+                  data={CAPABILITY_DATA}
+                  margin={{ top: 40, right: 80, bottom: 40, left: 80 }}
+                >
+                  <PolarGrid stroke="#f1f5f9" />
+                  <PolarAngleAxis 
+                    dataKey="subject" 
+                    tick={{ fill: '#94a3b8', fontSize: 10, fontWeight: 500 }} 
+                  />
                     <Radar
                       name="Suler Global"
                       dataKey="A"

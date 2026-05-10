@@ -64,7 +64,7 @@ export class ForecastingService {
    */
   static async predictWorkflowCongestion() {
     const pendingCount = await prisma.workflowInstance.count({
-      where: { status: { not: 'COMPLETED' } }
+      where: { currentState: { not: 'COMPLETED' } }
     });
 
     // Fetch average turnaround from metrics

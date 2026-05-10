@@ -8,6 +8,7 @@ import { BaseEvaluator } from '@/policies/base.evaluator';
 
 interface AccessContextType {
   user: any;
+  userRole: string;
   checkPermission: (permission: PermissionType) => PolicyResult;
   isLoading: boolean;
   status: 'authenticated' | 'unauthenticated' | 'loading';
@@ -31,7 +32,7 @@ export function AccessProvider({ children }: { children: ReactNode }) {
   }, [session]);
 
   const checkPermission = (permission: PermissionType): PolicyResult => {
-    if (!user) return { success: false, error: { code: 'UNAUTHORIZED', message: 'Not logged in' } };
+    if (!user) return { allowed: false, reason: 'Not logged in' };
     
     const context: PolicyContext = {
       user: user,
@@ -39,8 +40,11 @@ export function AccessProvider({ children }: { children: ReactNode }) {
     return BaseEvaluator.hasPermission(context, permission);
   };
 
+  const userRole = useMemo(() => user?.role || 'GUEST', [user]);
+
   const value = {
     user,
+    userRole,
     checkPermission,
     isLoading: status === 'loading',
     status: status as any

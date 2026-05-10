@@ -28,8 +28,8 @@ interface OrganizationContextType {
   departments: Department[];
   currentHub: string;
   setCurrentHub: (name: string) => void;
-  addHub: (hub: Omit<Hub, 'id' | 'status' | 'departments' | 'staff'>) => void;
-  addDepartment: (dept: Omit<Department, 'id' | 'staff'>) => void;
+  addHub: (hub: Omit<Hub, 'id' | 'status' | 'departments' | 'staff' | '_v'>) => void;
+  addDepartment: (dept: Omit<Department, 'id' | 'staff' | '_v'>) => void;
   undoMutation: () => void;
   canUndo: boolean;
 }

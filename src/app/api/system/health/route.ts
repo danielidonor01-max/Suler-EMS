@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { successResponse, errorResponse } from '@/lib/api-response';
+import { successResponse, errorResponse } from '@/lib/api-utils';
 import { redis } from '@/lib/cache/redis';
 
 export async function GET(req: NextRequest) {

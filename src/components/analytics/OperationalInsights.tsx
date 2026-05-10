@@ -10,6 +10,12 @@ interface OperationalInsightsProps {
 }
 
 export function OperationalInsights({ insights }: OperationalInsightsProps) {
+  const [isMounted, setIsMounted] = React.useState(false);
+
+  React.useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
   const getIcon = (type: string) => {
     switch (type) {
       case 'SECURITY': return <Shield className="w-4 h-4 text-rose-600" />;
@@ -43,7 +49,7 @@ export function OperationalInsights({ insights }: OperationalInsightsProps) {
                 <div className="flex items-center justify-between">
                   <h4 className="text-sm font-black text-slate-900 tracking-tight">{insight.title}</h4>
                   <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">
-                    {formatDistanceToNow(new Date(insight.timestamp), { addSuffix: true })}
+                    {isMounted ? formatDistanceToNow(new Date(insight.timestamp), { addSuffix: true }) : '...'}
                   </span>
                 </div>
               </div>

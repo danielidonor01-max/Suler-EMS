@@ -35,7 +35,7 @@ export function KPIGrid({ metrics }: KPIGridProps) {
               direction: trendDirection as any
             } : undefined}
             icon={icon}
-            variant={metric.status === 'CRITICAL' ? 'secondary' : 'primary'}
+            variant={metric.status === 'CRITICAL' ? 'tonal-danger' : 'tonal-info'}
             className={metric.status === 'CRITICAL' ? 'ring-2 ring-rose-500/10' : ''}
           />
         );

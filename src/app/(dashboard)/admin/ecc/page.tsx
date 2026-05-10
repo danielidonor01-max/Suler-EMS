@@ -144,14 +144,14 @@ export default function ECCPage() {
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 px-2">
         <div className="space-y-4">
           <div className="flex items-center gap-2.5">
-             <div className="px-2.5 py-1 bg-slate-900 text-white rounded-md text-[9px] font-black uppercase tracking-[0.2em] flex items-center gap-1.5">
+             <div className="px-2.5 py-1 bg-slate-950 text-white rounded-md text-[9px] font-bold uppercase tracking-[0.2em] flex items-center gap-1.5">
                 <ShieldCheck className="w-3 h-3" />
                 Executive War Room
              </div>
              <div className="w-1 h-1 rounded-full bg-slate-200" />
              <div className="flex items-center gap-1.5">
                <div className={`w-2 h-2 rounded-full ${isRecovering ? 'bg-amber-500 animate-pulse' : (syncHealth === 'HEALTHY' ? 'bg-emerald-500' : 'bg-rose-500')}`} />
-               <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+               <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
                  {isRecovering ? 'Autonomous Recovery Active' : `Global Status: ${syncHealth}`}
                </span>
              </div>
@@ -160,7 +160,7 @@ export default function ECCPage() {
                  <div className="w-1 h-1 rounded-full bg-slate-200" />
                  <div className="flex items-center gap-1.5">
                    <ShieldAlert className={`w-3.5 h-3.5 ${alertLevel === 'CRITICAL' ? 'text-rose-600 animate-bounce' : 'text-amber-500'}`} />
-                   <span className={`text-[10px] font-black uppercase tracking-widest ${alertLevel === 'CRITICAL' ? 'text-rose-600' : 'text-amber-500'}`}>
+                   <span className={`text-[10px] font-bold uppercase tracking-widest ${alertLevel === 'CRITICAL' ? 'text-rose-600' : 'text-amber-500'}`}>
                      Governance Alert: {alertLevel}
                    </span>
                  </div>
@@ -168,7 +168,7 @@ export default function ECCPage() {
              )}
           </div>
           <div className="space-y-1">
-            <h1 className="text-4xl font-black text-slate-900 tracking-tighter leading-none">
+            <h1 className="text-4xl font-bold text-slate-900 tracking-tighter leading-none">
               Command Center
             </h1>
             <p className="text-[13px] font-medium text-slate-400 leading-relaxed max-w-[480px]">
@@ -180,16 +180,16 @@ export default function ECCPage() {
         <div className="flex items-center gap-3">
            <button 
              onClick={() => setIsSimulatorOpen(true)}
-             className="bg-indigo-600 text-white px-6 h-[44px] rounded-xl text-[11px] font-black uppercase tracking-wider transition-all shadow-lg shadow-indigo-600/20 flex items-center gap-2"
+             className="bg-indigo-600 text-white px-6 h-[44px] rounded-xl text-[11px] font-bold uppercase tracking-wider transition-all shadow-lg shadow-indigo-600/20 flex items-center gap-2"
            >
               <Play className="w-[18px] h-[18px] stroke-[1.5px]" />
               Strategy Simulator
            </button>
-           <button className="bg-white border border-slate-200 text-slate-600 hover:border-slate-300 px-6 h-[44px] rounded-xl text-[11px] font-black uppercase tracking-wider transition-all shadow-sm flex items-center gap-2">
+           <button className="bg-white border border-slate-200 text-slate-600 hover:border-slate-300 px-6 h-[44px] rounded-xl text-[11px] font-bold uppercase tracking-wider transition-all shadow-sm flex items-center gap-2">
               <BarChart3 className="w-[18px] h-[18px] stroke-[1.5px]" />
               Strategic Report
            </button>
-           <button className="bg-indigo-600 hover:bg-indigo-700 text-white flex items-center gap-2 px-6 h-[44px] rounded-xl text-[11px] font-black uppercase tracking-wider transition-all shadow-lg shadow-indigo-600/20">
+           <button className="bg-indigo-600 hover:bg-indigo-700 text-white flex items-center gap-2 px-6 h-[44px] rounded-xl text-[11px] font-bold uppercase tracking-wider transition-all shadow-lg shadow-indigo-600/20">
               <Target className="w-[18px] h-[18px] stroke-[1.5px]" />
               Executive Sync
            </button>
@@ -306,14 +306,14 @@ export default function ECCPage() {
                     <RadarChart 
                       cx="50%" 
                       cy="50%" 
-                      outerRadius="75%" 
+                      outerRadius="65%" 
                       data={dynamicRadarData}
-                      margin={{ top: 20, right: 30, bottom: 20, left: 30 }}
+                      margin={{ top: 30, right: 60, bottom: 30, left: 60 }}
                     >
                        <PolarGrid stroke="#334155" />
                        <PolarAngleAxis 
                          dataKey="subject" 
-                         tick={{ fill: '#94a3b8', fontSize: 11, fontWeight: 500 }}
+                         tick={{ fill: '#94a3b8', fontSize: 10, fontWeight: 500 }}
                        />
                        <Radar
                          name="Trust Index"

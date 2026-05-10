@@ -101,11 +101,11 @@ export const {
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
-        token.id = user.id;
+        token.id = user.id as string;
         token.role = user.role;
         token.permissions = user.permissions;
-        token.employeeId = user.employeeId;
-        token.departmentId = user.departmentId;
+        token.employeeId = user.employeeId as string | undefined;
+        token.departmentId = user.departmentId as string | undefined;
       }
       return token;
     },

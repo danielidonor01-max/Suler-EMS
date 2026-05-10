@@ -5,7 +5,7 @@ import { MetricCard } from "@/components/dashboard/MetricCard";
 import { CapabilityIntelligence } from "@/components/dashboard/CapabilityIntelligence";
 import { DataTable } from "@/components/tables/DataTable";
 import { Drawer } from "@/components/common/Drawer";
-import { Modal } from "@/components/common/Modal";
+import { Modal } from "@/components/modals/Modal";
 import { 
   Users, 
   UserCheck, 
@@ -22,23 +22,6 @@ import {
   Clock,
   History,
   Layout,
-<<<<<<< Updated upstream
-  Target
-} from 'lucide-react';
-
-import { EmployeeService } from "@/modules/employees/services/employee.service";
-import { EmployeeResponseDTO } from "@/modules/employees/dto/employee.dto";
-
-import { Select } from "@/components/forms/Select";
-
-export default function EmployeesPage() {
-  const [currentPage, setCurrentPage] = useState(1);
-  const [employees, setEmployees] = useState<EmployeeResponseDTO[]>([]);
-  const [totalItems, setTotalItems] = useState(0);
-  const [loading, setLoading] = useState(true);
-  const [selectedEmployee, setSelectedEmployee] = useState<EmployeeResponseDTO | null>(null);
-  const [isOnboardingOpen, setIsOnboardingOpen] = useState(false);
-=======
   Target,
   AlertTriangle,
   Edit3,
@@ -47,22 +30,25 @@ export default function EmployeesPage() {
 } from 'lucide-react';
 
 import { useWorkforce, Employee } from "@/context/WorkforceContext";
-import { InviteUserModal } from "@/components/modals/InviteUserModal";
 import { EditEmployeeModal, SuspendAccessModal, ModifyRoleModal } from "@/components/modals/WorkforceModals";
 import { ForensicTimelineDrawer } from "@/components/drawers/ForensicTimelineDrawer";
 import { ConflictResolutionPortal } from "@/components/common/ConflictResolutionPortal";
-import { useMutation } from "@/hooks/useMutation";
+import { Select } from "@/components/forms/Select";
 
 export default function EmployeesPage() {
-  const { employees, updateEmployee, undoMutation, canUndo } = useWorkforce();
+  const { employees, updateEmployee } = useWorkforce();
   const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
-  const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
+  const [isOnboardingOpen, setIsOnboardingOpen] = useState(false);
   
   // Governance Interaction State
   const [activeGovernance, setActiveGovernance] = useState<{ 
     type: 'EDIT' | 'ROLE' | 'SUSPEND' | 'AUDIT' | null, 
     employee: Employee | null 
   }>({ type: null, employee: null });
+
+  // Onboarding Form State
+  const [hub, setHub] = useState('lagos');
+  const [designation, setDesignation] = useState('engineer');
   
   // Governance Row Actions
   const rowActions = [
@@ -89,64 +75,25 @@ export default function EmployeesPage() {
     },
   ];
 
-  // Conflict State
-  const [conflictData, setConflictData] = useState<{
-    isOpen: boolean;
-    entityName: string;
-    localState: any;
-    serverState: any;
-    id: string;
-  }>({
-    isOpen: false,
-    entityName: '',
-    localState: null,
-    serverState: null,
-    id: ''
-  });
->>>>>>> Stashed changes
-
-  // Form State for Onboarding
-  const [hub, setHub] = useState('lagos');
-  const [designation, setDesignation] = useState('engineer');
-
-  React.useEffect(() => {
-    let isMounted = true;
-    async function loadData() {
-      setLoading(true);
-      const result = await EmployeeService.getEmployees({
-        page: currentPage,
-        limit: 10,
-      });
-      if (!isMounted) return;
-      if (result.success) {
-        setEmployees(result.data.data);
-        setTotalItems(result.data.meta.total);
-      }
-      setLoading(false);
-    }
-    loadData();
-    return () => { isMounted = false; };
-  }, [currentPage]);
-
   const columns = [
     {
       header: "Staff Member",
-      accessor: "fullName",
-      render: (val: string, emp: EmployeeResponseDTO) => (
+      accessor: "name",
+      render: (val: string, emp: Employee) => (
         <div className="flex items-center gap-4">
-          <div className="w-10 h-10 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-400 font-black text-[10px] uppercase">
-            {emp.fullName.split(' ').map(n => n[0]).join('')}
+          <div className="w-10 h-10 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-400 font-bold text-[10px] uppercase">
+            {emp.name.split(' ').map(n => n[0]).join('')}
           </div>
           <div className="flex flex-col">
-            <span className="text-[14px] font-black text-slate-900 tracking-tight leading-none mb-1">{emp.fullName}</span>
-            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">{emp.staffId}</span>
+            <span className="text-[14px] font-bold text-slate-900 tracking-tight leading-none mb-1">{emp.name}</span>
+            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">{emp.id}</span>
           </div>
         </div>
       )
     },
     {
       header: "Department",
-      accessor: "departmentName",
+      accessor: "office",
       render: (val: string) => (
         <div className="flex items-center gap-2">
           <div className="w-1.5 h-1.5 rounded-full bg-slate-200" />
@@ -156,7 +103,7 @@ export default function EmployeesPage() {
     },
     {
       header: "Designation",
-      accessor: "roleName",
+      accessor: "role",
       render: (val: string) => (
         <span className="text-slate-400 font-bold text-[11px] uppercase tracking-widest">{val}</span>
       )
@@ -166,10 +113,10 @@ export default function EmployeesPage() {
       accessor: "status",
       render: (val: string) => (
         <div className={`inline-flex items-center gap-2 px-2 py-1 rounded-lg border ${
-          val === 'Active' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-amber-50 text-amber-600 border-amber-100'
+          val === 'ACTIVE' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-amber-50 text-amber-600 border-amber-100'
         }`}>
-          <div className={`w-1 h-1 rounded-full ${val === 'Active' ? 'bg-emerald-500' : 'bg-amber-500'} animate-pulse`} />
-          <span className="text-[9px] font-black uppercase tracking-widest">{val}</span>
+          <div className={`w-1 h-1 rounded-full ${val === 'ACTIVE' ? 'bg-emerald-500' : 'bg-amber-500'} animate-pulse`} />
+          <span className="text-[9px] font-bold uppercase tracking-widest">{val}</span>
         </div>
       )
     }
@@ -182,15 +129,15 @@ export default function EmployeesPage() {
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 px-2">
         <div className="space-y-4">
           <div className="flex items-center gap-2.5">
-             <div className="px-2.5 py-1 bg-slate-900 text-white rounded-md text-[9px] font-black uppercase tracking-[0.2em] flex items-center gap-1.5">
+             <div className="px-2.5 py-1 bg-slate-950 text-white rounded-md text-[9px] font-bold uppercase tracking-[0.2em] flex items-center gap-1.5">
                 <ShieldCheck className="w-3 h-3" />
                 Operational Integrity
              </div>
              <div className="w-1 h-1 rounded-full bg-slate-200" />
-             <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Active Hub: Lagos HQ</span>
+             <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Active Hub: Lagos HQ</span>
           </div>
           <div className="space-y-1">
-            <h1 className="text-4xl font-black text-slate-900 tracking-tighter leading-none">
+            <h1 className="text-4xl font-bold text-slate-900 tracking-tighter leading-none">
               Workforce Registry
             </h1>
             <p className="text-[13px] font-medium text-slate-400 leading-relaxed max-w-[480px]">
@@ -200,13 +147,13 @@ export default function EmployeesPage() {
         </div>
         
         <div className="flex items-center gap-3">
-           <button className="bg-white border border-slate-200 text-slate-600 hover:border-slate-300 px-6 h-[44px] rounded-xl text-[11px] font-black uppercase tracking-wider transition-all shadow-sm flex items-center gap-2">
+           <button className="bg-white border border-slate-200 text-slate-600 hover:border-slate-300 px-6 h-[44px] rounded-xl text-[11px] font-bold uppercase tracking-wider transition-all shadow-sm flex items-center gap-2">
               <Layout className="w-[18px] h-[18px] stroke-[1.5px]" />
               View Org Chart
            </button>
            <button 
              onClick={() => setIsOnboardingOpen(true)}
-             className="bg-slate-900 hover:bg-black text-white flex items-center gap-2 px-6 h-[44px] rounded-xl text-[11px] font-black uppercase tracking-wider transition-all shadow-md"
+             className="bg-slate-950 hover:bg-slate-900 text-white flex items-center gap-2 px-6 h-[44px] rounded-xl text-[11px] font-bold uppercase tracking-wider transition-all shadow-md"
            >
               <UserPlus className="w-[18px] h-[18px] stroke-[1.5px]" />
               Onboard Member
@@ -236,23 +183,24 @@ export default function EmployeesPage() {
       <Modal 
         isOpen={isOnboardingOpen} 
         onClose={() => setIsOnboardingOpen(false)}
-        title="Onboard Principal Staff"
-        subtitle="Identity & Access Governance"
-        size="lg"
       >
-        <div className="space-y-8 animate-in">
+        <div className="modal-content-padding space-y-8 animate-in">
+           <div className="space-y-1">
+              <h3 className="text-xl font-bold text-slate-900 tracking-tight">Onboard Principal Staff</h3>
+              <p className="text-[13px] font-medium text-slate-400">Identity & Access Governance</p>
+           </div>
+
            <div className="grid grid-cols-2 gap-8">
               <div className="space-y-2.5">
-                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Full Legal Name</label>
+                 <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Full Legal Name</label>
                  <input type="text" className="w-full bg-slate-50 border border-slate-100 focus:border-slate-300 focus:bg-white rounded-xl p-4 h-[48px] text-[13px] font-bold outline-none transition-all" placeholder="e.g. John Doe" />
               </div>
               <div className="space-y-2.5">
-                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Corporate Identity (Email)</label>
+                 <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Corporate Identity (Email)</label>
                  <input type="email" className="w-full bg-slate-50 border border-slate-100 focus:border-slate-300 focus:bg-white rounded-xl p-4 h-[48px] text-[13px] font-bold outline-none transition-all" placeholder="j.doe@sulerglobal.com" />
               </div>
            </div>
 
-<<<<<<< Updated upstream
            <div className="grid grid-cols-2 gap-8">
               <Select 
                 label="Operational Hub"
@@ -282,22 +230,22 @@ export default function EmployeesPage() {
                     <Sparkles className="w-5 h-5 stroke-[1.5px]" />
                  </div>
                  <div className="space-y-1">
-                    <p className="text-[12px] font-black text-slate-900 leading-none">Automated Security Provisioning</p>
+                    <p className="text-[12px] font-bold text-slate-900 leading-none">Automated Security Provisioning</p>
                     <p className="text-[10px] font-bold text-slate-400 leading-none">Standard identity protocols will be applied immediately.</p>
                  </div>
               </div>
-              <div className="flex items-center gap-2 px-3 py-1 bg-emerald-50 text-emerald-600 rounded-lg border border-emerald-100 text-[9px] font-black uppercase tracking-widest">
+              <div className="flex items-center gap-2 px-3 py-1 bg-emerald-50 text-emerald-600 rounded-lg border border-emerald-100 text-[9px] font-bold uppercase tracking-widest">
                  System Active
               </div>
            </div>
 
-           <div className="flex items-center justify-end gap-4 pt-4">
-              <button onClick={() => setIsOnboardingOpen(false)} className="px-8 h-[44px] rounded-xl text-[11px] font-black uppercase tracking-wider text-slate-400 hover:text-slate-900 transition-all">Cancel</button>
-              <button className="bg-slate-900 hover:bg-black text-white px-10 h-[44px] rounded-xl text-[11px] font-black uppercase tracking-wider transition-all shadow-lg shadow-slate-900/10">Initialize Member</button>
+           <div className="flex items-center justify-end gap-4 pt-4 border-t border-slate-100">
+              <button onClick={() => setIsOnboardingOpen(false)} className="px-8 h-[44px] rounded-xl text-[11px] font-bold uppercase tracking-wider text-slate-400 hover:text-slate-900 transition-all">Cancel</button>
+              <button className="bg-slate-950 hover:bg-slate-900 text-white px-10 h-[44px] rounded-xl text-[11px] font-bold uppercase tracking-wider transition-all shadow-lg shadow-slate-950/10">Initialize Member</button>
            </div>
         </div>
       </Modal>
-=======
+
       {/* Governance command Surface Modals */}
       {activeGovernance.type === 'EDIT' && activeGovernance.employee && (
         <EditEmployeeModal 
@@ -331,58 +279,38 @@ export default function EmployeesPage() {
         />
       )}
 
-      {/* Governance Conflict Resolution Portal */}
-      <ConflictResolutionPortal 
-        isOpen={conflictData.isOpen}
-        onClose={() => setConflictData(prev => ({ ...prev, isOpen: false }))}
-        entityName={conflictData.entityName}
-        localState={conflictData.localState}
-        serverState={conflictData.serverState}
-        onResolve={(action) => {
-          if (action === 'RELOAD') {
-            window.location.reload();
-          } else if (action === 'OVERWRITE') {
-            updateEmployee(conflictData.id, { ...conflictData.localState, _v: conflictData.serverState._v });
-            setConflictData(prev => ({ ...prev, isOpen: false }));
-          } else {
-            setConflictData(prev => ({ ...prev, isOpen: false }));
-          }
-        }}
-      />
->>>>>>> Stashed changes
-
       {/* Contextual Intelligence Surface (Drawer) */}
       <Drawer 
         isOpen={!!selectedEmployee} 
         onClose={() => setSelectedEmployee(null)}
-        title={selectedEmployee?.fullName || ''}
-        subtitle={selectedEmployee?.staffId || ''}
+        title={selectedEmployee?.name || ''}
+        subtitle={selectedEmployee?.id || ''}
       >
         <div className="space-y-10 animate-in">
            {/* Member Summary Block */}
            <div className="flex items-center gap-6 p-7 rounded-[20px] bg-slate-50 border border-slate-100">
-              <div className="w-20 h-20 rounded-2xl bg-white border border-slate-200 flex items-center justify-center text-slate-900 text-2xl font-black shadow-sm">
-                {selectedEmployee?.fullName.split(' ').map(n => n[0]).join('')}
+              <div className="w-20 h-20 rounded-2xl bg-white border border-slate-200 flex items-center justify-center text-slate-900 text-2xl font-bold shadow-sm">
+                {selectedEmployee?.name.split(' ').map(n => n[0]).join('')}
               </div>
               <div className="space-y-2">
                  <div className="flex items-center gap-2">
-                    <span className="px-2.5 py-0.5 rounded-lg bg-emerald-50 text-emerald-600 text-[9px] font-black uppercase tracking-widest border border-emerald-100">Verified</span>
+                    <span className="px-2.5 py-0.5 rounded-lg bg-emerald-50 text-emerald-600 text-[9px] font-bold uppercase tracking-widest border border-emerald-100">Verified</span>
                     <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Est. Jan 2024</span>
                  </div>
-                 <h3 className="text-xl font-black text-slate-900 tracking-tight leading-none">{selectedEmployee?.fullName}</h3>
-                 <p className="text-[13px] font-bold text-slate-500 uppercase tracking-widest opacity-70">{selectedEmployee?.roleName}</p>
+                 <h3 className="text-xl font-bold text-slate-900 tracking-tight leading-none">{selectedEmployee?.name}</h3>
+                 <p className="text-[13px] font-bold text-slate-500 uppercase tracking-widest opacity-70">{selectedEmployee?.role}</p>
               </div>
            </div>
 
            {/* Core Hub Data */}
            <div className="grid grid-cols-2 gap-8">
               <div className="space-y-1.5">
-                 <span className="text-[9px] font-black text-slate-300 uppercase tracking-widest">Email Identity</span>
+                 <span className="text-[9px] font-bold text-slate-300 uppercase tracking-widest">Email Identity</span>
                  <p className="text-[14px] font-bold text-slate-900">{selectedEmployee?.email}</p>
               </div>
               <div className="space-y-1.5">
-                 <span className="text-[9px] font-black text-slate-300 uppercase tracking-widest">Operational Hub</span>
-                 <p className="text-[14px] font-bold text-slate-900">{selectedEmployee?.departmentName}</p>
+                 <span className="text-[9px] font-bold text-slate-300 uppercase tracking-widest">Operational Hub</span>
+                 <p className="text-[14px] font-bold text-slate-900">{selectedEmployee?.office}</p>
               </div>
            </div>
 
@@ -396,14 +324,14 @@ export default function EmployeesPage() {
                 { category: 'Creativity', value: 88 },
                 { category: 'Problem Solving', value: 95 },
               ]}
-              insight={`${selectedEmployee?.fullName} displays high technical proficiency and exceptional problem-solving capabilities. Recommended for senior technical leadership track in Q3.`}
+              insight={`${selectedEmployee?.name} displays high technical proficiency and exceptional problem-solving capabilities. Recommended for senior technical leadership track in Q3.`}
            />
 
            {/* Intelligence Timeline */}
            <div className="space-y-5">
               <div className="flex items-center gap-2">
                  <Target className="w-4 h-4 text-slate-400" />
-                 <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Operational History</h4>
+                 <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">Operational History</h4>
               </div>
               <div className="space-y-4 relative before:absolute before:left-3 before:top-2 before:bottom-2 before:w-px before:bg-slate-100">
                  {[
@@ -411,9 +339,9 @@ export default function EmployeesPage() {
                    { label: 'Access Modification', desc: 'Enhanced authorization levels granted.', time: '5h ago' }
                  ].map((log, i) => (
                    <div key={i} className="relative pl-10">
-                      <div className="absolute left-2.5 top-1.5 w-1.5 h-1.5 rounded-full bg-slate-900 ring-4 ring-slate-50" />
+                      <div className="absolute left-2.5 top-1.5 w-1.5 h-1.5 rounded-full bg-slate-950 ring-4 ring-slate-50" />
                       <div className="flex justify-between items-start">
-                         <p className="text-[12px] font-black text-slate-900">{log.label}</p>
+                         <p className="text-[12px] font-bold text-slate-900">{log.label}</p>
                          <span className="text-[10px] font-bold text-slate-300">{log.time}</span>
                       </div>
                       <p className="text-[11px] font-medium text-slate-500 mt-0.5 leading-relaxed">{log.desc}</p>
@@ -424,11 +352,11 @@ export default function EmployeesPage() {
 
            {/* Actions Intelligence */}
            <div className="grid grid-cols-2 gap-4">
-              <button className="flex items-center justify-center gap-3 h-[44px] rounded-xl border border-slate-200 hover:bg-slate-50 text-[10px] font-black text-slate-600 uppercase tracking-widest transition-all shadow-sm">
+              <button className="flex items-center justify-center gap-3 h-[44px] rounded-xl border border-slate-200 hover:bg-slate-50 text-[10px] font-bold text-slate-600 uppercase tracking-widest transition-all shadow-sm">
                  <ShieldCheck className="w-4 h-4 stroke-[1.5px]" />
                  Security Audit
               </button>
-              <button className="flex items-center justify-center gap-3 h-[44px] rounded-xl border border-slate-200 hover:bg-slate-50 text-[10px] font-black text-slate-600 uppercase tracking-widest transition-all shadow-sm">
+              <button className="flex items-center justify-center gap-3 h-[44px] rounded-xl border border-slate-200 hover:bg-slate-50 text-[10px] font-bold text-slate-600 uppercase tracking-widest transition-all shadow-sm">
                  <Calendar className="w-4 h-4 stroke-[1.5px]" />
                  Shift Registry
               </button>

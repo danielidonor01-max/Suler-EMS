@@ -13,7 +13,7 @@ export function PageHeader({ title, description, actions, className = '' }: Page
   return (
     <div className={`flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12 ${className}`}>
       <div className="max-w-[720px]">
-        <h1 className="text-4xl font-extrabold text-slate-900 tracking-tight leading-none mb-3">
+        <h1 className="text-4xl font-bold text-slate-900 tracking-tight leading-none mb-3">
           {title}
         </h1>
         {description && (

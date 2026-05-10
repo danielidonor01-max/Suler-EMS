@@ -9,7 +9,7 @@ export class NotificationService {
    */
   static async getForUser(
     userId: UUID, 
-    options: { limit?: number; offset?: number; status?: NotificationStatus } = {}
+    options: { limit?: number; offset?: number; status?: string } = {}
   ): Promise<Result<NotificationModel[]>> {
     try {
       const { limit = 20, offset = 0, status } = options;

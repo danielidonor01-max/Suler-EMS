@@ -16,7 +16,7 @@ import {
   Activity,
   History
 } from 'lucide-react';
-import { Modal } from './Modal';
+import { Modal } from '../common/Modal';
 import { useWorkforce, Employee } from '@/context/WorkforceContext';
 import { useToast } from '../common/ToastContext';
 import { Select } from '../forms/Select';
@@ -64,7 +64,7 @@ export const EditEmployeeModal: React.FC<EditEmployeeModalProps> = ({ isOpen, on
       <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-500">
          <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-               <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Full Name</label>
+               <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Full Name</label>
                <input 
                  value={formData.name} 
                  onChange={e => setFormData({...formData, name: e.target.value})}
@@ -72,7 +72,7 @@ export const EditEmployeeModal: React.FC<EditEmployeeModalProps> = ({ isOpen, on
                />
             </div>
             <div className="space-y-2">
-               <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Email Address</label>
+               <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Email Address</label>
                <input 
                  value={formData.email} 
                  onChange={e => setFormData({...formData, email: e.target.value})}
@@ -110,7 +110,7 @@ export const EditEmployeeModal: React.FC<EditEmployeeModalProps> = ({ isOpen, on
          <div className="p-5 bg-slate-50 border border-slate-100 rounded-2xl flex items-start gap-4">
             <ShieldCheck className="w-5 h-5 text-indigo-500 shrink-0 mt-0.5" />
             <div className="space-y-1">
-               <h4 className="text-[11px] font-black text-slate-900 uppercase tracking-widest">Governance Propagation</h4>
+               <h4 className="text-[11px] font-bold text-slate-900 uppercase tracking-widest">Governance Propagation</h4>
                <p className="text-[12px] text-slate-500 leading-relaxed font-medium">
                   Identity changes will propagate to the ECC and IAM clusters instantly. Session persistence may be affected if the role scope is reduced.
                </p>
@@ -118,11 +118,11 @@ export const EditEmployeeModal: React.FC<EditEmployeeModalProps> = ({ isOpen, on
          </div>
 
          <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
-            <button onClick={onClose} disabled={isUpdating} className="px-6 h-[44px] text-[11px] font-black uppercase tracking-widest text-slate-400 hover:text-slate-600 transition-colors">Cancel</button>
+            <button onClick={onClose} disabled={isUpdating} className="px-6 h-[44px] text-[11px] font-bold uppercase tracking-widest text-slate-400 hover:text-slate-600 transition-colors">Cancel</button>
             <button 
               onClick={handleUpdate}
               disabled={isUpdating}
-              className="bg-indigo-600 hover:bg-indigo-700 text-white flex items-center gap-2 px-8 h-[48px] rounded-xl text-[11px] font-black uppercase tracking-widest transition-all shadow-lg shadow-indigo-600/20"
+              className="bg-indigo-600 hover:bg-indigo-700 text-white flex items-center gap-2 px-8 h-[48px] rounded-xl text-[11px] font-bold uppercase tracking-widest transition-all shadow-lg shadow-indigo-600/20"
             >
                {isUpdating ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Synchronize Identity'}
             </button>
@@ -177,7 +177,7 @@ export const SuspendAccessModal: React.FC<SuspendAccessModalProps> = ({ isOpen, 
                <ShieldAlert className="w-8 h-8" />
             </div>
             <div className="space-y-2">
-               <h3 className="text-lg font-black text-slate-900 tracking-tight">Suspend Access?</h3>
+               <h3 className="text-lg font-bold text-slate-900 tracking-tight">Suspend Access?</h3>
                <p className="text-[13px] text-slate-500 font-medium leading-relaxed">
                  You are about to revoke all organizational access for **{employee.name}**. This will instantly invalidate active sessions and stop all workflow participation.
                </p>
@@ -194,11 +194,11 @@ export const SuspendAccessModal: React.FC<SuspendAccessModalProps> = ({ isOpen, 
             <button 
               onClick={handleSuspend}
               disabled={isSuspending}
-              className="bg-rose-600 hover:bg-rose-700 text-white w-full h-[52px] rounded-xl text-[11px] font-black uppercase tracking-widest transition-all shadow-lg shadow-rose-600/20 flex items-center justify-center gap-2"
+              className="bg-rose-600 hover:bg-rose-700 text-white w-full h-[52px] rounded-xl text-[11px] font-bold uppercase tracking-widest transition-all shadow-lg shadow-rose-600/20 flex items-center justify-center gap-2"
             >
                {isSuspending ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Confirm Suspension'}
             </button>
-            <button onClick={onClose} disabled={isSuspending} className="w-full h-[48px] text-[11px] font-black uppercase tracking-widest text-slate-400 hover:text-slate-600 transition-colors">
+            <button onClick={onClose} disabled={isSuspending} className="w-full h-[48px] text-[11px] font-bold uppercase tracking-widest text-slate-400 hover:text-slate-600 transition-colors">
                Abort Action
             </button>
          </div>
@@ -247,7 +247,7 @@ export const ModifyRoleModal: React.FC<ModifyRoleModalProps> = ({ isOpen, onClos
          <div className="p-6 bg-slate-900 rounded-[24px] text-white space-y-4">
             <div className="flex items-center gap-3">
                <Fingerprint className="w-5 h-5 text-indigo-400" />
-               <h4 className="text-[13px] font-black uppercase tracking-widest">IAM Authority Scope</h4>
+               <h4 className="text-[13px] font-bold uppercase tracking-widest">IAM Authority Scope</h4>
             </div>
             <p className="text-[12px] text-slate-400 leading-relaxed font-medium">
                Modifying the role will instantly re-render the workspace for this user and affect their permission matrix.
@@ -273,11 +273,11 @@ export const ModifyRoleModal: React.FC<ModifyRoleModalProps> = ({ isOpen, onClos
             <button 
               onClick={handleUpdate}
               disabled={isUpdating}
-              className="bg-slate-900 hover:bg-black text-white w-full h-[52px] rounded-xl text-[11px] font-black uppercase tracking-widest transition-all shadow-lg shadow-slate-900/10 flex items-center justify-center gap-2"
+              className="bg-slate-900 hover:bg-slate-950 text-white w-full h-[52px] rounded-xl text-[11px] font-bold uppercase tracking-widest transition-all shadow-lg shadow-slate-900/10 flex items-center justify-center gap-2"
             >
                {isUpdating ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Apply Role Mutation'}
             </button>
-            <button onClick={onClose} disabled={isUpdating} className="w-full h-[48px] text-[11px] font-black uppercase tracking-widest text-slate-400 hover:text-slate-600 transition-colors">
+            <button onClick={onClose} disabled={isUpdating} className="w-full h-[48px] text-[11px] font-bold uppercase tracking-widest text-slate-400 hover:text-slate-600 transition-colors">
                Cancel
             </button>
          </div>

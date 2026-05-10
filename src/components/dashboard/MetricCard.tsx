@@ -13,6 +13,7 @@ interface MetricCardProps {
   icon?: LucideIcon;
   variant?: 'tonal-success' | 'tonal-info' | 'tonal-warning' | 'tonal-danger';
   statusLabel?: string;
+  className?: string;
 }
 
 export const MetricCard: React.FC<MetricCardProps> = ({ 
@@ -21,21 +22,22 @@ export const MetricCard: React.FC<MetricCardProps> = ({
   trend, 
   icon: Icon,
   variant = 'tonal-info',
-  statusLabel
+  statusLabel,
+  className = ''
 }) => {
   const getVariantStyles = () => {
     switch (variant) {
-      case 'tonal-success': return { accent: 'bg-emerald-500', text: 'text-emerald-600', bg: 'bg-emerald-50/50', border: 'border-emerald-100/50' };
-      case 'tonal-warning': return { accent: 'bg-amber-500', text: 'text-amber-600', bg: 'bg-amber-50/50', border: 'border-amber-100/50' };
-      case 'tonal-danger': return { accent: 'bg-rose-500', text: 'text-rose-600', bg: 'bg-rose-50/50', border: 'border-rose-100/50' };
-      default: return { accent: 'bg-indigo-600', text: 'text-indigo-600', bg: 'bg-indigo-50/50', border: 'border-indigo-100/50' };
+      case 'tonal-success': return { accent: 'bg-emerald-500', text: 'text-emerald-600', bg: 'bg-emerald-50/50', border: 'border-emerald-100' };
+      case 'tonal-warning': return { accent: 'bg-amber-500', text: 'text-amber-600', bg: 'bg-amber-50/50', border: 'border-amber-100' };
+      case 'tonal-danger': return { accent: 'bg-rose-500', text: 'text-rose-600', bg: 'bg-rose-50/50', border: 'border-rose-100' };
+      default: return { accent: 'bg-indigo-600', text: 'text-indigo-600', bg: 'bg-indigo-50/50', border: 'border-indigo-100' };
     }
   };
 
   const styles = getVariantStyles();
 
   return (
-    <div className="bg-white border border-slate-200/60 rounded-[20px] px-6 py-5 shadow-sm hover:shadow-md transition-all group relative overflow-hidden flex flex-col justify-between min-h-[160px]">
+    <div className={`bg-white border border-slate-200 rounded-[24px] px-6 py-5 shadow-[0_8px_30px_rgba(15,23,42,0.06)] hover:shadow-md transition-all group relative overflow-hidden flex flex-col justify-between min-h-[160px] ${className}`}>
       {/* Structural Density: Reduced height and wider horizontal intent */}
       
       {/* TOP: Icon & Status Chip */}
@@ -68,7 +70,7 @@ export const MetricCard: React.FC<MetricCardProps> = ({
       </div>
       
       {/* BOTTOM: Metadata & Sync State */}
-      <div className="mt-5 pt-4 border-t border-slate-100/60 flex items-center justify-between">
+      <div className="mt-5 pt-4 border-t border-slate-100 flex items-center justify-between">
          <div className="flex items-center gap-1.5">
             <div className="w-1 h-1 rounded-full bg-emerald-500 animate-pulse" />
             <span className="text-[9px] font-bold text-slate-300 uppercase tracking-widest">Live Sync</span>

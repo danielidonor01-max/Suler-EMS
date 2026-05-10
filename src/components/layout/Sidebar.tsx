@@ -47,20 +47,20 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle }) => {
 
   return (
     <aside 
-      className={`bg-white h-screen border-r border-slate-200/60 flex flex-col transition-all duration-500 ease-[cubic-bezier(0.2,0,0,1)] relative z-50 ${
+      className={`bg-white h-screen border-r border-slate-200 flex flex-col transition-all duration-500 ease-[cubic-bezier(0.2,0,0,1)] relative z-50 ${
         isCollapsed ? 'w-[80px]' : 'w-[280px]'
       }`}
     >
       {/* Brand Mark Layer */}
-      <div className={`h-[72px] flex items-center px-6 border-b border-slate-200/40`}>
+      <div className={`h-[72px] flex items-center px-6 border-b border-slate-200`}>
         <div className="flex items-center gap-3.5">
           <div className="w-9 h-9 rounded-lg bg-slate-900 flex items-center justify-center text-white shadow-sm shrink-0">
             <Box className="w-5 h-5 stroke-[1.5px]" />
           </div>
           {!isCollapsed && (
             <div className="flex flex-col animate-in slide-in-from-left-2">
-              <span className="text-sm font-black text-slate-900 tracking-tight leading-none">Suler EMS</span>
-              <span className="text-[8px] font-black text-slate-400 uppercase tracking-[0.2em] mt-1.5">Operational OS</span>
+              <span className="text-sm font-bold text-slate-900 tracking-tight leading-none">Suler EMS</span>
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Suler Operational OS</span>
             </div>
           )}
         </div>
@@ -73,7 +73,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle }) => {
         <div className="space-y-1">
           {!isCollapsed && (
             <div className="px-4 mb-3">
-              <span className="text-[9px] font-black text-slate-300 uppercase tracking-[0.2em]">Operations</span>
+              <span className="text-[9px] font-bold text-slate-300 uppercase tracking-[0.2em]">Operations</span>
             </div>
           )}
           <div className="space-y-1">
@@ -87,7 +87,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle }) => {
         <div className="space-y-1">
           {!isCollapsed && (
             <div className="px-4 mb-3">
-              <span className="text-[9px] font-black text-slate-300 uppercase tracking-[0.2em]">Intelligence</span>
+              <span className="text-[9px] font-bold text-slate-300 uppercase tracking-[0.2em]">Intelligence</span>
             </div>
           )}
           <div className="space-y-1">
@@ -106,14 +106,14 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle }) => {
             className={`flex items-center justify-center w-10 h-10 rounded-xl text-slate-400 hover:text-slate-900 hover:bg-slate-50 transition-all ${isCollapsed ? '' : 'flex-1 border border-transparent hover:border-slate-200'}`}
           >
             <Settings className="w-[18px] h-[18px] stroke-[1.5px]" />
-            {!isCollapsed && <span className="ml-3 text-[12px] font-black tracking-tight">Settings</span>}
+            {!isCollapsed && <span className="ml-3 text-[12px] font-bold tracking-tight">Settings</span>}
           </Link>
 
           <button
             className={`flex items-center justify-center w-10 h-10 rounded-xl text-slate-400 hover:text-rose-600 hover:bg-rose-50/50 transition-all ${isCollapsed ? '' : 'flex-1 border border-transparent hover:border-rose-100/50'}`}
           >
             <LogOut className="w-[18px] h-[18px] stroke-[1.5px]" />
-            {!isCollapsed && <span className="ml-3 text-[12px] font-black tracking-tight">Sign Out</span>}
+            {!isCollapsed && <span className="ml-3 text-[12px] font-bold tracking-tight">Sign Out</span>}
           </button>
         </div>
       </div>

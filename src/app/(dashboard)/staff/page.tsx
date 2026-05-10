@@ -16,7 +16,8 @@ import {
   MoreVertical,
   Mail,
   Phone,
-  Layout
+  Layout,
+  Target
 } from 'lucide-react';
 import { DataTable } from "@/components/tables/DataTable";
 import { MetricCard } from '@/components/dashboard/MetricCard';

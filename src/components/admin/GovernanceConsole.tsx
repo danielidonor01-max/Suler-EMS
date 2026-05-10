@@ -83,7 +83,7 @@ const GovernanceConsole = () => {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-12">
         <MetricCard label="Integrity Score" value="99.9%" trend={{ direction: 'up', value: 'Optimal' }} icon={ShieldCheck} />
         <MetricCard label="Active Sessions" value="24" trend={{ direction: 'neutral', value: 'Live' }} icon={Activity} />
-        <MetricCard label="Privileged Ops" value="12" trend={{ direction: 'down', value: '-4 vs avg' }} icon={Lock} variant="secondary" />
+        <MetricCard label="Privileged Ops" value="12" trend={{ direction: 'down', value: '-4 vs avg' }} icon={Lock} variant="tonal-warning" />
         <MetricCard label="Data Compliance" value="100%" trend={{ direction: 'up', value: 'Certified' }} icon={Database} />
       </div>
 

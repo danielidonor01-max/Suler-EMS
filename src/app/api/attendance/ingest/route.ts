@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { AttendanceSyncService } from '@/modules/attendance/services/attendance-sync.service';
 import { DeviceService } from '@/modules/attendance/services/device.service';
 import { RawAttendanceEvent } from '@/modules/attendance/domain/attendance.types';
-import { successResponse, errorResponse } from '@/lib/api-response';
+import { successResponse, errorResponse } from '@/lib/api-utils';
 
 /**
  * Hardware Ingestion Endpoint

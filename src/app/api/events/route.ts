@@ -9,7 +9,7 @@ import { successResponse, errorResponse } from "@/lib/api-utils";
 export const GET = withAuth(async (req, session) => {
   try {
     const events = await prisma.systemEvent.findMany({
-      orderBy: { createdAt: 'desc' },
+      orderBy: { timestamp: 'desc' },
       take: 20
     });
 

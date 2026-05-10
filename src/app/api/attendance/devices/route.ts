@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server';
 import { DeviceService } from '@/modules/attendance/services/device.service';
-import { successResponse, errorResponse } from '@/lib/api-response';
+import { successResponse, errorResponse } from '@/lib/api-utils';
 
 export async function GET(req: NextRequest) {
   try {

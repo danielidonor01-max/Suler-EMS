@@ -13,7 +13,8 @@ import {
   Zap,
   TrendingUp,
   Mail,
-  ArrowRight
+  ArrowRight,
+  Calendar
 } from 'lucide-react';
 import { MetricCard } from '@/components/dashboard/MetricCard';
 import { CapabilityIntelligence } from '@/components/dashboard/CapabilityIntelligence';
@@ -39,7 +40,7 @@ export default function TeamPage() {
                 Manager Command Active
               </div>
             </div>
-            <h1 className="text-3xl font-black text-slate-900 tracking-tighter leading-none mb-3">
+            <h1 className="text-3xl font-bold text-slate-900 tracking-tighter leading-none mb-3">
               Team Intelligence
             </h1>
             <p className="text-[13px] font-medium text-slate-400 leading-relaxed max-w-[480px]">
@@ -48,11 +49,11 @@ export default function TeamPage() {
           </div>
 
           <div className="flex items-center gap-3">
-             <button className="bg-white border border-slate-200 text-slate-600 hover:border-slate-300 px-6 h-[44px] rounded-xl text-[11px] font-black uppercase tracking-wider transition-all shadow-sm flex items-center gap-2">
+             <button className="bg-white border border-slate-200 text-slate-600 hover:border-slate-300 px-6 h-[44px] rounded-2xl text-[11px] font-bold uppercase tracking-wider transition-all shadow-sm flex items-center gap-2">
                 <Calendar className="w-[18px] h-[18px] stroke-[1.5px]" />
                 Team Schedule
              </button>
-             <button className="bg-slate-900 hover:bg-black text-white flex items-center gap-2 px-6 h-[44px] rounded-xl text-[11px] font-black uppercase tracking-wider transition-all shadow-md">
+             <button className="bg-slate-900 hover:bg-black text-white flex items-center gap-2 px-6 h-[44px] rounded-2xl text-[11px] font-bold uppercase tracking-wider transition-all shadow-md">
                 <Zap className="w-[18px] h-[18px] stroke-[1.5px]" />
                 Allocate Resources
              </button>
@@ -71,7 +72,7 @@ export default function TeamPage() {
       {/* Team Cards Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
          {MOCK_TEAM.map(member => (
-           <div key={member.id} className="bg-white p-6 rounded-[24px] border border-slate-200/60 shadow-sm hover:shadow-md transition-all group">
+           <div key={member.id} className="bg-white p-6 rounded-[24px] border border-slate-200 shadow-[0_8px_30px_rgba(15,23,42,0.06)] hover:shadow-md transition-all group">
               <div className="flex justify-between items-start mb-6">
                  <div className="w-12 h-12 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-400 text-sm font-black">
                     {member.name.split(' ').map(n => n[0]).join('')}
@@ -82,7 +83,7 @@ export default function TeamPage() {
               </div>
 
               <div className="space-y-1 mb-6">
-                 <h4 className="text-[15px] font-black text-slate-900 tracking-tight leading-none">{member.name}</h4>
+                 <h4 className="text-[15px] font-bold text-slate-900 tracking-tight leading-none">{member.name}</h4>
                  <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">{member.role}</p>
               </div>
 
@@ -130,7 +131,7 @@ export default function TeamPage() {
          </div>
 
          {/* Upcoming Availability */}
-         <div className="bg-white p-8 rounded-[24px] border border-slate-200/60 shadow-sm">
+         <div className="bg-white p-8 rounded-[24px] border border-slate-200 shadow-[0_8px_30px_rgba(15,23,42,0.06)]">
             <div className="flex items-center gap-4 mb-8">
                <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400 border border-slate-100">
                   <Clock className="w-5 h-5" />

@@ -74,16 +74,7 @@ export class ReportingService {
       case 'ATTENDANCE_COMPLIANCE':
         return prisma.attendanceRecord.findMany({
           take: 500,
-          orderBy: { date: 'desc' },
-          include: { 
-            employee: { 
-              select: { 
-                name: true, 
-                staffId: true,
-                department: { select: { name: true } } 
-              } 
-            } 
-          }
+          orderBy: { date: 'desc' }
         });
 
       default:

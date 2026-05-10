@@ -13,8 +13,8 @@ export const generateReport = inngest.createFunction(
   { 
     id: "generate-report",
     retries: 3, // Refinement 5: Retry Strategy
+    triggers: [{ event: "report/generation.requested" }]
   },
-  { event: "report/generation.requested" },
   async ({ event, step }) => {
     const { jobId, userId, type, format, parameters } = event.data;
 
