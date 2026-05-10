@@ -1,5 +1,12 @@
+import { auth } from '@/lib/auth';
 import { redirect } from 'next/navigation';
 
-export default function Home() {
-  redirect('/employees');
+export default async function HomePage() {
+  const session = await auth();
+
+  if (session) {
+    redirect('/employees');
+  }
+
+  redirect('/login');
 }
