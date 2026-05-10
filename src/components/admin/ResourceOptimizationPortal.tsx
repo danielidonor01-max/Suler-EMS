@@ -24,7 +24,7 @@ export const ResourceOptimizationPortal: React.FC<{ isOpen: boolean, onClose: ()
     async (proposal: StaffingProposal) => {
       // Simulate network delay
       await new Promise(r => setTimeout(r, 1500));
-      return updateEmployee(proposal.employeeId, { office: proposal.targetHub });
+      return updateEmployee(proposal.employeeId, { hub: proposal.targetHub });
     },
     {
       activityLabel: 'Autonomous Rebalance Authorized',
