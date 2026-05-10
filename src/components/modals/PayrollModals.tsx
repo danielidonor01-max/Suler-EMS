@@ -310,11 +310,11 @@ export const BulkAdjustmentModal: React.FC<{ isOpen: boolean; onClose: () => voi
                       <div className="flex flex-wrap gap-2">
                          {departments.map(d => (
                            <button 
-                             key={d} 
-                             onClick={() => toggleFilter('departments', d)}
-                             className={`px-4 h-10 rounded-xl text-[11px] font-bold border transition-all ${formData.filters.departments?.includes(d) ? 'bg-slate-900 border-slate-900 text-white' : 'bg-white border-slate-200 text-slate-600 hover:border-slate-300'}`}
+                             key={d.id} 
+                             onClick={() => toggleFilter('departments', d.name)}
+                             className={`px-4 h-10 rounded-xl text-[11px] font-bold border transition-all ${formData.filters.departments?.includes(d.name) ? 'bg-slate-900 border-slate-900 text-white' : 'bg-white border-slate-200 text-slate-600 hover:border-slate-300'}`}
                            >
-                              {d}
+                              {d.name}
                            </button>
                          ))}
                       </div>
