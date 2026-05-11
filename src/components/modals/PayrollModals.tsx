@@ -29,6 +29,7 @@ import { usePayroll, SalaryStructure, BulkAdjustmentRequest } from '@/context/Pa
 import { useWorkforce } from '@/context/WorkforceContext';
 import { useOrganization } from '@/context/OrganizationContext';
 import { useTeams } from '@/context/TeamContext';
+import { formatCurrency, formatNumber } from '@/lib/utils/formatCurrency';
 
 export const AddAdjustmentModal: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOpen, onClose }) => {
   const { addAdjustment } = usePayroll();
@@ -354,7 +355,7 @@ export const BulkAdjustmentModal: React.FC<{ isOpen: boolean; onClose: () => voi
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                    <div className="bg-slate-50 p-8 rounded-[32px] border border-slate-100 space-y-4">
                       <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Total Financial Liability</span>
-                      <div className="text-4xl font-black text-slate-900 tracking-tighter">₦{totalImpact.toLocaleString()}</div>
+                       <div className="text-4xl font-black text-slate-900 tracking-tighter">{formatCurrency(totalImpact)}</div>
                       <p className="text-[12px] text-slate-400 leading-relaxed italic">Consolidated impact on {formData.period} payroll cycle.</p>
                    </div>
                    <div className="bg-slate-900 p-8 rounded-[32px] border border-slate-800 space-y-4">
@@ -369,7 +370,7 @@ export const BulkAdjustmentModal: React.FC<{ isOpen: boolean; onClose: () => voi
                            return (
                              <div key={hub} className="flex justify-between items-center text-[11px] font-bold uppercase tracking-widest">
                                 <span className="text-slate-400">{hub} ({count})</span>
-                                <span className="text-white">₦{hubImpact.toLocaleString()}</span>
+                               <span className="text-white">{formatCurrency(hubImpact)}</span>
                              </div>
                            );
                          })}
@@ -390,7 +391,7 @@ export const BulkAdjustmentModal: React.FC<{ isOpen: boolean; onClose: () => voi
                            </div>
                         </div>
                         <span className="text-[12px] font-black text-indigo-600">
-                           ₦{(formData.amountType === 'PERCENTAGE' ? (salaries.find(s => s.employeeId === emp.id)?.baseSalary || 0) * formData.amount / 100 : formData.amount).toLocaleString()}
+                           {formatCurrency(formData.amountType === 'PERCENTAGE' ? (salaries.find(s => s.employeeId === emp.id)?.baseSalary || 0) * formData.amount / 100 : formData.amount)}
                         </span>
                      </div>
                    ))}
@@ -412,7 +413,7 @@ export const BulkAdjustmentModal: React.FC<{ isOpen: boolean; onClose: () => voi
                 <div className="bg-slate-50 p-6 rounded-[28px] border border-slate-100 w-full max-w-[400px] mt-8 flex justify-between items-center">
                    <div className="flex flex-col items-start">
                       <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Cycle Liability</span>
-                      <span className="text-[18px] font-black text-slate-900">₦{totalImpact.toLocaleString()}</span>
+                      <span className="text-[18px] font-black text-slate-900">{formatCurrency(totalImpact)}</span>
                    </div>
                    <div className="flex flex-col items-end">
                       <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Effective Cycle</span>

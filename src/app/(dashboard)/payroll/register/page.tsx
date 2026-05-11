@@ -25,6 +25,7 @@ import { useWorkforce } from '@/context/WorkforceContext';
 import { useAccess } from '@/context/AccessContext';
 import { DataTable } from '@/components/tables/DataTable';
 import { AddAdjustmentModal, BulkAdjustmentModal } from '@/components/modals/PayrollModals';
+import { formatCurrency, formatNumber } from '@/lib/utils/formatCurrency';
 
 export default function PayrollRegisterPage() {
   const { payrollRuns, generateDraftRun, approveRun, processRun, deleteRun } = usePayroll();
@@ -67,34 +68,34 @@ export default function PayrollRegisterPage() {
     {
       header: "Base Salary",
       accessor: "baseSalary",
-      render: (val: number) => <span className="text-[13px] font-bold text-slate-900">₦{val.toLocaleString()}</span>
+      render: (val: number) => <span className="text-[13px] font-bold text-slate-900">{formatCurrency(val)}</span>
     },
     {
       header: "Bonus/Award",
       accessor: "totalBonuses",
-      render: (val: number) => <span className="text-[13px] font-bold text-emerald-600">+{val.toLocaleString()}</span>
+      render: (val: number) => <span className="text-[13px] font-bold text-emerald-600">+{formatNumber(val)}</span>
     },
     {
       header: "Gross Pay",
       accessor: "grossPay",
-      render: (val: number) => <span className="text-[13px] font-black text-slate-900">₦{val.toLocaleString()}</span>
+      render: (val: number) => <span className="text-[13px] font-black text-slate-900">{formatCurrency(val)}</span>
     },
     {
       header: "PAYE Tax",
       accessor: "paye",
-      render: (val: number) => <span className="text-[12px] font-bold text-rose-500">({val.toLocaleString()})</span>
+      render: (val: number) => <span className="text-[12px] font-bold text-rose-500">({formatNumber(val)})</span>
     },
     {
       header: "Pension (8%)",
       accessor: "pension",
-      render: (val: number) => <span className="text-[12px] font-bold text-amber-600">({val.toLocaleString()})</span>
+      render: (val: number) => <span className="text-[12px] font-bold text-amber-600">({formatNumber(val)})</span>
     },
     {
       header: "Net Salary",
       accessor: "netPay",
       render: (val: number) => (
         <div className="px-3 py-1 bg-indigo-50 text-indigo-700 rounded-lg text-[13px] font-black border border-indigo-100">
-          ₦{val.toLocaleString()}
+          {formatCurrency(val)}
         </div>
       )
     }
@@ -155,12 +156,12 @@ export default function PayrollRegisterPage() {
              <div className="flex items-center gap-6">
                 <div className="flex flex-col">
                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Gross Liability</span>
-                   <span className="text-[20px] font-black text-slate-900">₦{displayRun.totalGross.toLocaleString()}</span>
+                   <span className="text-[20px] font-black text-slate-900">{formatCurrency(displayRun.totalGross)}</span>
                 </div>
                 <div className="w-px h-10 bg-slate-100" />
                 <div className="flex flex-col">
                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Net Disbursable</span>
-                   <span className="text-[20px] font-black text-indigo-600">₦{displayRun.totalNet.toLocaleString()}</span>
+                   <span className="text-[20px] font-black text-indigo-600">{formatCurrency(displayRun.totalNet)}</span>
                 </div>
                 <div className="w-px h-10 bg-slate-100" />
                 <div className="flex flex-col">

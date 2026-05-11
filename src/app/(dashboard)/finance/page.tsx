@@ -25,6 +25,7 @@ import { useAccess } from '@/context/AccessContext';
 import { MetricCard } from '@/components/dashboard/MetricCard';
 import { DataTable } from '@/components/tables/DataTable';
 import { CreateExpenditureModal, AllocateProjectFundingModal } from '@/components/modals/FinanceModals';
+import { formatCurrency } from '@/lib/utils/formatCurrency';
 
 export default function FinanceDashboard() {
   const { budgets, expenditures, projects, approveExpenditure, payExpenditure } = useFinance();
@@ -70,7 +71,7 @@ export default function FinanceDashboard() {
       header: "Allocation",
       accessor: "allocated",
       render: (val: number) => (
-        <span className="text-[14px] font-black text-slate-900">₦{val.toLocaleString()}</span>
+        <span className="text-[14px] font-black text-slate-900">{formatCurrency(val)}</span>
       )
     },
     {
@@ -108,7 +109,7 @@ export default function FinanceDashboard() {
       header: "Amount",
       accessor: "amount",
       render: (val: number) => (
-        <span className="text-[14px] font-black text-slate-900">₦{val.toLocaleString()}</span>
+        <span className="text-[14px] font-black text-slate-900">{formatCurrency(val)}</span>
       )
     },
     {
@@ -251,7 +252,7 @@ export default function FinanceDashboard() {
                      <div className="space-y-4">
                         <div className="flex items-center justify-between">
                            <span className="text-[9px] font-bold text-slate-300 uppercase tracking-widest">Utilization</span>
-                           <span className="text-[10px] font-black text-slate-900">₦{proj.utilized.toLocaleString()} / ₦{proj.allocation.toLocaleString()}</span>
+                           <span className="text-[10px] font-black text-slate-900">₦{formatCurrency(proj.utilized)} / ₦{formatCurrency(proj.allocation)}</span>
                         </div>
                         <div className="h-1.5 w-full bg-slate-50 rounded-full overflow-hidden border border-slate-100">
                            <div 
