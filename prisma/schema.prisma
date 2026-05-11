@@ -1,0 +1,564 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+// --- Auth & Identity ---
+
+model Permission {
+  id          String   @id @default(uuid())
+  code        String   @unique // e.g. "employee:view"
+  name        String
+  description String?
+  roles       Role[]   @relation("RoleToPermission")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Role {
+  id          String       @id @default(uuid())
+  name        String       @unique // e.g. "SUPER_ADMIN"
+  description String?
+  permissions Permission[] @relation("RoleToPermission")
+  users       User[]
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+}
+
+model User {
+  id                     String                  @id @default(uuid())
+  email                  String                  @unique
+  name                   String
+  passwordHash           String
+  roleId                 String
+  role                   Role                    @relation(fields: [roleId], references: [id])
+  employeeId             String?                 @unique
+  employee               Employee?               @relation(fields: [employeeId], references: [id])
+  isActive               Boolean                 @default(true)
+  version                Int                     @default(1)
+  lastLoginAt            DateTime?
+  loginAttempts          LoginAttempt[]
+  sessions               SessionAudit[]
+  notifications          Notification[]
+  notificationPreference NotificationPreference?
+  reportJobs             ReportJob[]
+
+  // --- Communication Relations ---
+  conversations                ConversationMember[]
+  messages                     Message[]
+  authoredAnnouncements        Announcement[]
+  announcementAcknowledgements AnnouncementAcknowledgment[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// --- Security Auditing ---
+
+model LoginAttempt {
+  id            String   @id @default(uuid())
+  email         String
+  success       Boolean
+  ipAddress     String?
+  userAgent     String?
+  correlationId String?
+  timestamp     DateTime @default(now())
+  userId        String?
+  user          User?    @relation(fields: [userId], references: [id])
+}
+
+model SessionAudit {
+  id           String   @id @default(uuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id])
+  token        String   @unique
+  ipAddress    String?
+  userAgent    String?
+  deviceId     String?
+  lastActivity DateTime @default(now())
+  expiresAt    DateTime
+  createdAt    DateTime @default(now())
+}
+
+model SecurityEvent {
+  id            String   @id @default(uuid())
+  type          String // LOGIN_SUCCESS, LOGIN_FAILURE, SESSION_EXPIRED, PERMISSION_DENIED
+  userId        String?
+  description   String
+  metadata      Json?
+  ipAddress     String?
+  correlationId String?
+  timestamp     DateTime @default(now())
+}
+
+// --- Organizational Structure ---
+
+model Department {
+  id        String     @id @default(uuid())
+  name      String     @unique
+  code      String     @unique
+  managerId String?
+  employees Employee[]
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+}
+
+model Employee {
+  id           String     @id @default(uuid())
+  staffId      String     @unique // e.g. "SUL-001"
+  firstName    String
+  lastName     String
+  email        String     @unique
+  phone        String?
+  jobTitle     String
+  grade        String? // e.g. "L8", "M1"
+  branch       String? // e.g. "Lagos", "Abuja"
+  departmentId String
+  department   Department @relation(fields: [departmentId], references: [id])
+
+  // --- Nigerian Identity & Compliance ---
+  nin           String? @unique // National Identification Number
+  bvn           String? @unique // Bank Verification Number
+  tin           String? @unique // Tax Identification Number
+  pensionPFA    String? // Pension Fund Administrator
+  pensionNumber String? @unique // RSA Pin
+  nhfNumber     String? @unique // National Housing Fund
+  nsitfNumber   String? @unique
+  itfNumber     String? @unique
+
+  status          String                     @default("ACTIVE") // ACTIVE, INACTIVE, SUSPENDED
+  user            User?
+  leaveRequests   LeaveRequest[]
+  reconciliations AttendanceReconciliation[]
+
+  version   Int       @default(1)
+  deletedAt DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+// --- Workflow Engine ---
+
+model WorkflowInstance {
+  id             String               @id @default(uuid())
+  workflowId     String // e.g. "leave-workflow"
+  version        Int                  @default(1)
+  currentState   String
+  resourceId     String // Links to LeaveRequest, Attendance, etc.
+  assignedToId   String?
+  assignedRoleId String?
+  history        WorkflowAuditEntry[]
+  createdAt      DateTime             @default(now())
+  updatedAt      DateTime             @updatedAt
+}
+
+model WorkflowAuditEntry {
+  id         String           @id @default(uuid())
+  instanceId String
+  instance   WorkflowInstance @relation(fields: [instanceId], references: [id])
+  timestamp  DateTime         @default(now())
+  actorId    String
+  actorName  String
+  actorRole  String
+  fromState  String
+  toState    String
+  action     String
+  comment    String?
+  metadata   Json? // Immutable snapshot of data
+}
+
+// --- Domain Resources ---
+
+model LeaveRequest {
+  id                 String   @id @default(uuid())
+  employeeId         String
+  employee           Employee @relation(fields: [employeeId], references: [id])
+  type               String // ANNUAL, SICK, etc.
+  startDate          DateTime
+  endDate            DateTime
+  status             String   @default("DRAFT")
+  reason             String?
+  workflowInstanceId String?  @unique
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+}
+
+model AttendanceRecord {
+  id         String    @id @default(uuid())
+  employeeId String
+  date       DateTime
+  checkIn    DateTime?
+  checkOut   DateTime?
+  status     String // PRESENT, ABSENT, LATE
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  @@unique([employeeId, date])
+}
+
+model Notification {
+  id           String    @id @default(uuid())
+  userId       String
+  user         User      @relation(fields: [userId], references: [id])
+  title        String
+  message      String
+  type         String // INFO, WARNING, SUCCESS, ACTION
+  category     String    @default("SYSTEM") // WORKFLOW, SECURITY, SYSTEM, ATTENDANCE
+  priority     String    @default("NORMAL") // LOW, NORMAL, HIGH, URGENT
+  status       String    @default("PENDING") // PENDING, DELIVERED, READ, ARCHIVED, FAILED, DISMISSED
+  resourceId   String? // Link to specific resource (e.g. LeaveRequest ID)
+  resourceType String? // e.g. "LeaveRequest"
+  readAt       DateTime?
+  deliveredAt  DateTime?
+  metadata     Json?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  @@index([userId, status])
+}
+
+model NotificationPreference {
+  id             String   @id @default(uuid())
+  userId         String   @unique
+  user           User     @relation(fields: [userId], references: [id])
+  inAppEnabled   Boolean  @default(true)
+  emailEnabled   Boolean  @default(false)
+  smsEnabled     Boolean  @default(false)
+  workflowAlerts Boolean  @default(true)
+  securityAlerts Boolean  @default(true)
+  systemAlerts   Boolean  @default(true)
+  updatedAt      DateTime @updatedAt
+}
+
+model SystemEvent {
+  id             String   @id @default(uuid())
+  eventId        String   @unique @default(uuid())
+  type           String // e.g. "LEAVE_APPROVED_EVENT"
+  version        String   @default("1.0")
+  source         String // e.g. "workflow-engine", "auth-service"
+  actorId        String?
+  organizationId String?
+  resourceId     String?
+  resourceType   String?
+  payload        Json?
+  correlationId  String?
+  timestamp      DateTime @default(now())
+}
+
+model AnalyticsSnapshot {
+  id                 String   @id @default(uuid())
+  type               String // WORKFORCE, ATTENDANCE, WORKFLOW, SECURITY
+  granularity        String // HOURLY, DAILY, WEEKLY, MONTHLY, QUARTERLY
+  calculationVersion String   @default("1.0")
+  timestamp          DateTime @default(now())
+  data               Json // Computed KPIs and Insights
+  organizationId     String?
+  createdAt          DateTime @default(now())
+
+  @@index([type, granularity, timestamp])
+}
+
+model WorkflowMetric {
+  id                String    @id @default(uuid())
+  workflowId        String
+  resourceId        String
+  type              String // LEAVE, ATTENDANCE_CORRECTION, etc.
+  requestDate       DateTime
+  completionDate    DateTime?
+  turnaroundMinutes Int?
+  stepsCount        Int       @default(0)
+  rejectionsCount   Int       @default(0)
+  isBottleneck      Boolean   @default(false)
+  status            String // COMPLETED, CANCELLED, REJECTED
+  actorId           String? // Manager/Final Approver
+  createdAt         DateTime  @default(now())
+
+  @@index([type, requestDate])
+  @@index([workflowId])
+}
+
+model WorkforceMetric {
+  id              String   @id @default(uuid())
+  timestamp       DateTime @default(now())
+  departmentId    String?
+  headcount       Int
+  utilizationRate Float
+  attritionRate   Float?
+  onboardingCount Int      @default(0)
+  createdAt       DateTime @default(now())
+
+  @@index([timestamp, departmentId])
+}
+
+model AttendanceMetric {
+  id              String   @id @default(uuid())
+  date            DateTime @unique
+  complianceRate  Float
+  lateArrivals    Int
+  absences        Int
+  overtimeMinutes Int
+  createdAt       DateTime @default(now())
+}
+
+model ReportJob {
+  id              String  @id @default(uuid())
+  userId          String
+  user            User    @relation(fields: [userId], references: [id])
+  type            String // WORKFORCE_COMPOSITION, ATTENDANCE_COMPLIANCE, etc.
+  parameters      Json? // Query filters and scope
+  status          String  @default("PENDING") // PENDING, PROCESSING, COMPLETED, FAILED, EXPIRED, ARCHIVED
+  format          String  @default("CSV") // CSV, PDF
+  downloadUrl     String?
+  failureCategory String? // VALIDATION, EXPORT, STORAGE, AUTHORIZATION, TIMEOUT
+  error           String?
+
+  // --- Lifecycle & Retention ---
+  expiresAt       DateTime?
+  archivedAt      DateTime?
+  retentionPolicy String    @default("STANDARD") // STANDARD, LONG_TERM, PERMANENT
+
+  // --- Reliability ---
+  retryCount Int @default(0)
+  maxRetries Int @default(3)
+
+  // --- Snapshot Integrity & Versioning ---
+  schemaVersion      String @default("1.0")
+  generatedByVersion String @default("1.0")
+  snapshotMetadata   Json? // Point-in-time organization context
+
+  completedAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([userId, status])
+  @@index([expiresAt])
+}
+
+// --- Intelligence & Forecasting ---
+
+model ForecastSnapshot {
+  id                 String   @id @default(uuid())
+  type               String // WORKFORCE, ATTENDANCE, WORKFLOW
+  targetDate         DateTime
+  granularity        String // DAILY, WEEKLY, MONTHLY
+  data               Json // Projections, trends, and confidence intervals
+  calculationVersion String   @default("1.0")
+  createdAt          DateTime @default(now())
+
+  @@index([type, targetDate])
+}
+
+model OperationalAnomaly {
+  id          String    @id @default(uuid())
+  type        String // ATTENDANCE_FRAUD, WORKFLOW_STAGNATION, AUTH_ABUSE, ABNORMAL_SPIKE
+  severity    String // INFO, WARNING, CRITICAL
+  description String
+  metadata    Json? // Evidence and pattern data
+  isResolved  Boolean   @default(false)
+  resolvedAt  DateTime?
+  timestamp   DateTime  @default(now())
+  createdAt   DateTime  @default(now())
+
+  @@index([type, severity])
+}
+
+model OperationalRecommendation {
+  id              String   @id @default(uuid())
+  category        String // STAFFING, EFFICIENCY, COMPLIANCE, SECURITY
+  title           String
+  message         String
+  reasoning       String // Explainable logic (Refinement 4)
+  suggestedAction String?
+  status          String   @default("ACTIVE") // ACTIVE, APPLIED, DISMISSED
+  impactScore     Float    @default(0.0)
+  timestamp       DateTime @default(now())
+  createdAt       DateTime @default(now())
+}
+
+model RiskScore {
+  id              String   @id @default(uuid())
+  scope           String // ORGANIZATION, DEPARTMENT
+  scopeId         String? // Department ID if applicable
+  burnoutRisk     Float    @default(0.0)
+  complianceRisk  Float    @default(0.0)
+  operationalRisk Float    @default(0.0)
+  overallScore    Float    @default(0.0)
+  timestamp       DateTime @default(now())
+  createdAt       DateTime @default(now())
+
+  @@index([scope, scopeId])
+}
+
+// --- Communication & Collaboration ---
+
+model Conversation {
+  id             String  @id @default(uuid())
+  classification String // DIRECT, DEPARTMENT, WORKFLOW, ANNOUNCEMENT, ESCALATION, SYSTEM
+  name           String? // Null for DMs
+  description    String?
+  resourceId     String? // Link to WorkflowInstance, Project, etc.
+  resourceType   String? // e.g. "WorkflowInstance"
+
+  members  ConversationMember[]
+  messages Message[]
+
+  // --- Governance & Retention ---
+  retentionPolicy String    @default("STANDARD") // STANDARD, LONG_TERM, PERMANENT
+  expiresAt       DateTime?
+  archivedAt      DateTime?
+
+  lastMessageAt DateTime @default(now())
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([resourceId, resourceType])
+}
+
+model ConversationMember {
+  id             String       @id @default(uuid())
+  conversationId String
+  conversation   Conversation @relation(fields: [conversationId], references: [id])
+  userId         String
+  user           User         @relation(fields: [userId], references: [id])
+  role           String       @default("MEMBER") // OWNER, ADMIN, MEMBER
+  lastReadAt     DateTime     @default(now())
+  joinedAt       DateTime     @default(now())
+
+  @@unique([conversationId, userId])
+}
+
+model Message {
+  id             String       @id @default(uuid())
+  conversationId String
+  conversation   Conversation @relation(fields: [conversationId], references: [id])
+  senderId       String
+  sender         User         @relation(fields: [senderId], references: [id])
+  content        String
+  type           String       @default("TEXT") // TEXT, SYSTEM, ATTACHMENT
+  status         String       @default("SENT") // SENT, DELIVERED, READ, FAILED
+
+  // --- Audit & Threading ---
+  metadata Json? // For attachments (MessageAttachment abstraction), mentions, sourceContext
+  parentId String? // For threading
+  parent   Message?  @relation("Thread", fields: [parentId], references: [id])
+  replies  Message[] @relation("Thread")
+
+  isEdited  Boolean   @default(false)
+  editedAt  DateTime?
+  editedBy  String? // User ID who edited
+  deletedAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([conversationId, createdAt])
+}
+
+model Announcement {
+  id       String  @id @default(uuid())
+  title    String
+  content  String
+  category String // GLOBAL, DEPARTMENT, ROLE
+  scopeId  String? // Department ID or Role ID
+  audience Json? // Specific targeting metadata
+  priority String  @default("NORMAL") // NORMAL, URGENT
+
+  authorId String
+  author   User   @relation(fields: [authorId], references: [id])
+
+  acknowledgments AnnouncementAcknowledgment[]
+
+  expiresAt DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  @@index([category, scopeId])
+}
+
+model AnnouncementAcknowledgment {
+  id             String       @id @default(uuid())
+  announcementId String
+  announcement   Announcement @relation(fields: [announcementId], references: [id])
+  userId         String
+  user           User         @relation(fields: [userId], references: [id])
+  acknowledgedAt DateTime     @default(now())
+
+  @@unique([announcementId, userId])
+}
+
+// --- Biometric & Attendance Hardware ---
+
+model BiometricDevice {
+  id           String  @id @default(uuid())
+  name         String
+  serialNumber String  @unique
+  ipAddress    String?
+  port         Int?
+  location     String?
+  type         String // ZKTECO, HIKVISION, SUPREMA, MOBILE, WEB
+  status       String  @default("ONLINE") // ONLINE, OFFLINE, DEGRADED
+  trustLevel   String  @default("TRUSTED") // TRUSTED, UNVERIFIED, COMPROMISED
+
+  lastSeenAt        DateTime  @default(now())
+  lastHeartbeat     DateTime?
+  clockDriftSeconds Int       @default(0)
+
+  healthMetrics Json? // syncLatency, failureCount, uptime
+  metadata      Json? // Firmware version, etc.
+
+  logs RawAttendanceLog[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model RawAttendanceLog {
+  id       String           @id @default(uuid())
+  deviceId String?
+  device   BiometricDevice? @relation(fields: [deviceId], references: [id])
+
+  idempotencyKey String  @unique // deviceId + timestamp + biometricRef
+  externalId     String? // Device-specific employee ID
+  staffId        String? // Resolved internal staff ID
+
+  timestamp DateTime
+  type      String // CHECK_IN, CHECK_OUT, BREAK_IN, BREAK_OUT
+  source    String   @default("BIOMETRIC") // BIOMETRIC, MOBILE, WEB, MANUAL
+
+  rawPayload Json? // Full original hardware data
+  status     String @default("PENDING") // PENDING, PROCESSED, REJECTED, IGNORED
+
+  reconciliationId String?
+  reconciliation   AttendanceReconciliation? @relation(fields: [reconciliationId], references: [id])
+
+  createdAt DateTime @default(now())
+}
+
+model AttendanceReconciliation {
+  id         String   @id @default(uuid())
+  employeeId String
+  employee   Employee @relation(fields: [employeeId], references: [id])
+
+  date            DateTime
+  originalStatus  String?
+  requestedStatus String
+  reason          String
+
+  status             String  @default("PENDING") // PENDING, APPROVED, REJECTED
+  workflowInstanceId String? @unique
+
+  logs RawAttendanceLog[]
+
+  actorId  String // User who requested/performed override
+  metadata Json? // Immutable audit snapshot
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
