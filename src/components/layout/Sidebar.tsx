@@ -44,7 +44,8 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle }) => {
     { name: 'Workforce', icon: Users, href: '/staff' },
     { name: 'Team', icon: Target, href: '/team' },
     { name: 'Attendance', icon: Calendar, href: '/attendance' },
-    { name: 'Workflows', icon: Activity, href: '/leave' },
+    { name: 'Leave', icon: Activity, href: '/leave' },
+    { name: 'Workflows', icon: MessageSquare, href: '/communication' },
   ];
 
   const accountsFinanceModules = [
@@ -60,14 +61,14 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle }) => {
   const intelligenceModules = [
     { name: 'Analytics', icon: BarChart3, href: '/analytics' },
     { name: 'Strategy Simulator', icon: Sparkles, href: '/admin/intelligence' },
-    { name: 'Performance Insights', icon: BrainCircuit, href: '/forecasting' },
+    { name: 'Performance', icon: BrainCircuit, href: '/forecasting' },
   ];
 
   const settingSubModules = [
-    { name: 'Compliance & Tax', icon: Scale, href: '/settings/compliance' },
-    { name: 'Security', icon: Lock, href: '/settings/security' },
-    { name: 'Integrations', icon: Box, href: '/settings/integrations' },
-    { name: 'Data Management', icon: Database, href: '/settings/data' },
+    { name: 'Compliance & Tax', href: '/settings/compliance' },
+    { name: 'Security', href: '/settings/security' },
+    { name: 'Integrations', href: '/settings/integrations' },
+    { name: 'Data Management', href: '/settings/data' },
   ];
 
   return (
