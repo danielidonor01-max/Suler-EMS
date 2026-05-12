@@ -25,6 +25,7 @@ import { useAccess } from '@/context/AccessContext';
 import { MetricCard } from '@/components/dashboard/MetricCard';
 import { DataTable } from '@/components/tables/DataTable';
 import { CreateExpenditureModal, AllocateProjectFundingModal } from '@/components/modals/FinanceModals';
+import { RouteGuard } from '@/components/common/RouteGuard';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 
 export default function FinanceDashboard() {
@@ -129,7 +130,8 @@ export default function FinanceDashboard() {
   ];
 
   return (
-    <div className="section-breathing max-w-[1600px] mx-auto animate-in space-y-12">
+    <RouteGuard allowedRoles={['SUPER_ADMIN', 'HR_ADMIN', 'FINANCE_MANAGER']}>
+      <div className="section-breathing max-w-[1400px] mx-auto animate-in space-y-6">
       
       {/* Financial Command Surface */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-8 px-2">
@@ -170,8 +172,8 @@ export default function FinanceDashboard() {
 
       {/* Financial KPIs */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <MetricCard label="Total Allocation" value={`₦${(totalAllocated / 1000000).toFixed(1)}M`} icon={PieChart} variant="tonal-info" />
-        <MetricCard label="Global Spent" value={`₦${(totalSpent / 1000000).toFixed(1)}M`} trend={{ direction: 'up', value: '4.2%' }} variant="tonal-info" icon={TrendingUp} />
+        <MetricCard label="Total Allocation" value={formatCurrency(totalAllocated)} icon={PieChart} variant="tonal-info" />
+        <MetricCard label="Global Spent" value={formatCurrency(totalSpent)} trend={{ direction: 'up', value: '4.2%' }} variant="tonal-info" icon={TrendingUp} />
         <MetricCard label="Burn Rate" value={`${burnRate.toFixed(1)}%`} trend={{ direction: 'neutral', value: 'OPTIMIZED' }} variant="tonal-success" icon={Activity} />
         <MetricCard label="Financial Integrity" value="Verified" variant="tonal-success" icon={ShieldCheck} />
       </div>
@@ -252,7 +254,7 @@ export default function FinanceDashboard() {
                      <div className="space-y-4">
                         <div className="flex items-center justify-between">
                            <span className="text-[9px] font-bold text-slate-300 uppercase tracking-widest">Utilization</span>
-                           <span className="text-[10px] font-black text-slate-900">₦{formatCurrency(proj.utilized)} / ₦{formatCurrency(proj.allocation)}</span>
+                           <span className="text-[10px] font-black text-slate-900">{formatCurrency(proj.utilized)} / {formatCurrency(proj.allocation)}</span>
                         </div>
                         <div className="h-1.5 w-full bg-slate-50 rounded-full overflow-hidden border border-slate-100">
                            <div 
@@ -271,6 +273,7 @@ export default function FinanceDashboard() {
       <CreateExpenditureModal isOpen={isExpOpen} onClose={() => setIsExpOpen(false)} />
       <AllocateProjectFundingModal isOpen={isProjOpen} onClose={() => setIsProjOpen(false)} />
 
-    </div>
+      </div>
+    </RouteGuard>
   );
 }

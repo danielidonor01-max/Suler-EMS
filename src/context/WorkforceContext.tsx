@@ -8,12 +8,25 @@ export interface Employee {
   name: string;
   email: string;
   role: string;
-  hub: string; // Updated from office for enterprise alignment
+  hub: string;
   status: string;
   department: string;
   designation: string;
   phone?: string;
   performanceRating?: number; // 1.0 - 5.0
+  // Extended dossier fields
+  startDate?: string;
+  contractType?: 'Full-Time' | 'Part-Time' | 'Contract' | 'Intern';
+  grade?: string;
+  reportingManager?: string;
+  salary?: number;
+  annualLeaveBalance?: number;
+  sickLeaveBalance?: number;
+  address?: string;
+  emergencyContact?: string;
+  nationalId?: string;
+  bankAccount?: string;
+  pfaName?: string; // Pension Fund Admin
 }
 
 interface WorkforceMetrics {
@@ -60,12 +73,73 @@ export const useWorkforce = () => {
 };
 
 const INITIAL_EMPLOYEES: Employee[] = [
-  { id: 'SUL-001', name: 'Alex Simmons', email: 'alex.s@sulerms.com', role: 'Staff Practitioner', hub: 'Lagos HQ', status: 'ACTIVE', department: 'Engineering', designation: 'Software Engineer', phone: '+234 801 234 5678', performanceRating: 4.8 },
-  { id: 'SUL-002', name: 'Rachel Meyer', email: 'r.meyer@sulerms.com', role: 'Operations Manager', hub: 'Abuja Regional', status: 'ACTIVE', department: 'Intelligence', designation: 'Lead Researcher', phone: '+234 802 345 6789', performanceRating: 4.5 },
-  { id: 'SUL-003', name: 'James Taggart', email: 'j.taggart@sulerms.com', role: 'Staff Practitioner', hub: 'Port Harcourt', status: 'ACTIVE', department: 'Sales', designation: 'Account Manager', phone: '+234 803 456 7890', performanceRating: 3.9 },
-  { id: 'SUL-004', name: 'Linda Blair', email: 'l.blair@sulerms.com', role: 'HR Admin', hub: 'Lagos HQ', status: 'ACTIVE', department: 'Human Resources', designation: 'HR Specialist', phone: '+234 804 567 8901', performanceRating: 4.2 },
-  { id: 'SUL-005', name: 'Marcus Johnson', email: 'm.johnson@sulerms.com', role: 'Operations Manager', hub: 'Port Harcourt', status: 'INACTIVE', department: 'Logistics', designation: 'Logistics Coordinator', phone: '+234 805 678 9012', performanceRating: 3.5 },
+  {
+    id: 'SUL-001', name: 'Alex Simmons', email: 'alex.s@sulerms.com',
+    role: 'Staff Practitioner', hub: 'Lagos HQ', status: 'ACTIVE',
+    department: 'Engineering', designation: 'Software Engineer',
+    phone: '+234 801 234 5678', performanceRating: 4.8,
+    startDate: '2022-03-15', contractType: 'Full-Time', grade: 'Grade 7',
+    reportingManager: 'Rachel Meyer', salary: 480000,
+    annualLeaveBalance: 13, sickLeaveBalance: 12,
+    address: '14 Bode Thomas St, Surulere, Lagos',
+    emergencyContact: 'Chioma Simmons — +234 801 999 0001',
+    nationalId: 'NIN-20221143287', bankAccount: '0123456789 / Access Bank',
+    pfaName: 'ARM Pension Managers',
+  },
+  {
+    id: 'SUL-002', name: 'Rachel Meyer', email: 'r.meyer@sulerms.com',
+    role: 'Operations Manager', hub: 'Abuja Regional', status: 'ACTIVE',
+    department: 'Intelligence', designation: 'Lead Researcher',
+    phone: '+234 802 345 6789', performanceRating: 4.5,
+    startDate: '2021-07-01', contractType: 'Full-Time', grade: 'Grade 9',
+    reportingManager: 'Chinedu Okoro', salary: 720000,
+    annualLeaveBalance: 9, sickLeaveBalance: 14,
+    address: '7 Wuse Zone 4, Abuja FCT',
+    emergencyContact: 'David Meyer — +234 802 888 0002',
+    nationalId: 'NIN-20198827416', bankAccount: '0987654321 / GTBank',
+    pfaName: 'AIICO Pension Managers',
+  },
+  {
+    id: 'SUL-003', name: 'James Taggart', email: 'j.taggart@sulerms.com',
+    role: 'Staff Practitioner', hub: 'Port Harcourt', status: 'ACTIVE',
+    department: 'Sales', designation: 'Account Manager',
+    phone: '+234 803 456 7890', performanceRating: 3.9,
+    startDate: '2023-01-10', contractType: 'Full-Time', grade: 'Grade 6',
+    reportingManager: 'Marcus Johnson', salary: 350000,
+    annualLeaveBalance: 18, sickLeaveBalance: 14,
+    address: '3 Aba Road, Port Harcourt, Rivers State',
+    emergencyContact: 'Angela Taggart — +234 803 777 0003',
+    nationalId: 'NIN-20234412899', bankAccount: '1122334455 / Zenith Bank',
+    pfaName: 'Stanbic IBTC Pension',
+  },
+  {
+    id: 'SUL-004', name: 'Linda Blair', email: 'l.blair@sulerms.com',
+    role: 'HR Admin', hub: 'Lagos HQ', status: 'ACTIVE',
+    department: 'Human Resources', designation: 'HR Specialist',
+    phone: '+234 804 567 8901', performanceRating: 4.2,
+    startDate: '2022-09-20', contractType: 'Full-Time', grade: 'Grade 7',
+    reportingManager: 'Rachel Meyer', salary: 420000,
+    annualLeaveBalance: 5, sickLeaveBalance: 14,
+    address: '22 Opebi Road, Ikeja, Lagos',
+    emergencyContact: 'Kenneth Blair — +234 804 666 0004',
+    nationalId: 'NIN-20226618732', bankAccount: '5544332211 / First Bank',
+    pfaName: 'Leadway Pensure PFA',
+  },
+  {
+    id: 'SUL-005', name: 'Marcus Johnson', email: 'm.johnson@sulerms.com',
+    role: 'Operations Manager', hub: 'Port Harcourt', status: 'INACTIVE',
+    department: 'Logistics', designation: 'Logistics Coordinator',
+    phone: '+234 805 678 9012', performanceRating: 3.5,
+    startDate: '2020-05-01', contractType: 'Full-Time', grade: 'Grade 8',
+    reportingManager: 'Chinedu Okoro', salary: 580000,
+    annualLeaveBalance: 21, sickLeaveBalance: 7,
+    address: '9 Trans Amadi Industrial Layout, Port Harcourt',
+    emergencyContact: 'Sarah Johnson — +234 805 555 0005',
+    nationalId: 'NIN-20205523098', bankAccount: '6677889900 / UBA',
+    pfaName: 'ARM Pension Managers',
+  },
 ];
+
 
 export const WorkforceProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [employees, setEmployees] = useState<Employee[]>(INITIAL_EMPLOYEES);

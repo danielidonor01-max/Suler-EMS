@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { 
   Users, 
   UserPlus, 
@@ -19,7 +20,8 @@ import {
   ArrowRightLeft,
   XCircle,
   FileText,
-  Zap
+  Zap,
+  ExternalLink
 } from 'lucide-react';
 import { DataTable } from "@/components/tables/DataTable";
 import { MetricCard } from '@/components/dashboard/MetricCard';
@@ -36,6 +38,7 @@ import {
 import { OrgChart } from '@/components/organization/OrgChart';
 
 export default function WorkforcePage() {
+  const router = useRouter();
   const { employees, metrics } = useWorkforce();
   const { currentHub } = useOrganization();
   const [selectedStaff, setSelectedStaff] = useState<Employee | null>(null);
@@ -192,6 +195,7 @@ export default function WorkforcePage() {
                             <div className="px-3 py-1.5 mb-1">
                                <span className="text-[9px] font-bold text-slate-400 uppercase tracking-[0.2em]">Management</span>
                             </div>
+                            <KebabItem icon={ExternalLink} label="View Full Dossier" onClick={() => router.push(`/staff/${row.id}`)} />
                             <KebabItem icon={UserCog} label="Edit Identity" onClick={() => handleKebabAction('EDIT', row)} />
                             <KebabItem icon={ArrowRightLeft} label="Transfer Placement" onClick={() => setActiveKebab(null)} />
                             <KebabItem icon={ShieldCheck} label="Modify Access" onClick={() => handleKebabAction('ROLE', row)} />
@@ -280,6 +284,13 @@ export default function WorkforcePage() {
   
              {/* Actions */}
              <div className="grid grid-cols-2 gap-4">
+                <button 
+                  onClick={() => router.push(`/staff/${selectedStaff.id}`)}
+                  className="col-span-2 bg-indigo-600 hover:bg-indigo-700 text-white h-[44px] rounded-xl text-[11px] font-bold uppercase tracking-widest shadow-md transition-all flex items-center justify-center gap-2"
+                >
+                   <ExternalLink className="w-4 h-4 stroke-[1.5px]" />
+                   View Full Operational Dossier
+                </button>
                 <button className="bg-slate-900 hover:bg-black text-white h-[44px] rounded-xl text-[11px] font-bold uppercase tracking-widest shadow-md transition-all flex items-center justify-center gap-2">
                    <Target className="w-4 h-4 stroke-[1.5px]" />
                    Initiate Transfer

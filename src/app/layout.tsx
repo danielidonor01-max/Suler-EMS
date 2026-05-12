@@ -8,11 +8,27 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Suler EMS",
-  description: "Enterprise Management System",
+  title: {
+    default: "Suler EMS | Enterprise Management System",
+    template: "%s | Suler EMS"
+  },
+  description: "Secure, role-based enterprise operations platform for Nigerian corporate governance.",
+  openGraph: {
+    title: "Suler EMS",
+    description: "Enterprise Operations Platform",
+    url: "https://ems.suler.com",
+    siteName: "Suler EMS",
+    locale: "en_NG",
+    type: "website",
+  },
+  robots: {
+    index: false, // Internal enterprise tool, prevent search indexing
+    follow: false,
+  }
 };
 
 import { Providers } from "@/components/Providers";
+import { Analytics } from "@vercel/analytics/react";
 
 export default function RootLayout({
   children,
@@ -33,6 +49,7 @@ export default function RootLayout({
       <body className={`${inter.className} min-h-full flex flex-col bg-bg text-text-primary`}>
         <Providers>
           {children}
+          <Analytics />
         </Providers>
       </body>
     </html>

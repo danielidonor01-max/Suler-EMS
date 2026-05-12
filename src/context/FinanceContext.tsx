@@ -3,6 +3,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useActivity } from './ActivityContext';
 import { useAccess } from './AccessContext';
+import { formatCurrency } from '@/lib/utils/formatCurrency';
 
 export interface Budget {
   id: string;
@@ -107,7 +108,7 @@ export const FinanceProvider: React.FC<{ children: ReactNode }> = ({ children })
     pushActivity({
       type: 'FINANCE',
       label: 'Expenditure Request Initialized',
-      message: `Request for [${newExp.description}] (₦${newExp.amount.toLocaleString()}) submitted for ${newExp.hub}.`,
+      message: `Request for [${newExp.description}] (${formatCurrency(newExp.amount)}) submitted for ${newExp.hub}.`,
       author: userRole,
       status: 'SUCCESS'
     } as any);
@@ -148,7 +149,7 @@ export const FinanceProvider: React.FC<{ children: ReactNode }> = ({ children })
     pushActivity({
       type: 'FINANCE',
       label: 'Financial Disbursement',
-      message: `Payment of ₦${exp.amount.toLocaleString()} for [${exp.description}] completed.`,
+      message: `Payment of ${formatCurrency(exp.amount)} for [${exp.description}] completed.`,
       author: userRole,
       status: 'SUCCESS'
     } as any);
@@ -167,7 +168,7 @@ export const FinanceProvider: React.FC<{ children: ReactNode }> = ({ children })
     pushActivity({
       type: 'FINANCE',
       label: 'Project Funding Allocated',
-      message: `Initiative [${newProj.projectName}] funded with ₦${newProj.allocation.toLocaleString()}.`,
+      message: `Initiative [${newProj.projectName}] funded with ${formatCurrency(newProj.allocation)}.`,
       author: userRole,
       status: 'SUCCESS'
     } as any);

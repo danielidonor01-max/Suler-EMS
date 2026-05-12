@@ -22,6 +22,7 @@ import {
 } from 'lucide-react';
 import { useSettings, CompliancePolicy } from '@/context/SettingsContext';
 import { useAccess } from '@/context/AccessContext';
+import { RouteGuard } from '@/components/common/RouteGuard';
 
 export default function CompliancePoliciesPage() {
   const { settings, updateSettings } = useSettings();
@@ -37,7 +38,8 @@ export default function CompliancePoliciesPage() {
   };
 
   return (
-    <div className="section-breathing max-w-[1600px] mx-auto animate-in space-y-12">
+    <RouteGuard allowedRoles={['SUPER_ADMIN', 'HR_ADMIN']}>
+      <div className="section-breathing max-w-[1600px] mx-auto animate-in space-y-12">
       
       {/* Policy Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-8 px-2">
@@ -117,7 +119,7 @@ export default function CompliancePoliciesPage() {
                      </div>
                   </div>
 
-                  <div className="space-y-6">
+                   <div className="space-y-6">
                      <div className="space-y-2">
                         <label className="text-[11px] font-black text-slate-500 uppercase tracking-widest">Tax Relief Base (₦ Annual)</label>
                         <input 
@@ -145,7 +147,76 @@ export default function CompliancePoliciesPage() {
                            </div>
                         </div>
                      </div>
+                     <div className="space-y-2">
+                        <label className="text-[11px] font-black text-slate-500 uppercase tracking-widest">Pension (Employer %)</label>
+                        <div className="relative">
+                           <input 
+                             type="number" 
+                             disabled={!isSuperAdmin}
+                             value={10} 
+                             readOnly
+                             className="w-full h-14 bg-slate-50 border border-slate-100 rounded-2xl px-6 text-lg font-black text-slate-500 outline-none transition-all" 
+                           />
+                           <div className="absolute right-6 top-1/2 -translate-y-1/2 text-slate-400">
+                              <Percent className="w-5 h-5" />
+                           </div>
+                        </div>
+                     </div>
+                     <div className="space-y-2">
+                        <label className="text-[11px] font-black text-slate-500 uppercase tracking-widest">NSITF Rate (%)</label>
+                        <div className="relative">
+                           <input 
+                             type="number" 
+                             disabled={!isSuperAdmin}
+                             value={1.0} 
+                             readOnly
+                             className="w-full h-14 bg-slate-50 border border-slate-100 rounded-2xl px-6 text-lg font-black text-slate-500 outline-none transition-all" 
+                           />
+                           <div className="absolute right-6 top-1/2 -translate-y-1/2 text-slate-400">
+                              <Percent className="w-5 h-5" />
+                           </div>
+                        </div>
+                     </div>
+                     <div className="space-y-2">
+                        <label className="text-[11px] font-black text-slate-500 uppercase tracking-widest">Effective Date</label>
+                        <input 
+                          type="date" 
+                          disabled={!isSuperAdmin}
+                          defaultValue="2026-01-01" 
+                          className="w-full h-14 bg-slate-50 border border-slate-100 rounded-2xl px-6 text-[15px] font-black text-slate-900 outline-none focus:ring-2 focus:ring-indigo-500 transition-all" 
+                        />
+                     </div>
                   </div>
+               </div>
+            </div>
+
+            {/* Version History Table */}
+            <div className="bg-white rounded-[32px] border border-slate-200 p-10 shadow-premium">
+               <div className="flex items-center gap-4 mb-8">
+                  <div className="w-12 h-12 rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-600">
+                     <History className="w-6 h-6" />
+                  </div>
+                  <div>
+                     <h3 className="text-xl font-bold text-slate-900 tracking-tight">Policy Version History</h3>
+                     <p className="text-[11px] font-medium text-slate-400 uppercase tracking-widest mt-1">Audit Trail</p>
+                  </div>
+               </div>
+               <div className="space-y-4">
+                  {[
+                    { version: 'v2.4', date: '01 Jan 2026', actor: 'Chinedu Okoro', changes: 'Updated PAYE minimum wage threshold to ₦70,000' },
+                    { version: 'v2.3', date: '15 Jul 2025', actor: 'System', changes: 'NSITF rate standardized to 1.0% across all hubs' },
+                    { version: 'v2.2', date: '01 Jan 2025', actor: 'Sarah Williams', changes: 'Added Employer Pension contribution (10%)' }
+                  ].map(v => (
+                    <div key={v.version} className="flex flex-col md:flex-row md:items-center justify-between p-5 bg-slate-50 rounded-2xl border border-slate-100 gap-4">
+                      <div className="flex items-center gap-5">
+                        <div className="px-3 py-1.5 bg-slate-900 text-white rounded-md text-[10px] font-bold uppercase tracking-widest">{v.version}</div>
+                        <div>
+                          <p className="text-[14px] font-bold text-slate-900 leading-tight">{v.changes}</p>
+                          <p className="text-[11px] font-bold text-slate-400 mt-1">By: {v.actor} · {v.date}</p>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
                </div>
             </div>
 
@@ -212,5 +283,6 @@ export default function CompliancePoliciesPage() {
       </div>
 
     </div>
+  </RouteGuard>
   );
 }

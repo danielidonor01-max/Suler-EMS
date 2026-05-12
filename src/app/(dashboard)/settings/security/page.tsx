@@ -5,6 +5,7 @@ import {
   Lock, Shield, Eye, Smartphone, Monitor, Globe,
   Plus, Trash2, CheckCircle2, XCircle, AlertTriangle, LogOut, Key
 } from 'lucide-react';
+import { RouteGuard } from '@/components/common/RouteGuard';
 
 const MOCK_SESSIONS = [
   { id: 'S-001', device: 'Chrome on Windows', location: 'Lagos, Nigeria', ip: '197.210.66.12', lastActive: '2026-05-11T14:00:00Z', current: true },
@@ -44,8 +45,9 @@ export default function SecurityPage() {
   );
 
   return (
-    <div className="section-breathing max-w-[1200px] mx-auto animate-in space-y-8">
-      {/* Hero */}
+    <RouteGuard allowedRoles={['SUPER_ADMIN']}>
+      <div className="section-breathing max-w-[1200px] mx-auto animate-in space-y-8">
+        {/* Hero */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div className="space-y-3">
           <div className="flex items-center gap-2">
@@ -180,6 +182,34 @@ export default function SecurityPage() {
               <button onClick={addIp} className="w-11 h-11 bg-slate-900 text-white rounded-xl flex items-center justify-center hover:bg-black"><Plus className="w-4 h-4" /></button>
             </div>
           </div>
+          {/* User Recovery & Reset */}
+          <div className="bg-white rounded-[24px] border border-slate-200 p-8 shadow-sm space-y-5">
+            <div className="flex items-center gap-3 mb-2">
+              <div className="w-10 h-10 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center"><AlertTriangle className="w-5 h-5 text-slate-400" /></div>
+              <div>
+                <h2 className="text-base font-bold text-slate-900">User Recovery & Reset</h2>
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">Emergency Operations</p>
+              </div>
+            </div>
+            <div className="flex items-center justify-between p-4 bg-slate-50 rounded-xl border border-slate-100">
+              <div>
+                <p className="text-[13px] font-bold text-slate-900">Force Global Password Reset</p>
+                <p className="text-[11px] text-slate-400 mt-0.5">Requires all users to reset passwords on next login</p>
+              </div>
+              <button className="px-4 h-9 bg-rose-50 border border-rose-100 text-rose-600 hover:bg-rose-100 rounded-xl text-[11px] font-bold uppercase tracking-wide transition-all">
+                Force Reset
+              </button>
+            </div>
+            <div className="flex items-center justify-between p-4 bg-slate-50 rounded-xl border border-slate-100">
+              <div>
+                <p className="text-[13px] font-bold text-slate-900">Generate MFA Recovery Codes</p>
+                <p className="text-[11px] text-slate-400 mt-0.5">Generate one-time emergency bypass codes for locked users</p>
+              </div>
+              <button className="px-4 h-9 bg-slate-900 text-white hover:bg-black rounded-xl text-[11px] font-bold uppercase tracking-wide transition-all shadow-sm">
+                Generate
+              </button>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -244,5 +274,6 @@ export default function SecurityPage() {
         ))}
       </div>
     </div>
+  </RouteGuard>
   );
 }

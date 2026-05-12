@@ -6,6 +6,7 @@ import {
   Webhook, Zap, Mail, MessageSquare, BarChart3, Database,
   Plus, Trash2, Activity, Globe, Eye, EyeOff
 } from 'lucide-react';
+import { RouteGuard } from '@/components/common/RouteGuard';
 
 const INTEGRATIONS = [
   { id: 'slack', name: 'Slack', description: 'Send payroll alerts, leave approvals, and governance notifications to Slack channels.', icon: MessageSquare, category: 'Communication', connected: true, lastSync: '2 min ago' },
@@ -46,8 +47,9 @@ export default function IntegrationsPage() {
   };
 
   return (
-    <div className="section-breathing max-w-[1200px] mx-auto animate-in space-y-8">
-      {/* Hero */}
+    <RouteGuard allowedRoles={['SUPER_ADMIN']}>
+      <div className="section-breathing max-w-[1200px] mx-auto animate-in space-y-8">
+        {/* Hero */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div className="space-y-3">
           <div className="px-2.5 py-1 bg-slate-900 text-white rounded-md text-[9px] font-bold uppercase tracking-[0.2em] flex items-center gap-1.5 w-fit">
@@ -180,5 +182,6 @@ export default function IntegrationsPage() {
         ))}
       </div>
     </div>
+  </RouteGuard>
   );
 }

@@ -6,6 +6,7 @@ import { useAccess } from './AccessContext';
 import { useSettings } from './SettingsContext';
 import { useWorkforce } from './WorkforceContext';
 import { useTeams } from './TeamContext';
+import { formatCurrency } from '@/lib/utils/formatCurrency';
 
 export interface CompensationAdjustment {
   id: string;
@@ -191,7 +192,7 @@ export const PayrollProvider: React.FC<{ children: ReactNode }> = ({ children })
     pushActivity({ 
       type: 'GOVERNANCE', 
       label: 'Bulk Adjustment Applied', 
-      message: `Applied [${req.title}] to ${targetEmployees.length} employees. Total Impact: ₦${totalImpact.toLocaleString()}`, 
+      message: `Applied [${req.title}] to ${targetEmployees.length} employees. Total Impact: ${formatCurrency(totalImpact)}`, 
       author: userRole, 
       status: 'SUCCESS' 
     } as any);

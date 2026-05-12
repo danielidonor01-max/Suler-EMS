@@ -6,6 +6,15 @@ import {
   CheckCircle2, Clock, Archive, AlertTriangle, Plus, Shield,
   FileJson, FileText, Calendar
 } from 'lucide-react';
+import { RouteGuard } from '@/components/common/RouteGuard';
+import { useWorkforce } from '@/context/WorkforceContext';
+import { usePayroll } from '@/context/PayrollContext';
+import { useFinance } from '@/context/FinanceContext';
+import { useTeams } from '@/context/TeamContext';
+import { useSettings } from '@/context/SettingsContext';
+import { useActivity } from '@/context/ActivityContext';
+import { useAccess } from '@/context/AccessContext';
+import { useOrganization } from '@/context/OrganizationContext';
 
 const MOCK_BACKUPS = [
   { id: 'BKP-001', name: 'Auto Backup — 11 May 2026', size: '284 MB', type: 'AUTO', status: 'COMPLETE', created: '2026-05-11T02:00:00Z' },
@@ -23,6 +32,15 @@ const DATA_MODULES = [
 ];
 
 export default function DataManagementPage() {
+  const { employees } = useWorkforce();
+  const { payrollRuns } = usePayroll();
+  const { budgets, expenditures } = useFinance();
+  const { teams } = useTeams();
+  const { settings } = useSettings();
+  const { pushActivity } = useActivity();
+  const { userRole } = useAccess();
+  const { departments } = useOrganization();
+
   const [backups, setBackups] = useState(MOCK_BACKUPS);
   const [isCreatingBackup, setIsCreatingBackup] = useState(false);
   const [retentionDays, setRetentionDays] = useState(90);
@@ -45,9 +63,86 @@ export default function DataManagementPage() {
 
   const deleteBackup = (id: string) => setBackups(prev => prev.filter(b => b.id !== id));
 
+  const exportAllJSON = () => {
+    const snapshot = {
+      workforce: employees,
+      payroll: payrollRuns,
+      finance: { budgets, expenditures },
+      teams: teams,
+      organization: departments,
+      settings: settings,
+      exportedAt: new Date().toISOString()
+    };
+    
+    const blob = new Blob([JSON.stringify(snapshot, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `suler-enterprise-snapshot-${new Date().toISOString().split('T')[0]}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+
+    pushActivity({
+      type: 'GOVERNANCE',
+      label: 'System Data Exported (JSON)',
+      message: 'Full enterprise snapshot downloaded.',
+      author: userRole,
+      status: 'SUCCESS'
+    } as any);
+  };
+
+  const exportCSV = (data: any[], filename: string, logType: string) => {
+    if (!data || data.length === 0) return alert('No data available to export.');
+    const headers = Object.keys(data[0]).join(',');
+    const rows = data.map(obj => Object.values(obj).map(v => {
+      if (typeof v === 'string') return `"${v.replace(/"/g, '""')}"`;
+      if (typeof v === 'object') return `"${JSON.stringify(v).replace(/"/g, '""')}"`;
+      return v;
+    }).join(',')).join('\n');
+    const csv = `${headers}\n${rows}`;
+    
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(url);
+
+    pushActivity({
+      type: 'GOVERNANCE',
+      label: `System Data Exported (CSV)`,
+      message: `${logType} Downloaded.`,
+      author: userRole,
+      status: 'SUCCESS'
+    } as any);
+  };
+
+  const exportModuleCSV = (moduleName: string) => {
+    const dateStr = new Date().toISOString().split('T')[0];
+    switch(moduleName) {
+      case 'Employees & Personnel':
+        exportCSV(employees, `suler-workforce-${dateStr}.csv`, 'Workforce Data');
+        break;
+      case 'Payroll Records':
+        exportCSV(payrollRuns.flatMap(r => r.entries), `suler-payroll-${dateStr}.csv`, 'Payroll Records');
+        break;
+      case 'Finance & Budgets':
+        exportCSV(expenditures, `suler-finance-${dateStr}.csv`, 'Financial Expenditures');
+        break;
+      case 'Audit Registry':
+        // Just mock this since audit registry isn't globally exposed
+        exportCSV([{ audit: 'No data' }], `suler-audit-${dateStr}.csv`, 'Audit Registry');
+        break;
+      default:
+        alert('Export for this module is not yet configured.');
+    }
+  };
+
   return (
-    <div className="section-breathing max-w-[1200px] mx-auto animate-in space-y-8">
-      {/* Hero */}
+    <RouteGuard allowedRoles={['SUPER_ADMIN']}>
+      <div className="section-breathing max-w-[1200px] mx-auto animate-in space-y-8">
+        {/* Hero */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div className="space-y-3">
           <div className="px-2.5 py-1 bg-slate-900 text-white rounded-md text-[9px] font-bold uppercase tracking-[0.2em] flex items-center gap-1.5 w-fit">
@@ -184,11 +279,11 @@ export default function DataManagementPage() {
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <button className="flex items-center gap-2 px-4 h-9 bg-slate-50 border border-slate-200 text-slate-600 rounded-xl text-[11px] font-bold uppercase tracking-wide hover:bg-slate-100 transition-all">
+            <button onClick={exportAllJSON} className="flex items-center gap-2 px-4 h-9 bg-slate-50 border border-slate-200 text-slate-600 rounded-xl text-[11px] font-bold uppercase tracking-wide hover:bg-slate-100 transition-all">
               <FileJson className="w-3.5 h-3.5" />Export All as JSON
             </button>
-            <button className="flex items-center gap-2 px-4 h-9 bg-slate-50 border border-slate-200 text-slate-600 rounded-xl text-[11px] font-bold uppercase tracking-wide hover:bg-slate-100 transition-all">
-              <FileText className="w-3.5 h-3.5" />Export All as CSV
+            <button onClick={() => exportModuleCSV('Employees & Personnel')} className="flex items-center gap-2 px-4 h-9 bg-slate-50 border border-slate-200 text-slate-600 rounded-xl text-[11px] font-bold uppercase tracking-wide hover:bg-slate-100 transition-all">
+              <FileText className="w-3.5 h-3.5" />Export Workforce CSV
             </button>
           </div>
         </div>
@@ -206,7 +301,7 @@ export default function DataManagementPage() {
               </div>
               <div className="flex items-center gap-4">
                 <span className="text-[10px] font-bold text-slate-300">Last export: {module.lastExport}</span>
-                <button className="flex items-center gap-1.5 text-[11px] font-bold text-indigo-600 hover:text-indigo-700 uppercase tracking-widest">
+                <button onClick={() => exportModuleCSV(module.name)} className="flex items-center gap-1.5 text-[11px] font-bold text-indigo-600 hover:text-indigo-700 uppercase tracking-widest">
                   <Download className="w-3.5 h-3.5" />Export
                 </button>
               </div>
@@ -215,5 +310,6 @@ export default function DataManagementPage() {
         </div>
       </div>
     </div>
+  </RouteGuard>
   );
 }

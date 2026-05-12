@@ -18,18 +18,20 @@ import {
   MessageSquare,
   Settings,
   Target,
-  PanelLeftClose,
-  PanelLeft,
   Banknote,
   Wallet,
   DollarSign,
   History,
   Lock,
-  Scale,
   BarChart3,
   Sparkles,
-  Database
+  Database,
+  Bell,
+  FileBarChart2,
+  Cpu,
+  Award
 } from 'lucide-react';
+import { useAccess } from '@/context/AccessContext';
 
 interface SidebarProps {
   isCollapsed: boolean;
@@ -38,6 +40,7 @@ interface SidebarProps {
 
 const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle }) => {
   const pathname = usePathname();
+  const { userRole } = useAccess();
 
   const operationsModules = [
     { name: 'Hub', icon: Building2, href: '/employees' },
@@ -54,14 +57,16 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle }) => {
   ];
 
   const governanceModules = [
+    { name: 'Command Center', icon: Cpu, href: '/admin/ecc' },
     { name: 'Roles & Permissions', icon: ShieldCheck, href: '/admin/ecc' },
     { name: 'Audit Registry', icon: History, href: '/governance' },
   ];
 
   const intelligenceModules = [
+    { name: 'Performance', icon: Award, href: '/performance' },
     { name: 'Analytics', icon: BarChart3, href: '/analytics' },
+    { name: 'Reports', icon: FileBarChart2, href: '/reports' },
     { name: 'Strategy Simulator', icon: Sparkles, href: '/admin/intelligence' },
-    { name: 'Performance', icon: BrainCircuit, href: '/forecasting' },
   ];
 
   const settingSubModules = [
@@ -70,6 +75,8 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle }) => {
     { name: 'Integrations', href: '/settings/integrations' },
     { name: 'Data Management', href: '/settings/data' },
   ];
+
+  const notificationsModule = { name: 'Notifications', icon: Bell, href: '/notifications' };
 
   return (
     <aside 
@@ -110,32 +117,36 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle }) => {
         </div>
 
         {/* Accounts & Finance Layer */}
-        <div className="space-y-1">
-          {!isCollapsed && (
-            <div className="px-4 mb-3">
-              <span className="text-[9px] font-bold text-slate-500 uppercase tracking-[0.2em]">Accounts & Finance</span>
-            </div>
-          )}
+        {(userRole !== 'EMPLOYEE') && (
           <div className="space-y-1">
-            {accountsFinanceModules.map((item) => (
-              <SidebarLink key={item.name} item={item} isActive={pathname === item.href} isCollapsed={isCollapsed} />
-            ))}
+            {!isCollapsed && (
+              <div className="px-4 mb-3">
+                <span className="text-[9px] font-bold text-slate-500 uppercase tracking-[0.2em]">Accounts & Finance</span>
+              </div>
+            )}
+            <div className="space-y-1">
+              {accountsFinanceModules.map((item) => (
+                <SidebarLink key={item.name} item={item} isActive={pathname === item.href} isCollapsed={isCollapsed} />
+              ))}
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Governance Layer */}
-        <div className="space-y-1">
-          {!isCollapsed && (
-            <div className="px-4 mb-3">
-              <span className="text-[9px] font-bold text-slate-500 uppercase tracking-[0.2em]">Governance</span>
-            </div>
-          )}
+        {(userRole === 'SUPER_ADMIN' || userRole === 'HR_ADMIN') && (
           <div className="space-y-1">
-            {governanceModules.map((item) => (
-              <SidebarLink key={item.name} item={item} isActive={pathname === item.href} isCollapsed={isCollapsed} />
-            ))}
+            {!isCollapsed && (
+              <div className="px-4 mb-3">
+                <span className="text-[9px] font-bold text-slate-500 uppercase tracking-[0.2em]">Governance</span>
+              </div>
+            )}
+            <div className="space-y-1">
+              {governanceModules.map((item) => (
+                <SidebarLink key={item.name} item={item} isActive={pathname === item.href} isCollapsed={isCollapsed} />
+              ))}
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Intelligence Layer */}
         <div className="space-y-1">
@@ -151,32 +162,44 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle }) => {
           </div>
         </div>
 
-        {/* System Control Layer */}
+        {/* Notifications Link */}
         <div className="space-y-1">
           {!isCollapsed && (
             <div className="px-4 mb-3">
-               <span className="text-[9px] font-bold text-slate-500 uppercase tracking-[0.2em]">System Control</span>
+              <span className="text-[9px] font-bold text-slate-500 uppercase tracking-[0.2em]">Alerts</span>
             </div>
           )}
-          
-          <div className="space-y-1">
-             <SidebarLink 
-               item={{ name: 'Global Settings', icon: Settings, href: '/settings' }} 
-               isActive={pathname === '/settings'} 
-               isCollapsed={isCollapsed} 
-             />
-             {!isCollapsed && settingSubModules.map(item => (
-               <Link 
-                 key={item.name}
-                 href={item.href}
-                 className={`flex items-center gap-3.5 px-4 py-2 rounded-xl transition-all ${pathname === item.href ? 'text-indigo-400 bg-indigo-500/5' : 'text-slate-500 hover:text-slate-300'}`}
-               >
-                  <div className="w-1.5 h-1.5 rounded-full bg-current opacity-20" />
-                  <span className="text-[11px] font-bold tracking-tight uppercase">{item.name}</span>
-               </Link>
-             ))}
-          </div>
+          <SidebarLink item={notificationsModule} isActive={pathname === notificationsModule.href} isCollapsed={isCollapsed} />
         </div>
+
+        {/* System Control Layer */}
+        {userRole === 'SUPER_ADMIN' && (
+          <div className="space-y-1">
+            {!isCollapsed && (
+              <div className="px-4 mb-3">
+                 <span className="text-[9px] font-bold text-slate-500 uppercase tracking-[0.2em]">System Control</span>
+              </div>
+            )}
+            
+            <div className="space-y-1">
+               <SidebarLink 
+                 item={{ name: 'Global Settings', icon: Settings, href: '/settings' }} 
+                 isActive={pathname === '/settings'} 
+                 isCollapsed={isCollapsed} 
+               />
+               {!isCollapsed && settingSubModules.map(item => (
+                 <Link 
+                   key={item.name}
+                   href={item.href}
+                   className={`flex items-center gap-3.5 px-4 py-2 rounded-xl transition-all ${pathname === item.href ? 'text-indigo-400 bg-indigo-500/5' : 'text-slate-500 hover:text-slate-300'}`}
+                 >
+                    <div className="w-1.5 h-1.5 rounded-full bg-current opacity-20" />
+                    <span className="text-[11px] font-bold tracking-tight uppercase">{item.name}</span>
+                 </Link>
+               ))}
+            </div>
+          </div>
+        )}
 
         {/* Session Layer */}
         <div className="space-y-1 pt-4 border-t border-slate-800">

@@ -28,6 +28,7 @@ import { usePayroll, PayrollRun } from '@/context/PayrollContext';
 import { useOrganization } from '@/context/OrganizationContext';
 import { useAccess } from '@/context/AccessContext';
 import { MetricCard } from '@/components/dashboard/MetricCard';
+import { formatCurrency } from '@/lib/utils/formatCurrency';
 
 export default function PayrollOverviewPage() {
   const { payrollRuns, adjustments } = usePayroll();
@@ -91,10 +92,10 @@ export default function PayrollOverviewPage() {
 
       {/* Payroll KPIs */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <MetricCard label="Monthly Gross Liability" value={`₦${(totalGross / 1000000).toFixed(2)}M`} icon={PieChart} variant="tonal-info" />
-        <MetricCard label="Total Net Pay" value={`₦${(totalNet / 1000000).toFixed(2)}M`} trend={{ direction: 'up', value: '2.4%' }} variant="tonal-info" icon={TrendingUp} />
-        <MetricCard label="PAYE Remittance" value={`₦${(totalTax / 1000).toFixed(0)}k`} variant="tonal-success" icon={ShieldCheck} />
-        <MetricCard label="Pension Accrual" value={`₦${(totalPension / 1000).toFixed(0)}k`} variant="tonal-success" icon={Activity} />
+        <MetricCard label="Monthly Gross Liability" value={formatCurrency(totalGross)} icon={PieChart} variant="tonal-info" />
+        <MetricCard label="Total Net Pay" value={formatCurrency(totalNet)} trend={{ direction: 'up', value: '2.4%' }} variant="tonal-info" icon={TrendingUp} />
+        <MetricCard label="PAYE Remittance" value={formatCurrency(totalTax)} variant="tonal-success" icon={ShieldCheck} />
+        <MetricCard label="Pension Accrual" value={formatCurrency(totalPension)} variant="tonal-success" icon={Activity} />
       </div>
 
       {/* Navigation Matrix */}
