@@ -11,6 +11,8 @@ export const Actions = {
   EXPORT: 'export',
   APPROVE: 'approve',
   REJECT: 'reject',
+  MANAGE: 'manage',
+  EXECUTE: 'execute',
 } as const;
 
 export type ActionType = typeof Actions[keyof typeof Actions];
@@ -38,12 +40,17 @@ export interface PolicyContext<TResource = any> {
 
 // Expanded Permissions Map
 export const Permissions = {
-  // Staff Management
-  EMPLOYEE_VIEW: 'employee:view',
-  EMPLOYEE_CREATE: 'employee:create',
-  EMPLOYEE_UPDATE: 'employee:update',
-  EMPLOYEE_ARCHIVE: 'employee:archive',
-  EMPLOYEE_EXPORT: 'employee:export',
+  // Workforce Management
+  WORKFORCE_VIEW: 'workforce:view',
+  WORKFORCE_CREATE: 'workforce:create',
+  WORKFORCE_EDIT: 'workforce:edit',
+  WORKFORCE_DELETE: 'workforce:delete',
+  WORKFORCE_PROMOTE: 'workforce:promote',
+
+  // Organization & Hubs
+  HUB_MANAGE: 'hub:manage',
+  DEPARTMENT_MANAGE: 'dept:manage',
+  ORG_CHART_EDIT: 'org:edit',
 
   // Leave Management
   LEAVE_VIEW: 'leave:view',
@@ -57,9 +64,36 @@ export const Permissions = {
   // Payroll
   PAYROLL_VIEW: 'payroll:view',
   PAYROLL_EDIT: 'payroll:edit',
+  PAYROLL_APPROVE: 'payroll:approve',
+  PAYROLL_PROCESS: 'payroll:process',
+  
+  // Finance
+  FINANCE_VIEW: 'finance:view',
+  FINANCE_ALLOCATE: 'finance:allocate',
+  FINANCE_APPROVE: 'finance:approve',
+  FINANCE_DISBURSE: 'finance:disburse',
+  
+  // Governance
+  AUDIT_VIEW: 'audit:view',
+  ROLE_MANAGE: 'role:manage',
+  COMMAND_CENTER_VIEW: 'command:view',
+  
+  // Security
+  SECURITY_MANAGE: 'security:manage',
+  
+  // Data Management
+  DATA_EXPORT: 'data:export',
+  DATA_MANAGE: 'data:manage',
+  DATA_BACKUP: 'data:backup',
+  DATA_RESTORE: 'data:restore',
   
   // Settings
   SETTINGS_MANAGE: 'settings:manage',
+
+  // Intelligence
+  REPORTS_GENERATE: 'reports:generate',
+  ANALYTICS_VIEW: 'analytics:view',
+  STRATEGY_SIMULATE: 'strategy:simulate',
 } as const;
 
 export type PermissionType = typeof Permissions[keyof typeof Permissions];

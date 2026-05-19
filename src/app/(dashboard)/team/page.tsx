@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { 
   Users, 
   Target, 
@@ -8,7 +9,8 @@ import {
   Plus, 
   Trash2, 
   UserPlus,
-  Building2
+  Building2,
+  MessageSquare
 } from 'lucide-react';
 import { useTeams, Team } from '@/context/TeamContext';
 import { useOrganization } from '@/context/OrganizationContext';
@@ -22,6 +24,7 @@ export default function TeamsPage() {
   const { teams, deleteTeam } = useTeams();
   const { currentHub } = useOrganization();
   const { employees } = useWorkforce();
+  const router = useRouter();
   
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [selectedTeam, setSelectedTeam] = useState<Team | null>(null);
@@ -144,6 +147,7 @@ export default function TeamsPage() {
            data={filteredTeams}
            columns={teamColumns}
            rowActions={[
+             { label: 'Team Chat', icon: MessageSquare, onClick: (team: Team) => router.push(`/messages?id=${team.id}&name=${encodeURIComponent(team.name)}&type=GROUP`) },
              { label: 'Add Member', icon: UserPlus, onClick: (team: Team) => { setSelectedTeam(team); setIsAddMemberOpen(true); } },
              { label: 'Dissolve Team', icon: Trash2, onClick: (team: Team) => deleteTeam(team.id), variant: 'danger' }
            ]}

@@ -22,6 +22,7 @@ import { useWorkforce, Employee } from '@/context/WorkforceContext';
 import { useToast } from '../common/ToastContext';
 import { useOrganization } from '@/context/OrganizationContext';
 import { Select } from '../forms/Select';
+import { ROLES } from '@/modules/auth/domain/role.model';
 
 interface EditEmployeeModalProps {
   isOpen: boolean;
@@ -31,8 +32,10 @@ interface EditEmployeeModalProps {
 
 export const EditEmployeeModal: React.FC<EditEmployeeModalProps> = ({ isOpen, onClose, employee }) => {
   const [formData, setFormData] = useState({ ...employee });
+  const [activeTab, setActiveTab] = useState<'IDENTITY' | 'DOSSIER' | 'GOVERNANCE'>('IDENTITY');
   const [isUpdating, setIsUpdating] = useState(false);
   const { updateEmployee } = useWorkforce();
+  const { hubs } = useOrganization();
   const { toast } = useToast();
 
   const handleUpdate = () => {
@@ -52,71 +55,174 @@ export const EditEmployeeModal: React.FC<EditEmployeeModalProps> = ({ isOpen, on
         message: 'Identity Updated', 
         description: 'Employee records synchronized across the intelligence cluster.' 
       });
-    }, 1500);
+    }, 1200);
   };
+
+  const tabs = [
+    { id: 'IDENTITY', label: 'Identity', icon: UserCircle },
+    { id: 'DOSSIER', label: 'Extended Dossier', icon: Fingerprint },
+    { id: 'GOVERNANCE', label: 'Governance', icon: ShieldCheck },
+  ];
 
   return (
     <Modal 
       isOpen={isOpen} 
       onClose={onClose} 
-      title="Edit Employee Identity" 
+      title="Edit Employee Dossier" 
       subtitle={`EMP ID: ${employee.id}`}
-      size="md"
+      size="lg"
     >
-      <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-500">
-         <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-               <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Full Name</label>
-               <input 
-                 value={formData.name} 
-                 onChange={e => setFormData({...formData, name: e.target.value})}
-                 className="w-full h-[48px] bg-slate-50 border border-slate-200 rounded-xl px-4 text-[13px] font-bold outline-none focus:border-indigo-500 transition-all shadow-sm"
-               />
-            </div>
-            <div className="space-y-2">
-               <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Email Address</label>
-               <input 
-                 value={formData.email} 
-                 onChange={e => setFormData({...formData, email: e.target.value})}
-                 className="w-full h-[48px] bg-slate-50 border border-slate-200 rounded-xl px-4 text-[13px] font-bold outline-none focus:border-indigo-500 transition-all shadow-sm"
-               />
-            </div>
+      <div className="space-y-6">
+         {/* Tab Navigation */}
+         <div className="flex items-center gap-1 p-1 bg-slate-100 rounded-xl">
+            {tabs.map(tab => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id as any)}
+                className={`flex-1 flex items-center justify-center gap-2 h-9 rounded-lg text-[11px] font-bold uppercase tracking-wider transition-all ${
+                  activeTab === tab.id 
+                    ? 'bg-white text-indigo-600 shadow-sm' 
+                    : 'text-slate-500 hover:text-slate-700'
+                }`}
+              >
+                <tab.icon className="w-3.5 h-3.5" />
+                {tab.label}
+              </button>
+            ))}
          </div>
 
-         <div className="grid grid-cols-2 gap-4">
-            <Select 
-              label="Operational Role"
-              value={formData.role}
-              onChange={val => setFormData({...formData, role: val})}
-              options={[
-                { label: 'Super Administrator', value: 'Super Administrator' },
-                { label: 'HR Admin', value: 'HR Admin' },
-                { label: 'Finance Admin', value: 'Finance Admin' },
-                { label: 'Operations Manager', value: 'Operations Manager' },
-                { label: 'Staff Practitioner', value: 'Staff Practitioner' },
-              ]}
-            />
-            <Select 
-              label="Designated Hub"
-              value={formData.hub}
-              onChange={val => setFormData({...formData, hub: val})}
-              options={[
-                { label: 'Lagos HQ', value: 'Lagos HQ' },
-                { label: 'Abuja Operations', value: 'Abuja Operations' },
-                { label: 'Benin Branch', value: 'Benin Branch' },
-                { label: 'Remote / Global', value: 'Remote / Global' },
-              ]}
-            />
-         </div>
+         <div className="min-h-[360px] animate-in fade-in slide-in-from-bottom-2 duration-400">
+           {activeTab === 'IDENTITY' && (
+             <div className="space-y-6">
+                <div className="grid grid-cols-2 gap-4">
+                   <div className="space-y-2">
+                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Full Name</label>
+                      <input 
+                        value={formData.name} 
+                        onChange={e => setFormData({...formData, name: e.target.value})}
+                        className="w-full h-[48px] bg-slate-50 border border-slate-200 rounded-xl px-4 text-[13px] font-bold outline-none focus:border-indigo-500 transition-all shadow-sm"
+                      />
+                   </div>
+                   <div className="space-y-2">
+                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Email Address</label>
+                      <input 
+                        value={formData.email} 
+                        onChange={e => setFormData({...formData, email: e.target.value})}
+                        className="w-full h-[48px] bg-slate-50 border border-slate-200 rounded-xl px-4 text-[13px] font-bold outline-none focus:border-indigo-500 transition-all shadow-sm"
+                      />
+                   </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                   <div className="space-y-2">
+                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Operational Mobile</label>
+                      <input 
+                        value={formData.phone || ''} 
+                        onChange={e => setFormData({...formData, phone: e.target.value})}
+                        className="w-full h-[48px] bg-slate-50 border border-slate-200 rounded-xl px-4 text-[13px] font-bold outline-none focus:border-indigo-500 transition-all shadow-sm"
+                      />
+                   </div>
+                   <div className="space-y-2">
+                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Principal Designation</label>
+                      <input 
+                        value={formData.designation} 
+                        onChange={e => setFormData({...formData, designation: e.target.value})}
+                        className="w-full h-[48px] bg-slate-50 border border-slate-200 rounded-xl px-4 text-[13px] font-bold outline-none focus:border-indigo-500 transition-all shadow-sm"
+                      />
+                   </div>
+                </div>
+                <div className="space-y-2">
+                   <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Residential Address</label>
+                   <input 
+                     value={formData.address || ''} 
+                     onChange={e => setFormData({...formData, address: e.target.value})}
+                     className="w-full h-[48px] bg-slate-50 border border-slate-200 rounded-xl px-4 text-[13px] font-bold outline-none focus:border-indigo-500 transition-all shadow-sm"
+                   />
+                </div>
+             </div>
+           )}
 
-         <div className="p-5 bg-slate-50 border border-slate-100 rounded-2xl flex items-start gap-4">
-            <ShieldCheck className="w-5 h-5 text-indigo-500 shrink-0 mt-0.5" />
-            <div className="space-y-1">
-               <h4 className="text-[11px] font-bold text-slate-900 uppercase tracking-widest">Governance Propagation</h4>
-               <p className="text-[12px] text-slate-500 leading-relaxed font-medium">
-                  Identity changes will propagate to the ECC and IAM clusters instantly. Session persistence may be affected if the role scope is reduced.
-               </p>
-            </div>
+           {activeTab === 'DOSSIER' && (
+             <div className="space-y-6">
+                <div className="grid grid-cols-2 gap-4">
+                   <div className="space-y-2">
+                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">National ID (NIN)</label>
+                      <input 
+                        value={formData.nationalId || ''} 
+                        onChange={e => setFormData({...formData, nationalId: e.target.value})}
+                        className="w-full h-[48px] bg-slate-50 border border-slate-200 rounded-xl px-4 text-[13px] font-bold outline-none focus:border-indigo-500 transition-all shadow-sm"
+                      />
+                   </div>
+                   <div className="space-y-2">
+                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Bank Account / Institution</label>
+                      <input 
+                        value={formData.bankAccount || ''} 
+                        onChange={e => setFormData({...formData, bankAccount: e.target.value})}
+                        className="w-full h-[48px] bg-slate-50 border border-slate-200 rounded-xl px-4 text-[13px] font-bold outline-none focus:border-indigo-500 transition-all shadow-sm"
+                      />
+                   </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                   <div className="space-y-2">
+                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Annual Salary (NGN)</label>
+                      <input 
+                        type="number"
+                        value={formData.salary || 0} 
+                        onChange={e => setFormData({...formData, salary: parseFloat(e.target.value)})}
+                        className="w-full h-[48px] bg-slate-50 border border-slate-200 rounded-xl px-4 text-[13px] font-bold outline-none focus:border-indigo-500 transition-all shadow-sm"
+                      />
+                   </div>
+                   <div className="space-y-2">
+                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Emergency Contact</label>
+                      <input 
+                        value={formData.emergencyContact || ''} 
+                        onChange={e => setFormData({...formData, emergencyContact: e.target.value})}
+                        className="w-full h-[48px] bg-slate-50 border border-slate-200 rounded-xl px-4 text-[13px] font-bold outline-none focus:border-indigo-500 transition-all shadow-sm"
+                      />
+                   </div>
+                </div>
+                <div className="p-4 bg-indigo-50/50 border border-indigo-100 rounded-2xl flex items-center gap-4">
+                   <Activity className="w-5 h-5 text-indigo-500" />
+                   <div className="flex-1 grid grid-cols-2 gap-8">
+                      <div className="space-y-1">
+                         <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Annual Leave</span>
+                         <p className="text-[14px] font-bold text-slate-900">{formData.annualLeaveBalance || 0} Days Remaining</p>
+                      </div>
+                      <div className="space-y-1">
+                         <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Sick Leave</span>
+                         <p className="text-[14px] font-bold text-slate-900">{formData.sickLeaveBalance || 0} Days Remaining</p>
+                      </div>
+                   </div>
+                </div>
+             </div>
+           )}
+
+           {activeTab === 'GOVERNANCE' && (
+             <div className="space-y-6">
+                <div className="grid grid-cols-2 gap-4">
+                   <Select 
+                     label="System Authority Role"
+                     value={formData.role}
+                     onChange={val => setFormData({...formData, role: val})}
+                     options={Object.values(ROLES).map(r => ({ label: r.label, value: r.name }))}
+                   />
+                   <Select 
+                     label="Operational Hub"
+                     value={formData.hub}
+                     onChange={val => setFormData({...formData, hub: val})}
+                     options={hubs.map(h => ({ label: h.name, value: h.name }))}
+                   />
+                </div>
+                <div className="p-5 bg-slate-900 border border-slate-800 rounded-2xl flex items-start gap-4">
+                   <ShieldCheck className="w-5 h-5 text-indigo-400 shrink-0 mt-0.5" />
+                   <div className="space-y-1">
+                      <h4 className="text-[11px] font-bold text-white uppercase tracking-widest">IAM Policy Propagation</h4>
+                      <p className="text-[12px] text-slate-400 leading-relaxed font-medium">
+                         Modifying the role or regional hub assignment will instantly recalculate the user's effective permissions. This action is logged in the Forensic Audit Trail.
+                      </p>
+                   </div>
+                </div>
+             </div>
+           )}
          </div>
 
          <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
@@ -126,7 +232,7 @@ export const EditEmployeeModal: React.FC<EditEmployeeModalProps> = ({ isOpen, on
               disabled={isUpdating}
               className="bg-indigo-600 hover:bg-indigo-700 text-white flex items-center gap-2 px-8 h-[48px] rounded-xl text-[11px] font-bold uppercase tracking-widest transition-all shadow-lg shadow-indigo-600/20"
             >
-               {isUpdating ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Synchronize Identity'}
+               {isUpdating ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Synchronize Dossier'}
             </button>
          </div>
       </div>
@@ -218,7 +324,7 @@ interface ModifyRoleModalProps {
 export const ModifyRoleModal: React.FC<ModifyRoleModalProps> = ({ isOpen, onClose, employee }) => {
   const [role, setRole] = useState(employee.role);
   const [isUpdating, setIsUpdating] = useState(false);
-  const { updateEmployee } = useWorkforce();
+  const { assignRole } = useWorkforce();
   const { toast } = useToast();
 
   const handleUpdate = () => {
@@ -226,7 +332,7 @@ export const ModifyRoleModal: React.FC<ModifyRoleModalProps> = ({ isOpen, onClos
     toast({ type: 'loading', message: 'Reconfiguring Capability...', description: `Updating authority scope for ${employee.name}.` });
     
     setTimeout(() => {
-      updateEmployee(employee.id, { role });
+      assignRole(employee.id, role);
       setIsUpdating(false);
       onClose();
       toast({ 
@@ -261,13 +367,7 @@ export const ModifyRoleModal: React.FC<ModifyRoleModalProps> = ({ isOpen, onClos
               label="Select New Role Designation"
               value={role}
               onChange={setRole}
-              options={[
-                { label: 'Super Administrator', value: 'Super Administrator' },
-                { label: 'HR Admin', value: 'HR Admin' },
-                { label: 'Finance Admin', value: 'Finance Admin' },
-                { label: 'Operations Manager', value: 'Operations Manager' },
-                { label: 'Staff Practitioner', value: 'Staff Practitioner' },
-              ]}
+              options={Object.values(ROLES).map(r => ({ label: r.label, value: r.name }))}
             />
          </div>
 
@@ -299,7 +399,7 @@ export const OnboardMemberModal: React.FC<OnboardMemberModalProps> = ({ isOpen, 
     name: '',
     email: '',
     phone: '',
-    role: 'Staff Practitioner',
+    role: 'EMPLOYEE',
     hub: currentHub !== 'All Regions' ? currentHub : (hubs[0]?.name || 'Lagos HQ'),
     department: departments[0]?.name || 'Operations',
     designation: '',
@@ -308,7 +408,7 @@ export const OnboardMemberModal: React.FC<OnboardMemberModalProps> = ({ isOpen, 
     startDate: new Date().toISOString().split('T')[0]
   });
 
-  // Sync office if context changes while modal is closed
+  // Sync hub if context changes while modal is closed
   useEffect(() => {
     if (!isOpen) {
       setFormData(prev => ({
@@ -319,42 +419,82 @@ export const OnboardMemberModal: React.FC<OnboardMemberModalProps> = ({ isOpen, 
   }, [currentHub, isOpen, hubs]);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [provisionedCredentials, setProvisionedCredentials] = useState<{ email: string; password: string } | null>(null);
   const { createEmployee } = useWorkforce();
   const { toast } = useToast();
 
-  const handleSubmit = () => {
+  // Reset credentials panel when modal closes
+  useEffect(() => {
+    if (!isOpen) setProvisionedCredentials(null);
+  }, [isOpen]);
+
+  const handleSubmit = async () => {
     if (!formData.name || !formData.email || !formData.designation) {
       toast({ type: 'error', message: 'Validation Error', description: 'Identity and Organizational Placement fields are required.' });
       return;
     }
 
     setIsSubmitting(true);
-    toast({ type: 'loading', message: 'Initializing Member Identity...', description: `Creating organizational record for ${formData.name}.` });
-    
-    setTimeout(() => {
-      const result = createEmployee({
-        ...formData,
-        status: 'ACTIVE',
-        id: formData.staffId || `SUL-${Math.floor(Math.random() * 1000).toString().padStart(3, '0')}`
-      } as any);
-      
-      setIsSubmitting(false);
-      
-      if (result.success) {
-        onClose();
-        toast({ 
-          type: 'success', 
-          message: 'Member Onboarded', 
-          description: `Successfully onboarded to ${formData.hub} as ${formData.designation}.` 
+    toast({ type: 'loading', message: 'Provisioning Identity...', description: `Creating auth account and HR record for ${formData.name}.` });
+
+    try {
+      // ── Phase A: Create DB auth record + Employee row via API ─────────────────
+      const res = await fetch('/api/employees', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: formData.name,
+          email: formData.email,
+          phone: formData.phone,
+          role: formData.role,
+          hub: formData.hub,
+          department: formData.department,
+          designation: formData.designation,
+          startDate: formData.startDate,
+        }),
+      });
+
+      const json = await res.json();
+
+      if (!res.ok) {
+        toast({
+          type: 'error',
+          message: 'Onboarding Failed',
+          description: json.message || 'An organizational policy prevented this action.',
         });
-      } else {
-        toast({ 
-          type: 'error', 
-          message: 'Onboarding Failed', 
-          description: result.error || 'An organizational policy prevented this action.' 
-        });
+        setIsSubmitting(false);
+        return;
       }
-    }, 2000);
+
+      // ── Phase B: Sync UI state (WorkforceContext in-memory) ───────────────────
+      createEmployee({
+        name: formData.name,
+        email: formData.email,
+        phone: formData.phone,
+        role: formData.role,
+        hub: formData.hub,
+        department: formData.department,
+        designation: formData.designation,
+        status: 'ACTIVE',
+        id: json.data?.staffId,
+      } as any);
+
+      // ── Phase C: Show credentials ─────────────────────────────────────────────
+      setProvisionedCredentials({
+        email: formData.email,
+        password: json.data?.temporaryPassword || 'Welcome123!',
+      });
+
+      toast({
+        type: 'success',
+        message: 'Account Provisioned',
+        description: `${formData.name} onboarded to ${formData.hub}. Auth credentials generated.`,
+      });
+    } catch (err) {
+      toast({ type: 'error', message: 'Network Error', description: 'Could not reach the provisioning service. Please try again.' });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -366,126 +506,162 @@ export const OnboardMemberModal: React.FC<OnboardMemberModalProps> = ({ isOpen, 
       size="lg"
     >
       <div className="space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-500 max-h-[70vh] overflow-y-auto pr-2 custom-scrollbar">
-         
-         {/* Section: Identity */}
-         <div className="space-y-4">
-            <div className="flex items-center gap-2 mb-2">
-               <UserCircle className="w-4 h-4 text-slate-400" />
-               <h4 className="text-[11px] font-bold text-slate-400 uppercase tracking-[0.2em]">Personal Identity</h4>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-               <div className="space-y-2">
-                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Full Name</label>
-                  <input 
-                    placeholder="e.g. Jane Doe"
-                    value={formData.name} 
-                    onChange={e => setFormData({...formData, name: e.target.value})}
-                    className="w-full h-[48px] bg-slate-50 border border-slate-200 rounded-xl px-4 text-[13px] font-bold outline-none focus:border-indigo-500 transition-all shadow-sm"
-                  />
-               </div>
-               <div className="space-y-2">
-                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Email Address</label>
-                  <input 
-                    type="email"
-                    placeholder="jane@sulerglobal.com"
-                    value={formData.email} 
-                    onChange={e => setFormData({...formData, email: e.target.value})}
-                    className="w-full h-[48px] bg-slate-50 border border-slate-200 rounded-xl px-4 text-[13px] font-bold outline-none focus:border-indigo-500 transition-all shadow-sm"
-                  />
-               </div>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-               <div className="space-y-2">
-                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Operational Mobile</label>
-                  <input 
-                    placeholder="+234 ..."
-                    value={formData.phone} 
-                    onChange={e => setFormData({...formData, phone: e.target.value})}
-                    className="w-full h-[48px] bg-slate-50 border border-slate-200 rounded-xl px-4 text-[13px] font-bold outline-none focus:border-indigo-500 transition-all shadow-sm"
-                  />
-               </div>
-               <div className="space-y-2">
-                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Staff ID (Optional)</label>
-                  <input 
-                    placeholder="SUL-..."
-                    value={formData.staffId} 
-                    onChange={e => setFormData({...formData, staffId: e.target.value})}
-                    className="w-full h-[48px] bg-slate-50 border border-slate-200 rounded-xl px-4 text-[13px] font-bold outline-none focus:border-indigo-500 transition-all shadow-sm"
-                  />
-               </div>
-            </div>
-         </div>
 
-         {/* Section: Organizational Placement */}
-         <div className="space-y-4">
-            <div className="flex items-center gap-2 mb-2">
-               <Briefcase className="w-4 h-4 text-slate-400" />
-               <h4 className="text-[11px] font-bold text-slate-400 uppercase tracking-[0.2em]">Organizational Placement</h4>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-               <Select 
-                 label="Designated Hub"
-                 value={formData.hub}
-                 onChange={val => setFormData({...formData, hub: val})}
-                 options={hubs.map(h => ({ label: h.name, value: h.name }))}
-               />
-               <Select 
-                 label="Department"
-                 value={formData.department}
-                 onChange={val => setFormData({...formData, department: val})}
-                 options={departments
-                   .filter(d => d.parentHub === formData.hub)
-                   .map(d => ({ label: d.name, value: d.name }))
-                 }
-               />
+        {/* ── Credentials Confirmation (shown after successful onboarding) ── */}
+        {provisionedCredentials && (
+          <div className="p-5 bg-emerald-50 border border-emerald-100 rounded-2xl space-y-4">
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-lg bg-emerald-100 flex items-center justify-center">
+                <ShieldCheck className="w-4 h-4 text-emerald-600" />
+              </div>
+              <div>
+                <p className="text-[11px] font-bold text-emerald-800 uppercase tracking-widest">Account Provisioned</p>
+                <p className="text-[10px] text-emerald-600 font-medium">Share these credentials securely with the new member</p>
+              </div>
             </div>
             <div className="space-y-2">
-               <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Principal Designation</label>
-               <input 
-                 placeholder="e.g. Electrical Maintenance Engineer"
-                 value={formData.designation} 
-                 onChange={e => setFormData({...formData, designation: e.target.value})}
-                 className="w-full h-[48px] bg-slate-50 border border-slate-200 rounded-xl px-4 text-[13px] font-bold outline-none focus:border-indigo-500 transition-all shadow-sm"
-               />
+              <div className="flex items-center justify-between px-4 py-2.5 bg-white rounded-xl border border-emerald-100">
+                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Login Email</span>
+                <code className="text-[12px] font-bold text-slate-900">{provisionedCredentials.email}</code>
+              </div>
+              <div className="flex items-center justify-between px-4 py-2.5 bg-white rounded-xl border border-emerald-100">
+                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Temp Password</span>
+                <code className="text-[12px] font-bold text-indigo-600">{provisionedCredentials.password}</code>
+              </div>
             </div>
-         </div>
+            <p className="text-[10px] text-emerald-600 font-bold text-center uppercase tracking-widest">
+              ⚠ Advise user to change password after first login
+            </p>
+            <button
+              onClick={onClose}
+              className="w-full h-[44px] bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-[11px] font-bold uppercase tracking-widest transition-all shadow-sm"
+            >
+              Close & Finish
+            </button>
+          </div>
+        )}
 
-         {/* Section: System Access */}
-         <div className="space-y-4">
-            <div className="flex items-center gap-2 mb-2">
-               <ShieldCheck className="w-4 h-4 text-slate-400" />
-               <h4 className="text-[11px] font-bold text-slate-400 uppercase tracking-[0.2em]">Access & Authority</h4>
+        {/* ── Form (hidden once credentials are shown) ── */}
+        {!provisionedCredentials && (
+          <>
+            {/* Section: Identity */}
+            <div className="space-y-4">
+               <div className="flex items-center gap-2 mb-2">
+                  <UserCircle className="w-4 h-4 text-slate-400" />
+                  <h4 className="text-[11px] font-bold text-slate-400 uppercase tracking-[0.2em]">Personal Identity</h4>
+               </div>
+               <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                     <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Full Name</label>
+                     <input 
+                       placeholder="e.g. Jane Doe"
+                       value={formData.name} 
+                       onChange={e => setFormData({...formData, name: e.target.value})}
+                       className="w-full h-[48px] bg-slate-50 border border-slate-200 rounded-xl px-4 text-[13px] font-bold outline-none focus:border-indigo-500 transition-all shadow-sm"
+                     />
+                  </div>
+                  <div className="space-y-2">
+                     <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Email Address</label>
+                     <input 
+                       type="email"
+                       placeholder="jane@sulerglobal.com"
+                       value={formData.email} 
+                       onChange={e => setFormData({...formData, email: e.target.value})}
+                       className="w-full h-[48px] bg-slate-50 border border-slate-200 rounded-xl px-4 text-[13px] font-bold outline-none focus:border-indigo-500 transition-all shadow-sm"
+                     />
+                  </div>
+               </div>
+               <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                     <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Operational Mobile</label>
+                     <input 
+                       placeholder="+234 ..."
+                       value={formData.phone} 
+                       onChange={e => setFormData({...formData, phone: e.target.value})}
+                       className="w-full h-[48px] bg-slate-50 border border-slate-200 rounded-xl px-4 text-[13px] font-bold outline-none focus:border-indigo-500 transition-all shadow-sm"
+                     />
+                  </div>
+                  <div className="space-y-2">
+                     <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Start Date</label>
+                     <input 
+                       type="date"
+                       value={formData.startDate}
+                       onChange={e => setFormData({...formData, startDate: e.target.value})}
+                       className="w-full h-[48px] bg-slate-50 border border-slate-200 rounded-xl px-4 text-[13px] font-bold outline-none focus:border-indigo-500 transition-all shadow-sm"
+                     />
+                  </div>
+               </div>
             </div>
-            <div className="grid grid-cols-2 gap-4">
+
+            {/* Section: Organizational Placement */}
+            <div className="space-y-4">
+               <div className="flex items-center gap-2 mb-2">
+                  <Briefcase className="w-4 h-4 text-slate-400" />
+                  <h4 className="text-[11px] font-bold text-slate-400 uppercase tracking-[0.2em]">Organizational Placement</h4>
+               </div>
+               <div className="grid grid-cols-2 gap-4">
+                  <Select 
+                    label="Designated Hub"
+                    value={formData.hub}
+                    onChange={val => setFormData({...formData, hub: val})}
+                    options={hubs.map(h => ({ label: h.name, value: h.name }))}
+                  />
+                  <Select 
+                    label="Department"
+                    value={formData.department}
+                    onChange={val => setFormData({...formData, department: val})}
+                    options={departments
+                      .filter(d => d.parentHub === formData.hub)
+                      .map(d => ({ label: d.name, value: d.name }))
+                    }
+                  />
+               </div>
+               <div className="space-y-2">
+                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Principal Designation</label>
+                  <input 
+                    placeholder="e.g. Electrical Maintenance Engineer"
+                    value={formData.designation} 
+                    onChange={e => setFormData({...formData, designation: e.target.value})}
+                    className="w-full h-[48px] bg-slate-50 border border-slate-200 rounded-xl px-4 text-[13px] font-bold outline-none focus:border-indigo-500 transition-all shadow-sm"
+                  />
+               </div>
+            </div>
+
+            {/* Section: System Access */}
+            <div className="space-y-4">
+               <div className="flex items-center gap-2 mb-2">
+                  <ShieldCheck className="w-4 h-4 text-slate-400" />
+                  <h4 className="text-[11px] font-bold text-slate-400 uppercase tracking-[0.2em]">Access & Authority</h4>
+               </div>
                <Select 
                  label="System Role"
                  value={formData.role}
                  onChange={val => setFormData({...formData, role: val})}
-                 options={[
-                   { label: 'Super Administrator', value: 'Super Administrator' },
-                   { label: 'HR Admin', value: 'HR Admin' },
-                   { label: 'Finance Admin', value: 'Finance Admin' },
-                   { label: 'Operations Manager', value: 'Operations Manager' },
-                   { label: 'Staff Practitioner', value: 'Staff Practitioner' },
-                 ]}
+                 options={Object.values(ROLES).map(r => ({ label: r.label, value: r.name }))}
                />
-               <div className="flex items-center gap-3 px-4 h-[48px] bg-indigo-50/50 border border-indigo-100 rounded-xl mt-6">
-                  <input type="checkbox" id="sendInvite" className="w-4 h-4 rounded border-indigo-200 text-indigo-600 focus:ring-indigo-500" defaultChecked />
-                  <label htmlFor="sendInvite" className="text-[12px] font-bold text-indigo-900">Send Invitation Email</label>
+               <div className="p-4 bg-slate-900 rounded-2xl flex items-start gap-3">
+                  <ShieldCheck className="w-4 h-4 text-indigo-400 shrink-0 mt-0.5" />
+                  <div className="space-y-0.5">
+                     <p className="text-[11px] font-bold text-white uppercase tracking-widest">Credential Auto-Generation</p>
+                     <p className="text-[11px] text-slate-400 font-medium leading-relaxed">
+                       A login account will be created automatically with a temporary password of <span className="text-indigo-400 font-bold">Welcome123!</span>
+                     </p>
+                  </div>
                </div>
             </div>
-         </div>
 
-         <div className="flex items-center justify-end gap-3 pt-6 border-t border-slate-100 sticky bottom-0 bg-white">
-            <button onClick={onClose} disabled={isSubmitting} className="px-6 h-[44px] text-[11px] font-bold uppercase tracking-widest text-slate-400 hover:text-slate-600 transition-colors">Cancel</button>
-            <button 
-              onClick={handleSubmit}
-              disabled={isSubmitting}
-              className="bg-indigo-600 hover:bg-indigo-700 text-white flex items-center gap-2 px-8 h-[48px] rounded-xl text-[11px] font-bold uppercase tracking-widest transition-all shadow-lg shadow-indigo-600/20"
-            >
-               {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Confirm Onboarding'}
-            </button>
-         </div>
+            <div className="flex items-center justify-end gap-3 pt-6 border-t border-slate-100 sticky bottom-0 bg-white">
+               <button onClick={onClose} disabled={isSubmitting} className="px-6 h-[44px] text-[11px] font-bold uppercase tracking-widest text-slate-400 hover:text-slate-600 transition-colors">Cancel</button>
+               <button 
+                 onClick={handleSubmit}
+                 disabled={isSubmitting}
+                 className="bg-indigo-600 hover:bg-indigo-700 text-white flex items-center gap-2 px-8 h-[48px] rounded-xl text-[11px] font-bold uppercase tracking-widest transition-all shadow-lg shadow-indigo-600/20"
+               >
+                  {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Provision Account'}
+               </button>
+            </div>
+          </>
+        )}
       </div>
     </Modal>
   );
@@ -555,12 +731,7 @@ export const PromoteEmployeeModal: React.FC<PromoteEmployeeModalProps> = ({ isOp
                label="Assign New System Role"
                value={role}
                onChange={setRole}
-               options={[
-                 { label: 'Operations Manager', value: 'Operations Manager' },
-                 { label: 'HR Admin', value: 'HR Admin' },
-                 { label: 'Finance Admin', value: 'Finance Admin' },
-                 { label: 'Super Administrator', value: 'Super Administrator' },
-               ]}
+               options={Object.values(ROLES).map(r => ({ label: r.label, value: r.name }))}
             />
          </div>
 

@@ -29,6 +29,7 @@ import { MetricCard } from '@/components/dashboard/MetricCard';
 
 export default function OrganizationPage() {
   const { hubs, departments, currentHub, switchHub, deleteHub, deleteDepartment, undoMutation, canUndo } = useOrganization();
+  const { employees } = useWorkforce();
   
   // Modal states
   const [isCreateHubOpen, setIsCreateHubOpen] = useState(false);
@@ -78,9 +79,12 @@ export default function OrganizationPage() {
     {
       header: "Principal Staff",
       accessor: "staff",
-      render: (val: number) => (
-        <span className="text-slate-900 font-bold text-[13px]">{val} Members</span>
-      )
+      render: (val: number, hub: Hub) => {
+        const staffCount = employees.filter(e => e.hub === hub.name).length;
+        return (
+          <span className="text-slate-900 font-bold text-[13px]">{staffCount} Members</span>
+        );
+      }
     }
   ];
 
@@ -115,9 +119,12 @@ export default function OrganizationPage() {
     {
       header: "Registry Size",
       accessor: "staff",
-      render: (val: number) => (
-        <span className="text-slate-400 font-bold text-[11px] uppercase tracking-widest">{val} Staff</span>
-      )
+      render: (val: number, dept: Department) => {
+        const staffCount = employees.filter(e => e.department === dept.name).length;
+        return (
+          <span className="text-slate-400 font-bold text-[11px] uppercase tracking-widest">{staffCount} Staff</span>
+        );
+      }
     }
   ];
 
@@ -187,7 +194,7 @@ export default function OrganizationPage() {
             </div>
          </div>
          <DataTable 
-           title="Office Hubs"
+           title="Operational Hubs"
            description="Strategic regional nodes and corporate headquarters governing organizational operations."
            data={filteredHubs}
            columns={hubColumns}

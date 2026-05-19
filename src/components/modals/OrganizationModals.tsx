@@ -14,8 +14,8 @@ import {
   Layers
 } from 'lucide-react';
 import { Modal } from '../common/Modal';
-import { useOrganization, Hub, Department } from '@/context/OrganizationContext';
 import { useWorkforce } from '@/context/WorkforceContext';
+import { Select } from '../forms/Select';
 
 // --- Hub Modals ---
 
@@ -109,23 +109,20 @@ export const EditHubModal: React.FC<{ isOpen: boolean; onClose: () => void; hub:
             />
           </div>
           <div className="space-y-1.5">
-            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Geography</label>
-            <input 
-              required
-              value={geography}
-              onChange={(e) => setGeography(e.target.value)}
-              className="w-full h-12 bg-slate-50 border border-slate-100 rounded-xl px-4 text-sm font-bold focus:ring-2 focus:ring-slate-900 outline-none transition-all"
-            />
+             <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Geography</label>
+             <input 
+               required
+               value={geography}
+               onChange={(e) => setGeography(e.target.value)}
+               className="w-full h-[48px] bg-slate-50 border border-slate-200 rounded-xl px-4 text-[13px] font-bold outline-none focus:border-indigo-500 transition-all shadow-sm"
+             />
           </div>
-          <div className="space-y-1.5">
-            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Manager Assignment</label>
-            <input 
-              value={manager}
-              onChange={(e) => setManager(e.target.value)}
-              placeholder="Assign Principal Staff"
-              className="w-full h-12 bg-slate-50 border border-slate-100 rounded-xl px-4 text-sm font-bold focus:ring-2 focus:ring-slate-900 outline-none transition-all"
-            />
-          </div>
+          <Select 
+            label="Manager Assignment"
+            value={manager}
+            onChange={setManager}
+            options={employees.map(e => ({ label: e.name, value: e.name }))}
+          />
         </div>
         <button 
           type="submit"
@@ -142,6 +139,7 @@ export const EditHubModal: React.FC<{ isOpen: boolean; onClose: () => void; hub:
 
 export const CreateDepartmentModal: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOpen, onClose }) => {
   const { addDepartment, hubs } = useOrganization();
+  const { employees } = useWorkforce();
   const [name, setName] = useState('');
   const [lead, setLead] = useState('');
   const [parentHub, setParentHub] = useState(hubs[0]?.name || '');
@@ -149,6 +147,7 @@ export const CreateDepartmentModal: React.FC<{ isOpen: boolean; onClose: () => v
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!name || !lead || !parentHub) return;
     addDepartment({ name, lead, parentHub, reportingLine });
     onClose();
     setName('');
@@ -160,37 +159,27 @@ export const CreateDepartmentModal: React.FC<{ isOpen: boolean; onClose: () => v
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="space-y-4">
           <div className="space-y-1.5">
-            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Unit Identity</label>
+            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Unit Identity</label>
             <input 
               required
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="e.g. Talent Acquisition"
-              className="w-full h-12 bg-slate-50 border border-slate-100 rounded-xl px-4 text-sm font-bold focus:ring-2 focus:ring-slate-900 outline-none transition-all"
+              className="w-full h-[48px] bg-slate-50 border border-slate-200 rounded-xl px-4 text-[13px] font-bold outline-none focus:border-indigo-500 transition-all shadow-sm"
             />
           </div>
-          <div className="space-y-1.5">
-            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Parent Operational Hub</label>
-            <select 
-              value={parentHub}
-              onChange={(e) => setParentHub(e.target.value)}
-              className="w-full h-12 bg-slate-50 border border-slate-100 rounded-xl px-4 text-sm font-bold focus:ring-2 focus:ring-slate-900 outline-none transition-all"
-            >
-              {hubs.filter(h => h.id !== 'HUB-00').map(hub => (
-                <option key={hub.id} value={hub.name}>{hub.name}</option>
-              ))}
-            </select>
-          </div>
-          <div className="space-y-1.5">
-            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Functional Lead</label>
-            <input 
-              required
-              value={lead}
-              onChange={(e) => setLead(e.target.value)}
-              placeholder="e.g. Sarah Williams"
-              className="w-full h-12 bg-slate-50 border border-slate-100 rounded-xl px-4 text-sm font-bold focus:ring-2 focus:ring-slate-900 outline-none transition-all"
-            />
-          </div>
+          <Select 
+            label="Parent Operational Hub"
+            value={parentHub}
+            onChange={setParentHub}
+            options={hubs.filter(h => h.id !== 'HUB-00').map(hub => ({ label: hub.name, value: hub.name }))}
+          />
+          <Select 
+            label="Functional Lead"
+            value={lead}
+            onChange={setLead}
+            options={employees.map(e => ({ label: e.name, value: e.name }))}
+          />
         </div>
         <button 
           type="submit"
@@ -205,6 +194,7 @@ export const CreateDepartmentModal: React.FC<{ isOpen: boolean; onClose: () => v
 
 export const EditDepartmentModal: React.FC<{ isOpen: boolean; onClose: () => void; dept: Department }> = ({ isOpen, onClose, dept }) => {
   const { updateDepartment, hubs } = useOrganization();
+  const { employees } = useWorkforce();
   const [name, setName] = useState(dept.name);
   const [lead, setLead] = useState(dept.lead);
   const [parentHub, setParentHub] = useState(dept.parentHub);
@@ -221,35 +211,26 @@ export const EditDepartmentModal: React.FC<{ isOpen: boolean; onClose: () => voi
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="space-y-4">
           <div className="space-y-1.5">
-            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Department Name</label>
+            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Department Name</label>
             <input 
               required
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="w-full h-12 bg-slate-50 border border-slate-100 rounded-xl px-4 text-sm font-bold focus:ring-2 focus:ring-slate-900 outline-none transition-all"
+              className="w-full h-[48px] bg-slate-50 border border-slate-200 rounded-xl px-4 text-[13px] font-bold outline-none focus:border-indigo-500 transition-all shadow-sm"
             />
           </div>
-          <div className="space-y-1.5">
-            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Operational Hub</label>
-            <select 
-              value={parentHub}
-              onChange={(e) => setParentHub(e.target.value)}
-              className="w-full h-12 bg-slate-50 border border-slate-100 rounded-xl px-4 text-sm font-bold focus:ring-2 focus:ring-slate-900 outline-none transition-all"
-            >
-              {hubs.filter(h => h.id !== 'HUB-00').map(hub => (
-                <option key={hub.id} value={hub.name}>{hub.name}</option>
-              ))}
-            </select>
-          </div>
-          <div className="space-y-1.5">
-            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Principal Lead</label>
-            <input 
-              required
-              value={lead}
-              onChange={(e) => setLead(e.target.value)}
-              className="w-full h-12 bg-slate-50 border border-slate-100 rounded-xl px-4 text-sm font-bold focus:ring-2 focus:ring-slate-900 outline-none transition-all"
-            />
-          </div>
+          <Select 
+            label="Operational Hub"
+            value={parentHub}
+            onChange={setParentHub}
+            options={hubs.filter(h => h.id !== 'HUB-00').map(hub => ({ label: hub.name, value: hub.name }))}
+          />
+          <Select 
+            label="Principal Lead"
+            value={lead}
+            onChange={setLead}
+            options={employees.map(e => ({ label: e.name, value: e.name }))}
+          />
         </div>
         <button 
           type="submit"

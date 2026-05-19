@@ -2,9 +2,38 @@
 
 import React, { createContext, useContext, ReactNode, useMemo } from 'react';
 import { useSession } from 'next-auth/react';
-import { RoleName } from '@/modules/auth/domain/role.model';
-import { PermissionType, PolicyContext, PolicyResult } from '@/modules/auth/domain/permission.model';
+import { Permissions, PermissionType, PolicyContext, PolicyResult } from '@/modules/auth/domain/permission.model';
 import { BaseEvaluator } from '@/policies/base.evaluator';
+
+const ROLE_PERMISSION_MAP: Record<string, string[]> = {
+  SUPER_ADMIN: Object.values(Permissions),
+  HR_ADMIN: [
+    Permissions.WORKFORCE_VIEW, Permissions.WORKFORCE_CREATE, Permissions.WORKFORCE_EDIT,
+    Permissions.LEAVE_VIEW, Permissions.LEAVE_APPROVE,
+    Permissions.ATTENDANCE_VIEW,
+    Permissions.PAYROLL_VIEW,
+    Permissions.AUDIT_VIEW,
+    Permissions.ANALYTICS_VIEW
+  ],
+  FINANCE_MANAGER: [
+    Permissions.PAYROLL_VIEW, Permissions.PAYROLL_APPROVE, Permissions.PAYROLL_PROCESS,
+    Permissions.FINANCE_VIEW, Permissions.FINANCE_ALLOCATE, Permissions.FINANCE_APPROVE, Permissions.FINANCE_DISBURSE,
+    Permissions.AUDIT_VIEW,
+    Permissions.ANALYTICS_VIEW
+  ],
+  MANAGER: [
+    Permissions.WORKFORCE_VIEW,
+    Permissions.LEAVE_VIEW, Permissions.LEAVE_SUBMIT,
+    Permissions.ATTENDANCE_VIEW,
+    Permissions.ANALYTICS_VIEW,
+    Permissions.REPORTS_GENERATE
+  ],
+  EMPLOYEE: [
+    Permissions.LEAVE_VIEW, Permissions.LEAVE_SUBMIT,
+    Permissions.ATTENDANCE_VIEW,
+    Permissions.WORKFORCE_VIEW // Can view colleagues
+  ]
+};
 
 interface AccessContextType {
   user: any;
@@ -21,11 +50,16 @@ export function AccessProvider({ children }: { children: ReactNode }) {
 
   const user = useMemo(() => {
     if (!session?.user) return null;
+    
+    // In MVP, we derive permissions from the role map if not provided by session
+    const role = (session.user.role as string) || 'GUEST';
+    const permissions = (session.user.permissions as string[]) || ROLE_PERMISSION_MAP[role] || [];
+
     return {
       id: session.user.id,
       name: session.user.name,
-      role: session.user.role as RoleName,
-      permissions: session.user.permissions as PermissionType[],
+      role: role,
+      permissions: permissions,
       departmentId: session.user.departmentId,
       employeeId: session.user.employeeId,
     };
@@ -34,10 +68,13 @@ export function AccessProvider({ children }: { children: ReactNode }) {
   const checkPermission = (permission: PermissionType): PolicyResult => {
     if (!user) return { allowed: false, reason: 'Not logged in' };
     
-    const context: PolicyContext = {
-      user: user,
+    // Check if the user has the permission in their mapped permission list
+    const hasPerm = user.permissions.includes(permission) || user.role === 'SUPER_ADMIN';
+
+    return {
+      allowed: hasPerm,
+      reason: hasPerm ? undefined : `Insufficient permission: ${permission}`
     };
-    return BaseEvaluator.hasPermission(context, permission);
   };
 
   const userRole = useMemo(() => user?.role || 'GUEST', [user]);

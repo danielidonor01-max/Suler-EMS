@@ -72,7 +72,7 @@ function LoginContent() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               className="w-full bg-slate-50/50 border border-slate-200 rounded-2xl py-4.5 pl-14 pr-5 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-4 focus:ring-indigo-600/5 focus:border-indigo-600 focus:bg-white transition-all text-sm font-semibold shadow-sm"
-              placeholder="chinedu.okoro@suler.ems"
+              placeholder="admin@suler.com"
             />
           </div>
         </div>
@@ -120,11 +120,11 @@ function LoginContent() {
         <div className="space-y-3">
           <div className="flex items-center justify-between p-4 bg-slate-50/50 rounded-2xl border border-slate-100/50">
             <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">Principal</span>
-            <code className="text-xs text-indigo-600 font-bold">chinedu.okoro@suler.ems</code>
+            <code className="text-xs text-indigo-600 font-bold">admin@suler.com</code>
           </div>
           <div className="flex items-center justify-between p-4 bg-slate-50/50 rounded-2xl border border-slate-100/50">
             <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">Secret</span>
-            <code className="text-xs text-indigo-600 font-bold">password123</code>
+            <code className="text-xs text-indigo-600 font-bold">Admin123!</code>
           </div>
         </div>
       </div>

@@ -16,6 +16,9 @@ import {
   Save
 } from 'lucide-react';
 
+import { PermissionGate } from '@/components/common/PermissionGate';
+import { Permissions } from '@/modules/auth/domain/permission.model';
+
 const SETTINGS_TABS = [
   { id: 'general', label: 'General Configuration', icon: Settings },
   { id: 'governance', label: 'Governance & Roles', icon: ShieldCheck },
@@ -46,10 +49,12 @@ export default function SettingsPage() {
             </p>
           </div>
 
-          <button className="bg-slate-900 hover:bg-black text-white flex items-center gap-2.5 px-8 py-3 rounded-xl text-[11px] font-bold uppercase tracking-wider transition-all shadow-md">
-            <Save className="w-4 h-4" />
-            Persist Changes
-          </button>
+          <PermissionGate permission={Permissions.SETTINGS_MANAGE} showLocked>
+            <button className="bg-slate-900 hover:bg-black text-white flex items-center gap-2.5 px-8 py-3 rounded-xl text-[11px] font-bold uppercase tracking-wider transition-all shadow-md">
+              <Save className="w-4 h-4" />
+              Persist Changes
+            </button>
+          </PermissionGate>
         </div>
       </div>
 

@@ -23,12 +23,15 @@ import {
 import { useSettings, CompliancePolicy } from '@/context/SettingsContext';
 import { useAccess } from '@/context/AccessContext';
 import { RouteGuard } from '@/components/common/RouteGuard';
+import { AddSalaryGradeModal } from '@/components/modals/ComplianceModals';
+import Link from 'next/link';
 
 export default function CompliancePoliciesPage() {
   const { settings, updateSettings } = useSettings();
   const { userRole } = useAccess();
 
   const [policy, setPolicy] = useState<CompliancePolicy>(settings.compliance);
+  const [isGradeOpen, setIsGradeOpen] = useState(false);
 
   // Access: Only Super Admin can change policies
   const isSuperAdmin = userRole === 'SUPER_ADMIN';
@@ -233,9 +236,12 @@ export default function CompliancePoliciesPage() {
                         Any modification to statutory rates is an enterprise-wide event. All changes are logged with immutable timestamps for fiscal audits.
                      </p>
                   </div>
-                  <button className="h-12 px-8 bg-white/10 hover:bg-white/20 text-white rounded-xl text-[11px] font-bold uppercase tracking-widest transition-all border border-white/10">
+                  <Link 
+                    href="/governance"
+                    className="h-12 px-8 bg-white/10 hover:bg-white/20 text-white rounded-xl text-[11px] font-bold uppercase tracking-widest transition-all border border-white/10 flex items-center justify-center"
+                  >
                      View Governance Logs
-                  </button>
+                  </Link>
                </div>
             </div>
          </div>
@@ -261,7 +267,10 @@ export default function CompliancePoliciesPage() {
                  </div>
                ))}
                
-               <button className="w-full h-11 border border-slate-200 hover:border-slate-300 rounded-xl text-[11px] font-black uppercase tracking-widest text-slate-500 hover:text-slate-900 transition-all flex items-center justify-center gap-2">
+               <button 
+                 onClick={() => setIsGradeOpen(true)}
+                 className="w-full h-11 border border-slate-200 hover:border-slate-300 rounded-xl text-[11px] font-black uppercase tracking-widest text-slate-500 hover:text-slate-900 transition-all flex items-center justify-center gap-2"
+               >
                   <Plus className="w-4 h-4" />
                   Define New Grade
                </button>
@@ -281,6 +290,8 @@ export default function CompliancePoliciesPage() {
             </div>
          </div>
       </div>
+
+      <AddSalaryGradeModal isOpen={isGradeOpen} onClose={() => setIsGradeOpen(false)} />
 
     </div>
   </RouteGuard>

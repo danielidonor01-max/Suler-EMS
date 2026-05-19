@@ -15,6 +15,9 @@ import {
   UserCog
 } from 'lucide-react';
 
+import { PermissionType } from '@/modules/auth/domain/permission.model';
+import { useAccess } from '@/context/AccessContext';
+import { Lock } from 'lucide-react';
 import { Portal } from '../common/Portal';
 
 interface Column {
@@ -29,6 +32,7 @@ export interface RowAction {
   onClick: (row: any) => void;
   variant?: 'default' | 'danger';
   hidden?: boolean | ((row: any) => boolean);
+  permission?: PermissionType;
 }
 
 interface DataTableProps {
@@ -184,26 +188,27 @@ export const DataTable: React.FC<DataTableProps> = ({
                 })
               }}
             >
-               {rowActions ? rowActions.map((action, aIdx) => {
-                 const isHidden = typeof action.hidden === 'function' ? action.hidden(activeActions.row) : action.hidden;
-                 if (isHidden) return null;
-                 
-                 return (
-                   <React.Fragment key={aIdx}>
-                     {action.variant === 'danger' && aIdx > 0 && <div className="h-px bg-slate-100 my-1.5 mx-2" />}
-                     <ActionMenuItem 
-                       icon={action.icon} 
-                       label={action.label} 
-                       variant={action.variant}
-                       onClick={(e: React.MouseEvent) => {
-                         e.stopPropagation();
-                         action.onClick(activeActions.row);
-                         setActiveActions(null);
-                       }}
-                     />
-                   </React.Fragment>
-                 );
-               }) : (
+                {rowActions ? rowActions.map((action, aIdx) => {
+                  const isHidden = typeof action.hidden === 'function' ? action.hidden(activeActions.row) : action.hidden;
+                  if (isHidden) return null;
+                  
+                  return (
+                    <React.Fragment key={aIdx}>
+                      {action.variant === 'danger' && aIdx > 0 && <div className="h-px bg-slate-100 my-1.5 mx-2" />}
+                      <ActionMenuItem 
+                        icon={action.icon} 
+                        label={action.label} 
+                        variant={action.variant}
+                        permission={action.permission}
+                        onClick={(e: React.MouseEvent) => {
+                          e.stopPropagation();
+                          action.onClick(activeActions.row);
+                          setActiveActions(null);
+                        }}
+                      />
+                    </React.Fragment>
+                  );
+                }) : (
                  <>
                    <ActionMenuItem icon={Edit3} label="Edit Identity" />
                    <ActionMenuItem icon={UserCog} label="Modify Role" />
@@ -265,14 +270,25 @@ const PageButton = ({ label, active }: { label: string, active?: boolean }) => (
   </button>
 );
 
-const ActionMenuItem = ({ icon: Icon, label, variant, onClick }: any) => (
-  <button 
-    onClick={onClick}
-    className={`w-full flex items-center gap-3 px-4 py-2.5 text-[12px] font-bold transition-all hover:bg-slate-50 ${
-      variant === 'danger' ? 'text-rose-500' : 'text-slate-600 hover:text-slate-900'
-    }`}
-  >
-    <Icon className="w-4 h-4 stroke-[1.5px]" />
-    {label}
-  </button>
-);
+const ActionMenuItem = ({ icon: Icon, label, variant, onClick, permission }: any) => {
+  const { checkPermission } = useAccess();
+  const isAllowed = !permission || checkPermission(permission).allowed;
+
+  return (
+    <button 
+      onClick={isAllowed ? onClick : undefined}
+      disabled={!isAllowed}
+      className={`w-full flex items-center justify-between px-4 py-2.5 text-[12px] font-bold transition-all ${
+        !isAllowed 
+          ? 'opacity-40 grayscale cursor-not-allowed text-slate-400' 
+          : 'hover:bg-slate-50 ' + (variant === 'danger' ? 'text-rose-500' : 'text-slate-600 hover:text-slate-900')
+      }`}
+    >
+      <div className="flex items-center gap-3">
+        <Icon className="w-4 h-4 stroke-[1.5px]" />
+        {label}
+      </div>
+      {!isAllowed && <Lock className="w-3 h-3 text-slate-300" />}
+    </button>
+  );
+};

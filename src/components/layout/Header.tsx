@@ -18,12 +18,18 @@ import { GlobalCommandModal } from '../modals/GlobalCommandModal';
 import { useActivity } from '@/context/ActivityContext';
 import { useAccess } from '@/context/AccessContext';
 import { useOrganization } from '@/context/OrganizationContext';
+import { useCommunication } from '@/context/CommunicationContext';
+import { useRouter } from 'next/navigation';
 
 const Header = ({ onToggleSidebar }: { onToggleSidebar: () => void }) => {
   const [isCommandModalOpen, setIsCommandModalOpen] = useState(false);
   const { presenceCount } = useActivity();
   const { userRole } = useAccess();
   const { currentHub, hubs, switchHub } = useOrganization();
+  const { conversations } = useCommunication();
+  const router = useRouter();
+
+  const totalUnread = conversations.reduce((sum, c) => sum + c.unreadCount, 0);
 
   return (
     <header className="h-[72px] bg-white border-b border-slate-200 flex items-center justify-between px-4 md:px-8 sticky top-0 z-40">
@@ -54,7 +60,7 @@ const Header = ({ onToggleSidebar }: { onToggleSidebar: () => void }) => {
             {currentHub[0]}
           </div>
           <div className="flex flex-col">
-            <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest leading-none mb-1">Office Hub</span>
+            <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest leading-none mb-1">Operational Hub</span>
             <div className="flex items-center gap-1">
               {userRole === 'SUPER_ADMIN' ? (
                 <div className="relative group/hub">
@@ -138,9 +144,14 @@ const Header = ({ onToggleSidebar }: { onToggleSidebar: () => void }) => {
         </button>
 
         <div className="flex items-center gap-1.5">
-           <button className="relative w-10 h-10 flex items-center justify-center rounded-[12px] text-slate-400 hover:text-slate-900 hover:bg-slate-50 transition-all">
+           <button 
+             onClick={() => router.push('/notifications')}
+             className="relative w-10 h-10 flex items-center justify-center rounded-[12px] text-slate-400 hover:text-slate-900 hover:bg-slate-50 transition-all"
+           >
             <Bell className="w-[18px] h-[18px] stroke-[1.5px]" />
-            <div className="absolute top-2.5 right-2.5 w-1.5 h-1.5 bg-indigo-600 rounded-full border-2 border-white" />
+            {totalUnread > 0 && (
+              <div className="absolute top-2.5 right-2.5 w-1.5 h-1.5 bg-indigo-600 rounded-full border-2 border-white" />
+            )}
           </button>
           
           <div className="w-10 h-10 rounded-[12px] bg-slate-900 border border-slate-800 flex items-center justify-center text-white font-bold text-[11px] cursor-pointer hover:scale-105 transition-all shadow-premium">

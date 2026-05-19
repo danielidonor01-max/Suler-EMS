@@ -293,7 +293,7 @@ export const BulkAdjustmentModal: React.FC<{ isOpen: boolean; onClose: () => voi
              <div className="space-y-6 animate-in slide-in-from-right-4">
                 <div className="space-y-4">
                    <div className="space-y-2">
-                      <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Filter by Office Hubs</label>
+                      <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Filter by Operational Hubs</label>
                       <div className="flex flex-wrap gap-2">
                          {hubs.map(h => (
                            <button 
@@ -501,6 +501,74 @@ export const UpdateSalaryModal: React.FC<{ isOpen: boolean; onClose: () => void;
            Save Structure
         </button>
       </form>
+    </Modal>
+  );
+};
+
+export const ViewPayslipModal: React.FC<{ isOpen: boolean; onClose: () => void; entry: PayrollEntry }> = ({ isOpen, onClose, entry }) => {
+  const { employees } = useWorkforce();
+  const employee = employees.find(e => e.id === entry.employeeId);
+
+  const breakdown = [
+    { label: 'Base Salary', value: entry.baseSalary, type: 'EARNING' },
+    { label: 'Allowances', value: entry.totalAllowances, type: 'EARNING' },
+    { label: 'Bonuses/Awards', value: entry.totalBonuses, type: 'EARNING' },
+    { label: 'PAYE Income Tax', value: -entry.paye, type: 'DEDUCTION' },
+    { label: 'Pension Contribution', value: -entry.pension, type: 'DEDUCTION' },
+    { label: 'NHF Contribution', value: -entry.nhf, type: 'DEDUCTION' },
+    { label: 'Other Deductions', value: -entry.totalDeductions, type: 'DEDUCTION' },
+  ];
+
+  return (
+    <Modal isOpen={isOpen} onClose={onClose} title="Executive Payslip Breakdown" size="md">
+      <div className="space-y-8 py-4">
+        {/* Payslip Header */}
+        <div className="flex items-center justify-between p-6 bg-slate-900 rounded-[28px] text-white relative overflow-hidden">
+           <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/20 rounded-full -mr-16 -mt-16 blur-2xl" />
+           <div className="relative z-10 flex items-center gap-4">
+              <div className="w-14 h-14 rounded-2xl bg-white/10 border border-white/10 flex items-center justify-center text-xl font-black">
+                 {employee?.name.split(' ').map(n => n[0]).join('')}
+              </div>
+              <div>
+                 <h3 className="text-lg font-bold tracking-tight leading-none mb-1">{employee?.name}</h3>
+                 <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{employee?.id} · {employee?.role}</p>
+              </div>
+           </div>
+           <div className="relative z-10 text-right">
+              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">{entry.period}</p>
+              <div className="px-3 py-1 bg-white/10 rounded-lg text-[10px] font-black uppercase tracking-widest border border-white/5">
+                 {entry.hub}
+              </div>
+           </div>
+        </div>
+
+        {/* Financial Matrix */}
+        <div className="space-y-2">
+           {breakdown.map((item, idx) => (
+             <div key={idx} className="flex justify-between items-center p-4 bg-slate-50 rounded-2xl border border-slate-100/60">
+                <span className="text-[13px] font-bold text-slate-500">{item.label}</span>
+                <span className={`text-[14px] font-black ${item.type === 'EARNING' ? 'text-slate-900' : 'text-rose-500'}`}>
+                   {item.value < 0 ? `- ${formatCurrency(Math.abs(item.value))}` : formatCurrency(item.value)}
+                </span>
+             </div>
+           ))}
+        </div>
+
+        {/* Net Settlement */}
+        <div className="p-8 bg-indigo-600 rounded-[32px] text-white flex flex-col items-center justify-center text-center shadow-xl shadow-indigo-100 relative overflow-hidden">
+           <div className="absolute bottom-0 left-0 w-full h-1/2 bg-gradient-to-t from-black/20 to-transparent" />
+           <span className="text-[10px] font-black uppercase tracking-[0.2em] mb-2 opacity-80">Net Salary Disbursed</span>
+           <div className="text-4xl font-black tracking-tighter mb-1">{formatCurrency(entry.netPay)}</div>
+           <p className="text-[11px] font-medium text-indigo-100">Settled via Electronic Transfer</p>
+        </div>
+
+        <button 
+          onClick={onClose}
+          className="w-full h-12 bg-slate-50 border border-slate-200 text-slate-600 rounded-xl text-[11px] font-black uppercase tracking-widest hover:bg-slate-100 transition-all"
+        >
+           Close Breakdown
+        </button>
+      </div>
     </Modal>
   );
 };

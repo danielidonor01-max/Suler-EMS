@@ -22,10 +22,13 @@ export function errorResponse(
 /**
  * Standardized API Success Response
  */
-export function successResponse<T>(data: T, correlationId?: string) {
-  return NextResponse.json({
-    success: true,
-    data,
-    correlationId: correlationId || crypto.randomUUID()
-  });
+export function successResponse<T>(data: T, correlationId?: string, status: number = 200) {
+  return NextResponse.json(
+    {
+      success: true,
+      data,
+      correlationId: correlationId || crypto.randomUUID()
+    },
+    { status }
+  );
 }

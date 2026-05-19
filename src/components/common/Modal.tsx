@@ -27,6 +27,10 @@ export const Modal: React.FC<ModalProps> = ({
 
   useEffect(() => {
     setMounted(true);
+    return () => setMounted(false);
+  }, []);
+
+  useEffect(() => {
     if (isOpen) {
       previousFocus.current = document.activeElement as HTMLElement;
       document.body.style.overflow = 'hidden';

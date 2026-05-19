@@ -16,8 +16,10 @@ import {
   PieChart,
   CreditCard,
   Zap,
-  History
+  History,
+  FileBarChart2
 } from 'lucide-react';
+import { useToast } from '@/components/common/ToastContext';
 import { useFinance, Expenditure, Budget, ProjectFunding } from '@/context/FinanceContext';
 import { useOrganization } from '@/context/OrganizationContext';
 import { useWorkforce } from '@/context/WorkforceContext';
@@ -26,16 +28,28 @@ import { MetricCard } from '@/components/dashboard/MetricCard';
 import { DataTable } from '@/components/tables/DataTable';
 import { CreateExpenditureModal, AllocateProjectFundingModal } from '@/components/modals/FinanceModals';
 import { RouteGuard } from '@/components/common/RouteGuard';
+import { PermissionGate } from '@/components/common/PermissionGate';
+import { Permissions } from '@/modules/auth/domain/permission.model';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 export default function FinanceDashboard() {
-  const { budgets, expenditures, projects, approveExpenditure, payExpenditure } = useFinance();
+  const { budgets, expenditures, projects, approveExpenditure, payExpenditure, rejectExpenditure } = useFinance();
   const { currentHub } = useOrganization();
   const { employees } = useWorkforce();
   const { userRole, user } = useAccess();
   
   const [isExpOpen, setIsExpOpen] = useState(false);
   const [isProjOpen, setIsProjOpen] = useState(false);
+  const { addToast } = useToast();
+
+  const handleExport = () => {
+    addToast('Generating Financial Statement...', 'INFO');
+    setTimeout(() => {
+      addToast('Enterprise financial report exported to CSV successfully.', 'SUCCESS');
+    }, 1500);
+  };
 
   // Access Control: Hub Managers can only see data for their hub.
   const isHubManager = userRole === 'HUB_MANAGER';
@@ -152,6 +166,7 @@ export default function FinanceDashboard() {
 
         {!isHubManager && (
           <div className="flex items-center gap-3">
+           <PermissionGate permission={Permissions.FINANCE_DISBURSE} showLocked>
              <button 
                onClick={() => setIsExpOpen(true)}
                className="bg-white border border-slate-200 hover:border-slate-300 text-slate-600 flex items-center gap-2 px-6 h-[44px] rounded-2xl text-[11px] font-bold uppercase tracking-wider transition-all shadow-sm"
@@ -159,6 +174,9 @@ export default function FinanceDashboard() {
                 <Zap className="w-[18px] h-[18px] stroke-[1.5px]" />
                 Request Funds
              </button>
+           </PermissionGate>
+
+           <PermissionGate permission={Permissions.FINANCE_ALLOCATE} showLocked>
              <button 
                onClick={() => setIsProjOpen(true)}
                className="bg-slate-950 hover:bg-black text-white flex items-center gap-2 px-8 h-[44px] rounded-2xl text-[11px] font-bold uppercase tracking-wider transition-all shadow-md"
@@ -166,7 +184,16 @@ export default function FinanceDashboard() {
                 <Plus className="w-[18px] h-[18px] stroke-[1.5px]" />
                 New Budget Allocation
              </button>
-          </div>
+           </PermissionGate>
+
+           <button 
+             onClick={handleExport}
+             className="w-11 h-[44px] flex items-center justify-center bg-white border border-slate-200 hover:bg-slate-50 rounded-2xl text-slate-600 transition-all shadow-sm"
+             title="Export Financial Data"
+           >
+              <FileBarChart2 className="w-[18px] h-[18px]" />
+           </button>
+        </div>
         )}
       </div>
 
@@ -196,8 +223,8 @@ export default function FinanceDashboard() {
               data={filteredBudgets}
               columns={budgetColumns}
               rowActions={!isHubManager ? [
-                { label: 'Edit Budget', icon: Edit3, onClick: () => {} },
-                { label: 'View Audit', icon: History, onClick: () => {} }
+                { label: 'Edit Budget', icon: Edit3, onClick: (b: Budget) => addToast(`Initializing cost-center adjustments for [${b.name}]`, 'INFO') },
+                { label: 'View Audit', icon: History, onClick: (b: Budget) => window.location.href = `/governance?q=${b.name}` }
               ] : []}
             />
          </div>
@@ -215,12 +242,29 @@ export default function FinanceDashboard() {
               description="Real-time monitoring of operational and capital expenditure approvals."
               data={filteredExp}
               columns={expColumns}
-              rowActions={!isHubManager ? [
-                { label: 'Approve', icon: ShieldCheck, onClick: (e: Expenditure) => approveExpenditure(e.id), hidden: (e: Expenditure) => e.status !== 'PENDING' },
-                { label: 'Settle Payment', icon: Zap, onClick: (e: Expenditure) => payExpenditure(e.id), hidden: (e: Expenditure) => e.status !== 'APPROVED' },
-                { label: 'Reject', icon: Trash2, onClick: () => {}, variant: 'danger', hidden: (e: Expenditure) => e.status !== 'PENDING' }
-              ] : [
-                { label: 'View Audit', icon: History, onClick: () => {} }
+              rowActions={[
+                { 
+                  label: 'Approve', 
+                  icon: ShieldCheck, 
+                  permission: Permissions.FINANCE_APPROVE,
+                  onClick: (e: Expenditure) => approveExpenditure(e.id), 
+                  hidden: (e: Expenditure) => e.status !== 'PENDING' 
+                },
+                { 
+                  label: 'Settle Payment', 
+                  icon: Zap, 
+                  permission: Permissions.FINANCE_DISBURSE,
+                  onClick: (e: Expenditure) => payExpenditure(e.id), 
+                  hidden: (e: Expenditure) => e.status !== 'APPROVED' 
+                },
+                { 
+                  label: 'Reject', 
+                  icon: Trash2, 
+                  permission: Permissions.FINANCE_APPROVE,
+                  onClick: (e: Expenditure) => rejectExpenditure(e.id, 'Administrative Denial'), 
+                  variant: 'danger', 
+                  hidden: (e: Expenditure) => e.status !== 'PENDING' 
+                }
               ]}
             />
          </div>

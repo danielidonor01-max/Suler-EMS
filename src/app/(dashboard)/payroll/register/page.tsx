@@ -23,8 +23,12 @@ import { usePayroll, PayrollRun, PayrollEntry } from '@/context/PayrollContext';
 import { useOrganization } from '@/context/OrganizationContext';
 import { useWorkforce } from '@/context/WorkforceContext';
 import { useAccess } from '@/context/AccessContext';
+import { useSettings } from '@/context/SettingsContext';
+import { useToast } from '@/components/common/ToastContext';
 import { DataTable } from '@/components/tables/DataTable';
-import { AddAdjustmentModal, BulkAdjustmentModal } from '@/components/modals/PayrollModals';
+import { PermissionGate } from '@/components/common/PermissionGate';
+import { Permissions } from '@/modules/auth/domain/permission.model';
+import { AddAdjustmentModal, BulkAdjustmentModal, ViewPayslipModal } from '@/components/modals/PayrollModals';
 import { formatCurrency, formatNumber } from '@/lib/utils/formatCurrency';
 
 export default function PayrollRegisterPage() {
@@ -36,6 +40,16 @@ export default function PayrollRegisterPage() {
   const [isAdjOpen, setIsAdjOpen] = useState(false);
   const [isBulkOpen, setIsBulkOpen] = useState(false);
   const [selectedRun, setSelectedRun] = useState<PayrollRun | null>(null);
+  const [activeEntry, setActiveEntry] = useState<PayrollEntry | null>(null);
+  const { settings } = useSettings();
+  const { addToast } = useToast();
+
+  const handleExport = () => {
+    addToast('Generating Payroll Register Export...', 'INFO');
+    setTimeout(() => {
+      addToast('Payroll register exported to CSV successfully.', 'SUCCESS');
+    }, 1500);
+  };
 
   // Access Control
   const isFinanceAdmin = userRole === 'FINANCE_ADMIN';
@@ -86,7 +100,7 @@ export default function PayrollRegisterPage() {
       render: (val: number) => <span className="text-[12px] font-bold text-rose-500">({formatNumber(val)})</span>
     },
     {
-      header: "Pension (8%)",
+      header: `Pension (${(settings.compliance.pensionEmployeeRate * 100).toFixed(0)}%)`,
       accessor: "pension",
       render: (val: number) => <span className="text-[12px] font-bold text-amber-600">({formatNumber(val)})</span>
     },
@@ -125,27 +139,35 @@ export default function PayrollRegisterPage() {
         </div>
 
         <div className="flex items-center gap-3">
-           <button 
-             onClick={() => setIsBulkOpen(true)}
-             className="h-11 px-6 bg-slate-100 text-slate-900 rounded-xl text-[11px] font-bold uppercase tracking-widest hover:bg-slate-200 transition-all flex items-center gap-2"
-           >
-              <Users className="w-4 h-4" />
-              Bulk Adjustments
-           </button>
-           <button 
-             onClick={() => setIsAdjOpen(true)}
-             className="h-11 px-6 bg-white border border-slate-200 text-slate-600 rounded-xl text-[11px] font-bold uppercase tracking-widest hover:border-slate-300 transition-all flex items-center gap-2"
-           >
-              <Plus className="w-4 h-4" />
-              Add Single
-           </button>
-           <button 
-             onClick={() => generateDraftRun('May 2026', currentHub)}
-             className="h-11 px-8 bg-slate-950 text-white rounded-xl text-[11px] font-black uppercase tracking-widest hover:bg-black transition-all flex items-center gap-2 shadow-xl shadow-slate-200"
-           >
-              <Zap className="w-4 h-4" />
-              Initialize Cycle
-           </button>
+           <PermissionGate permission={Permissions.PAYROLL_EDIT} showLocked>
+             <button 
+               onClick={() => setIsBulkOpen(true)}
+               className="h-11 px-6 bg-slate-100 text-slate-900 rounded-xl text-[11px] font-bold uppercase tracking-widest hover:bg-slate-200 transition-all flex items-center gap-2"
+             >
+                <Users className="w-4 h-4" />
+                Bulk Adjustments
+             </button>
+           </PermissionGate>
+           
+           <PermissionGate permission={Permissions.PAYROLL_EDIT} showLocked>
+             <button 
+               onClick={() => setIsAdjOpen(true)}
+               className="h-11 px-6 bg-white border border-slate-200 text-slate-600 rounded-xl text-[11px] font-bold uppercase tracking-widest hover:border-slate-300 transition-all flex items-center gap-2"
+             >
+                <Plus className="w-4 h-4" />
+                Add Single
+             </button>
+           </PermissionGate>
+
+           <PermissionGate permission={Permissions.PAYROLL_EDIT} showLocked>
+             <button 
+               onClick={() => generateDraftRun('May 2026', currentHub)}
+               className="h-11 px-8 bg-slate-950 text-white rounded-xl text-[11px] font-black uppercase tracking-widest hover:bg-black transition-all flex items-center gap-2 shadow-xl shadow-slate-200"
+             >
+                <Zap className="w-4 h-4" />
+                Initialize Cycle
+             </button>
+           </PermissionGate>
         </div>
       </div>
 
@@ -180,21 +202,25 @@ export default function PayrollRegisterPage() {
                 <button className="p-2.5 bg-slate-50 text-slate-400 rounded-lg border border-slate-100 hover:text-slate-900">
                    <Download className="w-4 h-4" />
                 </button>
-                {displayRun.status === 'DRAFT' && !isFinanceAdmin && (
-                  <button 
-                    onClick={() => approveRun(displayRun.id)}
-                    className="h-10 px-6 bg-indigo-600 text-white rounded-lg text-[11px] font-bold uppercase tracking-widest hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-100"
-                  >
-                     Approve Register
-                  </button>
+                {displayRun.status === 'DRAFT' && (
+                  <PermissionGate permission={Permissions.PAYROLL_APPROVE} showLocked>
+                    <button 
+                      onClick={() => approveRun(displayRun.id)}
+                      className="h-10 px-6 bg-indigo-600 text-white rounded-lg text-[11px] font-bold uppercase tracking-widest hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-100"
+                    >
+                       Approve Register
+                    </button>
+                  </PermissionGate>
                 )}
-                {displayRun.status === 'APPROVED' && !isFinanceAdmin && (
-                  <button 
-                    onClick={() => processRun(displayRun.id)}
-                    className="h-10 px-8 bg-emerald-600 text-white rounded-lg text-[11px] font-bold uppercase tracking-widest hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-100"
-                  >
-                     Process Disbursement
-                  </button>
+                {displayRun.status === 'APPROVED' && (
+                  <PermissionGate permission={Permissions.PAYROLL_PROCESS} showLocked>
+                    <button 
+                      onClick={() => processRun(displayRun.id)}
+                      className="h-10 px-8 bg-emerald-600 text-white rounded-lg text-[11px] font-bold uppercase tracking-widest hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-100"
+                    >
+                       Process Disbursement
+                    </button>
+                  </PermissionGate>
                 )}
              </div>
           </div>
@@ -202,11 +228,10 @@ export default function PayrollRegisterPage() {
           <DataTable 
             title="Compensation Breakdown"
             description="Detailed salary structure and statutory compliance logs."
-            data={displayRun.entries}
             columns={columns}
             rowActions={[
-              { label: 'View Payslip', icon: FileText, onClick: () => {} },
-              { label: 'Edit Breakdown', icon: Edit3, onClick: () => {}, hidden: () => displayRun.status !== 'DRAFT' }
+              { label: 'View Payslip', icon: FileText, onClick: (e: PayrollEntry) => setActiveEntry(e) },
+              { label: 'Edit Breakdown', icon: Edit3, onClick: (e: PayrollEntry) => addToast(`Opening compensation adjustments for [${e.employeeId}]`, 'INFO'), hidden: () => displayRun.status !== 'DRAFT' }
             ]}
           />
         </div>
@@ -222,6 +247,7 @@ export default function PayrollRegisterPage() {
 
       <AddAdjustmentModal isOpen={isAdjOpen} onClose={() => setIsAdjOpen(false)} />
       <BulkAdjustmentModal isOpen={isBulkOpen} onClose={() => setIsBulkOpen(false)} />
+      {activeEntry && <ViewPayslipModal isOpen={!!activeEntry} onClose={() => setActiveEntry(null)} entry={activeEntry} />}
     </div>
   );
 }

@@ -147,6 +147,14 @@ export const PayrollProvider: React.FC<{ children: ReactNode }> = ({ children })
     const next = [...adjustments, newAdj];
     setAdjustments(next);
     syncState(salaries, next, payrollRuns);
+
+    pushActivity({ 
+      type: 'GOVERNANCE', 
+      label: 'Compensation Adjustment Added', 
+      message: `Adjustment [${newAdj.label}] (${formatCurrency(newAdj.amount)}) added for employee ${newAdj.employeeId}.`, 
+      author: userRole, 
+      status: 'SUCCESS' 
+    } as any);
   };
 
   const addBulkAdjustments = (req: BulkAdjustmentRequest) => {
@@ -201,9 +209,20 @@ export const PayrollProvider: React.FC<{ children: ReactNode }> = ({ children })
   };
 
   const removeAdjustment = (id: string) => {
+    const adj = adjustments.find(a => a.id === id);
     const next = adjustments.filter(a => a.id !== id);
     setAdjustments(next);
     syncState(salaries, next, payrollRuns);
+
+    if (adj) {
+      pushActivity({ 
+        type: 'GOVERNANCE', 
+        label: 'Adjustment Revoked', 
+        message: `Revoked [${adj.label}] for ${adj.employeeId}.`, 
+        author: userRole, 
+        status: 'SUCCESS' 
+      } as any);
+    }
   };
 
   const calculatePAYE = (taxableIncome: number) => {
@@ -283,12 +302,31 @@ export const PayrollProvider: React.FC<{ children: ReactNode }> = ({ children })
     const next = [...payrollRuns, newRun];
     setPayrollRuns(next);
     syncState(salaries, adjustments, next);
+
+    pushActivity({ 
+      type: 'GOVERNANCE', 
+      label: 'Payroll Cycle Initialized', 
+      message: `Draft payroll generated for ${period} in ${hub}.`, 
+      author: userRole, 
+      status: 'SUCCESS' 
+    } as any);
   };
 
   const approveRun = (id: string) => {
+    const run = payrollRuns.find(r => r.id === id);
     const next = payrollRuns.map(r => r.id === id ? { ...r, status: 'APPROVED' as const, approvedAt: new Date().toISOString() } : r);
     setPayrollRuns(next);
     syncState(salaries, adjustments, next);
+
+    if (run) {
+      pushActivity({ 
+        type: 'GOVERNANCE', 
+        label: 'Payroll Approved', 
+        message: `Payroll run [${run.id}] for ${run.period} has been approved and moved to processing.`, 
+        author: userRole, 
+        status: 'SUCCESS' 
+      } as any);
+    }
   };
 
   const processRun = (id: string) => {
@@ -299,9 +337,20 @@ export const PayrollProvider: React.FC<{ children: ReactNode }> = ({ children })
   };
 
   const deleteRun = (id: string) => {
+    const run = payrollRuns.find(r => r.id === id);
     const next = payrollRuns.filter(r => r.id !== id);
     setPayrollRuns(next);
     syncState(salaries, adjustments, next);
+
+    if (run) {
+      pushActivity({ 
+        type: 'GOVERNANCE', 
+        label: 'Payroll Cycle Deleted', 
+        message: `Draft run [${run.id}] for ${run.period} removed.`, 
+        author: userRole, 
+        status: 'SUCCESS' 
+      } as any);
+    }
   };
 
   return (

@@ -42,6 +42,9 @@ import { ForensicTimelineDrawer } from "@/components/drawers/ForensicTimelineDra
 import { useWorkforce, Employee } from "@/context/WorkforceContext";
 import { useOrganization } from "@/context/OrganizationContext";
 
+import { PermissionGate } from "@/components/common/PermissionGate";
+import { Permissions } from "@/modules/auth/domain/permission.model";
+
 export default function EmployeesPage() {
   const { employees, metrics } = useWorkforce();
   const { currentHub } = useOrganization();
@@ -69,26 +72,31 @@ export default function EmployeesPage() {
     { 
       label: 'Edit Identity', 
       icon: Edit3, 
+      permission: Permissions.WORKFORCE_EDIT,
       onClick: (emp: Employee) => setActiveGovernance({ type: 'EDIT', employee: emp }) 
     },
     { 
       label: 'Modify Role', 
       icon: UserCog, 
+      permission: Permissions.WORKFORCE_EDIT,
       onClick: (emp: Employee) => setActiveGovernance({ type: 'ROLE', employee: emp }) 
     },
     { 
       label: 'Audit Trail', 
       icon: History, 
+      permission: Permissions.WORKFORCE_VIEW,
       onClick: (emp: Employee) => setActiveGovernance({ type: 'AUDIT', employee: emp }) 
     },
     { 
       label: 'Promote Member', 
       icon: Zap, 
+      permission: Permissions.WORKFORCE_PROMOTE,
       onClick: (emp: Employee) => setActiveGovernance({ type: 'PROMOTE', employee: emp }) 
     },
     { 
       label: 'Suspend Access', 
       icon: UserMinus, 
+      permission: Permissions.WORKFORCE_DELETE,
       onClick: (emp: Employee) => setActiveGovernance({ type: 'SUSPEND', employee: emp }), 
       variant: 'danger' as const 
     },
@@ -177,13 +185,16 @@ export default function EmployeesPage() {
               <Layout className="w-[18px] h-[18px] stroke-[1.5px]" />
               {viewMode === 'REGISTRY' ? 'Org Chart' : 'Registry View'}
            </button>
-           <button 
-             onClick={() => setIsOnboardingOpen(true)}
-             className="bg-slate-950 hover:bg-slate-900 text-white flex items-center gap-2 px-6 h-[44px] rounded-xl text-[11px] font-bold uppercase tracking-wider transition-all shadow-md"
-           >
-              <UserPlus className="w-[18px] h-[18px] stroke-[1.5px]" />
-              Onboard Member
-           </button>
+
+           <PermissionGate permission={Permissions.WORKFORCE_CREATE} showLocked>
+             <button 
+               onClick={() => setIsOnboardingOpen(true)}
+               className="bg-slate-950 hover:bg-slate-900 text-white flex items-center gap-2 px-6 h-[44px] rounded-xl text-[11px] font-bold uppercase tracking-wider transition-all shadow-md"
+             >
+                <UserPlus className="w-[18px] h-[18px] stroke-[1.5px]" />
+                Onboard Member
+             </button>
+           </PermissionGate>
         </div>
       </div>
 

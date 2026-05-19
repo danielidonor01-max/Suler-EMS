@@ -2,6 +2,8 @@
 
 import React, { createContext, useContext, useState, useCallback, ReactNode, useMemo } from 'react';
 import { EmployeeStatus } from '@/config/enums';
+import { useActivity } from './ActivityContext';
+import { useAccess } from './AccessContext';
 
 export interface Employee {
   id: string;
@@ -146,6 +148,9 @@ export const WorkforceProvider: React.FC<{ children: ReactNode }> = ({ children 
   const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  
+  const { pushActivity } = useActivity();
+  const { userRole } = useAccess();
 
   const addAuditLog = useCallback((log: Omit<AuditLog, 'id' | 'timestamp'>) => {
     const newLog: AuditLog = {
@@ -154,7 +159,17 @@ export const WorkforceProvider: React.FC<{ children: ReactNode }> = ({ children 
       timestamp: new Date().toISOString()
     };
     setAuditLogs(prev => [newLog, ...prev]);
-  }, []);
+
+    // Push to global activity registry
+    pushActivity({
+      type: 'GOVERNANCE',
+      label: log.action,
+      message: log.details || `${log.action} performed on ${log.target}`,
+      author: userRole,
+      status: log.status,
+      metadata: { target: log.target }
+    } as any);
+  }, [pushActivity, userRole]);
 
   const createEmployee = useCallback((data: Omit<Employee, 'id'>) => {
     if (employees.some(e => e.email.toLowerCase() === data.email.toLowerCase())) {
@@ -164,40 +179,40 @@ export const WorkforceProvider: React.FC<{ children: ReactNode }> = ({ children 
     const newEmployee = { ...data, id: newId };
     setEmployees(prev => [...prev, newEmployee]);
     addAuditLog({
-      actor: 'Super Admin',
+      actor: userRole,
       action: 'MEMBER_ONBOARDED',
       target: data.name,
       status: 'SUCCESS',
       details: `Provisioned as ${data.designation} in ${data.hub}.`
     });
     return { success: true };
-  }, [employees, addAuditLog]);
+  }, [employees, addAuditLog, userRole]);
 
   const updateEmployee = useCallback((id: string, updates: Partial<Employee>) => {
     const target = employees.find(e => e.id === id);
     if (!target) return;
     setEmployees(prev => prev.map(e => e.id === id ? { ...e, ...updates } : e));
     addAuditLog({
-      actor: 'Super Admin',
+      actor: userRole,
       action: 'IDENTITY_MUTATED',
       target: target.name,
       status: 'SUCCESS',
       details: Object.keys(updates).join(', ') + ' synchronized.'
     });
-  }, [employees, addAuditLog]);
+  }, [employees, addAuditLog, userRole]);
 
   const promoteEmployee = useCallback((id: string, newDesignation: string, newRole: string) => {
     const target = employees.find(e => e.id === id);
     if (!target) return;
     setEmployees(prev => prev.map(e => e.id === id ? { ...e, designation: newDesignation, role: newRole } : e));
     addAuditLog({
-      actor: 'Super Admin',
+      actor: userRole,
       action: 'RANK_PROMOTION',
       target: target.name,
       status: 'SUCCESS',
       details: `Promoted from ${target.designation} to ${newDesignation} (${newRole}).`
     });
-  }, [employees, addAuditLog]);
+  }, [employees, addAuditLog, userRole]);
 
   const suspendEmployee = useCallback((id: string) => {
     updateEmployee(id, { status: 'INACTIVE' });
@@ -208,15 +223,39 @@ export const WorkforceProvider: React.FC<{ children: ReactNode }> = ({ children 
   }, [updateEmployee]);
 
   const transferEmployee = useCallback((id: string, hub: string) => {
+    const target = employees.find(e => e.id === id);
+    if (!target) return;
+    
+    const oldHub = target.hub;
     updateEmployee(id, { hub });
-  }, [updateEmployee]);
+    
+    addAuditLog({
+      actor: userRole,
+      action: 'OPERATIONAL_TRANSFER',
+      target: target.name,
+      status: 'SUCCESS',
+      details: `Reassigned from ${oldHub} to ${hub}.`
+    });
+  }, [employees, updateEmployee, addAuditLog, userRole]);
 
-  const metrics = useMemo(() => ({
-    totalEmployees: employees.length,
-    activeCount: employees.filter(e => e.status === 'ACTIVE').length,
-    onLeaveCount: employees.filter(e => e.status === 'ON_LEAVE').length,
-    newHiresThisMonth: 12,
-  }), [employees]);
+  const metrics = useMemo(() => {
+    const now = new Date();
+    const currentMonth = now.getMonth();
+    const currentYear = now.getFullYear();
+
+    const newHires = employees.filter(e => {
+      if (!e.startDate) return false;
+      const start = new Date(e.startDate);
+      return start.getMonth() === currentMonth && start.getFullYear() === currentYear;
+    }).length;
+
+    return {
+      totalEmployees: employees.length,
+      activeCount: employees.filter(e => e.status === 'ACTIVE').length,
+      onLeaveCount: employees.filter(e => e.status === 'ON_LEAVE').length,
+      newHiresThisMonth: newHires,
+    };
+  }, [employees]);
 
   const value = {
     employees,

@@ -46,6 +46,7 @@ interface FinanceContextType {
   // Mutations
   addExpenditure: (exp: Omit<Expenditure, 'id' | 'status' | 'createdAt' | '_v'>) => void;
   approveExpenditure: (id: string) => void;
+  rejectExpenditure: (id: string, reason?: string) => void;
   payExpenditure: (id: string) => void;
   allocateProjectFunds: (proj: Omit<ProjectFunding, 'id' | 'status'>) => void;
   updateBudget: (id: string, spent: number) => void;
@@ -59,7 +60,7 @@ const SEEDED_BUDGETS: Budget[] = [
 ];
 
 const SEEDED_EXPENDITURES: Expenditure[] = [
-  { id: 'EXP-001', description: 'Office Equipment Procurement', amount: 4500000, category: 'CAPEX', hub: 'Lagos HQ', department: 'Operations', requestedBy: 'EMP-001', status: 'PAID', createdAt: new Date().toISOString(), _v: 1 },
+  { id: 'EXP-001', description: 'Infrastructure Procurement', amount: 4500000, category: 'CAPEX', hub: 'Lagos HQ', department: 'Operations', requestedBy: 'EMP-001', status: 'PAID', createdAt: new Date().toISOString(), _v: 1 },
   { id: 'EXP-002', description: 'Regional Staff Travel', amount: 250000, category: 'OPEX', hub: 'Abuja Hub', department: 'Human Resources', requestedBy: 'EMP-003', status: 'PENDING', createdAt: new Date().toISOString(), _v: 1 }
 ];
 
@@ -114,6 +115,21 @@ export const FinanceProvider: React.FC<{ children: ReactNode }> = ({ children })
     } as any);
   };
 
+  const rejectExpenditure = (id: string, reason?: string) => {
+    const nextExp = expenditures.map(e => e.id === id ? { ...e, status: 'REJECTED' as const, _v: e._v + 1 } : e);
+    setExpenditures(nextExp);
+    syncState(budgets, nextExp, projects);
+
+    const exp = expenditures.find(e => e.id === id);
+    pushActivity({
+      type: 'FINANCE',
+      label: 'Expenditure Rejected',
+      message: `Request for [${exp?.description}] denied. ${reason ? `Reason: ${reason}` : ''}`,
+      author: userRole,
+      status: 'FAILURE'
+    } as any);
+  };
+
   const approveExpenditure = (id: string) => {
     const nextExp = expenditures.map(e => e.id === id ? { ...e, status: 'APPROVED' as const, _v: e._v + 1 } : e);
     setExpenditures(nextExp);
@@ -133,17 +149,34 @@ export const FinanceProvider: React.FC<{ children: ReactNode }> = ({ children })
     const exp = expenditures.find(e => e.id === id);
     if (!exp) return;
 
+    if (exp.status !== 'APPROVED') {
+       console.error("Critical: Attempted disbursement of unauthorized expenditure.");
+       return;
+    }
+
     const nextExp = expenditures.map(e => e.id === id ? { ...e, status: 'PAID' as const, _v: e._v + 1 } : e);
-    setExpenditures(nextExp);
     
     // Auto-update budget spent
     const budget = budgets.find(b => b.hub === exp.hub && b.department === exp.department);
     let nextBudgets = budgets;
+    
     if (budget) {
+      const remaining = budget.allocated - budget.spent;
+      if (exp.amount > remaining) {
+         pushActivity({
+            type: 'FINANCE',
+            label: 'Budget Overrun Detected',
+            message: `Payment for [${exp.description}] exceeds the remaining allocation for ${budget.name} by ${formatCurrency(exp.amount - remaining)}.`,
+            author: 'SYSTEM_SENTINEL',
+            status: 'WARNING'
+         } as any);
+      }
+      
       nextBudgets = budgets.map(b => b.id === budget.id ? { ...b, spent: b.spent + exp.amount } : b);
       setBudgets(nextBudgets);
     }
 
+    setExpenditures(nextExp);
     syncState(nextBudgets, nextExp, projects);
 
     pushActivity({
@@ -175,9 +208,20 @@ export const FinanceProvider: React.FC<{ children: ReactNode }> = ({ children })
   };
 
   const updateBudget = (id: string, spent: number) => {
+    const budget = budgets.find(b => b.id === id);
     const nextBudgets = budgets.map(b => b.id === id ? { ...b, spent } : b);
     setBudgets(nextBudgets);
     syncState(nextBudgets, expenditures, projects);
+
+    if (budget) {
+      pushActivity({
+        type: 'FINANCE',
+        label: 'Budget Modification',
+        message: `Allocation for [${budget.name}] updated to ${formatCurrency(spent)} utilization.`,
+        author: userRole,
+        status: 'SUCCESS'
+      } as any);
+    }
   };
 
   return (

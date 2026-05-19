@@ -3,110 +3,251 @@ import bcrypt from 'bcryptjs';
 
 const prisma = new PrismaClient();
 
-async function main() {
-  console.log('--- Starting Nigerian Localization Seed ---');
+// ─── Permission Codes ────────────────────────────────────────────────────────
+const ALL_PERMISSIONS = [
+  { code: 'workforce:view',   name: 'View Workforce' },
+  { code: 'workforce:create', name: 'Create Workforce Member' },
+  { code: 'workforce:edit',   name: 'Edit Workforce Member' },
+  { code: 'workforce:delete', name: 'Suspend Workforce Member' },
+  { code: 'workforce:promote',name: 'Promote Workforce Member' },
+  { code: 'hub:manage',       name: 'Manage Operational Hubs' },
+  { code: 'dept:manage',      name: 'Manage Departments' },
+  { code: 'org:edit',         name: 'Edit Org Chart' },
+  { code: 'leave:view',       name: 'View Leave Requests' },
+  { code: 'leave:submit',     name: 'Submit Leave Requests' },
+  { code: 'leave:approve',    name: 'Approve Leave Requests' },
+  { code: 'attendance:view',  name: 'View Attendance' },
+  { code: 'attendance:manage',name: 'Manage Attendance' },
+  { code: 'payroll:view',     name: 'View Payroll' },
+  { code: 'payroll:edit',     name: 'Edit Payroll' },
+  { code: 'payroll:approve',  name: 'Approve Payroll' },
+  { code: 'payroll:process',  name: 'Process Payroll Run' },
+  { code: 'finance:view',     name: 'View Finance' },
+  { code: 'finance:allocate', name: 'Allocate Finance Budget' },
+  { code: 'finance:approve',  name: 'Approve Finance Transactions' },
+  { code: 'finance:disburse', name: 'Disburse Funds' },
+  { code: 'audit:view',       name: 'View Audit Logs' },
+  { code: 'role:manage',      name: 'Manage Roles' },
+  { code: 'command:view',     name: 'View Command Center' },
+  { code: 'security:manage',  name: 'Manage Security' },
+  { code: 'data:export',      name: 'Export Data' },
+  { code: 'data:manage',      name: 'Manage Data' },
+  { code: 'data:backup',      name: 'Backup Data' },
+  { code: 'data:restore',     name: 'Restore Data' },
+  { code: 'settings:manage',  name: 'Manage Settings' },
+  { code: 'reports:generate', name: 'Generate Reports' },
+  { code: 'analytics:view',   name: 'View Analytics' },
+  { code: 'strategy:simulate',name: 'Run Strategy Simulations' },
+];
 
-  // 1. Departments & Branches
+// ─── Role → Permission Mapping ────────────────────────────────────────────────
+const ROLE_PERMISSIONS: Record<string, string[]> = {
+  SUPER_ADMIN: ALL_PERMISSIONS.map(p => p.code), // All permissions
+  HR_ADMIN: [
+    'workforce:view', 'workforce:create', 'workforce:edit',
+    'leave:view', 'leave:approve',
+    'attendance:view',
+    'payroll:view',
+    'audit:view',
+    'analytics:view',
+  ],
+  FINANCE_MANAGER: [
+    'payroll:view', 'payroll:approve', 'payroll:process',
+    'finance:view', 'finance:allocate', 'finance:approve', 'finance:disburse',
+    'audit:view',
+    'analytics:view',
+    'reports:generate',
+    'data:export',
+  ],
+  MANAGER: [
+    'workforce:view',
+    'leave:view', 'leave:submit',
+    'attendance:view',
+    'analytics:view',
+    'reports:generate',
+  ],
+  EMPLOYEE: [
+    'leave:view', 'leave:submit',
+    'attendance:view',
+    'workforce:view',
+  ],
+};
+
+// ─── UAT Seed Accounts ────────────────────────────────────────────────────────
+const SEED_USERS = [
+  {
+    name: 'Super Admin',
+    email: 'admin@suler.com',
+    password: 'Admin123!',
+    role: 'SUPER_ADMIN',
+    staffId: 'SUL-ADMIN-001',
+    jobTitle: 'Chief Executive Administrator',
+    branch: 'Lagos',
+  },
+  {
+    name: 'HR Administrator',
+    email: 'hr@suler.com',
+    password: 'Admin123!',
+    role: 'HR_ADMIN',
+    staffId: 'SUL-HR-001',
+    jobTitle: 'Head of Human Resources',
+    branch: 'Lagos',
+  },
+  {
+    name: 'Finance Manager',
+    email: 'finance@suler.com',
+    password: 'Admin123!',
+    role: 'FINANCE_MANAGER',
+    staffId: 'SUL-FIN-001',
+    jobTitle: 'Chief Financial Officer',
+    branch: 'Abuja',
+  },
+  {
+    name: 'Operations Manager',
+    email: 'manager@suler.com',
+    password: 'Admin123!',
+    role: 'MANAGER',
+    staffId: 'SUL-MGR-001',
+    jobTitle: 'Operations Manager',
+    branch: 'Port Harcourt',
+  },
+  {
+    name: 'Staff Employee',
+    email: 'employee@suler.com',
+    password: 'Admin123!',
+    role: 'EMPLOYEE',
+    staffId: 'SUL-EMP-001',
+    jobTitle: 'Staff Practitioner',
+    branch: 'Lagos',
+  },
+];
+
+async function main() {
+  console.log('\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+  console.log('  Suler EMS — Identity Lifecycle Seed v2.0');
+  console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
+
+  // ── Step 1: Departments ──────────────────────────────────────────────────────
   const lagosHq = await prisma.department.upsert({
     where: { code: 'LAG-HQ' },
-    update: {},
-    create: { name: 'Lagos Headquarters', code: 'LAG-HQ' }
+    update: { name: 'Lagos Headquarters' },
+    create: { name: 'Lagos Headquarters', code: 'LAG-HQ' },
   });
-
-  const abujaBranch = await prisma.department.upsert({
+  const abujaOps = await prisma.department.upsert({
     where: { code: 'ABJ-OPS' },
-    update: {},
-    create: { name: 'Abuja Operations', code: 'ABJ-OPS' }
+    update: { name: 'Abuja Operations' },
+    create: { name: 'Abuja Operations', code: 'ABJ-OPS' },
   });
-
-  const phPort = await prisma.department.upsert({
+  const phcLog = await prisma.department.upsert({
     where: { code: 'PHC-LOG' },
-    update: {},
-    create: { name: 'Port Harcourt Logistics', code: 'PHC-LOG' }
+    update: { name: 'Port Harcourt Logistics' },
+    create: { name: 'Port Harcourt Logistics', code: 'PHC-LOG' },
   });
+  const deptMap: Record<string, typeof lagosHq> = {
+    Lagos: lagosHq,
+    Abuja: abujaOps,
+    'Port Harcourt': phcLog,
+  };
+  console.log('✓ Departments seeded: Lagos HQ, Abuja Ops, Port Harcourt Logistics');
 
-  console.log('Departments and Branches localized');
+  // ── Step 2: Permissions ──────────────────────────────────────────────────────
+  const permMap: Record<string, { id: string }> = {};
+  for (const perm of ALL_PERMISSIONS) {
+    const p = await prisma.permission.upsert({
+      where: { code: perm.code },
+      update: { name: perm.name },
+      create: { code: perm.code, name: perm.name },
+    });
+    permMap[perm.code] = p;
+  }
+  console.log(`✓ Permissions seeded: ${ALL_PERMISSIONS.length} permissions`);
 
-  // 2. Roles & Permissions
-  const empView = await prisma.permission.upsert({
-    where: { code: 'employee:view' },
-    update: {},
-    create: { code: 'employee:view', name: 'View Staff Records' }
-  });
+  // ── Step 3: Roles ────────────────────────────────────────────────────────────
+  const roleMap: Record<string, { id: string }> = {};
+  for (const [roleName, permCodes] of Object.entries(ROLE_PERMISSIONS)) {
+    const role = await prisma.role.upsert({
+      where: { name: roleName },
+      update: {
+        permissions: { set: permCodes.map(code => ({ id: permMap[code].id })) },
+      },
+      create: {
+        name: roleName,
+        description: `${roleName} — system-managed role`,
+        permissions: { connect: permCodes.map(code => ({ id: permMap[code].id })) },
+      },
+    });
+    roleMap[roleName] = role;
+  }
+  console.log(`✓ Roles seeded: ${Object.keys(ROLE_PERMISSIONS).join(', ')}`);
 
-  const adminRole = await prisma.role.upsert({
-    where: { name: 'SUPER_ADMIN' },
-    update: {},
-    create: { 
-      name: 'SUPER_ADMIN', 
-      permissions: { connect: [{ id: empView.id }] } 
-    }
-  });
+  // ── Step 4: Employees + Users ─────────────────────────────────────────────
+  for (const account of SEED_USERS) {
+    const dept = deptMap[account.branch] || lagosHq;
+    const role = roleMap[account.role];
+    const passwordHash = await bcrypt.hash(account.password, 12);
+    const [firstName, ...rest] = account.name.split(' ');
+    const lastName = rest.join(' ') || firstName;
 
-  console.log('Roles & Permissions localized');
+    // Create Employee record
+    const employee = await prisma.employee.upsert({
+      where: { email: account.email },
+      update: {
+        jobTitle: account.jobTitle,
+        branch: account.branch,
+        departmentId: dept.id,
+        status: 'ACTIVE',
+      },
+      create: {
+        staffId: account.staffId,
+        firstName,
+        lastName,
+        email: account.email,
+        jobTitle: account.jobTitle,
+        branch: account.branch,
+        departmentId: dept.id,
+        status: 'ACTIVE',
+      },
+    });
 
-  // 3. Employees & Users (Nigerian Context)
-  const adminEmp = await prisma.employee.upsert({
-    where: { email: 'chinedu.okoro@suler.ems' },
-    update: {},
-    create: {
-      staffId: 'SUL-001',
-      firstName: 'Chinedu',
-      lastName: 'Okoro',
-      email: 'chinedu.okoro@suler.ems',
-      jobTitle: 'Chief Technology Officer',
-      grade: 'M3',
-      branch: 'Lagos',
-      departmentId: lagosHq.id,
-      status: 'ACTIVE',
-      nin: '12345678901',
-      tin: 'TIN-00192837',
-      pensionPFA: 'Stanbic IBTC Pension',
-      pensionNumber: 'PEN-123456789'
-    }
-  });
+    // Create User auth record linked to Employee
+    await prisma.user.upsert({
+      where: { email: account.email },
+      update: {
+        passwordHash,
+        roleId: role.id,
+        employeeId: employee.id,
+        isActive: true,
+      },
+      create: {
+        email: account.email,
+        name: account.name,
+        passwordHash,
+        roleId: role.id,
+        employeeId: employee.id,
+        isActive: true,
+      },
+    });
 
-  const passwordHash = await bcrypt.hash('password123', 12);
+    // Audit: provision event
+    await prisma.securityEvent.create({
+      data: {
+        type: 'LOGIN_SUCCESS',
+        description: `[SEED] Account provisioned for ${account.name} with role ${account.role}`,
+        metadata: { email: account.email, role: account.role, seedVersion: '2.0' },
+      },
+    });
 
-  await prisma.user.upsert({
-    where: { email: 'chinedu.okoro@suler.ems' },
-    update: {
-        passwordHash: passwordHash,
-        roleId: adminRole.id,
-        employeeId: adminEmp.id
-    },
-    create: {
-      email: 'chinedu.okoro@suler.ems',
-      name: 'Chinedu Okoro',
-      passwordHash: passwordHash,
-      roleId: adminRole.id,
-      employeeId: adminEmp.id
-    }
-  });
+    console.log(`  ✓ ${account.role.padEnd(16)} ${account.email}  /  ${account.password}`);
+  }
 
-  // 4. Global Super Admin (Blueprint Identity)
-  await prisma.user.upsert({
-    where: { email: 'superadmin@sulerglobal.com' },
-    update: {
-      passwordHash: await bcrypt.hash('Password123!', 12),
-      roleId: adminRole.id,
-    },
-    create: {
-      email: 'superadmin@sulerglobal.com',
-      name: 'Global Super Admin',
-      passwordHash: await bcrypt.hash('Password123!', 12),
-      roleId: adminRole.id,
-    }
-  });
-
-  console.log('Global Super Admin seeded: superadmin@sulerglobal.com (Password123!)');
-  console.log('Nigerian staff records seeded: chinedu.okoro@suler.ems (password123)');
-  console.log('--- Localization Seed Complete ---');
+  console.log('\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+  console.log('  Identity Lifecycle Seed Complete ✓');
+  console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
 }
 
 main()
-  .catch((e) => {
-    console.error(e);
+  .catch(e => {
+    console.error('[SEED ERROR]', e);
     process.exit(1);
   })
   .finally(async () => {

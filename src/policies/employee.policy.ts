@@ -12,7 +12,7 @@ export const EmployeePolicy = {
    */
   canView(context: PolicyContext<EmployeeModel>): PolicyResult {
     // 1. Check base permission
-    const baseCheck = BaseEvaluator.hasPermission(context, Permissions.EMPLOYEE_VIEW);
+    const baseCheck = BaseEvaluator.hasPermission(context, Permissions.WORKFORCE_VIEW);
     if (!baseCheck.allowed) return baseCheck;
 
     // 2. Resource-level logic (e.g., scoping)
@@ -44,7 +44,7 @@ export const EmployeePolicy = {
    * Evaluates if a user can update a specific employee.
    */
   canUpdate(context: PolicyContext<EmployeeModel>): PolicyResult {
-    const baseCheck = BaseEvaluator.hasPermission(context, Permissions.EMPLOYEE_UPDATE);
+    const baseCheck = BaseEvaluator.hasPermission(context, Permissions.WORKFORCE_EDIT);
     if (!baseCheck.allowed) return baseCheck;
 
     if (context.user.role === 'SUPER_ADMIN' || context.user.role === 'HR') {

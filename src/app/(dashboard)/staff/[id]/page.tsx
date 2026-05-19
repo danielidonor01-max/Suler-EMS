@@ -6,7 +6,8 @@ import {
   User, Briefcase, Banknote, Calendar, Activity, Star,
   CheckSquare, FileText, History, MapPin, Mail, Phone,
   Building2, Shield, ChevronLeft, TrendingUp, Clock,
-  Heart, AlertCircle, CreditCard, Users, Award
+  Heart, AlertCircle, CreditCard, Users, Award, MessageSquare
+} from 'lucide-react';
 } from 'lucide-react';
 import { useWorkforce } from '@/context/WorkforceContext';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
@@ -149,6 +150,19 @@ export default function EmployeeProfilePage() {
                 <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">{s.label}</div>
               </div>
             ))}
+          </div>
+
+          {/* Actions */}
+          <div className="flex flex-col gap-2 shrink-0">
+             <button 
+               onClick={() => router.push(`/messages?id=${employee.id}&name=${encodeURIComponent(employee.name)}`)}
+               className="h-11 px-6 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-[11px] font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-2"
+             >
+                <MessageSquare className="w-3.5 h-3.5" /> Message Employee
+             </button>
+             <button className="h-11 px-6 bg-white border border-slate-200 hover:bg-slate-50 text-slate-600 rounded-xl text-[11px] font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-2">
+                <Plus className="w-3.5 h-3.5" /> Assign Task
+             </button>
           </div>
         </div>
       </div>

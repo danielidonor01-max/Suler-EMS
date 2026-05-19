@@ -12,7 +12,7 @@ export interface RouteRule {
 export const RouteRules: RouteRule[] = [
   {
     path: '/employees',
-    requiredPermission: Permissions.EMPLOYEE_VIEW,
+    requiredPermission: Permissions.WORKFORCE_VIEW,
   },
   {
     path: '/attendance',

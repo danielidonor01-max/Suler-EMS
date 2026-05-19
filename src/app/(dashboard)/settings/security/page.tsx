@@ -6,36 +6,54 @@ import {
   Plus, Trash2, CheckCircle2, XCircle, AlertTriangle, LogOut, Key
 } from 'lucide-react';
 import { RouteGuard } from '@/components/common/RouteGuard';
-
-const MOCK_SESSIONS = [
-  { id: 'S-001', device: 'Chrome on Windows', location: 'Lagos, Nigeria', ip: '197.210.66.12', lastActive: '2026-05-11T14:00:00Z', current: true },
-  { id: 'S-002', device: 'Safari on iPhone 15', location: 'Abuja, Nigeria', ip: '197.210.78.44', lastActive: '2026-05-11T10:22:00Z', current: false },
-  { id: 'S-003', device: 'Firefox on macOS', location: 'Port Harcourt, Nigeria', ip: '196.220.33.11', lastActive: '2026-05-10T18:45:00Z', current: false },
-];
+import { useSettings } from '@/context/SettingsContext';
 
 const MOCK_AUDIT = [
   { action: 'Successful Login', user: 'Chinedu Okoro', ip: '197.210.66.12', time: '2026-05-11T14:00:00Z', status: 'SUCCESS' },
   { action: 'Failed Login Attempt', user: 'unknown@test.com', ip: '45.22.101.88', time: '2026-05-11T13:45:00Z', status: 'FAILED' },
-  { action: '2FA Verified', user: 'Sarah Williams', ip: '197.210.78.44', time: '2026-05-11T10:22:00Z', status: 'SUCCESS' },
-  { action: 'Password Changed', user: 'David Okafor', ip: '196.220.33.11', time: '2026-05-10T18:45:00Z', status: 'SUCCESS' },
 ];
 
 export default function SecurityPage() {
-  const [twoFAEnabled, setTwoFAEnabled] = useState(true);
-  const [ipAllowlist, setIpAllowlist] = useState(['197.210.0.0/16', '196.220.0.0/16']);
+  const { settings, updateSettings, pushGovernanceActivity } = useSettings();
   const [newIp, setNewIp] = useState('');
-  const [sessions, setSessions] = useState(MOCK_SESSIONS);
-  const [passwordPolicy, setPasswordPolicy] = useState({
-    minLength: 12,
-    requireUppercase: true,
-    requireNumbers: true,
-    requireSymbols: true,
-    expiryDays: 90,
-  });
 
-  const revokeSession = (id: string) => setSessions(prev => prev.filter(s => s.id !== id));
+  const revokeSession = (id: string) => {
+    updateSettings(prev => ({
+      ...prev,
+      security: {
+        ...prev.security,
+        sessions: prev.security.sessions.filter(s => s.id !== id)
+      }
+    }));
+    pushGovernanceActivity('Security Session Revoked', `Administrator manually terminated session [${id}].`);
+  };
+
   const addIp = () => {
-    if (newIp.trim()) { setIpAllowlist(prev => [...prev, newIp.trim()]); setNewIp(''); }
+    if (newIp.trim()) {
+      updateSettings(prev => ({
+        ...prev,
+        security: {
+          ...prev.security,
+          ipAllowlist: [...prev.security.ipAllowlist, newIp.trim()]
+        }
+      }));
+      pushGovernanceActivity('Network Policy Updated', `Added [${newIp}] to the enterprise IP allowlist.`);
+      setNewIp('');
+    }
+  };
+
+  const updatePasswordPolicy = (key: string, value: any) => {
+    updateSettings(prev => ({
+      ...prev,
+      security: {
+        ...prev.security,
+        passwordPolicy: {
+          ...prev.security.passwordPolicy,
+          [key]: value
+        }
+      }
+    }));
+    pushGovernanceActivity('Authentication Policy Mutated', `Global password standards updated: [${key}] set to [${value}].`);
   };
 
   const ToggleSwitch = ({ checked, onChange }: { checked: boolean; onChange: () => void }) => (
@@ -73,7 +91,7 @@ export default function SecurityPage() {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {[
           { label: 'Security Score', value: '94/100', color: 'text-emerald-600', bg: 'bg-emerald-50', border: 'border-emerald-100', icon: Shield },
-          { label: 'Active Sessions', value: `${sessions.length}`, color: 'text-indigo-600', bg: 'bg-indigo-50', border: 'border-indigo-100', icon: Monitor },
+          { label: 'Active Sessions', value: `${settings.security.sessions.length}`, color: 'text-indigo-600', bg: 'bg-indigo-50', border: 'border-indigo-100', icon: Monitor },
           { label: 'Failed Logins (24h)', value: '1', color: 'text-amber-600', bg: 'bg-amber-50', border: 'border-amber-100', icon: AlertTriangle },
           { label: '2FA Coverage', value: '87%', color: 'text-slate-900', bg: 'bg-slate-50', border: 'border-slate-100', icon: Smartphone },
         ].map(card => (
@@ -105,9 +123,9 @@ export default function SecurityPage() {
               <p className="text-[11px] text-slate-400">Characters required</p>
             </div>
             <div className="flex items-center gap-2">
-              <button onClick={() => setPasswordPolicy(p => ({ ...p, minLength: Math.max(8, p.minLength - 1) }))} className="w-8 h-8 rounded-lg bg-white border border-slate-200 text-slate-600 font-bold text-lg flex items-center justify-center hover:bg-slate-100">−</button>
-              <span className="text-lg font-black text-slate-900 w-8 text-center">{passwordPolicy.minLength}</span>
-              <button onClick={() => setPasswordPolicy(p => ({ ...p, minLength: Math.min(32, p.minLength + 1) }))} className="w-8 h-8 rounded-lg bg-white border border-slate-200 text-slate-600 font-bold text-lg flex items-center justify-center hover:bg-slate-100">+</button>
+              <button onClick={() => updatePasswordPolicy('minLength', Math.max(8, settings.security.passwordPolicy.minLength - 1))} className="w-8 h-8 rounded-lg bg-white border border-slate-200 text-slate-600 font-bold text-lg flex items-center justify-center hover:bg-slate-100">−</button>
+              <span className="text-lg font-black text-slate-900 w-8 text-center">{settings.security.passwordPolicy.minLength}</span>
+              <button onClick={() => updatePasswordPolicy('minLength', Math.min(32, settings.security.passwordPolicy.minLength + 1))} className="w-8 h-8 rounded-lg bg-white border border-slate-200 text-slate-600 font-bold text-lg flex items-center justify-center hover:bg-slate-100">+</button>
             </div>
           </div>
           {[
@@ -120,7 +138,7 @@ export default function SecurityPage() {
                 <p className="text-[13px] font-bold text-slate-900">{rule.label}</p>
                 <p className="text-[11px] text-slate-400">{rule.desc}</p>
               </div>
-              <ToggleSwitch checked={!!passwordPolicy[rule.key as keyof typeof passwordPolicy]} onChange={() => setPasswordPolicy(p => ({ ...p, [rule.key]: !p[rule.key as keyof typeof p] }))} />
+              <ToggleSwitch checked={!!settings.security.passwordPolicy[rule.key as keyof typeof settings.security.passwordPolicy]} onChange={() => updatePasswordPolicy(rule.key, !settings.security.passwordPolicy[rule.key as keyof typeof settings.security.passwordPolicy])} />
             </div>
           ))}
           <div className="flex items-center justify-between p-4 bg-slate-50 rounded-xl border border-slate-100">
@@ -128,7 +146,7 @@ export default function SecurityPage() {
               <p className="text-[13px] font-bold text-slate-900">Password Expiry</p>
               <p className="text-[11px] text-slate-400">Days until mandatory reset</p>
             </div>
-            <select value={passwordPolicy.expiryDays} onChange={(e) => setPasswordPolicy(p => ({ ...p, expiryDays: parseInt(e.target.value) }))} className="bg-white border border-slate-200 rounded-xl px-3 h-10 text-[13px] font-bold text-slate-900 outline-none">
+            <select value={settings.security.passwordPolicy.expiryDays} onChange={(e) => updatePasswordPolicy('expiryDays', parseInt(e.target.value))} className="bg-white border border-slate-200 rounded-xl px-3 h-10 text-[13px] font-bold text-slate-900 outline-none">
               <option value={30}>30 days</option>
               <option value={60}>60 days</option>
               <option value={90}>90 days</option>
@@ -152,9 +170,12 @@ export default function SecurityPage() {
                 <p className="text-[13px] font-bold text-slate-900">Enforce 2FA Organization-Wide</p>
                 <p className="text-[11px] text-slate-400 mt-0.5">All users must complete MFA on login</p>
               </div>
-              <ToggleSwitch checked={twoFAEnabled} onChange={() => setTwoFAEnabled(!twoFAEnabled)} />
+              <ToggleSwitch checked={settings.security.enforceMFA} onChange={() => {
+                updateSettings(prev => ({ ...prev, security: { ...prev.security, enforceMFA: !prev.security.enforceMFA } }));
+                pushGovernanceActivity('MFA Policy Updated', `Enterprise-wide Multi-Factor Authentication was ${!settings.security.enforceMFA ? 'enforced' : 'relaxed'}.`);
+              }} />
             </div>
-            {twoFAEnabled && (
+            {settings.security.enforceMFA && (
               <div className="flex items-center gap-3 p-3 bg-emerald-50 border border-emerald-100 rounded-xl">
                 <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
                 <p className="text-[12px] font-bold text-emerald-700">2FA enforced. All logins require MFA.</p>
@@ -171,10 +192,13 @@ export default function SecurityPage() {
                 <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">Network Allowlist</p>
               </div>
             </div>
-            {ipAllowlist.map((ip, i) => (
+            {settings.security.ipAllowlist.map((ip, i) => (
               <div key={i} className="flex items-center justify-between p-3 bg-slate-50 rounded-xl border border-slate-100">
                 <span className="text-[13px] font-bold text-slate-700 font-mono">{ip}</span>
-                <button onClick={() => setIpAllowlist(prev => prev.filter((_, idx) => idx !== i))} className="text-slate-300 hover:text-rose-400 transition-colors"><Trash2 className="w-4 h-4" /></button>
+                <button onClick={() => {
+                  updateSettings(prev => ({ ...prev, security: { ...prev.security, ipAllowlist: prev.security.ipAllowlist.filter((_, idx) => idx !== i) } }));
+                  pushGovernanceActivity('Network Policy Updated', `Removed [${ip}] from the enterprise IP allowlist.`);
+                }} className="text-slate-300 hover:text-rose-400 transition-colors"><Trash2 className="w-4 h-4" /></button>
               </div>
             ))}
             <div className="flex gap-2">
@@ -227,7 +251,7 @@ export default function SecurityPage() {
             <LogOut className="w-4 h-4" />Revoke All Others
           </button>
         </div>
-        {sessions.map(session => (
+        {settings.security.sessions.map(session => (
           <div key={session.id} className={`flex items-center justify-between p-4 rounded-[20px] border ${session.current ? 'bg-indigo-50 border-indigo-100' : 'bg-slate-50 border-slate-100'}`}>
             <div className="flex items-center gap-4">
               <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${session.current ? 'bg-indigo-100 text-indigo-600' : 'bg-white border border-slate-200 text-slate-400'}`}>

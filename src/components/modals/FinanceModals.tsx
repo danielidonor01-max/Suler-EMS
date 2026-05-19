@@ -20,6 +20,7 @@ import { Modal } from '../common/Modal';
 import { useFinance, Expenditure, ProjectFunding } from '@/context/FinanceContext';
 import { useOrganization } from '@/context/OrganizationContext';
 import { useWorkforce } from '@/context/WorkforceContext';
+import { Select } from '../forms/Select';
 
 // --- Finance Modals ---
 
@@ -60,7 +61,7 @@ export const CreateExpenditureModal: React.FC<{ isOpen: boolean; onClose: () => 
               required
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="e.g. Office Stationery Q3"
+              placeholder="e.g. Inventory Procurement Q3"
               className="w-full h-12 bg-slate-50 border border-slate-100 rounded-xl px-4 text-sm font-bold focus:ring-2 focus:ring-slate-900 outline-none transition-all"
             />
           </div>
@@ -91,45 +92,25 @@ export const CreateExpenditureModal: React.FC<{ isOpen: boolean; onClose: () => 
             </div>
           </div>
           <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-1.5">
-              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Hub</label>
-              <select 
-                value={hub}
-                onChange={(e) => setHub(e.target.value)}
-                className="w-full h-12 bg-slate-50 border border-slate-100 rounded-xl px-4 text-sm font-bold outline-none"
-              >
-                {hubs.filter(h => h.id !== 'HUB-00').map(h => (
-                  <option key={h.id} value={h.name}>{h.name}</option>
-                ))}
-              </select>
-            </div>
-            <div className="space-y-1.5">
-              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Department</label>
-              <select 
-                value={department}
-                onChange={(e) => setDepartment(e.target.value)}
-                className="w-full h-12 bg-slate-50 border border-slate-100 rounded-xl px-4 text-sm font-bold outline-none"
-              >
-                {departments.filter(d => d.parentHub === hub).map(d => (
-                  <option key={d.id} value={d.name}>{d.name}</option>
-                ))}
-              </select>
-            </div>
+             <Select 
+               label="Regional Hub"
+               value={hub}
+               onChange={setHub}
+               options={hubs.filter(h => h.id !== 'HUB-00').map(h => ({ label: h.name, value: h.name }))}
+             />
+             <Select 
+               label="Departmental Unit"
+               value={department}
+               onChange={setDepartment}
+               options={departments.filter(d => d.parentHub === hub).map(d => ({ label: d.name, value: d.name }))}
+             />
           </div>
-          <div className="space-y-1.5">
-            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Requested By</label>
-            <select 
-              required
-              value={requestedBy}
-              onChange={(e) => setRequestedBy(e.target.value)}
-              className="w-full h-12 bg-slate-50 border border-slate-100 rounded-xl px-4 text-sm font-bold outline-none"
-            >
-              <option value="">Select Personnel</option>
-              {employees.filter(emp => emp.hub === hub).map(emp => (
-                <option key={emp.id} value={emp.id}>{emp.name} ({emp.role})</option>
-              ))}
-            </select>
-          </div>
+          <Select 
+            label="Requested By (Personnel)"
+            value={requestedBy}
+            onChange={setRequestedBy}
+            options={employees.filter(emp => emp.hub === hub).map(emp => ({ label: `${emp.name} (${emp.role})`, value: emp.id }))}
+          />
         </div>
         <button 
           type="submit"
@@ -173,34 +154,28 @@ export const AllocateProjectFundingModal: React.FC<{ isOpen: boolean; onClose: (
               required
               value={projectName}
               onChange={(e) => setProjectName(e.target.value)}
-              placeholder="e.g. New Office Fit-out"
+              placeholder="e.g. New Hub Infrastructure"
               className="w-full h-12 bg-slate-50 border border-slate-100 rounded-xl px-4 text-sm font-bold focus:ring-2 focus:ring-slate-900 outline-none transition-all"
             />
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1.5">
-              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Total Funding (₦)</label>
+              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Total Funding (₦)</label>
               <input 
                 required
                 type="number"
                 value={allocation}
                 onChange={(e) => setAllocation(e.target.value)}
                 placeholder="0.00"
-                className="w-full h-12 bg-slate-50 border border-slate-100 rounded-xl px-4 text-sm font-bold focus:ring-2 focus:ring-slate-900 outline-none transition-all"
+                className="w-full h-[48px] bg-slate-50 border border-slate-200 rounded-xl px-4 text-[13px] font-bold outline-none focus:border-indigo-500 transition-all shadow-sm"
               />
             </div>
-            <div className="space-y-1.5">
-              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Regional Hub</label>
-              <select 
-                value={hub}
-                onChange={(e) => setHub(e.target.value)}
-                className="w-full h-12 bg-slate-50 border border-slate-100 rounded-xl px-4 text-sm font-bold outline-none"
-              >
-                {hubs.filter(h => h.id !== 'HUB-00').map(h => (
-                  <option key={h.id} value={h.name}>{h.name}</option>
-                ))}
-              </select>
-            </div>
+            <Select 
+              label="Regional Hub Context"
+              value={hub}
+              onChange={setHub}
+              options={hubs.filter(h => h.id !== 'HUB-00').map(h => ({ label: h.name, value: h.name }))}
+            />
           </div>
         </div>
         <button 

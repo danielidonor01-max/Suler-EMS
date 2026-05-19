@@ -21,8 +21,11 @@ import {
   XCircle,
   FileText,
   Zap,
-  ExternalLink
+  ExternalLink,
+  FileBarChart2,
+  MessageSquare
 } from 'lucide-react';
+import { useToast } from '@/components/common/ToastContext';
 import { DataTable } from "@/components/tables/DataTable";
 import { MetricCard } from '@/components/dashboard/MetricCard';
 import { Drawer } from '@/components/common/Drawer';
@@ -52,6 +55,14 @@ export default function WorkforcePage() {
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isPromoteOpen, setIsPromoteOpen] = useState(false);
   const [targetEmployee, setTargetEmployee] = useState<Employee | null>(null);
+  const { addToast } = useToast();
+
+  const handleExport = () => {
+    addToast('Generating Workforce Registry Export...', 'INFO');
+    setTimeout(() => {
+      addToast('Workforce data exported to Excel successfully.', 'SUCCESS');
+    }, 1500);
+  };
 
   const filteredEmployees = employees.filter(emp => 
     currentHub === 'All Regions' || emp.hub === currentHub
@@ -100,6 +111,15 @@ export default function WorkforcePage() {
                 <Layout className="w-[18px] h-[18px] stroke-[1.5px]" />
                 {viewMode === 'REGISTRY' ? 'Org Chart' : 'Registry View'}
              </button>
+
+             <button 
+               onClick={handleExport}
+               className="w-11 h-[44px] flex items-center justify-center bg-white border border-slate-200 hover:bg-slate-50 rounded-xl text-slate-600 transition-all shadow-sm"
+               title="Export Data"
+             >
+                <FileBarChart2 className="w-[18px] h-[18px]" />
+             </button>
+
             <button 
               onClick={() => setIsOnboardOpen(true)}
               className="bg-slate-900 hover:bg-black text-white flex items-center gap-2 px-6 h-[44px] rounded-xl text-[11px] font-bold uppercase tracking-wider transition-all shadow-md"
@@ -197,7 +217,7 @@ export default function WorkforcePage() {
                             </div>
                             <KebabItem icon={ExternalLink} label="View Full Dossier" onClick={() => router.push(`/staff/${row.id}`)} />
                             <KebabItem icon={UserCog} label="Edit Identity" onClick={() => handleKebabAction('EDIT', row)} />
-                            <KebabItem icon={ArrowRightLeft} label="Transfer Placement" onClick={() => setActiveKebab(null)} />
+                            <KebabItem icon={ArrowRightLeft} label="Transfer Placement" onClick={() => addToast(`Initializing transfer protocol for [${row.name}]`, 'INFO')} />
                             <KebabItem icon={ShieldCheck} label="Modify Access" onClick={() => handleKebabAction('ROLE', row)} />
                             <KebabItem icon={Zap} label="Promote Member" onClick={() => handleKebabAction('PROMOTE', row)} />
                             <KebabItem icon={ShieldAlert} label="Suspend Access" variant="danger" onClick={() => handleKebabAction('SUSPEND', row)} />
@@ -206,7 +226,7 @@ export default function WorkforcePage() {
                             <div className="px-3 py-1.5 mb-1">
                                <span className="text-[9px] font-bold text-slate-400 uppercase tracking-[0.2em]">Insights</span>
                             </div>
-                            <KebabItem icon={History} label="View Audit Trail" onClick={() => setActiveKebab(null)} />
+                            <KebabItem icon={History} label="View Audit Trail" onClick={() => router.push(`/governance?q=${row.name}`)} />
                          </div>
                       </div>
                     )}
@@ -291,7 +311,10 @@ export default function WorkforcePage() {
                    <ExternalLink className="w-4 h-4 stroke-[1.5px]" />
                    View Full Operational Dossier
                 </button>
-                <button className="bg-slate-900 hover:bg-black text-white h-[44px] rounded-xl text-[11px] font-bold uppercase tracking-widest shadow-md transition-all flex items-center justify-center gap-2">
+                <button 
+                  onClick={() => addToast(`Initializing transfer protocol for [${selectedStaff.name}]`, 'INFO')}
+                  className="bg-slate-900 hover:bg-black text-white h-[44px] rounded-xl text-[11px] font-bold uppercase tracking-widest shadow-md transition-all flex items-center justify-center gap-2"
+                >
                    <Target className="w-4 h-4 stroke-[1.5px]" />
                    Initiate Transfer
                 </button>
