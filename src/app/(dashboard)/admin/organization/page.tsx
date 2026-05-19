@@ -18,6 +18,7 @@ import {
   ArrowRightLeft
 } from 'lucide-react';
 import { useOrganization, Hub, Department } from '@/context/OrganizationContext';
+import { useWorkforce } from '@/context/WorkforceContext';
 import { 
   CreateHubModal, 
   EditHubModal, 
