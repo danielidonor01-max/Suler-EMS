@@ -8,7 +8,6 @@ import {
   Building2, Shield, ChevronLeft, TrendingUp, Clock,
   Heart, AlertCircle, CreditCard, Users, Award, MessageSquare
 } from 'lucide-react';
-} from 'lucide-react';
 import { useWorkforce } from '@/context/WorkforceContext';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 
