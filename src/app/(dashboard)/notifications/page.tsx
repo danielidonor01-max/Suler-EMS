@@ -17,7 +17,8 @@ import { useActivity } from '@/context/ActivityContext';
 import { useRouter } from 'next/navigation';
 
 export default function NotificationsPage() {
-  const { broadcasts, conversations, markAsRead } = useCommunication();
+  const { conversations, markAsRead } = useCommunication();
+  const broadcasts = conversations.filter(c => c.type === 'BROADCAST');
   const { activities } = useActivity();
   const router = useRouter();
 
@@ -37,8 +38,8 @@ export default function NotificationsPage() {
     id: b.id,
     type: 'BROADCAST',
     title: b.title,
-    description: b.content.substring(0, 80) + '...',
-    time: b.timestamp,
+    description: (b.lastMessage || '').substring(0, 80) + '...',
+    time: b.lastMessageAt || new Date().toISOString(),
     icon: Target,
     color: 'text-indigo-600',
     bg: 'bg-indigo-50'
