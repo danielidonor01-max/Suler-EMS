@@ -14,7 +14,7 @@ import {
   XCircle,
   Activity
 } from 'lucide-react';
-import { useActivity, ActivityLog } from '@/context/ActivityContext';
+import { useActivity } from '@/context/ActivityContext';
 import { RouteGuard } from '@/components/common/RouteGuard';
 import { format } from 'date-fns';
 import { useSearchParams } from 'next/navigation';
@@ -39,12 +39,15 @@ export default function GovernanceAuditPage() {
   const governanceLogs = useMemo(() => {
     return activities
       .filter(a => ['SYSTEM', 'GOVERNANCE', 'FINANCE', 'IAM'].includes(a.type))
-      .filter(a => 
-        !searchQuery || 
-        a.label.toLowerCase().includes(searchQuery.toLowerCase()) || 
-        a.message.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        a.author.toLowerCase().includes(searchQuery.toLowerCase())
-      )
+      .filter(a => {
+        if (!searchQuery) return true;
+        const q = searchQuery.toLowerCase();
+        return (
+          (a.label && a.label.toLowerCase().includes(q)) ||
+          (a.message && a.message.toLowerCase().includes(q)) ||
+          (a.actor && a.actor.toLowerCase().includes(q))
+        );
+      })
       .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
   }, [activities, searchQuery]);
 
@@ -121,8 +124,8 @@ export default function GovernanceAuditPage() {
                   <div className="flex items-start justify-between">
                     <div className="flex items-start gap-6">
                       <div className={`w-12 h-12 rounded-2xl flex items-center justify-center border shadow-sm ${
-                        log.status === 'SUCCESS' ? 'bg-emerald-50 border-emerald-100 text-emerald-600' :
-                        log.status === 'FAILURE' ? 'bg-rose-50 border-rose-100 text-rose-600' :
+                        log.metadata?.status === 'SUCCESS' ? 'bg-emerald-50 border-emerald-100 text-emerald-600' :
+                        log.metadata?.status === 'FAILURE' ? 'bg-rose-50 border-rose-100 text-rose-600' :
                         'bg-indigo-50 border-indigo-100 text-indigo-600'
                       }`}>
                         {log.type === 'FINANCE' ? <ShieldCheck className="w-6 h-6" /> : <Activity className="w-6 h-6" />}
@@ -131,15 +134,15 @@ export default function GovernanceAuditPage() {
                         <div className="flex items-center gap-3">
                            <h3 className="text-[14px] font-black text-slate-900 tracking-tight">{log.label}</h3>
                            <div className="flex items-center gap-1.5 px-2 py-0.5 bg-slate-100 rounded text-[9px] font-bold text-slate-500 uppercase tracking-widest">
-                              {getStatusIcon(log.status)}
-                              {log.status}
+                              {getStatusIcon(log.metadata?.status || 'INFO')}
+                              {log.metadata?.status || 'INFO'}
                            </div>
                         </div>
                         <p className="text-[13px] font-medium text-slate-500 leading-relaxed">{log.message}</p>
                         <div className="flex items-center gap-4 pt-2">
                            <div className="flex items-center gap-1.5 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
                               <User className="w-3 h-3" />
-                              {log.author}
+                              {log.actor}
                            </div>
                            <div className="flex items-center gap-1.5 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
                               <Clock className="w-3 h-3" />
