@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useState, useCallback, ReactNode, useEffect } from 'react';
 
-interface ActivityItem {
+export interface ActivityItem {
   id: string;
   type: 'MUTATION' | 'ACCESS' | 'GOVERNANCE' | 'SYSTEM' | 'SECURITY';
   actor: string;
@@ -13,6 +13,10 @@ interface ActivityItem {
   timestamp: string;
   metadata?: any;
 }
+
+// Alias for backward compatibility
+export type ActivityLog = ActivityItem;
+
 
 interface ActivityContextType {
   presenceCount: number;
