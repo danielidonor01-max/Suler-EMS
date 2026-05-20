@@ -2,14 +2,18 @@
 
 import React, { createContext, useContext, useState, useCallback, ReactNode, useEffect } from 'react';
 
-interface ActivityItem {
+export interface ActivityItem {
   id: string;
-  type: 'MUTATION' | 'ACCESS' | 'GOVERNANCE' | 'SYSTEM' | 'SECURITY';
-  actor: string;
-  action: string;
+  type: 'MUTATION' | 'ACCESS' | 'GOVERNANCE' | 'SYSTEM' | 'SECURITY' | 'FINANCE' | 'IAM';
+  actor?: string;
+  action?: string;
   label?: string;
-  hub?: string;
   message?: string;
+  author?: string;
+  status?: string;
+  user?: string;
+  module?: string;
+  hub?: string;
   timestamp: string;
   metadata?: any;
 }

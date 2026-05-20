@@ -55,12 +55,12 @@ export default function WorkforcePage() {
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isPromoteOpen, setIsPromoteOpen] = useState(false);
   const [targetEmployee, setTargetEmployee] = useState<Employee | null>(null);
-  const { addToast } = useToast();
+  const { toast } = useToast();
 
   const handleExport = () => {
-    addToast('Generating Workforce Registry Export...', 'INFO');
+    toast({ message: 'Generating Workforce Registry Export...', type: 'info' });
     setTimeout(() => {
-      addToast('Workforce data exported to Excel successfully.', 'SUCCESS');
+      toast({ message: 'Workforce data exported to Excel successfully.', type: 'success' });
     }, 1500);
   };
 
@@ -217,7 +217,7 @@ export default function WorkforcePage() {
                             </div>
                             <KebabItem icon={ExternalLink} label="View Full Dossier" onClick={() => router.push(`/staff/${row.id}`)} />
                             <KebabItem icon={UserCog} label="Edit Identity" onClick={() => handleKebabAction('EDIT', row)} />
-                            <KebabItem icon={ArrowRightLeft} label="Transfer Placement" onClick={() => addToast(`Initializing transfer protocol for [${row.name}]`, 'INFO')} />
+                            <KebabItem icon={ArrowRightLeft} label="Transfer Placement" onClick={() => toast({ message: `Initializing transfer protocol for [${row.name}]`, type: 'info' })} />
                             <KebabItem icon={ShieldCheck} label="Modify Access" onClick={() => handleKebabAction('ROLE', row)} />
                             <KebabItem icon={Zap} label="Promote Member" onClick={() => handleKebabAction('PROMOTE', row)} />
                             <KebabItem icon={ShieldAlert} label="Suspend Access" variant="danger" onClick={() => handleKebabAction('SUSPEND', row)} />
@@ -312,7 +312,7 @@ export default function WorkforcePage() {
                    View Full Operational Dossier
                 </button>
                 <button 
-                  onClick={() => addToast(`Initializing transfer protocol for [${selectedStaff.name}]`, 'INFO')}
+                  onClick={() => toast({ message: `Initializing transfer protocol for [${selectedStaff.name}]`, type: 'info' })}
                   className="bg-slate-900 hover:bg-black text-white h-[44px] rounded-xl text-[11px] font-bold uppercase tracking-widest shadow-md transition-all flex items-center justify-center gap-2"
                 >
                    <Target className="w-4 h-4 stroke-[1.5px]" />

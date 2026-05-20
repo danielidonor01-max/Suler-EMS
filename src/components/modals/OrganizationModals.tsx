@@ -14,7 +14,8 @@ import {
   Layers
 } from 'lucide-react';
 import { Modal } from '../common/Modal';
-import { useWorkforce } from '@/context/WorkforceContext';
+import { useWorkforce, Employee } from '@/context/WorkforceContext';
+import { useOrganization, Hub, Department } from '@/context/OrganizationContext';
 import { Select } from '../forms/Select';
 
 // --- Hub Modals ---
@@ -84,6 +85,7 @@ export const CreateHubModal: React.FC<{ isOpen: boolean; onClose: () => void }> 
 
 export const EditHubModal: React.FC<{ isOpen: boolean; onClose: () => void; hub: Hub }> = ({ isOpen, onClose, hub }) => {
   const { updateHub } = useOrganization();
+  const { employees } = useWorkforce();
   const [name, setName] = useState(hub.name);
   const [geography, setGeography] = useState(hub.geography);
   const [category, setCategory] = useState(hub.category);
@@ -121,7 +123,7 @@ export const EditHubModal: React.FC<{ isOpen: boolean; onClose: () => void; hub:
             label="Manager Assignment"
             value={manager}
             onChange={setManager}
-            options={employees.map(e => ({ label: e.name, value: e.name }))}
+            options={employees.map((e: Employee) => ({ label: e.name, value: e.name }))}
           />
         </div>
         <button 
@@ -172,13 +174,13 @@ export const CreateDepartmentModal: React.FC<{ isOpen: boolean; onClose: () => v
             label="Parent Operational Hub"
             value={parentHub}
             onChange={setParentHub}
-            options={hubs.filter(h => h.id !== 'HUB-00').map(hub => ({ label: hub.name, value: hub.name }))}
+            options={hubs.filter((h: Hub) => h.id !== 'HUB-00').map((hub: Hub) => ({ label: hub.name, value: hub.name }))}
           />
           <Select 
             label="Functional Lead"
             value={lead}
             onChange={setLead}
-            options={employees.map(e => ({ label: e.name, value: e.name }))}
+            options={employees.map((e: Employee) => ({ label: e.name, value: e.name }))}
           />
         </div>
         <button 
@@ -223,13 +225,13 @@ export const EditDepartmentModal: React.FC<{ isOpen: boolean; onClose: () => voi
             label="Operational Hub"
             value={parentHub}
             onChange={setParentHub}
-            options={hubs.filter(h => h.id !== 'HUB-00').map(hub => ({ label: hub.name, value: hub.name }))}
+            options={hubs.filter((h: Hub) => h.id !== 'HUB-00').map((hub: Hub) => ({ label: hub.name, value: hub.name }))}
           />
           <Select 
             label="Principal Lead"
             value={lead}
             onChange={setLead}
-            options={employees.map(e => ({ label: e.name, value: e.name }))}
+            options={employees.map((e: Employee) => ({ label: e.name, value: e.name }))}
           />
         </div>
         <button 

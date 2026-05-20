@@ -231,6 +231,7 @@ export const FinanceProvider: React.FC<{ children: ReactNode }> = ({ children })
       projects, 
       addExpenditure, 
       approveExpenditure, 
+      rejectExpenditure,
       payExpenditure, 
       allocateProjectFunds,
       updateBudget

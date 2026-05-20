@@ -42,12 +42,12 @@ export default function FinanceDashboard() {
   
   const [isExpOpen, setIsExpOpen] = useState(false);
   const [isProjOpen, setIsProjOpen] = useState(false);
-  const { addToast } = useToast();
+  const { toast } = useToast();
 
   const handleExport = () => {
-    addToast('Generating Financial Statement...', 'INFO');
+    toast({ message: 'Generating Financial Statement...', type: 'info' });
     setTimeout(() => {
-      addToast('Enterprise financial report exported to CSV successfully.', 'SUCCESS');
+      toast({ message: 'Enterprise financial report exported to CSV successfully.', type: 'success' });
     }, 1500);
   };
 
@@ -223,7 +223,7 @@ export default function FinanceDashboard() {
               data={filteredBudgets}
               columns={budgetColumns}
               rowActions={!isHubManager ? [
-                { label: 'Edit Budget', icon: Edit3, onClick: (b: Budget) => addToast(`Initializing cost-center adjustments for [${b.name}]`, 'INFO') },
+                { label: 'Edit Budget', icon: Edit3, onClick: (b: Budget) => toast({ message: `Initializing cost-center adjustments for [${b.name}]`, type: 'info' }) },
                 { label: 'View Audit', icon: History, onClick: (b: Budget) => window.location.href = `/governance?q=${b.name}` }
               ] : []}
             />
