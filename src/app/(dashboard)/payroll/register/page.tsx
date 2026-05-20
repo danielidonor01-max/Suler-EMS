@@ -228,6 +228,7 @@ export default function PayrollRegisterPage() {
           <DataTable 
             title="Compensation Breakdown"
             description="Detailed salary structure and statutory compliance logs."
+            data={displayRun.entries}
             columns={columns}
             rowActions={[
               { label: 'View Payslip', icon: FileText, onClick: (e: PayrollEntry) => setActiveEntry(e) },
