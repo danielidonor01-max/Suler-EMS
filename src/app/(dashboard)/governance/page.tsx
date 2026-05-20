@@ -26,12 +26,12 @@ export default function GovernanceAuditPage() {
   const searchParams = useSearchParams();
   const initialQuery = searchParams.get('q') || '';
   const [searchQuery, setSearchQuery] = useState(initialQuery);
-  const { addToast } = useToast();
+  const { toast } = useToast();
 
   const handleExport = () => {
-    addToast('Generating Immutable Audit Trail...', 'INFO');
+    toast({ message: 'Generating Immutable Audit Trail...', type: 'info' });
     setTimeout(() => {
-      addToast('Forensic audit registry exported to CSV successfully.', 'SUCCESS');
+      toast({ message: 'Forensic audit registry exported to CSV successfully.', type: 'success' });
     }, 1500);
   };
   
@@ -109,7 +109,7 @@ export default function GovernanceAuditPage() {
                   />
                </div>
                <button 
-                 onClick={() => addToast('Filtering logic initialized...', 'INFO')}
+                 onClick={() => toast({ message: 'Filtering logic initialized...', type: 'info' })}
                  className="p-2 bg-white border border-slate-200 rounded-lg text-slate-400 hover:text-slate-900"
                >
                   <Filter className="w-4 h-4" />
@@ -152,7 +152,7 @@ export default function GovernanceAuditPage() {
                       </div>
                     </div>
                     <button 
-                      onClick={() => addToast(`Retrieving forensic metadata for [${log.id}]`, 'INFO')}
+                      onClick={() => toast({ message: `Retrieving forensic metadata for [${log.id}]`, type: 'info' })}
                       className="px-3 py-1.5 bg-white border border-slate-200 text-slate-400 rounded-md text-[9px] font-black uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity hover:text-indigo-600 hover:border-indigo-200"
                     >
                       View Metadata

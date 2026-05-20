@@ -42,12 +42,12 @@ export default function PayrollRegisterPage() {
   const [selectedRun, setSelectedRun] = useState<PayrollRun | null>(null);
   const [activeEntry, setActiveEntry] = useState<PayrollEntry | null>(null);
   const { settings } = useSettings();
-  const { addToast } = useToast();
+  const { toast } = useToast();
 
   const handleExport = () => {
-    addToast('Generating Payroll Register Export...', 'INFO');
+    toast({ message: 'Generating Payroll Register Export...', type: 'info' });
     setTimeout(() => {
-      addToast('Payroll register exported to CSV successfully.', 'SUCCESS');
+      toast({ message: 'Payroll register exported to CSV successfully.', type: 'success' });
     }, 1500);
   };
 
@@ -231,7 +231,7 @@ export default function PayrollRegisterPage() {
             columns={columns}
             rowActions={[
               { label: 'View Payslip', icon: FileText, onClick: (e: PayrollEntry) => setActiveEntry(e) },
-              { label: 'Edit Breakdown', icon: Edit3, onClick: (e: PayrollEntry) => addToast(`Opening compensation adjustments for [${e.employeeId}]`, 'INFO'), hidden: () => displayRun.status !== 'DRAFT' }
+              { label: 'Edit Breakdown', icon: Edit3, onClick: (e: PayrollEntry) => toast({ message: `Opening compensation adjustments for [${e.employeeId}]`, type: 'info' }), hidden: () => displayRun.status !== 'DRAFT' }
             ]}
           />
         </div>
