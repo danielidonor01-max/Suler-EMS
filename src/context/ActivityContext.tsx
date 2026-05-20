@@ -4,7 +4,7 @@ import React, { createContext, useContext, useState, useCallback, ReactNode, use
 
 interface ActivityItem {
   id: string;
-  type: 'MUTATION' | 'ACCESS' | 'GOVERNANCE' | 'SYSTEM' | 'SECURITY';
+  type: 'MUTATION' | 'ACCESS' | 'GOVERNANCE' | 'SYSTEM' | 'SECURITY' | 'FINANCE' | 'IAM';
   actor: string;
   action: string;
   label?: string;
