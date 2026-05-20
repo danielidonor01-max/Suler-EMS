@@ -9,6 +9,7 @@ import { Modal } from '@/components/common/Modal';
 import { 
   Building2, 
   Users, 
+  UserCircle,
   Calendar, 
   ShieldCheck,
   ChevronLeft,
@@ -34,7 +35,9 @@ import {
   Cpu,
   Award,
   Send,
-  AlertTriangle
+  AlertTriangle,
+  LayoutDashboard,
+  CheckSquare
 } from 'lucide-react';
 import { useAccess } from '@/context/AccessContext';
 import { Permissions } from '@/modules/auth/domain/permission.model';
@@ -69,21 +72,29 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle }) => {
     }
   };
 
-  const operationsModules = [
-    { name: 'Hub', icon: Building2, href: '/employees', permission: Permissions.WORKFORCE_VIEW },
-    { name: 'Workforce', icon: Users, href: '/staff', permission: Permissions.WORKFORCE_VIEW },
-    { name: 'Team', icon: Target, href: '/team', permission: Permissions.WORKFORCE_VIEW },
-    { name: 'Attendance', icon: Calendar, href: '/attendance', permission: Permissions.ATTENDANCE_VIEW },
-    { name: 'Leave', icon: Activity, href: '/leave', permission: Permissions.LEAVE_VIEW },
-  ].filter(m => !m.permission || checkPermission(m.permission as any).allowed);
-
-  const communicationModules = [
+  // My Workspace (Universal, Visible to all)
+  const personalModules = [
+    { name: 'Dashboard', icon: LayoutDashboard, href: '/' },
+    { name: 'My Profile', icon: UserCircle, href: '/profile' },
     { name: 'Messages', icon: MessageSquare, href: '/messages' },
-    { name: 'Broadcasts', icon: Send, href: '/messages?tab=broadcasts' },
+    { name: 'Notifications', icon: Bell, href: '/notifications' },
+    { name: 'My Tasks', icon: CheckSquare, href: '/tasks' },
+    { name: 'Attendance', icon: Calendar, href: '/attendance' },
+    { name: 'Leave Requests', icon: Activity, href: '/leave' },
+    { name: 'My Payroll', icon: Wallet, href: '/my-payroll' },
+    { name: 'Request Tracker', icon: TrendingUp, href: '/tracker' },
   ];
 
+  // Administrative Workspace (Permission-based)
+  const operationsModules = [
+    { name: 'Workforce Registry', icon: Building2, href: '/workforce', permission: Permissions.WORKFORCE_VIEW },
+    { name: 'Team Management', icon: Users, href: '/team', permission: Permissions.WORKFORCE_VIEW },
+    { name: 'Attendance Admin', icon: Calendar, href: '/attendance/admin', permission: Permissions.ATTENDANCE_VIEW },
+    { name: 'Leave Admin', icon: Activity, href: '/leave/admin', permission: Permissions.LEAVE_VIEW },
+  ].filter(m => !m.permission || checkPermission(m.permission as any).allowed);
+
   const accountsFinanceModules = [
-    { name: 'Payroll', icon: Wallet, href: '/payroll', permission: Permissions.PAYROLL_VIEW },
+    { name: 'Payroll Admin', icon: Wallet, href: '/payroll', permission: Permissions.PAYROLL_VIEW },
     { name: 'Finance', icon: DollarSign, href: '/finance', permission: Permissions.FINANCE_VIEW },
   ].filter(m => !m.permission || checkPermission(m.permission as any).allowed);
 
@@ -93,21 +104,12 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle }) => {
     { name: 'Audit Registry', icon: History, href: '/governance', permission: Permissions.AUDIT_VIEW },
   ].filter(m => !m.permission || checkPermission(m.permission as any).allowed);
 
-  const intelligenceModules = [
-    { name: 'Performance', icon: Award, href: '/performance', permission: Permissions.WORKFORCE_VIEW },
-    { name: 'Analytics', icon: BarChart3, href: '/analytics', permission: Permissions.ANALYTICS_VIEW },
-    { name: 'Reports', icon: FileBarChart2, href: '/reports', permission: Permissions.REPORTS_GENERATE },
-    { name: 'Strategy Simulator', icon: Sparkles, href: '/admin/intelligence', permission: Permissions.STRATEGY_SIMULATE },
-  ].filter(m => !m.permission || checkPermission(m.permission as any).allowed);
-
   const settingSubModules = [
     { name: 'Compliance & Tax', href: '/settings/compliance', permission: Permissions.SETTINGS_MANAGE },
     { name: 'Security', href: '/settings/security', permission: Permissions.SECURITY_MANAGE },
     { name: 'Integrations', href: '/settings/integrations', permission: Permissions.SECURITY_MANAGE },
     { name: 'Data Management', href: '/settings/data', permission: Permissions.DATA_MANAGE },
   ].filter(m => !m.permission || checkPermission(m.permission as any).allowed);
-
-  const notificationsModule = { name: 'Notifications', icon: Bell, href: '/notifications' };
 
   return (
     <aside 
@@ -133,12 +135,26 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle }) => {
       {/* Navigation Rails */}
       <div className="flex-1 px-3 space-y-8 overflow-y-auto custom-scrollbar pt-6 pb-8">
         
+        {/* My Workspace Layer */}
+        <div className="space-y-1">
+          {!isCollapsed && (
+            <div className="px-4 mb-3">
+              <span className="text-[9px] font-bold text-slate-500 uppercase tracking-[0.2em]">My Workspace</span>
+            </div>
+          )}
+          <div className="space-y-1">
+            {personalModules.map((item) => (
+              <SidebarLink key={item.name} item={item} isActive={pathname === item.href} isCollapsed={isCollapsed} />
+            ))}
+          </div>
+        </div>
+
         {/* Operations Layer */}
         {operationsModules.length > 0 && (
-          <div className="space-y-1">
+          <div className="space-y-1 mt-6">
             {!isCollapsed && (
               <div className="px-4 mb-3">
-                <span className="text-[9px] font-bold text-slate-500 uppercase tracking-[0.2em]">Operations</span>
+                <span className="text-[9px] font-bold text-indigo-400 uppercase tracking-[0.2em]">Operations</span>
               </div>
             )}
             <div className="space-y-1">
@@ -148,27 +164,13 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle }) => {
             </div>
           </div>
         )}
-        
-        {/* Communications Layer */}
-        <div className="space-y-1">
-          {!isCollapsed && (
-            <div className="px-4 mb-3">
-              <span className="text-[9px] font-bold text-slate-500 uppercase tracking-[0.2em]">Communications</span>
-            </div>
-          )}
-          <div className="space-y-1">
-            {communicationModules.map((item) => (
-              <SidebarLink key={item.name} item={item} isActive={pathname === item.href} isCollapsed={isCollapsed} />
-            ))}
-          </div>
-        </div>
 
         {/* Accounts & Finance Layer */}
         {accountsFinanceModules.length > 0 && (
-          <div className="space-y-1">
+          <div className="space-y-1 mt-6">
             {!isCollapsed && (
               <div className="px-4 mb-3">
-                <span className="text-[9px] font-bold text-slate-500 uppercase tracking-[0.2em]">Accounts & Finance</span>
+                <span className="text-[9px] font-bold text-indigo-400 uppercase tracking-[0.2em]">Accounts & Finance</span>
               </div>
             )}
             <div className="space-y-1">
@@ -181,10 +183,10 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle }) => {
 
         {/* Governance Layer */}
         {governanceModules.length > 0 && (
-          <div className="space-y-1">
+          <div className="space-y-1 mt-6">
             {!isCollapsed && (
               <div className="px-4 mb-3">
-                <span className="text-[9px] font-bold text-slate-500 uppercase tracking-[0.2em]">Governance</span>
+                <span className="text-[9px] font-bold text-indigo-400 uppercase tracking-[0.2em]">Governance</span>
               </div>
             )}
             <div className="space-y-1">
@@ -194,32 +196,6 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle }) => {
             </div>
           </div>
         )}
-
-        {/* Intelligence Layer */}
-        {intelligenceModules.length > 0 && (
-          <div className="space-y-1">
-            {!isCollapsed && (
-              <div className="px-4 mb-3">
-                <span className="text-[9px] font-bold text-slate-500 uppercase tracking-[0.2em]">Intelligence</span>
-              </div>
-            )}
-            <div className="space-y-1">
-              {intelligenceModules.map((item) => (
-                <SidebarLink key={item.name} item={item} isActive={pathname === item.href} isCollapsed={isCollapsed} />
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Notifications Link */}
-        <div className="space-y-1">
-          {!isCollapsed && (
-            <div className="px-4 mb-3">
-              <span className="text-[9px] font-bold text-slate-500 uppercase tracking-[0.2em]">Alerts</span>
-            </div>
-          )}
-          <SidebarLink item={notificationsModule} isActive={pathname === notificationsModule.href} isCollapsed={isCollapsed} />
-        </div>
 
         {/* System Control Layer */}
         {checkPermission(Permissions.SETTINGS_MANAGE).allowed && (

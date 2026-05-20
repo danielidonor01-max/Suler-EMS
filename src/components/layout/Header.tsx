@@ -1,6 +1,8 @@
 'use client';
 
 import React, { useState } from 'react';
+import Link from 'next/link';
+import { useSession, signOut } from 'next-auth/react';
 import { 
   Search, 
   Bell, 
@@ -11,7 +13,13 @@ import {
   Activity,
   Globe,
   PlusCircle,
-  Menu
+  Menu,
+  UserCircle,
+  Wallet,
+  CheckSquare,
+  MessageSquare,
+  Settings,
+  LogOut
 } from 'lucide-react';
 import { GlobalCommandModal } from '../modals/GlobalCommandModal';
 
@@ -28,6 +36,23 @@ const Header = ({ onToggleSidebar }: { onToggleSidebar: () => void }) => {
   const { currentHub, hubs, switchHub } = useOrganization();
   const { conversations } = useCommunication();
   const router = useRouter();
+  const { data: session } = useSession();
+  
+  const handleSignOut = async () => {
+    try {
+      await fetch('/api/system/security-event', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: 'SESSION_EXPIRED',
+          description: `[SIGN_OUT] ${session?.user?.name || 'User'} (${userRole}) signed out successfully.`,
+          metadata: { role: userRole, initiatedBy: 'USER_ACTION' },
+        }),
+      }).catch(() => {});
+    } finally {
+      await signOut({ callbackUrl: '/login' });
+    }
+  };
 
   const totalUnread = conversations.reduce((sum, c) => sum + c.unreadCount, 0);
 
@@ -154,8 +179,48 @@ const Header = ({ onToggleSidebar }: { onToggleSidebar: () => void }) => {
             )}
           </button>
           
-          <div className="w-10 h-10 rounded-[12px] bg-slate-900 border border-slate-800 flex items-center justify-center text-white font-bold text-[11px] cursor-pointer hover:scale-105 transition-all shadow-premium">
-            CO
+          <div className="relative group/profile">
+            <div className="w-10 h-10 rounded-[12px] bg-slate-900 border border-slate-800 flex items-center justify-center text-white font-bold text-[11px] cursor-pointer hover:scale-105 transition-all shadow-premium">
+              {(session?.user?.name || 'U').split(' ').map((n: string) => n[0]).join('').slice(0, 2).toUpperCase()}
+            </div>
+            
+            {/* Profile Dropdown */}
+            <div className="absolute top-full right-0 mt-4 w-[240px] bg-white border border-slate-200 rounded-[20px] shadow-premium opacity-0 translate-y-2 pointer-events-none group-hover/profile:opacity-100 group-hover/profile:translate-y-0 group-hover/profile:pointer-events-auto transition-all duration-300 p-2 overflow-hidden z-50">
+               <div className="px-3 py-3 border-b border-slate-50 mb-1 flex flex-col">
+                  <span className="text-[13px] font-bold text-slate-900 truncate">{session?.user?.name || 'User'}</span>
+                  <span className="text-[10px] font-medium text-slate-400 truncate">{session?.user?.email || 'user@suler.com'}</span>
+               </div>
+               <div className="space-y-0.5">
+                  <Link href="/profile" className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all hover:bg-slate-50 text-slate-600">
+                     <UserCircle className="w-4 h-4 text-slate-400" />
+                     <span className="text-[12px] font-bold">My Profile</span>
+                  </Link>
+                  <Link href="/my-payroll" className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all hover:bg-slate-50 text-slate-600">
+                     <Wallet className="w-4 h-4 text-slate-400" />
+                     <span className="text-[12px] font-bold">My Payslips</span>
+                  </Link>
+                  <Link href="/leave" className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all hover:bg-slate-50 text-slate-600">
+                     <Activity className="w-4 h-4 text-slate-400" />
+                     <span className="text-[12px] font-bold">My Leave Requests</span>
+                  </Link>
+                  <Link href="/tasks" className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all hover:bg-slate-50 text-slate-600">
+                     <CheckSquare className="w-4 h-4 text-slate-400" />
+                     <span className="text-[12px] font-bold">My Tasks</span>
+                  </Link>
+                  <Link href="/messages" className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all hover:bg-slate-50 text-slate-600">
+                     <MessageSquare className="w-4 h-4 text-slate-400" />
+                     <span className="text-[12px] font-bold">Messages</span>
+                  </Link>
+                  <Link href="/settings" className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all hover:bg-slate-50 text-slate-600 border-b border-slate-50 pb-3 mb-1">
+                     <Settings className="w-4 h-4 text-slate-400" />
+                     <span className="text-[12px] font-bold">Settings</span>
+                  </Link>
+                  <button onClick={handleSignOut} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all hover:bg-rose-50 text-rose-600 mt-1">
+                     <LogOut className="w-4 h-4 text-rose-500" />
+                     <span className="text-[12px] font-bold">Sign Out</span>
+                  </button>
+               </div>
+            </div>
           </div>
         </div>
       </div>
