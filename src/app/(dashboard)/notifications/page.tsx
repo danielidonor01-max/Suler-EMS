@@ -27,7 +27,7 @@ export default function NotificationsPage() {
     id: a.id,
     type: 'SYSTEM',
     title: a.action,
-    description: `Action performed by ${a.user} in ${a.module || 'System'}`,
+    description: `Action performed by ${a.actor} in ${a.metadata?.module || 'System'}`,
     time: a.timestamp,
     icon: Activity,
     color: 'text-slate-400',
