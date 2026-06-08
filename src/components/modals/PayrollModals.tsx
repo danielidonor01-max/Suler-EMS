@@ -25,7 +25,7 @@ import {
   Calculator
 } from 'lucide-react';
 import { Modal } from '../common/Modal';
-import { usePayroll, SalaryStructure, BulkAdjustmentRequest } from '@/context/PayrollContext';
+import { usePayroll, SalaryStructure, BulkAdjustmentRequest, PayrollEntry } from '@/context/PayrollContext';
 import { useWorkforce } from '@/context/WorkforceContext';
 import { useOrganization } from '@/context/OrganizationContext';
 import { useTeams } from '@/context/TeamContext';

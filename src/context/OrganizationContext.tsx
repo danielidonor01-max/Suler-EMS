@@ -107,22 +107,22 @@ export const OrganizationProvider: React.FC<{ children: ReactNode }> = ({ childr
       
       pushActivity({
         type: 'SYSTEM',
-        label: 'Context Switched',
+        actor: userRole,
+        action: 'Context Switched',
         message: `Operational focus shifted to [${hub.name}]. UI context synchronized.`,
-        author: userRole,
         status: 'SUCCESS'
-      } as any);
+      });
     } else if (id === 'HUB-00') {
       setCurrentHubState('All Regions');
       localStorage.setItem('suler_active_hub', 'All Regions');
       
       pushActivity({
         type: 'SYSTEM',
-        label: 'Global Context Activated',
+        actor: userRole,
+        action: 'Global Context Activated',
         message: 'Enterprise-wide operational view enabled. All regional nodes visible.',
-        author: userRole,
         status: 'SUCCESS'
-      } as any);
+      });
     }
   };
 
@@ -145,9 +145,9 @@ export const OrganizationProvider: React.FC<{ children: ReactNode }> = ({ childr
       
       pushActivity({
         type: 'SYSTEM',
-        label: 'Topology Mutation Reverted',
+        actor: userRole,
+        action: 'Topology Mutation Reverted',
         message: 'A recent structural change was undone. Organizational hierarchy restored to previous snapshot.',
-        author: userRole,
         status: 'SUCCESS'
       });
     }
@@ -166,13 +166,12 @@ export const OrganizationProvider: React.FC<{ children: ReactNode }> = ({ childr
 
     pushActivity({
       type: 'GOVERNANCE',
-      label: 'Regional Hub Established',
+      actor: userRole,
+      action: 'Regional Hub Established',
       message: `New regional node [${data.name}] initialized in ${data.geography}.`,
-      author: userRole,
       status: 'SUCCESS',
-      hub: data.name,
-      version: 1
-    } as any);
+      hub: data.name
+    });
   }, [hubs, departments, syncState, userRole, pushActivity]);
 
   const addDepartment = React.useCallback((data: Omit<Department, 'id' | 'staff' | '_v'>) => {
@@ -189,13 +188,12 @@ export const OrganizationProvider: React.FC<{ children: ReactNode }> = ({ childr
 
     pushActivity({
       type: 'GOVERNANCE',
-      label: 'Department Defined',
+      actor: userRole,
+      action: 'Department Defined',
       message: `Operational unit [${data.name}] established within ${data.parentHub}. Reporting to ${data.reportingLine}.`,
-      author: userRole,
       status: 'SUCCESS',
-      hub: data.parentHub,
-      version: 1
-    } as any);
+      hub: data.parentHub
+    });
   }, [hubs, departments, syncState, userRole, pushActivity]);
 
   const updateHub = React.useCallback((id: string, updates: Partial<Hub>) => {
@@ -204,11 +202,11 @@ export const OrganizationProvider: React.FC<{ children: ReactNode }> = ({ childr
 
     pushActivity({
       type: 'GOVERNANCE',
-      label: 'Hub Identity Mutated',
+      actor: userRole,
+      action: 'Hub Identity Mutated',
       message: `Configuration for [${hubs.find(h => h.id === id)?.name}] synchronized by Administrator.`,
-      author: userRole,
       status: 'SUCCESS'
-    } as any);
+    });
   }, [hubs, departments, syncState, userRole, pushActivity]);
 
   const deleteHub = React.useCallback((id: string) => {
@@ -222,11 +220,11 @@ export const OrganizationProvider: React.FC<{ children: ReactNode }> = ({ childr
 
     pushActivity({
       type: 'GOVERNANCE',
-      label: 'Regional Hub Dissolved',
+      actor: userRole,
+      action: 'Regional Hub Dissolved',
       message: `Operational node [${hubToDelete.name}] has been decommissioned. Associated departments archived.`,
-      author: userRole,
       status: 'SUCCESS'
-    } as any);
+    });
   }, [hubs, departments, syncState, userRole, pushActivity]);
 
   const updateDepartment = React.useCallback((id: string, updates: Partial<Department>) => {
@@ -235,11 +233,11 @@ export const OrganizationProvider: React.FC<{ children: ReactNode }> = ({ childr
 
     pushActivity({
       type: 'GOVERNANCE',
-      label: 'Departmental Mutation',
+      actor: userRole,
+      action: 'Departmental Mutation',
       message: `Operational parameters for [${departments.find(d => d.id === id)?.name}] updated.`,
-      author: userRole,
       status: 'SUCCESS'
-    } as any);
+    });
   }, [hubs, departments, syncState, userRole, pushActivity]);
 
   const deleteDepartment = React.useCallback((id: string) => {
@@ -253,11 +251,11 @@ export const OrganizationProvider: React.FC<{ children: ReactNode }> = ({ childr
 
     pushActivity({
       type: 'GOVERNANCE',
-      label: 'Department Dissolved',
+      actor: userRole,
+      action: 'Department Dissolved',
       message: `Operational unit [${deptToDelete.name}] removed from organizational structure.`,
-      author: userRole,
       status: 'SUCCESS'
-    } as any);
+    });
   }, [hubs, departments, syncState, userRole, pushActivity]);
 
   return (

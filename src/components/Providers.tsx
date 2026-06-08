@@ -14,6 +14,7 @@ import { TeamProvider } from "@/context/TeamContext";
 import { FinanceProvider } from "@/context/FinanceContext";
 import { PayrollProvider } from "@/context/PayrollContext";
 import { CommunicationProvider } from "@/context/CommunicationContext";
+import { LeaveProvider } from "@/context/LeaveContext";
 import { AuthPersistence } from "@/components/auth/AuthPersistence";
 
 export function Providers({ children }: { children: React.ReactNode }) {
@@ -24,25 +25,27 @@ export function Providers({ children }: { children: React.ReactNode }) {
           <AccessProvider>
             <ActivityProvider>
               <CommunicationProvider>
-                <WorkforceProvider>
-                  <OrganizationProvider>
-                    <SettingsProvider>
-                      <TeamProvider>
-                        <FinanceProvider>
-                          <PayrollProvider>
-                            <GuardianProvider>
-                              <ForecastingProvider>
-                                <AuthPersistence>
-                                  {children}
-                                </AuthPersistence>
-                              </ForecastingProvider>
-                            </GuardianProvider>
-                          </PayrollProvider>
-                        </FinanceProvider>
-                      </TeamProvider>
-                    </SettingsProvider>
-                  </OrganizationProvider>
-                </WorkforceProvider>
+                <LeaveProvider>
+                  <WorkforceProvider>
+                    <OrganizationProvider>
+                      <SettingsProvider>
+                        <TeamProvider>
+                          <FinanceProvider>
+                            <PayrollProvider>
+                              <GuardianProvider>
+                                <ForecastingProvider>
+                                  <AuthPersistence>
+                                    {children}
+                                  </AuthPersistence>
+                                </ForecastingProvider>
+                              </GuardianProvider>
+                            </PayrollProvider>
+                          </FinanceProvider>
+                        </TeamProvider>
+                      </SettingsProvider>
+                    </OrganizationProvider>
+                  </WorkforceProvider>
+                </LeaveProvider>
               </CommunicationProvider>
             </ActivityProvider>
           </AccessProvider>

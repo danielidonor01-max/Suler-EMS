@@ -1,6 +1,6 @@
 "use client";
 
-import React from 'react';
+import React, { Suspense } from 'react';
 import { 
   ShieldCheck, 
   History, 
@@ -14,14 +14,14 @@ import {
   XCircle,
   Activity
 } from 'lucide-react';
-import { useActivity, ActivityLog } from '@/context/ActivityContext';
+import { useActivity } from '@/context/ActivityContext';
 import { RouteGuard } from '@/components/common/RouteGuard';
 import { format } from 'date-fns';
 import { useSearchParams } from 'next/navigation';
 import { useState, useMemo } from 'react';
 import { useToast } from '@/components/common/ToastContext';
 
-export default function GovernanceAuditPage() {
+function GovernanceAuditContent() {
   const { activities } = useActivity();
   const searchParams = useSearchParams();
   const initialQuery = searchParams.get('q') || '';
@@ -41,9 +41,9 @@ export default function GovernanceAuditPage() {
       .filter(a => ['SYSTEM', 'GOVERNANCE', 'FINANCE', 'IAM'].includes(a.type))
       .filter(a => 
         !searchQuery || 
-        a.label.toLowerCase().includes(searchQuery.toLowerCase()) || 
-        a.message.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        a.author.toLowerCase().includes(searchQuery.toLowerCase())
+        (a.label || '').toLowerCase().includes(searchQuery.toLowerCase()) || 
+        (a.message || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (a.author || a.actor || '').toLowerCase().includes(searchQuery.toLowerCase())
       )
       .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
   }, [activities, searchQuery]);
@@ -129,9 +129,9 @@ export default function GovernanceAuditPage() {
                       </div>
                       <div className="space-y-1">
                         <div className="flex items-center gap-3">
-                           <h3 className="text-[14px] font-black text-slate-900 tracking-tight">{log.label}</h3>
+                           <h3 className="text-[14px] font-black text-slate-900 tracking-tight">{log.label || log.action}</h3>
                            <div className="flex items-center gap-1.5 px-2 py-0.5 bg-slate-100 rounded text-[9px] font-bold text-slate-500 uppercase tracking-widest">
-                              {getStatusIcon(log.status)}
+                              {getStatusIcon(log.status || 'INFO')}
                               {log.status}
                            </div>
                         </div>
@@ -139,7 +139,7 @@ export default function GovernanceAuditPage() {
                         <div className="flex items-center gap-4 pt-2">
                            <div className="flex items-center gap-1.5 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
                               <User className="w-3 h-3" />
-                              {log.author}
+                              {log.author || log.actor}
                            </div>
                            <div className="flex items-center gap-1.5 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
                               <Clock className="w-3 h-3" />
@@ -171,5 +171,17 @@ export default function GovernanceAuditPage() {
 
       </div>
     </RouteGuard>
+  );
+}
+
+export default function GovernanceAuditPage() {
+  return (
+    <Suspense fallback={
+      <div className="section-breathing max-w-[1400px] mx-auto flex items-center justify-center min-h-[400px]">
+        <div className="text-slate-400 text-sm font-bold">Loading audit registry...</div>
+      </div>
+    }>
+      <GovernanceAuditContent />
+    </Suspense>
   );
 }

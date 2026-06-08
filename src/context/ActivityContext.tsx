@@ -2,23 +2,25 @@
 
 import React, { createContext, useContext, useState, useCallback, ReactNode, useEffect } from 'react';
 
-interface ActivityItem {
+export interface ActivityLog {
   id: string;
-  type: 'MUTATION' | 'ACCESS' | 'GOVERNANCE' | 'SYSTEM' | 'SECURITY';
+  type: 'MUTATION' | 'ACCESS' | 'GOVERNANCE' | 'SYSTEM' | 'SECURITY' | 'FINANCE' | 'IAM';
   actor: string;
+  author: string;
   action: string;
-  label?: string;
+  label: string;
+  message: string;
+  status?: 'SUCCESS' | 'FAILURE' | 'WARNING' | 'INFO';
   hub?: string;
-  message?: string;
-  timestamp: string;
   metadata?: any;
+  timestamp: string;
 }
 
 interface ActivityContextType {
   presenceCount: number;
-  recentActivity: ActivityItem[];
-  activities: ActivityItem[];
-  pushActivity: (item: any) => void;
+  recentActivity: ActivityLog[];
+  activities: ActivityLog[];
+  pushActivity: (item: Partial<ActivityLog>) => void;
   broadcastPresence: () => void;
 }
 
@@ -34,7 +36,7 @@ export const useActivity = () => {
 
 export const ActivityProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [presenceCount, setPresenceCount] = useState(1); // Default to at least the current user
-  const [recentActivity, setRecentActivity] = useState<ActivityItem[]>([]);
+  const [recentActivity, setRecentActivity] = useState<ActivityLog[]>([]);
 
   // Simulation of presence tracking
   useEffect(() => {
@@ -47,14 +49,23 @@ export const ActivityProvider: React.FC<{ children: ReactNode }> = ({ children }
     return () => clearInterval(interval);
   }, []);
 
-  const pushActivity = useCallback((data: any) => {
-    const newItem: ActivityItem = {
+  const pushActivity = useCallback((data: Partial<ActivityLog>) => {
+    const actor = data.actor || data.author || 'SYSTEM';
+    const action = data.action || data.label || 'Unknown Action';
+    const newItem: ActivityLog = {
+      message: '',
+      status: 'INFO',
+      type: 'SYSTEM',
       ...data,
+      actor,
+      action,
+      author: actor,
+      label: action,
       id: Math.random().toString(36).substring(2, 9),
       timestamp: new Date().toISOString()
     };
     setRecentActivity(prev => [newItem, ...prev].slice(0, 50));
-    console.log(`[Activity Log]: ${data.author || data.actor} - ${data.label || data.action}`);
+    console.log(`[Activity Log]: ${newItem.actor} - ${newItem.action}`);
   }, []);
 
   const broadcastPresence = useCallback(() => {

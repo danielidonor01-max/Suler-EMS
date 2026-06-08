@@ -17,16 +17,18 @@ import { useActivity } from '@/context/ActivityContext';
 import { useRouter } from 'next/navigation';
 
 export default function NotificationsPage() {
-  const { broadcasts, conversations, markAsRead } = useCommunication();
+  const { conversations, markAsRead } = useCommunication();
   const { activities } = useActivity();
   const router = useRouter();
+
+  const broadcasts = conversations.filter(c => c.type === 'BROADCAST');
 
   // Combine relevant events into a unified notification stream
   const systemNotifications = activities.slice(0, 10).map(a => ({
     id: a.id,
     type: 'SYSTEM',
-    title: a.action,
-    description: `Action performed by ${a.user} in ${a.module || 'System'}`,
+    title: a.label || a.action,
+    description: a.message || `Action performed by ${a.author || a.actor} in ${a.type || 'System'}`,
     time: a.timestamp,
     icon: Activity,
     color: 'text-slate-400',
@@ -37,8 +39,8 @@ export default function NotificationsPage() {
     id: b.id,
     type: 'BROADCAST',
     title: b.title,
-    description: b.content.substring(0, 80) + '...',
-    time: b.timestamp,
+    description: b.lastMessage ? (b.lastMessage.substring(0, 80) + '...') : '',
+    time: b.lastMessageAt || new Date().toISOString(),
     icon: Target,
     color: 'text-indigo-600',
     bg: 'bg-indigo-50'

@@ -13,6 +13,7 @@ import { WorkflowEngine } from '@/modules/workflow/engine/workflow.engine';
 import { LeaveWorkflow } from '@/modules/workflow/definitions/leave.workflow';
 import { WorkflowStatusBadge, ApprovalTimeline, WorkflowActionBar } from '@/components/workflow/WorkflowUI';
 import { useAccess } from '@/context/AccessContext';
+import { useLeave } from '@/context/LeaveContext';
 import { MetricCard } from '@/components/dashboard/MetricCard';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -47,39 +48,6 @@ const CALENDAR_EVENTS = [
   { day: 20, name: 'Kemi Adesanya',    type: 'Annual Leave',       color: 'bg-indigo-100 text-indigo-700' },
 ];
 
-const INITIAL_LEAVE_REQUESTS: (WorkflowInstance & { employeeName: string, type: string, dates: string, days: number })[] = [
-  {
-    id: 'leave-001' as any, workflowId: 'leave-workflow', version: 1,
-    currentState: 'SUBMITTED', resourceId: 'res-001' as any,
-    employeeName: 'Alex Okereke', type: 'Annual Leave', dates: '10 Jun – 15 Jun', days: 5,
-    history: [
-      { id: 'audit-001' as any, instanceId: 'leave-001' as any, timestamp: '2024-05-01T10:00:00Z',
-        actorId: 'user-emp-001' as any, actorName: 'Alex Okereke', actorRole: 'EMPLOYEE',
-        fromState: 'DRAFT', toState: 'SUBMITTED', action: 'SUBMIT', comment: 'Vacation with family in Enugu.' }
-    ],
-    createdAt: '2024-05-01T10:00:00Z', updatedAt: '2024-05-01T10:00:00Z',
-  },
-  {
-    id: 'leave-002' as any, workflowId: 'leave-workflow', version: 1,
-    currentState: 'MANAGER_APPROVED', resourceId: 'res-002' as any,
-    employeeName: 'David Okafor', type: 'Sick Leave', dates: '06 May – 07 May', days: 2,
-    history: [
-      { id: 'a1' as any, instanceId: 'l2' as any, timestamp: '2024-05-01T09:00:00Z', actorId: 'u1' as any, actorName: 'David Okafor', actorRole: 'EMPLOYEE', fromState: 'DRAFT', toState: 'SUBMITTED', action: 'SUBMIT' },
-      { id: 'a2' as any, instanceId: 'l2' as any, timestamp: '2024-05-02T14:00:00Z', actorId: 'u2' as any, actorName: 'Segun Manager', actorRole: 'MANAGER', fromState: 'SUBMITTED', toState: 'MANAGER_APPROVED', action: 'APPROVE_MANAGER', comment: 'Approved. Get well soon.' },
-    ],
-    createdAt: '2024-05-01T09:00:00Z', updatedAt: '2024-05-02T14:00:00Z',
-  },
-  {
-    id: 'leave-003' as any, workflowId: 'leave-workflow', version: 1,
-    currentState: 'SUBMITTED', resourceId: 'res-003' as any,
-    employeeName: 'Sarah Williams', type: 'Compassionate Leave', dates: '10 May – 10 May', days: 1,
-    history: [
-      { id: 'a3' as any, instanceId: 'l3' as any, timestamp: '2024-05-09T11:00:00Z', actorId: 'u3' as any, actorName: 'Sarah Williams', actorRole: 'EMPLOYEE', fromState: 'DRAFT', toState: 'SUBMITTED', action: 'SUBMIT', comment: 'Family emergency.' }
-    ],
-    createdAt: '2024-05-09T11:00:00Z', updatedAt: '2024-05-09T11:00:00Z',
-  },
-];
-
 const TABS = ['Approval Pipeline', 'Leave Calendar', 'Balance Tracker', 'Leave Types'];
 const DAYS_OF_WEEK = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
@@ -99,22 +67,15 @@ function BalanceBar({ used, total, color }: { used: number; total: number; color
 
 export default function LeaveRequestsPage() {
   const { user } = useAccess();
-  const [requests, setRequests] = useState(INITIAL_LEAVE_REQUESTS);
-  const [selectedRequest, setSelectedRequest] = useState<typeof INITIAL_LEAVE_REQUESTS[0] | null>(null);
+  const { requests, executeLeaveAction } = useLeave();
+  const [selectedRequestId, setSelectedRequestId] = useState<string | null>(null);
   const [tab, setTab] = useState(0);
+
+  const selectedRequest = requests.find(r => r.id === selectedRequestId) || null;
 
   const handleAction = (action: WorkflowAction, comment?: string) => {
     if (!selectedRequest) return;
-    const result = WorkflowEngine.executeTransition(LeaveWorkflow, {
-      instance: selectedRequest,
-      actor: { id: user.id as any, name: user.name, role: user.role, permissions: user.permissions },
-      action, comment, payload: { comment }
-    });
-    if (result.success) {
-      const updated = { ...selectedRequest, ...result.data };
-      setRequests(prev => prev.map(r => r.id === updated.id ? { ...r, ...updated } : r));
-      setSelectedRequest(updated as any);
-    }
+    executeLeaveAction(selectedRequest.id, action, comment);
   };
 
   const columns = [
@@ -133,10 +94,10 @@ export default function LeaveRequestsPage() {
       )
     },
     {
-      header: "Period", accessor: "dates",
+      header: "Period", accessor: "startDate",
       render: (val: string, row: any) => (
         <div>
-          <div className="text-[13px] font-bold text-slate-700">{val}</div>
+          <div className="text-[13px] font-bold text-slate-700">{row.startDate} to {row.endDate}</div>
           <div className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">{row.days} day{row.days !== 1 ? 's' : ''}</div>
         </div>
       )
@@ -233,12 +194,12 @@ export default function LeaveRequestsPage() {
             description="Real-time status of organization-wide leave requests and approval steps."
             data={requests}
             columns={columns}
-            onRowClick={(row) => setSelectedRequest(row)}
+            onRowClick={(row) => setSelectedRequestId(row.id)}
           />
 
           <Drawer
             isOpen={!!selectedRequest}
-            onClose={() => setSelectedRequest(null)}
+            onClose={() => setSelectedRequestId(null)}
             title={`Leave Request: ${selectedRequest?.employeeName}`}
             subtitle={selectedRequest?.id as any}
           >
@@ -258,7 +219,7 @@ export default function LeaveRequestsPage() {
                   </div>
                   <div className="space-y-1">
                     <span className="text-[9px] font-bold text-slate-300 uppercase tracking-widest">Period</span>
-                    <p className="text-[14px] font-bold text-slate-900">{selectedRequest?.dates}</p>
+                    <p className="text-[14px] font-bold text-slate-900">{selectedRequest?.startDate} to {selectedRequest?.endDate}</p>
                   </div>
                   <div className="space-y-1">
                     <span className="text-[9px] font-bold text-slate-300 uppercase tracking-widest">Days</span>

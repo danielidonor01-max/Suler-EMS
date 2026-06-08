@@ -1,23 +1,20 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { Suspense, useState, useEffect } from 'react';
 import { 
   Inbox, 
   User, 
   Users, 
   Megaphone, 
-  Search,
-  Plus,
-  Settings,
-  MoreVertical
+  Settings
 } from 'lucide-react';
 import { RouteGuard } from '@/components/common/RouteGuard';
 import { useCommunication } from '@/context/CommunicationContext';
 import { ConversationList, ChatWindow, BroadcastPanel } from '@/components/messaging/ChatComponents';
 import { useSearchParams } from 'next/navigation';
 
-export default function MessagesPage() {
-  const { activeConversationId, setActiveConversationId, conversations, openDMWithUser, openGroupChat } = useCommunication();
+function MessagesContent() {
+  const { activeConversationId, setActiveConversationId, openDMWithUser, openGroupChat } = useCommunication();
   const searchParams = useSearchParams();
   const [activeTab, setActiveTab] = useState<'inbox' | 'dm' | 'groups' | 'broadcasts'>('inbox');
 
@@ -101,5 +98,17 @@ export default function MessagesPage() {
 
       </div>
     </RouteGuard>
+  );
+}
+
+export default function MessagesPage() {
+  return (
+    <Suspense fallback={
+      <div className="h-[calc(100vh-72px)] bg-white flex items-center justify-center">
+        <div className="text-slate-400 text-sm font-bold">Loading messages...</div>
+      </div>
+    }>
+      <MessagesContent />
+    </Suspense>
   );
 }

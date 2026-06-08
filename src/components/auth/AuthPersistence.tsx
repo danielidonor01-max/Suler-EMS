@@ -22,9 +22,9 @@ export const AuthPersistence: React.FC<{ children: React.ReactNode }> = ({ child
   const handleLogout = useCallback((reason: string = 'Inactivity') => {
     pushActivity({
       type: 'SECURITY',
-      label: 'Session Terminated',
+      actor: userRole,
+      action: 'Session Terminated',
       message: `User session ended due to ${reason}.`,
-      author: userRole,
       status: 'SUCCESS'
     });
 

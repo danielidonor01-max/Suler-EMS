@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { Modal } from '../common/Modal';
 import { useWorkforce } from '@/context/WorkforceContext';
+import { useOrganization, Hub, Department } from '@/context/OrganizationContext';
 import { Select } from '../forms/Select';
 
 // --- Hub Modals ---
@@ -84,6 +85,7 @@ export const CreateHubModal: React.FC<{ isOpen: boolean; onClose: () => void }> 
 
 export const EditHubModal: React.FC<{ isOpen: boolean; onClose: () => void; hub: Hub }> = ({ isOpen, onClose, hub }) => {
   const { updateHub } = useOrganization();
+  const { employees } = useWorkforce();
   const [name, setName] = useState(hub.name);
   const [geography, setGeography] = useState(hub.geography);
   const [category, setCategory] = useState(hub.category);
