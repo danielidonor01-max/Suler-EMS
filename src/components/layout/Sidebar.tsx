@@ -100,7 +100,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle }) => {
 
   const governanceModules = [
     { name: 'Command Center', icon: Cpu, href: '/admin/ecc', permission: Permissions.COMMAND_CENTER_VIEW },
-    { name: 'Roles & Permissions', icon: ShieldCheck, href: '/admin/ecc', permission: Permissions.ROLE_MANAGE },
+    { name: 'Roles & Permissions', icon: ShieldCheck, href: '/admin/roles', permission: Permissions.ROLE_MANAGE },
     { name: 'Audit Registry', icon: History, href: '/governance', permission: Permissions.AUDIT_VIEW },
   ].filter(m => !m.permission || checkPermission(m.permission as any).allowed);
 

@@ -1,6 +1,7 @@
 "use client";
 
 import { SessionProvider } from "next-auth/react";
+import { SessionVersionWatcher } from "@/lib/auth/SessionVersionWatcher";
 import { ToastProvider } from "./common/ToastContext";
 import { ObservabilityProvider } from "@/context/ObservabilityContext";
 import { AccessProvider } from "@/context/AccessContext";
@@ -19,6 +20,7 @@ import { AuthPersistence } from "@/components/auth/AuthPersistence";
 export function Providers({ children }: { children: React.ReactNode }) {
   return (
     <SessionProvider>
+      <SessionVersionWatcher />
       <ToastProvider>
         <ObservabilityProvider>
           <AccessProvider>

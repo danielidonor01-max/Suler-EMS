@@ -89,7 +89,8 @@ export const {
             role: user.role.name,
             permissions: user.role.permissions.map(p => p.code),
             employeeId: user.employeeId,
-            departmentId: user.employee?.departmentId
+            departmentId: user.employee?.departmentId,
+            version: user.version,
           };
         } catch (error: any) {
           console.error('[AUTH ERROR]', error);
@@ -99,13 +100,31 @@ export const {
     }),
   ],
   callbacks: {
-    async jwt({ token, user }) {
+    async jwt({ token, user, trigger }) {
       if (user) {
         token.id = user.id as string;
         token.role = user.role;
         token.permissions = user.permissions;
         token.employeeId = user.employeeId as string | undefined;
         token.departmentId = user.departmentId as string | undefined;
+        token.version = (user as any).version ?? 1;
+      }
+      // Permission refresh path: client called `session.update()` because the
+      // session-version poller detected a mismatch. Re-read DB and rebuild
+      // token claims so RBAC reflects current permissions without re-login.
+      // See ARCHITECTURE.md §11.
+      if (trigger === 'update' && token.id) {
+        const fresh = await prisma.user.findUnique({
+          where: { id: token.id as string },
+          include: { role: { include: { permissions: true } }, employee: true },
+        });
+        if (fresh && fresh.isActive) {
+          token.role = fresh.role.name;
+          token.permissions = fresh.role.permissions.map(p => p.code);
+          token.employeeId = fresh.employeeId ?? undefined;
+          token.departmentId = fresh.employee?.departmentId ?? undefined;
+          token.version = fresh.version;
+        }
       }
       return token;
     },
@@ -116,6 +135,7 @@ export const {
         session.user.permissions = token.permissions as string[];
         session.user.employeeId = token.employeeId as string;
         session.user.departmentId = token.departmentId as string;
+        (session.user as any).version = (token.version as number) ?? 1;
       }
       return session;
     },
