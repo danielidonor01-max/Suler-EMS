@@ -39,21 +39,13 @@ const Header = ({ onToggleSidebar }: { onToggleSidebar: () => void }) => {
   const { data: session } = useSession();
   
   const handleSignOut = async () => {
+    // signOut(redirect:false) clears the cookie server-side and returns
+    // without navigating. We then hard-navigate to /login ourselves —
+    // reliable regardless of NextAuth's `data.url` resolution.
     try {
-      await fetch('/api/system/security-event', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          type: 'SESSION_EXPIRED',
-          description: `[SIGN_OUT] ${session?.user?.name || 'User'} (${userRole}) signed out successfully.`,
-          metadata: { role: userRole, initiatedBy: 'USER_ACTION' },
-        }),
-      }).catch(() => {});
+      await signOut({ redirect: false });
     } finally {
-      // NextAuth v5 uses `redirectTo`, not `callbackUrl`. With `redirect: true`
-      // (default) the call fully redirects on the server, clearing the cookie
-      // before the page is rendered.
-      await signOut({ redirectTo: '/login' });
+      window.location.href = '/login';
     }
   };
 

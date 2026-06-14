@@ -56,20 +56,14 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle }) => {
 
   const handleSignOut = async () => {
     setIsSigningOut(true);
+    // signOut(redirect:false) clears the cookie server-side and returns
+    // without navigating. We then hard-navigate to /login ourselves —
+    // reliable regardless of NextAuth's `data.url` resolution, which can
+    // override `redirectTo` in v5 beta and send the user back to dashboard.
     try {
-      // Write audit event before destroying session
-      await fetch('/api/system/security-event', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          type: 'SESSION_EXPIRED',
-          description: `[SIGN_OUT] ${session?.user?.name || 'User'} (${userRole}) signed out successfully.`,
-          metadata: { role: userRole, initiatedBy: 'USER_ACTION' },
-        }),
-      }).catch(() => { /* non-blocking — don't block logout if audit fails */ });
+      await signOut({ redirect: false });
     } finally {
-      // NextAuth v5 uses `redirectTo`, not `callbackUrl`.
-      await signOut({ redirectTo: '/login' });
+      window.location.href = '/login';
     }
   };
 
