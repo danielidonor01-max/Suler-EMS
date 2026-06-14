@@ -4,12 +4,19 @@ import prisma from '@/lib/prisma';
 import { PasswordService } from './password.service';
 import { AuthService } from './auth.service';
 
-export const { 
-  handlers, 
-  auth, 
-  signIn, 
-  signOut 
+export const {
+  handlers,
+  auth,
+  signIn,
+  signOut
 } = NextAuth({
+  // NextAuth v5 beta refuses to trust the request host outside Vercel
+  // unless you opt in. Without this, /api/auth/session 500s on localhost
+  // with a generic "server configuration" error.
+  trustHost: true,
+  // Pick up AUTH_SECRET (v5 convention) or NEXTAUTH_SECRET (v4 fallback)
+  // explicitly so the resolution isn't environment-magic.
+  secret: process.env.AUTH_SECRET ?? process.env.NEXTAUTH_SECRET,
   providers: [
     Credentials({
       async authorize(credentials) {
