@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { 
   Inbox, 
   User, 
@@ -16,7 +16,7 @@ import { useCommunication } from '@/context/CommunicationContext';
 import { ConversationList, ChatWindow, BroadcastPanel } from '@/components/messaging/ChatComponents';
 import { useSearchParams } from 'next/navigation';
 
-export default function MessagesPage() {
+function MessagesContent() {
   const { activeConversationId, setActiveConversationId, conversations, openDMWithUser, openGroupChat } = useCommunication();
   const searchParams = useSearchParams();
   const [activeTab, setActiveTab] = useState<'inbox' | 'dm' | 'groups' | 'broadcasts'>('inbox');
@@ -101,5 +101,13 @@ export default function MessagesPage() {
 
       </div>
     </RouteGuard>
+  );
+}
+
+export default function MessagesPage() {
+  return (
+    <Suspense fallback={<div className="p-8 text-center text-slate-500">Loading Messages...</div>}>
+      <MessagesContent />
+    </Suspense>
   );
 }

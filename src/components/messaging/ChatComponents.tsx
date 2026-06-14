@@ -136,16 +136,18 @@ export const ChatWindow = ({ conversationId }: { conversationId: string }) => {
           </div>
         </div>
         <div className="flex items-center gap-2 text-slate-400">
-          <button className="w-9 h-9 flex items-center justify-center hover:bg-slate-50 hover:text-slate-900 rounded-xl transition-all"><Phone className="w-4 h-4" /></button>
-          <button className="w-9 h-9 flex items-center justify-center hover:bg-slate-50 hover:text-slate-900 rounded-xl transition-all"><Video className="w-4 h-4" /></button>
-          <button className="w-9 h-9 flex items-center justify-center hover:bg-slate-50 hover:text-slate-900 rounded-xl transition-all"><MoreVertical className="w-4 h-4" /></button>
+          <button type="button" aria-label="Start voice call" className="w-9 h-9 flex items-center justify-center hover:bg-slate-50 hover:text-slate-900 rounded-xl transition-all"><Phone className="w-4 h-4" /></button>
+          <button type="button" aria-label="Start video call" className="w-9 h-9 flex items-center justify-center hover:bg-slate-50 hover:text-slate-900 rounded-xl transition-all"><Video className="w-4 h-4" /></button>
+          <button type="button" aria-label="More options" className="w-9 h-9 flex items-center justify-center hover:bg-slate-50 hover:text-slate-900 rounded-xl transition-all"><MoreVertical className="w-4 h-4" /></button>
         </div>
       </div>
 
       {/* Messages */}
       <div ref={scrollRef} className="flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar bg-slate-50/30">
         {activeMessages.map((m, i) => {
-          const isOwn = m.senderId === user?.employeeId;
+          // Messages persist senderId = User.id (NOT employeeId). The
+          // CommunicationContext rewrite (Phase 3) aligned this with the DB.
+          const isOwn = m.senderId === user?.id;
           return (
             <div key={m.id} className={`flex flex-col ${isOwn ? 'items-end' : 'items-start'} animate-in fade-in slide-in-from-bottom-2`}>
               {!isOwn && <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1 mb-1.5">{m.senderName}</span>}
@@ -166,7 +168,7 @@ export const ChatWindow = ({ conversationId }: { conversationId: string }) => {
       {/* Input */}
       <div className="p-4 bg-white border-t border-slate-100">
         <div className="flex items-end gap-3 bg-slate-50 border border-slate-200 rounded-2xl p-2 focus-within:border-indigo-300 focus-within:bg-white transition-all">
-          <button className="w-10 h-10 flex items-center justify-center text-slate-400 hover:text-indigo-600 transition-colors"><Paperclip className="w-5 h-5" /></button>
+          <button type="button" aria-label="Attach file" className="w-10 h-10 flex items-center justify-center text-slate-400 hover:text-indigo-600 transition-colors"><Paperclip className="w-5 h-5" /></button>
           <textarea 
             rows={1}
             placeholder="Type your message..."
@@ -175,7 +177,9 @@ export const ChatWindow = ({ conversationId }: { conversationId: string }) => {
             onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && (e.preventDefault(), handleSend())}
             className="flex-1 bg-transparent border-none outline-none py-2.5 text-[13px] font-medium text-slate-900 placeholder:text-slate-400 resize-none max-h-[120px]"
           />
-          <button 
+          <button
+            type="button"
+            aria-label="Send message"
             onClick={handleSend}
             disabled={!input.trim()}
             className={`w-10 h-10 flex items-center justify-center rounded-xl transition-all ${
@@ -191,44 +195,99 @@ export const ChatWindow = ({ conversationId }: { conversationId: string }) => {
 };
 
 export const BroadcastPanel = () => {
-  const { postBroadcast } = useCommunication();
+  const { postBroadcast, conversations } = useCommunication();
   const { userRole } = useAccess();
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [scope, setScope] = useState<'TEAM' | 'DEPARTMENT' | 'HUB' | 'GLOBAL'>('GLOBAL');
+  const [posting, setPosting] = useState(false);
+  const [postError, setPostError] = useState<string | null>(null);
 
-  const handlePost = () => {
+  // Received broadcasts come from the context as BROADCAST-typed conversations
+  // (synthesized from /api/communication/announcements).
+  const receivedBroadcasts = conversations.filter(c => c.type === 'BROADCAST');
+
+  const handlePost = async () => {
     if (!title || !content) return;
-    postBroadcast(title, content, scope);
-    setTitle('');
-    setContent('');
+    setPosting(true);
+    setPostError(null);
+    try {
+      await postBroadcast(title, content, scope);
+      setTitle('');
+      setContent('');
+    } catch (err) {
+      setPostError(err instanceof Error ? err.message : 'Failed to dispatch broadcast');
+    } finally {
+      setPosting(false);
+    }
   };
 
   const allowedScopes = () => {
     if (userRole === 'SUPER_ADMIN') return ['GLOBAL', 'HUB', 'DEPARTMENT', 'TEAM'];
     if (userRole === 'HUB_MANAGER') return ['HUB', 'DEPARTMENT', 'TEAM'];
     if (userRole === 'MANAGER') return ['TEAM'];
+    if (userRole === 'HR_ADMIN') return ['GLOBAL', 'DEPARTMENT'];
     return [];
   };
+  const canPost = allowedScopes().length > 0;
 
   return (
     <div className="p-8 space-y-8 animate-in fade-in max-w-2xl">
       <div className="space-y-2">
         <div className="flex items-center gap-2">
           <Megaphone className="w-5 h-5 text-indigo-600" />
-          <h2 className="text-xl font-bold text-slate-900 tracking-tight">Post Official Broadcast</h2>
+          <h2 className="text-xl font-bold text-slate-900 tracking-tight">Announcements</h2>
         </div>
         <p className="text-[13px] font-medium text-slate-400 leading-relaxed">
-          Dispatch platform-wide alerts and high-priority announcements to specific institutional levels.
+          {canPost
+            ? 'Dispatch platform-wide alerts and high-priority announcements to specific institutional levels.'
+            : 'Active broadcasts targeted at you, your department, and your role.'}
         </p>
       </div>
 
+      {/* Received broadcasts */}
+      {receivedBroadcasts.length > 0 && (
+        <div className="space-y-3">
+          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Current Broadcasts ({receivedBroadcasts.length})</p>
+          {receivedBroadcasts.map(b => (
+            <div key={b.id} className="bg-white p-5 rounded-[20px] border border-slate-200 shadow-sm">
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex-1 min-w-0">
+                  <h3 className="text-[14px] font-bold text-slate-900">{b.title}</h3>
+                  <p className="text-[13px] text-slate-600 mt-1.5 leading-relaxed">{b.lastMessage}</p>
+                </div>
+                <span className="inline-flex items-center px-2 py-1 rounded-md text-[10px] font-bold uppercase tracking-widest bg-indigo-50 text-indigo-700 shrink-0">
+                  {b.scope}
+                </span>
+              </div>
+              {b.lastMessageAt && (
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-3">
+                  {format(new Date(b.lastMessageAt), 'MMM d, HH:mm')}
+                </p>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {!canPost && receivedBroadcasts.length === 0 && (
+        <div className="p-12 border-2 border-dashed border-slate-200 rounded-[24px] flex flex-col items-center justify-center text-center text-[13px] text-slate-500">
+          <Megaphone className="w-6 h-6 text-slate-300 mb-3" />
+          No active broadcasts.
+        </div>
+      )}
+
+      {!canPost && receivedBroadcasts.length > 0 && null}
+
+      {canPost && (
       <div className="space-y-6 bg-white p-8 rounded-[32px] border border-slate-200 shadow-premium">
         <div className="space-y-1.5">
           <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Announcement Scope</label>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
             {allowedScopes().map(s => (
-              <button 
+              <button
+                type="button"
+                aria-label={`Select scope ${s}`}
                 key={s}
                 onClick={() => setScope(s as any)}
                 className={`h-11 rounded-xl border text-[11px] font-bold transition-all ${
@@ -270,14 +329,20 @@ export const BroadcastPanel = () => {
           </p>
         </div>
 
-        <button 
+        {postError && (
+          <div className="px-4 py-3 rounded-[12px] bg-rose-50 border border-rose-100 text-[12px] text-rose-700">{postError}</div>
+        )}
+
+        <button
+          type="button"
           onClick={handlePost}
-          disabled={!title || !content}
+          disabled={!title || !content || posting}
           className="w-full h-[52px] bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-200 disabled:text-slate-400 text-white rounded-2xl text-[12px] font-bold uppercase tracking-wider transition-all shadow-premium flex items-center justify-center gap-2"
         >
-          <Send className="w-4 h-4" /> Dispatch Broadcast
+          <Send className="w-4 h-4" /> {posting ? 'Dispatching…' : 'Dispatch Broadcast'}
         </button>
       </div>
+      )}
     </div>
   );
 };
