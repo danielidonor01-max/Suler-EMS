@@ -18,10 +18,10 @@ import { useActivity, ActivityLog } from '@/context/ActivityContext';
 import { RouteGuard } from '@/components/common/RouteGuard';
 import { format } from 'date-fns';
 import { useSearchParams } from 'next/navigation';
-import { useState, useMemo } from 'react';
+import { useState, useMemo, Suspense } from 'react';
 import { useToast } from '@/components/common/ToastContext';
 
-export default function GovernanceAuditPage() {
+function GovernanceAuditContent() {
   const { activities } = useActivity();
   const searchParams = useSearchParams();
   const initialQuery = searchParams.get('q') || '';
@@ -41,9 +41,9 @@ export default function GovernanceAuditPage() {
       .filter(a => ['SYSTEM', 'GOVERNANCE', 'FINANCE', 'IAM'].includes(a.type))
       .filter(a => 
         !searchQuery || 
-        a.label.toLowerCase().includes(searchQuery.toLowerCase()) || 
-        a.message.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        a.author.toLowerCase().includes(searchQuery.toLowerCase())
+        (a.label || '').toLowerCase().includes(searchQuery.toLowerCase()) || 
+        (a.message || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (a.author || a.actor || '').toLowerCase().includes(searchQuery.toLowerCase())
       )
       .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
   }, [activities, searchQuery]);
@@ -131,8 +131,8 @@ export default function GovernanceAuditPage() {
                         <div className="flex items-center gap-3">
                            <h3 className="text-[14px] font-black text-slate-900 tracking-tight">{log.label}</h3>
                            <div className="flex items-center gap-1.5 px-2 py-0.5 bg-slate-100 rounded text-[9px] font-bold text-slate-500 uppercase tracking-widest">
-                              {getStatusIcon(log.status)}
-                              {log.status}
+                              {getStatusIcon(log.status || 'UNKNOWN')}
+                              {log.status || 'UNKNOWN'}
                            </div>
                         </div>
                         <p className="text-[13px] font-medium text-slate-500 leading-relaxed">{log.message}</p>
@@ -171,5 +171,13 @@ export default function GovernanceAuditPage() {
 
       </div>
     </RouteGuard>
+  );
+}
+
+export default function GovernanceAuditPage() {
+  return (
+    <Suspense fallback={<div className="p-8 text-center text-slate-500">Loading Governance Portal...</div>}>
+      <GovernanceAuditContent />
+    </Suspense>
   );
 }
