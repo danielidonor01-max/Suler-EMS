@@ -27,6 +27,7 @@ import { useAccess } from '@/context/AccessContext';
 import { MetricCard } from '@/components/dashboard/MetricCard';
 import { DataTable } from '@/components/tables/DataTable';
 import { CreateExpenditureModal, AllocateProjectFundingModal } from '@/components/modals/FinanceModals';
+import { ExpenditureSubmitModal } from '@/components/finance/ExpenditureSubmitModal';
 import { RouteGuard } from '@/components/common/RouteGuard';
 import { PermissionGate } from '@/components/common/PermissionGate';
 import { Permissions } from '@/modules/auth/domain/permission.model';
@@ -144,7 +145,7 @@ export default function FinanceDashboard() {
   ];
 
   return (
-    <RouteGuard allowedRoles={['SUPER_ADMIN', 'HR_ADMIN', 'FINANCE_MANAGER']}>
+    <RouteGuard allowedRoles={['SUPER_ADMIN', 'HR_ADMIN', 'FINANCE_MANAGER', 'MANAGER', 'EMPLOYEE']}>
       <div className="section-breathing max-w-[1400px] mx-auto animate-in space-y-6">
       
       {/* Financial Command Surface */}
@@ -166,7 +167,7 @@ export default function FinanceDashboard() {
 
         {!isHubManager && (
           <div className="flex items-center gap-3">
-           <PermissionGate permission={Permissions.FINANCE_DISBURSE} showLocked>
+           <PermissionGate permission={Permissions.FINANCE_VIEW} showLocked>
              <button 
                onClick={() => setIsExpOpen(true)}
                className="bg-white border border-slate-200 hover:border-slate-300 text-slate-600 flex items-center gap-2 px-6 h-[44px] rounded-2xl text-[11px] font-bold uppercase tracking-wider transition-all shadow-sm"
@@ -223,8 +224,8 @@ export default function FinanceDashboard() {
               data={filteredBudgets}
               columns={budgetColumns}
               rowActions={!isHubManager ? [
-                { label: 'Edit Budget', icon: Edit3, onClick: (b: Budget) => addToast(`Initializing cost-center adjustments for [${b.name}]`, 'INFO') },
-                { label: 'View Audit', icon: History, onClick: (b: Budget) => window.location.href = `/governance?q=${b.name}` }
+                { label: 'Edit Budget', icon: Edit3, permission: Permissions.FINANCE_ALLOCATE, onClick: (b: Budget) => addToast(`Initializing cost-center adjustments for [${b.name}]`, 'INFO') },
+                { label: 'View Audit', icon: History, permission: Permissions.AUDIT_VIEW, onClick: (b: Budget) => window.location.href = `/governance?q=${b.name}` }
               ] : []}
             />
          </div>
@@ -314,7 +315,7 @@ export default function FinanceDashboard() {
       </div>
 
       {/* Modals */}
-      <CreateExpenditureModal isOpen={isExpOpen} onClose={() => setIsExpOpen(false)} />
+      <ExpenditureSubmitModal isOpen={isExpOpen} onClose={() => setIsExpOpen(false)} />
       <AllocateProjectFundingModal isOpen={isProjOpen} onClose={() => setIsProjOpen(false)} />
 
       </div>
