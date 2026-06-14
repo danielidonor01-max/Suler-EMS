@@ -54,24 +54,30 @@ function isAuthorized(rule: RouteRule, role: string, permissions: string[]): boo
 
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
-  const rule = matchRule(pathname);
-  if (!rule) return NextResponse.next();
 
+  // 1. Authentication is required for every non-public route. The matcher at
+  //    the bottom of this file excludes static assets, NextAuth, /login, and
+  //    /forbidden — everything else needs a valid token. There is no GUEST
+  //    role and no anonymous workspace.
   const token = await getToken({ req, secret: SECRET });
   if (!token) {
     const url = req.nextUrl.clone();
     url.pathname = '/login';
-    url.searchParams.set('next', pathname);
+    url.searchParams.set('callbackUrl', pathname);
     return NextResponse.redirect(url);
   }
 
-  const role = (token.role as string) ?? 'GUEST';
-  const permissions = (token.permissions as string[]) ?? [];
-  if (!isAuthorized(rule, role, permissions)) {
-    const url = req.nextUrl.clone();
-    url.pathname = '/forbidden';
-    url.searchParams.set('path', pathname);
-    return NextResponse.redirect(url);
+  // 2. Permission checks layer on top — only fires when a rule covers the path.
+  const rule = matchRule(pathname);
+  if (rule) {
+    const role = (token.role as string) ?? '';
+    const permissions = (token.permissions as string[]) ?? [];
+    if (!isAuthorized(rule, role, permissions)) {
+      const url = req.nextUrl.clone();
+      url.pathname = '/forbidden';
+      url.searchParams.set('path', pathname);
+      return NextResponse.redirect(url);
+    }
   }
   return NextResponse.next();
 }

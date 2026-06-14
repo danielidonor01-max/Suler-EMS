@@ -7,9 +7,8 @@ import { Lock, Mail, AlertCircle, Loader2, ShieldCheck, CheckCircle2 } from 'luc
 import { motion } from 'framer-motion';
 
 function LoginContent() {
-  const router = useRouter();
   const searchParams = useSearchParams();
-  const callbackUrl = searchParams.get('callbackUrl') || '/employees';
+  const callbackUrl = searchParams.get('callbackUrl') || '/dashboard';
   const error = searchParams.get('error');
 
   const [email, setEmail] = useState('');
@@ -27,15 +26,19 @@ function LoginContent() {
         email,
         password,
         redirect: false,
-        callbackUrl,
+        redirectTo: callbackUrl,
       });
 
       if (result?.error) {
         setErrorMessage('Invalid email or password.');
         setIsLoading(false);
       } else {
-        router.push(callbackUrl);
-        router.refresh();
+        // Hard navigation forces a full reload so server components, every
+        // React context (Access, Activity, Sidebar, Header), and useSession()
+        // all see the new cookie. router.push + refresh leaves stale client
+        // state in places — particularly when the destination was previously
+        // viewable as the (no longer existing) GUEST fallback.
+        window.location.href = callbackUrl;
       }
     } catch (err) {
       setErrorMessage('An unexpected error occurred.');
@@ -134,7 +137,7 @@ function LoginContent() {
 
 export default function LoginPage() {
   return (
-    <div className="min-h-screen bg-[#f9fafb] flex items-center justify-center p-8 selection:bg-indigo-100 selection:text-indigo-900 font-sans relative overflow-hidden">
+    <div className="min-h-screen bg-[#f9fafb] flex items-center justify-center py-12 px-8 selection:bg-indigo-100 selection:text-indigo-900 font-sans relative">
       {/* Premium Ambient Background */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute -top-[10%] -left-[10%] w-[60%] h-[60%] bg-indigo-500/5 rounded-full blur-[120px]" />

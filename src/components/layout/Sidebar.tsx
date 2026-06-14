@@ -68,7 +68,8 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle }) => {
         }),
       }).catch(() => { /* non-blocking — don't block logout if audit fails */ });
     } finally {
-      await signOut({ callbackUrl: '/login' });
+      // NextAuth v5 uses `redirectTo`, not `callbackUrl`.
+      await signOut({ redirectTo: '/login' });
     }
   };
 
@@ -234,6 +235,8 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle }) => {
               </div>
             )}
             <button
+              type="button"
+              aria-label="Sign out"
               onClick={() => setShowSignOutModal(true)}
               className={`flex items-center gap-3.5 px-4 py-2.5 rounded-xl transition-all duration-200 text-rose-400 hover:bg-rose-900/20 hover:text-rose-300 w-full ${isCollapsed ? 'justify-center h-[44px] w-[44px] mx-auto px-0' : ''}`}
             >
@@ -292,6 +295,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle }) => {
           {/* Actions */}
           <div className="flex flex-col gap-3">
             <button
+              type="button"
               onClick={handleSignOut}
               disabled={isSigningOut}
               className="w-full h-[52px] bg-rose-600 hover:bg-rose-700 disabled:opacity-60 text-white rounded-xl text-[11px] font-bold uppercase tracking-widest transition-all shadow-lg shadow-rose-600/20 flex items-center justify-center gap-2"
@@ -307,6 +311,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle }) => {
               {isSigningOut ? 'Terminating Session...' : 'Sign Out'}
             </button>
             <button
+              type="button"
               onClick={() => setShowSignOutModal(false)}
               disabled={isSigningOut}
               className="w-full h-[48px] text-[11px] font-bold uppercase tracking-widest text-slate-400 hover:text-slate-600 transition-colors"
@@ -319,7 +324,9 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle }) => {
       </Modal>
 
       {/* Edge-Mounted Collapse Trigger */}
-      <button 
+      <button
+        type="button"
+        aria-label={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
         onClick={onToggle}
         className="absolute -right-3 top-[88px] w-6 h-6 bg-slate-900 border border-slate-700 rounded-full flex items-center justify-center text-slate-400 hover:text-white hover:border-slate-500 transition-all shadow-premium z-[60]"
       >

@@ -50,7 +50,10 @@ const Header = ({ onToggleSidebar }: { onToggleSidebar: () => void }) => {
         }),
       }).catch(() => {});
     } finally {
-      await signOut({ callbackUrl: '/login' });
+      // NextAuth v5 uses `redirectTo`, not `callbackUrl`. With `redirect: true`
+      // (default) the call fully redirects on the server, clearing the cookie
+      // before the page is rendered.
+      await signOut({ redirectTo: '/login' });
     }
   };
 
