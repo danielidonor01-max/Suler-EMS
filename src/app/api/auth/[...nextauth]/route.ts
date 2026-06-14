@@ -1,10 +1,13 @@
-import { handlers } from "@/auth";
-import { NextRequest } from "next/server";
+/**
+ * NextAuth v5 catch-all route.
+ *
+ * Canonical export form: destructure GET/POST from `handlers` directly so
+ * Next.js App Router sees the original function signature (request + route
+ * context). The previous version wrapped handlers in `(req) => handlers.GET(req)`,
+ * which stripped the route params context and made NextAuth's internal
+ * resolution throw a generic "server configuration" error before any
+ * callback ran.
+ */
+import { handlers } from '@/auth';
 
-export const GET = (req: NextRequest) => {
-  return handlers.GET(req);
-};
-
-export const POST = (req: NextRequest) => {
-  return handlers.POST(req);
-};
+export const { GET, POST } = handlers;
