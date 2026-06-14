@@ -16,7 +16,7 @@ const ROLE_PERMISSION_MAP: Record<string, string[]> = {
     Permissions.ANALYTICS_VIEW
   ],
   FINANCE_MANAGER: [
-    Permissions.PAYROLL_VIEW, Permissions.PAYROLL_APPROVE, Permissions.PAYROLL_PROCESS,
+    Permissions.PAYROLL_VIEW, Permissions.PAYROLL_EDIT, Permissions.PAYROLL_APPROVE, Permissions.PAYROLL_PROCESS,
     Permissions.FINANCE_VIEW, Permissions.FINANCE_ALLOCATE, Permissions.FINANCE_APPROVE, Permissions.FINANCE_DISBURSE,
     Permissions.AUDIT_VIEW,
     Permissions.ANALYTICS_VIEW
@@ -26,12 +26,14 @@ const ROLE_PERMISSION_MAP: Record<string, string[]> = {
     Permissions.LEAVE_VIEW, Permissions.LEAVE_SUBMIT,
     Permissions.ATTENDANCE_VIEW,
     Permissions.ANALYTICS_VIEW,
-    Permissions.REPORTS_GENERATE
+    Permissions.REPORTS_GENERATE,
+    Permissions.FINANCE_VIEW
   ],
   EMPLOYEE: [
     Permissions.LEAVE_VIEW, Permissions.LEAVE_SUBMIT,
     Permissions.ATTENDANCE_VIEW,
-    Permissions.WORKFORCE_VIEW // Can view colleagues
+    Permissions.WORKFORCE_VIEW, // Can view colleagues
+    Permissions.FINANCE_VIEW
   ]
 };
 
