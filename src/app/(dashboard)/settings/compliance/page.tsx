@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import React, { useState } from 'react';
 import { 
@@ -25,6 +25,7 @@ import { useAccess } from '@/context/AccessContext';
 import { RouteGuard } from '@/components/common/RouteGuard';
 import { AddSalaryGradeModal } from '@/components/modals/ComplianceModals';
 import Link from 'next/link';
+import { DatePicker } from '@/components/forms/DatePicker';
 
 export default function CompliancePoliciesPage() {
   const { settings, updateSettings } = useSettings();
@@ -180,15 +181,12 @@ export default function CompliancePoliciesPage() {
                            </div>
                         </div>
                      </div>
-                     <div className="space-y-2">
-                        <label className="text-[11px] font-black text-slate-500 uppercase tracking-widest">Effective Date</label>
-                        <input 
-                          type="date" 
-                          disabled={!isSuperAdmin}
-                          defaultValue="2026-01-01" 
-                          className="w-full h-14 bg-slate-50 border border-slate-100 rounded-2xl px-6 text-[15px] font-black text-slate-900 outline-none focus:ring-2 focus:ring-indigo-500 transition-all" 
-                        />
-                     </div>
+                      <DatePicker
+                        label="Effective Date"
+                        value="2026-01-01"
+                        onChange={() => {}}
+                        disabled={!isSuperAdmin}
+                      />
                   </div>
                </div>
             </div>

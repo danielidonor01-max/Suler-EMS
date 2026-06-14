@@ -22,6 +22,7 @@ import { useWorkforce, Employee } from '@/context/WorkforceContext';
 import { useToast } from '../common/ToastContext';
 import { useOrganization } from '@/context/OrganizationContext';
 import { Select } from '../forms/Select';
+import { DatePicker } from '../forms/DatePicker';
 import { ROLES } from '@/modules/auth/domain/role.model';
 
 interface EditEmployeeModalProps {
@@ -581,15 +582,11 @@ export const OnboardMemberModal: React.FC<OnboardMemberModalProps> = ({ isOpen, 
                        className="w-full h-[48px] bg-slate-50 border border-slate-200 rounded-xl px-4 text-[13px] font-bold outline-none focus:border-indigo-500 transition-all shadow-sm"
                      />
                   </div>
-                  <div className="space-y-2">
-                     <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Start Date</label>
-                     <input 
-                       type="date"
-                       value={formData.startDate}
-                       onChange={e => setFormData({...formData, startDate: e.target.value})}
-                       className="w-full h-[48px] bg-slate-50 border border-slate-200 rounded-xl px-4 text-[13px] font-bold outline-none focus:border-indigo-500 transition-all shadow-sm"
-                     />
-                  </div>
+                   <DatePicker
+                     label="Start Date"
+                     value={formData.startDate}
+                     onChange={val => setFormData({...formData, startDate: val})}
+                   />
                </div>
             </div>
 

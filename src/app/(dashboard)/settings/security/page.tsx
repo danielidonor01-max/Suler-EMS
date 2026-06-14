@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import { RouteGuard } from '@/components/common/RouteGuard';
 import { useSettings } from '@/context/SettingsContext';
+import { Select } from '@/components/forms/Select';
 
 const MOCK_AUDIT = [
   { action: 'Successful Login', user: 'Chinedu Okoro', ip: '197.210.66.12', time: '2026-05-11T14:00:00Z', status: 'SUCCESS' },
@@ -146,12 +147,16 @@ export default function SecurityPage() {
               <p className="text-[13px] font-bold text-slate-900">Password Expiry</p>
               <p className="text-[11px] text-slate-400">Days until mandatory reset</p>
             </div>
-            <select value={settings.security.passwordPolicy.expiryDays} onChange={(e) => updatePasswordPolicy('expiryDays', parseInt(e.target.value))} className="bg-white border border-slate-200 rounded-xl px-3 h-10 text-[13px] font-bold text-slate-900 outline-none">
-              <option value={30}>30 days</option>
-              <option value={60}>60 days</option>
-              <option value={90}>90 days</option>
-              <option value={180}>180 days</option>
-            </select>
+            <Select
+              value={String(settings.security.passwordPolicy.expiryDays)}
+              onChange={(v) => updatePasswordPolicy('expiryDays', parseInt(v))}
+              options={[
+                { label: '30 days', value: '30' },
+                { label: '60 days', value: '60' },
+                { label: '90 days', value: '90' },
+                { label: '180 days', value: '180' },
+              ]}
+            />
           </div>
         </div>
 

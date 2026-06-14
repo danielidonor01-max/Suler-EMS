@@ -6,8 +6,8 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
-  url      = "file:./dev.db"
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 // --- Auth & Identity ---
@@ -106,6 +106,8 @@ model Department {
   code      String     @unique
   managerId String?
   employees Employee[]
+  budgets   Budget[]
+  payrollRuns PayrollRun[]
   createdAt DateTime   @default(now())
   updatedAt DateTime   @updatedAt
 }
@@ -138,6 +140,12 @@ model Employee {
   leaveRequests   LeaveRequest[]
   reconciliations AttendanceReconciliation[]
 
+  // --- Finance & Payroll relations ---
+  salaryStructures   SalaryStructure[]
+  payrollEntries     PayrollEntry[]
+  payrollAdjustments PayrollAdjustment[]
+  expenditures       Expenditure[]      @relation("ExpenditureRequester")
+
   version   Int       @default(1)
   deletedAt DateTime?
   createdAt DateTime  @default(now())
@@ -157,6 +165,11 @@ model WorkflowInstance {
   history        WorkflowAuditEntry[]
   createdAt      DateTime             @default(now())
   updatedAt      DateTime             @updatedAt
+
+  @@index([currentState, assignedRoleId]) // approval queue by role
+  @@index([assignedToId, currentState]) // "my pending approvals"
+  @@index([workflowId, currentState]) // engine-level state scans
+  @@index([resourceId]) // resolve workflow from resource id
 }
 
 model WorkflowAuditEntry {
@@ -188,6 +201,10 @@ model LeaveRequest {
   workflowInstanceId String?  @unique
   createdAt          DateTime @default(now())
   updatedAt          DateTime @updatedAt
+
+  @@index([employeeId, status]) // "my requests filtered by status"
+  @@index([status, createdAt]) // approval queue feed
+  @@index([startDate, endDate]) // overlap queries / calendar views
 }
 
 model AttendanceRecord {
@@ -561,4 +578,250 @@ model AttendanceReconciliation {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+// ──────────────────────────────────────────────────────────────────────────────
+// Finance & Budget Domain
+// Approver / requester IDs are plain String (no @relation) — matches the
+// existing pattern in SecurityEvent / WorkflowAuditEntry. Resolve via service.
+// ──────────────────────────────────────────────────────────────────────────────
+
+model Budget {
+  id           String   @id @default(uuid())
+  name         String
+  fiscalYear   String // e.g. "FY2026"
+  period       String // ANNUAL, Q1, Q2, Q3, Q4, MONTHLY
+  departmentId String? // null = organization-wide
+  department   Department? @relation(fields: [departmentId], references: [id])
+
+  totalAmount     Decimal @db.Decimal(18, 2)
+  allocatedAmount Decimal @default(0) @db.Decimal(18, 2)
+  spentAmount     Decimal @default(0) @db.Decimal(18, 2)
+  currency        String  @default("NGN")
+
+  status      String  @default("DRAFT") // DRAFT, ACTIVE, CLOSED, ARCHIVED
+  description String?
+
+  createdById String
+  approvedById String?
+  approvedAt   DateTime?
+
+  categories   BudgetCategory[]
+  expenditures Expenditure[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([fiscalYear, status])
+  @@index([departmentId])
+}
+
+model BudgetCategory {
+  id              String  @id @default(uuid())
+  budgetId        String
+  budget          Budget  @relation(fields: [budgetId], references: [id], onDelete: Cascade)
+  name            String
+  code            String? // Optional internal cost code
+  allocatedAmount Decimal @db.Decimal(18, 2)
+  spentAmount     Decimal @default(0) @db.Decimal(18, 2)
+  notes           String?
+
+  expenditures Expenditure[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([budgetId, name])
+}
+
+model Expenditure {
+  id         String          @id @default(uuid())
+  budgetId   String
+  budget     Budget          @relation(fields: [budgetId], references: [id])
+  categoryId String?
+  category   BudgetCategory? @relation(fields: [categoryId], references: [id])
+
+  amount      Decimal @db.Decimal(18, 2)
+  currency    String  @default("NGN")
+  description String
+  vendor      String?
+  reference   String? // PO number, invoice ref, etc.
+
+  requestedById   String // Employee.id who initiated
+  requestedBy     Employee @relation("ExpenditureRequester", fields: [requestedById], references: [id])
+  approvedById    String?
+  disbursedById   String?
+
+  status String @default("DRAFT") // DRAFT, SUBMITTED, APPROVED, REJECTED, DISBURSED, CANCELLED
+  workflowInstanceId String? @unique
+
+  paymentMethod String? // BANK_TRANSFER, CHEQUE, CASH, CARD
+  paymentDate   DateTime?
+
+  metadata    Json? // attachments, line items
+  rejectReason String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([budgetId, status])
+  @@index([requestedById])
+  @@index([status, createdAt])
+}
+
+// ──────────────────────────────────────────────────────────────────────────────
+// Payroll Domain
+// Statutory rates are effective-dated. Calculations stored on PayrollEntry
+// are immutable snapshots; recalculation creates a new run, not an edit.
+// ──────────────────────────────────────────────────────────────────────────────
+
+model SalaryStructure {
+  id         String   @id @default(uuid())
+  employeeId String
+  employee   Employee @relation(fields: [employeeId], references: [id])
+
+  effectiveDate DateTime
+  isActive      Boolean  @default(true)
+
+  basicSalary         Decimal @db.Decimal(18, 2)
+  housingAllowance    Decimal @default(0) @db.Decimal(18, 2)
+  transportAllowance  Decimal @default(0) @db.Decimal(18, 2)
+  otherAllowances     Json? // [{ name, amount, taxable }]
+
+  currency String @default("NGN")
+
+  changedById String
+  reason      String?
+  metadata    Json?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([employeeId, isActive])
+  @@index([effectiveDate])
+}
+
+model StatutoryRate {
+  id   String @id @default(uuid())
+  code String // PAYE_BAND, PENSION_EMPLOYEE_PCT, PENSION_EMPLOYER_PCT, NHF_PCT, NHIS_PCT, CRA_PCT, CRA_FIXED
+  name String
+  type String // BAND, PERCENTAGE, FIXED
+
+  // For BAND: { min, max, rate }
+  // For PERCENTAGE/FIXED: { value }
+  value Json
+
+  effectiveFrom DateTime
+  effectiveTo   DateTime?
+  isActive      Boolean   @default(true)
+
+  jurisdiction String  @default("NG") // NG, NG-LA, NG-FCT (Lagos, FCT)
+  notes        String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([code, isActive, effectiveFrom])
+}
+
+model PayrollRun {
+  id           String      @id @default(uuid())
+  name         String // "May 2026 — Lagos HQ"
+  period       String // "2026-05" (YYYY-MM)
+  departmentId String? // null = org-wide
+  department   Department? @relation(fields: [departmentId], references: [id])
+
+  status String @default("DRAFT") // DRAFT, REVIEW, APPROVED, PROCESSED, CANCELLED
+
+  // Aggregate totals (denormalized for fast display)
+  totalGross       Decimal @default(0) @db.Decimal(18, 2)
+  totalNet         Decimal @default(0) @db.Decimal(18, 2)
+  totalDeductions  Decimal @default(0) @db.Decimal(18, 2)
+  totalEmployerContrib Decimal @default(0) @db.Decimal(18, 2)
+  entryCount       Int     @default(0)
+  currency         String  @default("NGN")
+
+  createdById   String
+  approvedById  String?
+  processedById String?
+
+  approvedAt   DateTime?
+  processedAt  DateTime?
+
+  // Snapshot of statutory rates used for this run (immutable audit)
+  rateSnapshot Json?
+  metadata     Json?
+
+  entries PayrollEntry[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([period, departmentId])
+  @@index([status, period])
+  @@index([createdAt])
+}
+
+model PayrollEntry {
+  id         String     @id @default(uuid())
+  runId      String
+  run        PayrollRun @relation(fields: [runId], references: [id], onDelete: Cascade)
+  employeeId String
+  employee   Employee   @relation(fields: [employeeId], references: [id])
+
+  // Inputs (frozen from SalaryStructure at run time)
+  basicSalary        Decimal @db.Decimal(18, 2)
+  housingAllowance   Decimal @default(0) @db.Decimal(18, 2)
+  transportAllowance Decimal @default(0) @db.Decimal(18, 2)
+  otherAllowances    Json? // [{ name, amount, taxable }]
+
+  // Computed
+  grossPay         Decimal @db.Decimal(18, 2)
+  paye             Decimal @default(0) @db.Decimal(18, 2)
+  pensionEmployee  Decimal @default(0) @db.Decimal(18, 2)
+  pensionEmployer  Decimal @default(0) @db.Decimal(18, 2)
+  nhf              Decimal @default(0) @db.Decimal(18, 2)
+  nhis             Decimal @default(0) @db.Decimal(18, 2)
+  otherDeductions  Json? // [{ name, amount, reason }]
+  totalDeductions  Decimal @default(0) @db.Decimal(18, 2)
+  netPay           Decimal @db.Decimal(18, 2)
+
+  adjustments PayrollAdjustment[]
+
+  notes    String?
+  metadata Json?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([runId, employeeId])
+  @@index([employeeId])
+  @@index([employeeId, createdAt]) // "my payslip history" descending
+}
+
+model PayrollAdjustment {
+  id         String        @id @default(uuid())
+  employeeId String
+  employee   Employee      @relation(fields: [employeeId], references: [id])
+  entryId    String?
+  entry      PayrollEntry? @relation(fields: [entryId], references: [id])
+
+  type   String // BONUS, DEDUCTION, REIMBURSEMENT, OVERTIME, ADVANCE, COMMISSION
+  amount Decimal @db.Decimal(18, 2)
+  reason String
+
+  effectivePeriod String // YYYY-MM — which payroll cycle this lands on
+  status          String  @default("PENDING") // PENDING, APPLIED, CANCELLED
+
+  createdById  String
+  approvedById String?
+  approvedAt   DateTime?
+
+  metadata Json?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([employeeId, effectivePeriod])
+  @@index([status, effectivePeriod])
 }

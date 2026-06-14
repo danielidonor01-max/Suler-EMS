@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { ChevronDown, Check } from 'lucide-react';
 import { Portal } from '../common/Portal';
 
@@ -33,18 +33,50 @@ export const Select: React.FC<SelectProps> = ({
   const triggerRef = useRef<HTMLButtonElement>(null);
   const selectedOption = options.find(opt => opt.value === value);
 
-  const toggleDropdown = () => {
-    if (!isOpen && triggerRef.current) {
+  const openDropdown = useCallback(() => {
+    if (triggerRef.current) {
       setRect(triggerRef.current.getBoundingClientRect());
     }
-    setIsOpen(!isOpen);
+    setIsOpen(true);
+  }, []);
+
+  const toggleDropdown = () => {
+    if (isOpen) {
+      setIsOpen(false);
+    } else {
+      openDropdown();
+    }
   };
 
+  // Re-measure on scroll so the popup tracks correctly; only close if trigger is off-screen
   useEffect(() => {
-    const handleScroll = () => isOpen && setIsOpen(false);
+    if (!isOpen) return;
+
+    const handleScroll = () => {
+      if (triggerRef.current) {
+        const newRect = triggerRef.current.getBoundingClientRect();
+        setRect(newRect);
+        // Close only if trigger has scrolled completely out of viewport
+        if (newRect.bottom < 0 || newRect.top > window.innerHeight) {
+          setIsOpen(false);
+        }
+      }
+    };
+
     window.addEventListener('scroll', handleScroll, true);
     return () => window.removeEventListener('scroll', handleScroll, true);
   }, [isOpen]);
+
+  const popupStyle: React.CSSProperties = rect ? {
+    top: rect.bottom + 8,
+    left: rect.left,
+    width: rect.width,
+    minWidth: '160px',
+    ...(rect.bottom + 250 > window.innerHeight && {
+      top: 'auto',
+      bottom: window.innerHeight - rect.top + 8,
+    })
+  } : {};
 
   return (
     <div className={`space-y-2 ${className}`}>
@@ -72,22 +104,15 @@ export const Select: React.FC<SelectProps> = ({
 
         {isOpen && rect && (
           <Portal>
+            {/* Backdrop — z-[200] to sit above modal (z-[100]) */}
             <div 
-              className="fixed inset-0 z-[100]" 
+              className="fixed inset-0 z-[200]" 
               onClick={() => setIsOpen(false)}
             />
+            {/* Dropdown panel — z-[201] */}
             <div 
-              className="fixed z-[101] bg-white border border-slate-200 rounded-[18px] shadow-floating py-2 animate-in zoom-in-95 duration-200 overflow-hidden"
-              style={{ 
-                top: rect.bottom + 8, 
-                left: rect.left,
-                width: rect.width,
-                minWidth: '160px',
-                ...(rect.bottom + 250 > window.innerHeight && {
-                   top: 'auto',
-                   bottom: window.innerHeight - rect.top + 8,
-                })
-              }}
+              className="fixed z-[201] bg-white border border-slate-200 rounded-[18px] shadow-floating py-2 animate-in zoom-in-95 duration-200 overflow-hidden"
+              style={popupStyle}
             >
               <div className="max-h-[240px] overflow-y-auto custom-scrollbar">
                 {options.map((option) => (

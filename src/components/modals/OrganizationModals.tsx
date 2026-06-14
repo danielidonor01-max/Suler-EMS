@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { Modal } from '../common/Modal';
 import { useWorkforce } from '@/context/WorkforceContext';
+import { useOrganization, Hub, Department } from '@/context/OrganizationContext';
 import { Select } from '../forms/Select';
 
 // --- Hub Modals ---
@@ -57,19 +58,17 @@ export const CreateHubModal: React.FC<{ isOpen: boolean; onClose: () => void }> 
               className="w-full h-12 bg-slate-50 border border-slate-100 rounded-xl px-4 text-sm font-bold focus:ring-2 focus:ring-slate-900 outline-none transition-all"
             />
           </div>
-          <div className="space-y-1.5">
-            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Classification</label>
-            <select 
-              value={category}
-              onChange={(e) => setCategory(e.target.value)}
-              className="w-full h-12 bg-slate-50 border border-slate-100 rounded-xl px-4 text-sm font-bold focus:ring-2 focus:ring-slate-900 outline-none transition-all"
-            >
-              <option>Primary HQ</option>
-              <option>Regional Operations</option>
-              <option>Satellite Branch</option>
-              <option>International Liaison</option>
-            </select>
-          </div>
+          <Select
+            label="Classification"
+            value={category}
+            onChange={setCategory}
+            options={[
+              { label: 'Primary HQ', value: 'Primary HQ' },
+              { label: 'Regional Operations', value: 'Regional Operations' },
+              { label: 'Satellite Branch', value: 'Satellite Branch' },
+              { label: 'International Liaison', value: 'International Liaison' },
+            ]}
+          />
         </div>
         <button 
           type="submit"
@@ -84,6 +83,7 @@ export const CreateHubModal: React.FC<{ isOpen: boolean; onClose: () => void }> 
 
 export const EditHubModal: React.FC<{ isOpen: boolean; onClose: () => void; hub: Hub }> = ({ isOpen, onClose, hub }) => {
   const { updateHub } = useOrganization();
+  const { employees } = useWorkforce();
   const [name, setName] = useState(hub.name);
   const [geography, setGeography] = useState(hub.geography);
   const [category, setCategory] = useState(hub.category);

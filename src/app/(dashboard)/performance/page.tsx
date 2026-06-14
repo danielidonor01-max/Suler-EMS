@@ -7,6 +7,7 @@ import {
   Medal, Brain, Users, Filter
 } from 'lucide-react';
 import { MetricCard } from '@/components/dashboard/MetricCard';
+import { Select } from '@/components/forms/Select';
 
 // ─── Mock Data ─────────────────────────────────────────────────────────────────
 const EMPLOYEES = [
@@ -146,16 +147,17 @@ export default function PerformancePage() {
             </p>
           </div>
           <div className="flex items-center gap-3">
-            <select
+            <Select
               value={filterHub}
-              onChange={e => setFilterHub(e.target.value)}
-              className="h-11 bg-slate-50 border border-slate-200 rounded-xl px-4 text-[12px] font-bold text-slate-700 outline-none"
-            >
-              <option value="All">All Hubs</option>
-              <option value="Lagos HQ">Lagos HQ</option>
-              <option value="Abuja Regional">Abuja Regional</option>
-              <option value="Port Harcourt">Port Harcourt</option>
-            </select>
+              onChange={setFilterHub}
+              options={[
+                { label: 'All Hubs', value: 'All' },
+                { label: 'Lagos HQ', value: 'Lagos HQ' },
+                { label: 'Abuja Regional', value: 'Abuja Regional' },
+                { label: 'Port Harcourt', value: 'Port Harcourt' },
+              ]}
+              className="w-48"
+            />
             <button className="bg-slate-900 hover:bg-black text-white flex items-center gap-2.5 px-6 py-3 rounded-xl text-[11px] font-bold uppercase tracking-wider transition-all shadow-md">
               <Plus className="w-4 h-4" />
               New Review Cycle

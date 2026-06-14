@@ -11,7 +11,8 @@ services:
       - DATABASE_URL=postgresql://suler:suler_pass@db:5432/suler_ems?schema=public
       - REDIS_URL=redis://redis:6379
       - NEXTAUTH_URL=http://localhost:3000
-      - NEXTAUTH_SECRET=${NEXTAUTH_SECRET}
+      - NEXTAUTH_SECRET=${AUTH_SECRET}
+      - AUTH_SECRET=${AUTH_SECRET}
     depends_on:
       - db
       - redis

@@ -6,7 +6,15 @@
     "dev": "next dev",
     "build": "prisma generate && next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "db:up": "docker compose up -d db",
+    "db:down": "docker compose stop db",
+    "db:reset": "prisma migrate reset --force",
+    "db:migrate": "prisma migrate dev",
+    "db:generate": "prisma generate",
+    "db:seed": "prisma db seed",
+    "db:verify": "ts-node prisma/verify.ts",
+    "db:studio": "prisma studio"
   },
   "prisma": {
     "seed": "ts-node prisma/seed.ts"
@@ -34,6 +42,7 @@
     "react-dom": "19.2.4",
     "recharts": "^3.8.1",
     "redis": "^5.12.1",
+    "swr": "^2.3.2",
     "tailwind-merge": "^3.5.0",
     "uuid": "^14.0.0",
     "winston": "^3.19.0",
