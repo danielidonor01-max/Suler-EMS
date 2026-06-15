@@ -154,4 +154,8 @@ New check this phase:
 
 ### Final Status
 
-*(Mark COMPLETE after sign-off.)*
+**Phase 6 — COMPLETE ✅** (signed off 2026-06-15)
+
+Phase 6.1 (Roles CRUD + User management) was added during sign-off prep
+to address the operational gap that "edit-only" roles left. Both shipped
+together; all eight acceptance gate items pass.

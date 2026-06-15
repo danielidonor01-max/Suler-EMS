@@ -44,21 +44,36 @@
 - [x] /finance/approvals queue cloning /leave/approvals pattern
 - [x] DISBURSED terminal (constraint enforced by workflow definition)
 
-## Phase 5: Payroll Module [IN PROGRESS]
-- [ ] PayrollRunWorkflow (DRAFT → REVIEW → APPROVED → PROCESSED)
-- [ ] Salary snapshot into PayrollEntry (no retroactive recompute)
-- [ ] Adjustment auto-flip to APPLIED on PROCESS (same transaction)
-- [ ] Idempotent processing via `updateMany` state guard
-- [ ] Reconciliation check: PayrollRun totals ≡ Σ(entries)
-- [ ] /payroll/register, /payroll/runs/[id], /payroll/approvals, /my-payroll
+## Phase 5: Payroll Module [COMPLETE]
+- [x] PayrollRunWorkflow (DRAFT → REVIEW → APPROVED → PROCESSED)
+- [x] Salary snapshot into PayrollEntry (no retroactive recompute)
+- [x] Adjustment auto-flip to APPLIED on PROCESS (same transaction)
+- [x] Idempotent processing via `updateMany` state guard
+- [x] Reconciliation check: PayrollRun totals ≡ Σ(entries)
+- [x] /payroll/register, /payroll/runs/[id], /payroll/approvals, /my-payroll
 
-## Phase 6: Roles UI + Hardening [PENDING]
-- [ ] Admin UI for Role / Permission management
-- [ ] Middleware-based RouteGuard (server-side equivalent)
-- [ ] Permission refresh on role change (version bump pattern)
-- [ ] Inngest background processing for payroll > 250 entries
-- [ ] PDF/CSV export pipeline
-- [ ] A11y pass on icon-only buttons
+## Phase 6: Roles UI + RBAC Hardening [COMPLETE]
+- [x] Admin UI for Role / Permission management (`/admin/roles`)
+- [x] Server-side route protection via `proxy.ts` (Next.js 16 rename)
+- [x] Permission refresh on role change (User.version bump + 60s poll → JWT refresh)
+- [x] Four invariants enforced (C1 system roles, C2 audit, C3 self-lockout, C4 last super admin)
+- [x] db:verify extended (permission-coverage, ≥1 SUPER_ADMIN, HR_ADMIN canonical)
+- [x] ARCHITECTURE.md formalized (11 rules)
+
+## Phase 6.1: Roles CRUD + User Management [COMPLETE]
+- [x] Custom role create (blank start, UPPER_SNAKE_CASE)
+- [x] Role rename + describe (non-system only)
+- [x] Role delete (blocks if users assigned)
+- [x] `/admin/users` page with role-change modal (calls PATCH endpoint)
+- [x] `User.version` bumped on role assignment
+
+## Phase 7: Pilot Hardening [IN PROGRESS]
+- [ ] PDF/CSV export pipeline (payslip PDF, payroll register CSV, audit log CSV)
+- [ ] A11y ratchet: jsx-a11y rule warn → error after pre-Phase-6 sweep
+- [ ] Broken-route audit (catch the next /workforce-class bug before users do)
+- [ ] Inngest async payroll processing (only when concrete need surfaces; deferred to Phase 8)
+- [ ] OAuth/SSO identity provider (deferred to Phase 8)
+- [ ] Multi-regional load testing (deferred to Phase 8)
 
 ---
 
