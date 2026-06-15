@@ -326,7 +326,7 @@ function RoleEditorModal({ mode, role, onClose, onSaved }: {
         <div className="p-6 space-y-4">
           <div>
             <label className="text-[11px] font-bold text-slate-500 uppercase tracking-widest" htmlFor="role-name">Name (UPPER_SNAKE_CASE)</label>
-            <input
+            <input aria-label="Name (UPPER_SNAKE_CASE)"
               id="role-name"
               value={name}
               onChange={(e) => setName(e.target.value.toUpperCase())}
@@ -339,7 +339,7 @@ function RoleEditorModal({ mode, role, onClose, onSaved }: {
           </div>
           <div>
             <label className="text-[11px] font-bold text-slate-500 uppercase tracking-widest" htmlFor="role-desc">Description (optional)</label>
-            <input
+            <input aria-label="Description (optional)"
               id="role-desc"
               value={description}
               onChange={(e) => setDescription(e.target.value)}

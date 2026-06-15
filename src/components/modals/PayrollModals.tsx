@@ -91,7 +91,7 @@ export const AddAdjustmentModal: React.FC<{ isOpen: boolean; onClose: () => void
           </div>
           <div className="space-y-1.5">
             <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Label / Justification</label>
-            <input 
+            <input aria-label="Label / Justification" 
               required
               value={label}
               onChange={(e) => setLabel(e.target.value)}
@@ -101,7 +101,7 @@ export const AddAdjustmentModal: React.FC<{ isOpen: boolean; onClose: () => void
           </div>
           <div className="space-y-1.5">
             <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Amount (₦)</label>
-            <input 
+            <input aria-label="Amount (₦)" 
               required
               type="number"
               value={amount}
@@ -240,7 +240,7 @@ export const BulkAdjustmentModal: React.FC<{ isOpen: boolean; onClose: () => voi
                 </div>
                 <div className="space-y-2">
                    <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Title</label>
-                   <input 
+                   <input aria-label="Title" 
                      placeholder="e.g. Q2 Performance Bonus"
                      value={formData.title}
                      onChange={e => setFormData({...formData, title: e.target.value})}
@@ -468,19 +468,19 @@ export const UpdateSalaryModal: React.FC<{ isOpen: boolean; onClose: () => void;
         <div className="grid grid-cols-2 gap-4">
            <div className="space-y-1.5">
               <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Base Salary</label>
-              <input type="number" value={base} onChange={e => setBase(e.target.value)} className="w-full h-12 bg-slate-50 border border-slate-100 rounded-xl px-4 text-sm font-bold" />
+              <input aria-label="Base Salary" type="number" value={base} onChange={e => setBase(e.target.value)} className="w-full h-12 bg-slate-50 border border-slate-100 rounded-xl px-4 text-sm font-bold" />
            </div>
            <div className="space-y-1.5">
               <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Housing</label>
-              <input type="number" value={housing} onChange={e => setHousing(e.target.value)} className="w-full h-12 bg-slate-50 border border-slate-100 rounded-xl px-4 text-sm font-bold" />
+              <input aria-label="Housing" type="number" value={housing} onChange={e => setHousing(e.target.value)} className="w-full h-12 bg-slate-50 border border-slate-100 rounded-xl px-4 text-sm font-bold" />
            </div>
            <div className="space-y-1.5">
               <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Transport</label>
-              <input type="number" value={transport} onChange={e => setTransport(e.target.value)} className="w-full h-12 bg-slate-50 border border-slate-100 rounded-xl px-4 text-sm font-bold" />
+              <input aria-label="Transport" type="number" value={transport} onChange={e => setTransport(e.target.value)} className="w-full h-12 bg-slate-50 border border-slate-100 rounded-xl px-4 text-sm font-bold" />
            </div>
            <div className="space-y-1.5">
               <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Meal</label>
-              <input type="number" value={meal} onChange={e => setMeal(e.target.value)} className="w-full h-12 bg-slate-50 border border-slate-100 rounded-xl px-4 text-sm font-bold" />
+              <input aria-label="Meal" type="number" value={meal} onChange={e => setMeal(e.target.value)} className="w-full h-12 bg-slate-50 border border-slate-100 rounded-xl px-4 text-sm font-bold" />
            </div>
         </div>
         <button type="submit" className="w-full h-12 bg-indigo-600 text-white rounded-xl text-xs font-black uppercase tracking-widest shadow-xl shadow-indigo-100">

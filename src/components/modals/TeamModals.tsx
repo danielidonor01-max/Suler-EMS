@@ -48,7 +48,7 @@ export const CreateTeamModal: React.FC<{ isOpen: boolean; onClose: () => void }>
         <div className="space-y-4">
           <div className="space-y-1.5">
             <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Team Identity</label>
-            <input 
+            <input aria-label="Team Identity" 
               required
               value={name}
               onChange={(e) => setName(e.target.value)}
@@ -58,7 +58,7 @@ export const CreateTeamModal: React.FC<{ isOpen: boolean; onClose: () => void }>
           </div>
           <div className="space-y-1.5">
             <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Strategic Description</label>
-            <textarea 
+            <textarea aria-label="Strategic Description" 
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Briefly define the team mission..."

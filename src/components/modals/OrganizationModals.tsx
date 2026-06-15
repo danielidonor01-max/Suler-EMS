@@ -40,7 +40,7 @@ export const CreateHubModal: React.FC<{ isOpen: boolean; onClose: () => void }> 
         <div className="space-y-4">
           <div className="space-y-1.5">
             <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Hub Identity</label>
-            <input 
+            <input aria-label="Hub Identity" 
               required
               value={name}
               onChange={(e) => setName(e.target.value)}
@@ -50,7 +50,7 @@ export const CreateHubModal: React.FC<{ isOpen: boolean; onClose: () => void }> 
           </div>
           <div className="space-y-1.5">
             <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Geographical Context</label>
-            <input 
+            <input aria-label="Geographical Context" 
               required
               value={geography}
               onChange={(e) => setGeography(e.target.value)}
@@ -101,7 +101,7 @@ export const EditHubModal: React.FC<{ isOpen: boolean; onClose: () => void; hub:
         <div className="space-y-4">
           <div className="space-y-1.5">
             <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Hub Name</label>
-            <input 
+            <input aria-label="Hub Name" 
               required
               value={name}
               onChange={(e) => setName(e.target.value)}
@@ -110,7 +110,7 @@ export const EditHubModal: React.FC<{ isOpen: boolean; onClose: () => void; hub:
           </div>
           <div className="space-y-1.5">
              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Geography</label>
-             <input 
+             <input aria-label="Geography" 
                required
                value={geography}
                onChange={(e) => setGeography(e.target.value)}
@@ -160,7 +160,7 @@ export const CreateDepartmentModal: React.FC<{ isOpen: boolean; onClose: () => v
         <div className="space-y-4">
           <div className="space-y-1.5">
             <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Unit Identity</label>
-            <input 
+            <input aria-label="Unit Identity" 
               required
               value={name}
               onChange={(e) => setName(e.target.value)}
@@ -212,7 +212,7 @@ export const EditDepartmentModal: React.FC<{ isOpen: boolean; onClose: () => voi
         <div className="space-y-4">
           <div className="space-y-1.5">
             <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Department Name</label>
-            <input 
+            <input aria-label="Department Name" 
               required
               value={name}
               onChange={(e) => setName(e.target.value)}

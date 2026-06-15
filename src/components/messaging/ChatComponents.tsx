@@ -302,7 +302,7 @@ export const BroadcastPanel = () => {
 
         <div className="space-y-1.5">
           <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Headline</label>
-          <input 
+          <input aria-label="Headline" 
             type="text" 
             placeholder="e.g. System Maintenance, New Policy Update..."
             value={title}
@@ -313,7 +313,7 @@ export const BroadcastPanel = () => {
 
         <div className="space-y-1.5">
           <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Payload Content</label>
-          <textarea 
+          <textarea aria-label="Payload Content" 
             rows={4}
             placeholder="Provide detailed instructions or information..."
             value={content}

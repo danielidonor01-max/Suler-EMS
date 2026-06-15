@@ -57,7 +57,7 @@ export const CreateExpenditureModal: React.FC<{ isOpen: boolean; onClose: () => 
         <div className="space-y-4">
           <div className="space-y-1.5">
             <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Description</label>
-            <input 
+            <input aria-label="Description" 
               required
               value={description}
               onChange={(e) => setDescription(e.target.value)}
@@ -68,7 +68,7 @@ export const CreateExpenditureModal: React.FC<{ isOpen: boolean; onClose: () => 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1.5">
               <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Amount (₦)</label>
-              <input 
+              <input aria-label="Amount (₦)" 
                 required
                 type="number"
                 value={amount}
@@ -148,7 +148,7 @@ export const AllocateProjectFundingModal: React.FC<{ isOpen: boolean; onClose: (
         <div className="space-y-4">
           <div className="space-y-1.5">
             <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Project Name</label>
-            <input 
+            <input aria-label="Project Name" 
               required
               value={projectName}
               onChange={(e) => setProjectName(e.target.value)}
@@ -159,7 +159,7 @@ export const AllocateProjectFundingModal: React.FC<{ isOpen: boolean; onClose: (
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1.5">
               <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Total Funding (₦)</label>
-              <input 
+              <input aria-label="Total Funding (₦)" 
                 required
                 type="number"
                 value={allocation}

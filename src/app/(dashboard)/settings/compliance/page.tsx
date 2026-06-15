@@ -126,7 +126,7 @@ export default function CompliancePoliciesPage() {
                    <div className="space-y-6">
                      <div className="space-y-2">
                         <label className="text-[11px] font-black text-slate-500 uppercase tracking-widest">Tax Relief Base (₦ Annual)</label>
-                        <input 
+                        <input aria-label="Tax Relief Base (₦ Annual)" 
                           type="number" 
                           disabled={!isSuperAdmin}
                           value={policy.taxReliefBase} 

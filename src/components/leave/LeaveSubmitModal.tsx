@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { Modal, ModalHeader, ModalBody, ModalFooter } from '@/components/modals/Modal';
 import { apiMutate } from '@/lib/api/fetcher';
+import { Select } from '@/components/forms/Select';
 
 type LeaveType = 'ANNUAL' | 'SICK' | 'CASUAL' | 'MATERNITY' | 'PATERNITY' | 'COMPASSIONATE';
 
@@ -66,17 +67,17 @@ export function LeaveSubmitModal({ isOpen, onClose, onSubmitted }: Props) {
         <ModalBody className="space-y-5">
           <div>
             <label className="text-[11px] font-bold text-slate-500 uppercase tracking-widest">Leave Type</label>
-            <select
-              value={type} onChange={(e) => setType(e.target.value as LeaveType)}
-              className="mt-2 w-full h-[44px] px-4 rounded-[12px] border border-slate-200 text-[13px] text-slate-900 bg-white focus:outline-none focus:border-indigo-500"
-            >
-              {TYPE_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
-            </select>
+            <Select
+              options={TYPE_OPTIONS}
+              value={type}
+              onChange={(val) => setType(val as LeaveType)}
+              className="mt-2"
+            />
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="text-[11px] font-bold text-slate-500 uppercase tracking-widest">Start Date</label>
-              <input
+              <input aria-label="Start Date"
                 type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)}
                 className="mt-2 w-full h-[44px] px-4 rounded-[12px] border border-slate-200 text-[13px] text-slate-900 bg-white focus:outline-none focus:border-indigo-500"
                 required
@@ -84,7 +85,7 @@ export function LeaveSubmitModal({ isOpen, onClose, onSubmitted }: Props) {
             </div>
             <div>
               <label className="text-[11px] font-bold text-slate-500 uppercase tracking-widest">End Date</label>
-              <input
+              <input aria-label="End Date"
                 type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)}
                 className="mt-2 w-full h-[44px] px-4 rounded-[12px] border border-slate-200 text-[13px] text-slate-900 bg-white focus:outline-none focus:border-indigo-500"
                 required
@@ -93,7 +94,7 @@ export function LeaveSubmitModal({ isOpen, onClose, onSubmitted }: Props) {
           </div>
           <div>
             <label className="text-[11px] font-bold text-slate-500 uppercase tracking-widest">Reason</label>
-            <textarea
+            <textarea aria-label="Reason"
               value={reason} onChange={(e) => setReason(e.target.value)}
               rows={3} placeholder="A short reason your manager can review."
               className="mt-2 w-full px-4 py-3 rounded-[12px] border border-slate-200 text-[13px] text-slate-900 bg-white focus:outline-none focus:border-indigo-500 resize-none"

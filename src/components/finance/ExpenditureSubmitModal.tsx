@@ -4,6 +4,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { Modal, ModalHeader, ModalBody, ModalFooter } from '@/components/modals/Modal';
 import { apiFetcher } from '@/lib/api/fetcher';
 import { useFinance } from '@/context/FinanceContext';
+import { Select } from '@/components/forms/Select';
 
 interface BudgetDetail {
   id: string;
@@ -114,18 +115,16 @@ export function ExpenditureSubmitModal({ isOpen, onClose, onSubmitted }: Props) 
         <ModalBody className="space-y-5">
           <div>
             <label className="text-[11px] font-bold text-slate-500 uppercase tracking-widest">Budget</label>
-            <select
-              value={budgetId} onChange={(e) => setBudgetId(e.target.value)}
-              className="mt-2 w-full h-[44px] px-4 rounded-[12px] border border-slate-200 text-[13px] text-slate-900 bg-white focus:outline-none focus:border-indigo-500"
-              required
-            >
-              <option value="" disabled>Choose a budget…</option>
-              {budgets.map(b => (
-                <option key={b.id} value={b.id}>
-                  {b.name} — remaining {fmtNGN(b.remaining)}
-                </option>
-              ))}
-            </select>
+            <Select
+              options={budgets.map(b => ({
+                label: `${b.name} — remaining ${fmtNGN(b.remaining)}`,
+                value: b.id
+              }))}
+              value={budgetId}
+              onChange={setBudgetId}
+              placeholder="Choose a budget…"
+              className="mt-2"
+            />
             {budgetDetail && (
               <p className="mt-2 text-[11px] text-slate-500">
                 Remaining: <span className="font-bold text-slate-700">{fmtNGN(remaining)}</span> · Utilization: {budgetDetail.utilization.utilizationPercent}%
@@ -136,27 +135,28 @@ export function ExpenditureSubmitModal({ isOpen, onClose, onSubmitted }: Props) 
           {budgetDetail?.categories && budgetDetail.categories.length > 0 && (
             <div>
               <label className="text-[11px] font-bold text-slate-500 uppercase tracking-widest">Category</label>
-              <select
-                value={categoryId} onChange={(e) => setCategoryId(e.target.value)}
-                className="mt-2 w-full h-[44px] px-4 rounded-[12px] border border-slate-200 text-[13px] text-slate-900 bg-white focus:outline-none focus:border-indigo-500"
-              >
-                <option value="">No category</option>
-                {budgetDetail.categories.map(c => {
-                  const catRemaining = Number(c.allocatedAmount) - Number(c.spentAmount);
-                  return (
-                    <option key={c.id} value={c.id}>
-                      {c.name}{c.code ? ` (${c.code})` : ''} — remaining {fmtNGN(catRemaining)}
-                    </option>
-                  );
-                })}
-              </select>
+              <Select
+                options={[
+                  { label: 'No category', value: '' },
+                  ...budgetDetail.categories.map(c => {
+                    const catRemaining = Number(c.allocatedAmount) - Number(c.spentAmount);
+                    return {
+                      label: `${c.name}${c.code ? ` (${c.code})` : ''} — remaining ${fmtNGN(catRemaining)}`,
+                      value: c.id
+                    };
+                  })
+                ]}
+                value={categoryId}
+                onChange={setCategoryId}
+                className="mt-2"
+              />
             </div>
           )}
 
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="text-[11px] font-bold text-slate-500 uppercase tracking-widest">Amount (₦)</label>
-              <input
+              <input aria-label="Amount (₦)"
                 type="number" min="0" step="0.01" required
                 value={amount} onChange={(e) => setAmount(e.target.value)}
                 placeholder="0.00"
@@ -165,7 +165,7 @@ export function ExpenditureSubmitModal({ isOpen, onClose, onSubmitted }: Props) 
             </div>
             <div>
               <label className="text-[11px] font-bold text-slate-500 uppercase tracking-widest">Vendor (optional)</label>
-              <input
+              <input aria-label="Vendor (optional)"
                 value={vendor} onChange={(e) => setVendor(e.target.value)}
                 placeholder="e.g. AWS, Air Peace"
                 className="mt-2 w-full h-[44px] px-4 rounded-[12px] border border-slate-200 text-[13px] text-slate-900 bg-white focus:outline-none focus:border-indigo-500"
@@ -175,7 +175,7 @@ export function ExpenditureSubmitModal({ isOpen, onClose, onSubmitted }: Props) 
 
           <div>
             <label className="text-[11px] font-bold text-slate-500 uppercase tracking-widest">Description</label>
-            <textarea
+            <textarea aria-label="Description"
               value={description} onChange={(e) => setDescription(e.target.value)}
               rows={3} placeholder="What is this expenditure for?"
               className="mt-2 w-full px-4 py-3 rounded-[12px] border border-slate-200 text-[13px] text-slate-900 bg-white focus:outline-none focus:border-indigo-500 resize-none"
