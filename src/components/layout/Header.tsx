@@ -1,12 +1,10 @@
 'use client';
 
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useRef, useState } from 'react';
 import Link from 'next/link';
 import { useSession, signOut } from 'next-auth/react';
 import {
-  Search,
   Bell,
-  Command,
   ChevronDown,
   Activity,
   Globe,
@@ -20,6 +18,7 @@ import {
   LogOut
 } from 'lucide-react';
 import { GlobalCommandModal } from '../modals/GlobalCommandModal';
+import { GlobalSearch } from './GlobalSearch';
 
 import { useAccess } from '@/context/AccessContext';
 import { useOrganization } from '@/context/OrganizationContext';
@@ -44,27 +43,38 @@ const Header = ({ onToggleSidebar }: { onToggleSidebar: () => void }) => {
   useDismiss(hubRef, () => setIsHubOpen(false), isHubOpen);
   useDismiss(profileRef, () => setIsProfileOpen(false), isProfileOpen);
 
-  // Global Cmd/Ctrl+K opens the command palette from anywhere in the app.
-  useEffect(() => {
-    const handler = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
-        e.preventDefault();
-        setIsCommandModalOpen(prev => !prev);
-      }
-    };
-    window.addEventListener('keydown', handler);
-    return () => window.removeEventListener('keydown', handler);
-  }, []);
-
   const handleSignOut = async () => {
-    // signOut(redirect:false) clears the cookie server-side and returns
-    // without navigating. We then hard-navigate to /login ourselves —
-    // reliable regardless of NextAuth's `data.url` resolution.
+    // Belt + suspenders: NextAuth v5 beta's signOut() sometimes fails to
+    // clear the cookie silently (cookie-path or domain mismatch on Vercel
+    // deployments). We:
+    //   1. Call signOut() which clears the cookie server-side.
+    //   2. Manually expire every cookie name NextAuth might have set —
+    //      v4 used `next-auth.session-token`, v5 uses `authjs.session-
+    //      token`, both with __Secure-/__Host- variants in production.
+    //   3. Hard-replace the URL (not push) so the dashboard isn't in
+    //      back-button history.
     try {
       await signOut({ redirect: false });
-    } finally {
-      window.location.href = '/login';
+    } catch {
+      /* keep going — the manual cookie clear below is the safety net */
     }
+    if (typeof document !== 'undefined') {
+      const past = 'Thu, 01 Jan 1970 00:00:00 GMT';
+      const names = [
+        'next-auth.session-token',
+        '__Secure-next-auth.session-token',
+        '__Host-next-auth.session-token',
+        'authjs.session-token',
+        '__Secure-authjs.session-token',
+        '__Host-authjs.session-token',
+        'next-auth.csrf-token',
+        'authjs.csrf-token',
+      ];
+      for (const n of names) {
+        document.cookie = `${n}=; expires=${past}; path=/; SameSite=Lax`;
+      }
+    }
+    window.location.replace('/login');
   };
 
   const rawUnread = conversations.reduce((sum, c) => sum + c.unreadCount, 0);
@@ -85,18 +95,6 @@ const Header = ({ onToggleSidebar }: { onToggleSidebar: () => void }) => {
           <Menu className="w-5 h-5" />
         </button>
 
-        <div className="hidden sm:flex items-center gap-4 border-r border-slate-100 pr-8">
-          <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center text-white text-[11px] font-bold shadow-sm">
-             S
-          </div>
-          <div className="flex flex-col">
-            <span className="text-[10px] font-bold text-indigo-400 uppercase tracking-[0.2em] leading-none mb-1">Organization</span>
-            <div className="flex items-center gap-1.5">
-              <span className="text-[13px] font-bold text-slate-900 tracking-tight leading-none">Suler Global</span>
-            </div>
-          </div>
-        </div>
-
         <div className="hidden lg:flex items-center gap-3 min-w-[200px] relative">
           <div className="w-7 h-7 rounded-lg bg-slate-100 flex items-center justify-center text-slate-900 text-[10px] font-bold transition-colors">
             {currentHub[0]}
@@ -109,7 +107,7 @@ const Header = ({ onToggleSidebar }: { onToggleSidebar: () => void }) => {
                   <button
                     type="button"
                     aria-haspopup="menu"
-                    aria-expanded={Boolean(isHubOpen)}
+                    aria-expanded={isHubOpen ? 'true' : 'false'}
                     aria-label="Switch operational hub"
                     onClick={() => setIsHubOpen((v) => !v)}
                     className="flex items-center gap-1 text-[12px] font-bold text-slate-600 tracking-tight leading-none whitespace-nowrap hover:text-indigo-600 transition-colors"
@@ -166,21 +164,7 @@ const Header = ({ onToggleSidebar }: { onToggleSidebar: () => void }) => {
           </div>
         </div>
 
-        <div className="hidden lg:flex relative max-w-[520px] w-full items-center group">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300 transition-colors group-hover:text-slate-600" />
-          <button
-            type="button"
-            aria-label="Open global search and quick actions"
-            onClick={() => setIsCommandModalOpen(true)}
-            className="w-full bg-slate-50 hover:bg-white border border-slate-200 hover:border-indigo-200 rounded-[12px] py-2.5 pl-12 pr-16 text-[13px] font-medium text-slate-400 hover:text-slate-900 transition-all outline-none text-left cursor-text"
-          >
-            Search operational data, jump to a page…
-          </button>
-          <div className="absolute right-3.5 top-1/2 -translate-y-1/2 flex items-center gap-1 px-1.5 py-0.5 bg-white border border-slate-200 rounded text-[9px] font-bold text-slate-400 pointer-events-none">
-             <Command className="w-2.5 h-2.5" />
-             K
-          </div>
-        </div>
+        <GlobalSearch />
       </div>
 
       {/* Right: Quick Actions & Notifications */}
@@ -236,7 +220,7 @@ const Header = ({ onToggleSidebar }: { onToggleSidebar: () => void }) => {
             <button
               type="button"
               aria-haspopup="menu"
-              aria-expanded={Boolean(isProfileOpen)}
+              aria-expanded={isProfileOpen ? 'true' : 'false'}
               aria-label="Open user menu"
               onClick={() => setIsProfileOpen((v) => !v)}
               className="w-10 h-10 rounded-[12px] bg-slate-900 border border-slate-800 flex items-center justify-center text-white font-bold text-[11px] cursor-pointer hover:scale-105 transition-all shadow-premium"

@@ -57,15 +57,34 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle }) => {
 
   const handleSignOut = async () => {
     setIsSigningOut(true);
-    // signOut(redirect:false) clears the cookie server-side and returns
-    // without navigating. We then hard-navigate to /login ourselves —
-    // reliable regardless of NextAuth's `data.url` resolution, which can
-    // override `redirectTo` in v5 beta and send the user back to dashboard.
+    // Belt + suspenders: NextAuth v5 beta sometimes fails to clear the
+    // session cookie silently. We:
+    //   1. Call signOut() (clears server-side).
+    //   2. Manually expire every cookie NextAuth might have set
+    //      (v4/v5 + __Secure-/__Host- variants).
+    //   3. Hard-replace the URL so back-button can't return to dashboard.
     try {
       await signOut({ redirect: false });
-    } finally {
-      window.location.href = '/login';
+    } catch {
+      /* keep going — manual cookie clear below is the safety net */
     }
+    if (typeof document !== 'undefined') {
+      const past = 'Thu, 01 Jan 1970 00:00:00 GMT';
+      const names = [
+        'next-auth.session-token',
+        '__Secure-next-auth.session-token',
+        '__Host-next-auth.session-token',
+        'authjs.session-token',
+        '__Secure-authjs.session-token',
+        '__Host-authjs.session-token',
+        'next-auth.csrf-token',
+        'authjs.csrf-token',
+      ];
+      for (const n of names) {
+        document.cookie = `${n}=; expires=${past}; path=/; SameSite=Lax`;
+      }
+    }
+    window.location.replace('/login');
   };
 
   // My Workspace (Universal, Visible to all)
