@@ -209,9 +209,9 @@ export default function CompliancePoliciesPage() {
                </div>
                <div className="space-y-4">
                   {[
-                    { version: 'v2.4', date: '01 Jan 2026', actor: 'Chinedu Okoro', changes: 'Updated PAYE minimum wage threshold to ₦70,000' },
+                    { version: 'v2.4', date: '01 Jan 2026', actor: 'Olumide Adeyemi', changes: 'Updated PAYE minimum wage threshold to ₦70,000' },
                     { version: 'v2.3', date: '15 Jul 2025', actor: 'System', changes: 'NSITF rate standardized to 1.0% across all hubs' },
-                    { version: 'v2.2', date: '01 Jan 2025', actor: 'Sarah Williams', changes: 'Added Employer Pension contribution (10%)' }
+                    { version: 'v2.2', date: '01 Jan 2025', actor: 'Chiamaka Obi', changes: 'Added Employer Pension contribution (10%)' }
                   ].map(v => (
                     <div key={v.version} className="flex flex-col md:flex-row md:items-center justify-between p-5 bg-slate-50 rounded-2xl border border-slate-100 gap-4">
                       <div className="flex items-center gap-5">

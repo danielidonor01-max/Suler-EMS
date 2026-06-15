@@ -25,10 +25,10 @@ import { EmptyState } from '@/components/common/EmptyState';
 
 // Initial Mock Data
 const MOCK_ATTENDANCE = [
-  { id: 'att-001', staffName: 'Chinedu Okoro', checkIn: '08:00 AM', status: 'ON_TIME', department: 'Executive', staffId: 'SUL-001' },
-  { id: 'att-002', staffName: 'Sarah Williams', checkIn: '08:15 AM', status: 'LATE', department: 'Operations', staffId: 'SUL-002' },
-  { id: 'att-003', staffName: 'David Okafor', checkIn: '07:55 AM', status: 'ON_TIME', department: 'Finance', staffId: 'SUL-003' },
-  { id: 'att-004', staffName: 'Blessing Udoh', checkIn: '09:00 AM', status: 'LATE', department: 'HR', staffId: 'SUL-004' },
+  { id: 'att-001', staffName: 'Olumide Adeyemi', checkIn: '08:00 AM', status: 'ON_TIME', department: 'Executive', staffId: 'SUL-001' },
+  { id: 'att-002', staffName: 'Chiamaka Obi', checkIn: '08:15 AM', status: 'LATE', department: 'Operations', staffId: 'SUL-002' },
+  { id: 'att-003', staffName: 'Emeka Okafor', checkIn: '07:55 AM', status: 'ON_TIME', department: 'Finance', staffId: 'SUL-003' },
+  { id: 'att-004', staffName: 'Folake Bankole', checkIn: '09:00 AM', status: 'LATE', department: 'HR', staffId: 'SUL-004' },
 ];
 
 export default function AttendancePage() {

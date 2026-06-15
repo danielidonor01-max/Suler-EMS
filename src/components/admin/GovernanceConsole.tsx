@@ -18,9 +18,9 @@ import { DataTable } from '../tables/DataTable';
 
 const GovernanceConsole = () => {
   const auditLogs = [
-    { id: 1, action: 'PRIVILEGED_ACCESS_GRANTED', user: 'Chinedu Okoro', entity: 'Financial Records', time: '2 mins ago', risk: 'LOW' },
+    { id: 1, action: 'PRIVILEGED_ACCESS_GRANTED', user: 'Olumide Adeyemi', entity: 'Financial Records', time: '2 mins ago', risk: 'LOW' },
     { id: 2, action: 'SYSTEM_CONFIG_CHANGE', user: 'Admin System', entity: 'Rate Limiter', time: '14 mins ago', risk: 'MEDIUM' },
-    { id: 3, action: 'BULK_DATA_EXPORT', user: 'Kelechi Nwosu', entity: 'Staff Registry', time: '1 hour ago', risk: 'HIGH' },
+    { id: 3, action: 'BULK_DATA_EXPORT', user: 'Chioma Nwosu', entity: 'Staff Registry', time: '1 hour ago', risk: 'HIGH' },
     { id: 4, action: 'SECURITY_POLICY_UPDATE', user: 'Security Bot', entity: 'MFA Requirements', time: '3 hours ago', risk: 'LOW' },
   ];
 

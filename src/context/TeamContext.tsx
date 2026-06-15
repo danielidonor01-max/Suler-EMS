@@ -10,8 +10,9 @@ export interface Team {
   description: string;
   department: string;
   hub: string;
-  managerId: string; // Employee ID
-  members: string[]; // Array of Employee IDs
+  managerId: string;    // staffId from the seed (e.g. 'SUL-ADMIN-001')
+  managerName?: string; // Display name — optional, falls back to managerId on display
+  members: string[];   // Array of staffIds
   status: 'ACTIVE' | 'INACTIVE';
   performanceScore: number;
   activeTasks: number;
@@ -31,34 +32,69 @@ interface TeamContextType {
 
 const TeamContext = createContext<TeamContextType | undefined>(undefined);
 
+// Manager and member IDs reference seed staffIds (prisma/seed.ts STAFF array).
+// Hub names match OrganizationContext SEEDED_HUBS — 'Lagos' not 'Lagos HQ'.
+// Bump _v + the storage key below when this changes.
 const SEEDED_TEAMS: Team[] = [
   {
     id: 'TEAM-01',
     name: 'Executive Operations',
-    description: 'Core operational leadership and strategic execution team.',
+    description: 'Core operational leadership and strategic execution.',
     department: 'Operations',
-    hub: 'Lagos HQ',
-    managerId: 'EMP-001', // Seeded Admin
-    members: ['EMP-001', 'EMP-002'],
+    hub: 'Lagos',
+    managerId: 'SUL-ADMIN-001',
+    managerName: 'Olumide Adeyemi',
+    members: ['SUL-ADMIN-001', 'SUL-MGR-001'],
     status: 'ACTIVE',
     performanceScore: 94,
     activeTasks: 12,
     createdAt: new Date().toISOString(),
-    _v: 1
+    _v: 2
   },
   {
     id: 'TEAM-02',
-    name: 'Lagos Talent Hub',
-    description: 'Regional recruitment and talent management group.',
+    name: 'Talent & People Ops',
+    description: 'Recruitment, employee experience, and HR partnership.',
     department: 'Human Resources',
-    hub: 'Lagos HQ',
-    managerId: 'EMP-003',
-    members: ['EMP-003', 'EMP-004'],
+    hub: 'Lagos',
+    managerId: 'SUL-HR-001',
+    managerName: 'Chiamaka Obi',
+    members: ['SUL-HR-001', 'SUL-HR-002'],
     status: 'ACTIVE',
     performanceScore: 88,
     activeTasks: 5,
     createdAt: new Date().toISOString(),
-    _v: 1
+    _v: 2
+  },
+  {
+    id: 'TEAM-03',
+    name: 'Treasury & Disbursement',
+    description: 'Finance controls, payouts, and reconciliation.',
+    department: 'Finance & Treasury',
+    hub: 'Abuja',
+    managerId: 'SUL-FIN-001',
+    managerName: 'Adaeze Nnamdi',
+    members: ['SUL-FIN-001', 'SUL-FIN-002', 'SUL-FIN-003'],
+    status: 'ACTIVE',
+    performanceScore: 91,
+    activeTasks: 7,
+    createdAt: new Date().toISOString(),
+    _v: 2
+  },
+  {
+    id: 'TEAM-04',
+    name: 'Port Harcourt Logistics',
+    description: 'Warehousing, distribution, and field operations.',
+    department: 'Logistics',
+    hub: 'Port Harcourt',
+    managerId: 'SUL-MGR-003',
+    managerName: 'Tunde Bakare',
+    members: ['SUL-MGR-003', 'SUL-EMP-011', 'SUL-EMP-012', 'SUL-EMP-013', 'SUL-EMP-014', 'SUL-EMP-015', 'SUL-EMP-016'],
+    status: 'ACTIVE',
+    performanceScore: 85,
+    activeTasks: 9,
+    createdAt: new Date().toISOString(),
+    _v: 2
   }
 ];
 
@@ -68,18 +104,21 @@ export const TeamProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const { userRole } = useAccess();
 
   useEffect(() => {
-    const savedTeams = localStorage.getItem('suler_teams');
+    // v2 cache key — pre-v2 entries used fictional EMP-XXX manager IDs
+    // and 'Lagos HQ' as the hub name. Wipe them on first load.
+    try { localStorage.removeItem('suler_teams'); } catch { /* private mode */ }
+    const savedTeams = localStorage.getItem('suler_teams_v2');
     if (savedTeams) {
       setTeams(JSON.parse(savedTeams));
     } else {
       setTeams(SEEDED_TEAMS);
-      localStorage.setItem('suler_teams', JSON.stringify(SEEDED_TEAMS));
+      localStorage.setItem('suler_teams_v2', JSON.stringify(SEEDED_TEAMS));
     }
   }, []);
 
   const syncState = (nextTeams: Team[]) => {
     setTeams(nextTeams);
-    localStorage.setItem('suler_teams', JSON.stringify(nextTeams));
+    localStorage.setItem('suler_teams_v2', JSON.stringify(nextTeams));
   };
 
   const addTeam = (teamData: Omit<Team, 'id' | 'status' | 'performanceScore' | 'activeTasks' | 'createdAt' | '_v'>) => {

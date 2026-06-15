@@ -12,7 +12,7 @@ import { Select } from '@/components/forms/Select';
 // ─── Mock Data ─────────────────────────────────────────────────────────────────
 const EMPLOYEES = [
   {
-    id: 'e001', name: 'Alex Okereke', role: 'Senior Engineer', hub: 'Lagos HQ',
+    id: 'e001', name: 'Bola Akinwale', role: 'Senior Engineer', hub: 'Lagos',
     department: 'Engineering', kpiScore: 94, reviewScore: 4.7, selfScore: 4.5,
     competency: 92, promotionReady: true, status: 'EXCEEDS',
     kpis: [
@@ -23,7 +23,7 @@ const EMPLOYEES = [
     ]
   },
   {
-    id: 'e002', name: 'Sarah Williams', role: 'Product Manager', hub: 'Lagos HQ',
+    id: 'e002', name: 'Chiamaka Obi', role: 'Product Manager', hub: 'Lagos',
     department: 'Product', kpiScore: 88, reviewScore: 4.3, selfScore: 4.1,
     competency: 85, promotionReady: false, status: 'MEETS',
     kpis: [
@@ -34,7 +34,7 @@ const EMPLOYEES = [
     ]
   },
   {
-    id: 'e003', name: 'David Okafor', role: 'Finance Analyst', hub: 'Abuja Regional',
+    id: 'e003', name: 'Emeka Okafor', role: 'Finance Analyst', hub: 'Abuja',
     department: 'Finance', kpiScore: 76, reviewScore: 3.8, selfScore: 3.9,
     competency: 74, promotionReady: false, status: 'DEVELOPING',
     kpis: [
@@ -45,7 +45,7 @@ const EMPLOYEES = [
     ]
   },
   {
-    id: 'e004', name: 'Blessing Adeyemi', role: 'HR Specialist', hub: 'Port Harcourt',
+    id: 'e004', name: 'Tunde Bakare', role: 'HR Specialist', hub: 'Port Harcourt',
     department: 'Human Resources', kpiScore: 91, reviewScore: 4.5, selfScore: 4.6,
     competency: 89, promotionReady: true, status: 'EXCEEDS',
     kpis: [
@@ -152,8 +152,8 @@ export default function PerformancePage() {
               onChange={setFilterHub}
               options={[
                 { label: 'All Hubs', value: 'All' },
-                { label: 'Lagos HQ', value: 'Lagos HQ' },
-                { label: 'Abuja Regional', value: 'Abuja Regional' },
+                { label: 'Lagos', value: 'Lagos' },
+                { label: 'Abuja', value: 'Abuja' },
                 { label: 'Port Harcourt', value: 'Port Harcourt' },
               ]}
               className="w-48"

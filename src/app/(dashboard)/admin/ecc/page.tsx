@@ -43,17 +43,17 @@ import { ResourceOptimizationPortal } from '@/components/admin/ResourceOptimizat
 import { StrategySimulator } from '@/components/admin/StrategySimulator';
 import { formatMetric } from '@/lib/utils/formatMetric';
 
-// Mock Strategic Data (Base)
+// Mock Strategic Data (Base). Hub names match OrganizationContext canon.
 const BASE_STRATEGIC_SIGNALS = [
-  { id: 'S-01', type: 'ALERT', label: 'Operational Latency', hub: 'Abuja Operations', msg: 'Approval turnaround in Logistics has increased by 42% over 48h.', severity: 'HIGH' },
-  { id: 'S-02', type: 'INSIGHT', label: 'Market Volatility', hub: 'Global Treasury', msg: 'Forex exposure in West African nodes exceeds Q2 threshold by 12%.', severity: 'MEDIUM' }
+  { id: 'S-01', type: 'ALERT',   label: 'Operational Latency', hub: 'Port Harcourt', msg: 'Approval turnaround in Logistics has increased by 42% over 48h.',     severity: 'HIGH'   },
+  { id: 'S-02', type: 'INSIGHT', label: 'Treasury Exposure',   hub: 'Abuja',         msg: 'Forex exposure in West African nodes exceeds Q2 threshold by 12%.', severity: 'MEDIUM' }
 ];
 
+// Hub names match OrganizationContext SEEDED_HUBS — no phantom hubs.
 const HUB_HEATMAP_DATA = [
-  { hub: 'Lagos HQ', hr: 92, ops: 88, fin: 95, tech: 84 },
-  { hub: 'Abuja Ops', hr: 78, ops: 64, fin: 82, tech: 72 },
-  { hub: 'Benin Hub', hr: 85, ops: 82, fin: 78, tech: 94 },
-  { hub: 'Remote', hr: 90, ops: 86, fin: 88, tech: 82 },
+  { hub: 'Lagos',         hr: 92, ops: 88, fin: 95, tech: 84 },
+  { hub: 'Abuja',         hr: 78, ops: 64, fin: 82, tech: 72 },
+  { hub: 'Port Harcourt', hr: 85, ops: 82, fin: 78, tech: 75 },
 ];
 
 const RISK_RADAR_DATA = [

@@ -2,11 +2,13 @@
 
 import React from 'react';
 import { useAccess } from '@/context/AccessContext';
+import { useWorkforce } from '@/context/WorkforceContext';
 import { useSession } from 'next-auth/react';
 import { Activity, Bell, Calendar, CheckSquare, Target, MessageSquare, TrendingUp, Users, ShieldCheck, Wallet } from 'lucide-react';
 
 export default function DashboardPage() {
   const { userRole } = useAccess();
+  const { metrics } = useWorkforce();
   const { data: session } = useSession();
 
   const isSuperAdmin = userRole === 'SUPER_ADMIN';
@@ -74,7 +76,7 @@ export default function DashboardPage() {
             </div>
             <div>
               <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Total Employees</p>
-              <p className="text-2xl font-bold text-white tracking-tight">1,248</p>
+              <p className="text-2xl font-bold text-white tracking-tight">{metrics.totalEmployees.toLocaleString()}</p>
             </div>
           </div>
           

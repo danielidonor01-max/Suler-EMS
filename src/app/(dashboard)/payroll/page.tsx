@@ -135,8 +135,8 @@ export default function PayrollOverviewPage() {
                   </div>
                   <div className="md:col-span-2 space-y-6">
                      {[
-                       { label: 'Lagos HQ', value: '₦22.5M', pct: 85 },
-                       { label: 'Abuja Regional', value: '₦12.2M', pct: 45 },
+                       { label: 'Lagos', value: '₦22.5M', pct: 85 },
+                       { label: 'Abuja', value: '₦12.2M', pct: 45 },
                        { label: 'Port Harcourt', value: '₦8.1M', pct: 30 }
                      ].map((hub, idx) => (
                        <div key={idx} className="space-y-2">

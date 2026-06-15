@@ -27,7 +27,7 @@ const MOCK_BROADCASTS = [
 ];
 
 const MOCK_THREADS = [
-  { id: 'th-001', title: 'Leave Approval: Alex Okereke', participants: 3, lastMessage: 'Reviewing documentation now.', status: 'ACTIVE', time: '10m ago' },
+  { id: 'th-001', title: 'Leave Approval: Bola Akinwale', participants: 3, lastMessage: 'Reviewing documentation now.', status: 'ACTIVE', time: '10m ago' },
   { id: 'th-002', title: 'Payroll Reconciliation Q1', participants: 5, lastMessage: 'Tax discrepancies resolved.', status: 'RESOLVED', time: '1d ago' },
 ];
 

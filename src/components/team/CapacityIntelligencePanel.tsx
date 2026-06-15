@@ -30,7 +30,7 @@ const MOCK_ABSENCES: Absence[] = [
   { 
     id: '1', 
     employeeId: 'EMP-003', 
-    name: 'Sarah Williams', 
+    name: 'Chiamaka Obi', 
     type: 'Annual Leave', 
     startDate: '2026-05-12', 
     endDate: '2026-05-19',
@@ -40,7 +40,7 @@ const MOCK_ABSENCES: Absence[] = [
   { 
     id: '2', 
     employeeId: 'EMP-004', 
-    name: 'John Doe', 
+    name: 'Bola Akinwale', 
     type: 'Sick Leave', 
     startDate: '2026-05-14', 
     endDate: '2026-05-16',

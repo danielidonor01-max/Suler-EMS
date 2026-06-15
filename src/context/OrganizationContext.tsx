@@ -41,29 +41,35 @@ interface OrganizationContextType {
 
 const OrganizationContext = createContext<OrganizationContextType | undefined>(undefined);
 
-// Names align with the seed's Employee.branch values so filters
-// (employees/finance/payroll) match. Bump the storage key below if you
-// change this list — stale localStorage caches will otherwise keep the
-// previous names and break hub-scoped filtering.
+// Names and managers align with the seed (prisma/seed.ts). Every lead name
+// below MUST exist in the seeded STAFF array, otherwise filters / org-chart
+// views render names that don't resolve to a real employee. Bump the
+// storage key below when you change this list — stale localStorage caches
+// will otherwise keep the previous values.
 const SEEDED_HUBS: Hub[] = [
-  { id: 'HUB-00', name: 'All Regions',    geography: 'Global Organization',    category: 'Enterprise View',  status: 'ACTIVE', departments: 3,  staff: 25, _v: 2 },
-  { id: 'HUB-01', name: 'Lagos',          geography: 'Nigeria (South-West)',    category: 'Primary HQ',       status: 'ACTIVE', departments: 1,  staff: 14, _v: 2 },
-  { id: 'HUB-02', name: 'Abuja',          geography: 'Nigeria (North-Central)', category: 'Regional Ops',     status: 'ACTIVE', departments: 1,  staff: 5,  _v: 2 },
-  { id: 'HUB-03', name: 'Port Harcourt',  geography: 'Nigeria (South-South)',   category: 'Logistics Branch', status: 'ACTIVE', departments: 1,  staff: 6,  _v: 2 },
+  { id: 'HUB-00', name: 'All Regions',    geography: 'Global Organization',    category: 'Enterprise View',  status: 'ACTIVE', departments: 5, staff: 25, manager: 'Olumide Adeyemi', _v: 3 },
+  { id: 'HUB-01', name: 'Lagos',          geography: 'Nigeria (South-West)',    category: 'Primary HQ',       status: 'ACTIVE', departments: 3, staff: 14, manager: 'Ibrahim Yusuf',   _v: 3 },
+  { id: 'HUB-02', name: 'Abuja',          geography: 'Nigeria (North-Central)', category: 'Regional Ops',     status: 'ACTIVE', departments: 1, staff: 5,  manager: 'Aisha Mohammed',  _v: 3 },
+  { id: 'HUB-03', name: 'Port Harcourt',  geography: 'Nigeria (South-South)',   category: 'Logistics Branch', status: 'ACTIVE', departments: 1, staff: 6,  manager: 'Tunde Bakare',    _v: 3 },
 ];
 
-// Bumped to wipe pre-fix `Lagos HQ` caches.
+// v3: rewrote SEEDED_DEPTS to remove phantom "Benin Branch" and align
+// every lead to a real seeded user. Bumping the storage version wipes
+// any cached v2 data carrying the old fictional leads.
 const STORAGE_KEYS = {
-  hubs: 'suler_hubs_v2',
-  depts: 'suler_depts_v2',
-  active: 'suler_active_hub_v2',
+  hubs: 'suler_hubs_v3',
+  depts: 'suler_depts_v3',
+  active: 'suler_active_hub_v3',
 } as const;
 
+// Functional departments. Lead names + parentHub values are sourced from
+// the seed (prisma/seed.ts). Staff counts sum to 25 — the real workforce.
 const SEEDED_DEPTS: Department[] = [
-  { id: 'DEPT-01', name: 'Executive Management', lead: 'Chinedu Okoro', reportingLine: 'Board', parentHub: 'Lagos HQ', staff: 12, _v: 1 },
-  { id: 'DEPT-02', name: 'Human Resources', lead: 'Sarah Williams', reportingLine: 'Executive Office', parentHub: 'Lagos HQ', staff: 24, _v: 1 },
-  { id: 'DEPT-03', name: 'Finance & Treasury', lead: 'David Okafor', reportingLine: 'Executive Office', parentHub: 'Lagos HQ', staff: 18, _v: 1 },
-  { id: 'DEPT-04', name: 'Clinical Operations', lead: 'Emeka Nwachukwu', reportingLine: 'Operations Directorate', parentHub: 'Benin Branch', staff: 45, _v: 1 },
+  { id: 'DEPT-01', name: 'Executive Office',  lead: 'Olumide Adeyemi', reportingLine: 'Board',              parentHub: 'Lagos',         staff: 1,  _v: 2 },
+  { id: 'DEPT-02', name: 'Human Resources',   lead: 'Chiamaka Obi',    reportingLine: 'Executive Office',   parentHub: 'Lagos',         staff: 2,  _v: 2 },
+  { id: 'DEPT-03', name: 'Finance & Treasury',lead: 'Adaeze Nnamdi',   reportingLine: 'Executive Office',   parentHub: 'Abuja',         staff: 3,  _v: 2 },
+  { id: 'DEPT-04', name: 'Operations',        lead: 'Ibrahim Yusuf',   reportingLine: 'Executive Office',   parentHub: 'Lagos',         staff: 13, _v: 2 },
+  { id: 'DEPT-05', name: 'Logistics',         lead: 'Tunde Bakare',    reportingLine: 'Operations',         parentHub: 'Port Harcourt', staff: 6,  _v: 2 },
 ];
 
 import { useActivity } from './ActivityContext';
@@ -106,11 +112,11 @@ export const OrganizationProvider: React.FC<{ children: ReactNode }> = ({ childr
         setCurrentHubState(savedActive);
       }
 
-      // Best-effort cleanup of pre-v2 keys (idempotent, swallows missing).
+      // Best-effort cleanup of pre-v3 keys (idempotent, swallows missing).
       try {
-        localStorage.removeItem('suler_hubs');
-        localStorage.removeItem('suler_depts');
-        localStorage.removeItem('suler_active_hub');
+        ['suler_hubs', 'suler_depts', 'suler_active_hub',
+         'suler_hubs_v2', 'suler_depts_v2', 'suler_active_hub_v2']
+          .forEach(k => localStorage.removeItem(k));
       } catch { /* private mode etc. */ }
     };
 

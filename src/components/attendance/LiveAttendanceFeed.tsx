@@ -19,9 +19,9 @@ const LiveAttendanceFeed: React.FC = () => {
   const { lastAttendance } = useRealtime();
   
   const history = [
-    { id: '1', name: 'Aisha Yusuf', time: '10:42 AM', type: 'CHECK_IN', location: 'Abuja Branch', status: 'VERIFIED' },
-    { id: '2', name: 'Babajide Cole', time: '10:38 AM', type: 'CHECK_OUT', location: 'Lagos HQ', status: 'VERIFIED' },
-    { id: '3', name: 'Chidera Nwosu', time: '10:35 AM', type: 'CHECK_IN', location: 'Port Harcourt', status: 'GEO_MISMATCH' },
+    { id: '1', name: 'Aisha Mohammed', time: '10:42 AM', type: 'CHECK_IN', location: 'Abuja', status: 'VERIFIED' },
+    { id: '2', name: 'Bola Akinwale', time: '10:38 AM', type: 'CHECK_OUT', location: 'Lagos', status: 'VERIFIED' },
+    { id: '3', name: 'Chioma Nwosu', time: '10:35 AM', type: 'CHECK_IN', location: 'Port Harcourt', status: 'GEO_MISMATCH' },
   ];
 
   const displayData = lastAttendance ? [lastAttendance, ...history] : history;

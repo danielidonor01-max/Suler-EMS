@@ -70,11 +70,11 @@ export const ForecastingProvider: React.FC<{ children: ReactNode }> = ({ childre
   const [proposals] = useState<StaffingProposal[]>([
     {
       id: 'PROP-2049A',
-      sourceHub: 'Lagos HQ',
-      targetHub: 'Abuja Regional',
+      sourceHub: 'Lagos',
+      targetHub: 'Abuja',
       employeeId: 'SUL-002',
-      employeeName: 'Sarah Williams',
-      rationale: 'High operational deficit in Abuja matched with excess capacity in Lagos HQ.',
+      employeeName: 'Chiamaka Obi',
+      rationale: 'High operational deficit in Abuja matched with excess capacity in Lagos.',
       impactScore: 92
     }
   ]);

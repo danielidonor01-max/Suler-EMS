@@ -401,7 +401,7 @@ export const OnboardMemberModal: React.FC<OnboardMemberModalProps> = ({ isOpen, 
     email: '',
     phone: '',
     role: 'EMPLOYEE',
-    hub: currentHub !== 'All Regions' ? currentHub : (hubs[0]?.name || 'Lagos HQ'),
+    hub: currentHub !== 'All Regions' ? currentHub : (hubs[0]?.name || 'Lagos'),
     department: departments[0]?.name || 'Operations',
     designation: '',
     staffId: '',
@@ -414,7 +414,7 @@ export const OnboardMemberModal: React.FC<OnboardMemberModalProps> = ({ isOpen, 
     if (!isOpen) {
       setFormData(prev => ({
         ...prev,
-        hub: currentHub !== 'All Regions' ? currentHub : (hubs[0]?.name || 'Lagos HQ')
+        hub: currentHub !== 'All Regions' ? currentHub : (hubs[0]?.name || 'Lagos')
       }));
     }
   }, [currentHub, isOpen, hubs]);
