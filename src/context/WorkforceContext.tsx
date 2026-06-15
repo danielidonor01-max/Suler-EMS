@@ -4,6 +4,8 @@ import React, { createContext, useContext, useState, useCallback, ReactNode, use
 import { EmployeeStatus } from '@/config/enums';
 import { useActivity } from './ActivityContext';
 import { useAccess } from './AccessContext';
+import useSWR from 'swr';
+import { apiFetcher } from '@/lib/api/fetcher';
 
 export interface Employee {
   id: string;
@@ -151,6 +153,36 @@ export const WorkforceProvider: React.FC<{ children: ReactNode }> = ({ children 
   
   const { pushActivity } = useActivity();
   const { userRole } = useAccess();
+
+  const { data: dbEmployees } = useSWR<any[]>('/api/employees', apiFetcher);
+  const [initialized, setInitialized] = useState(false);
+
+  // Initialize employees from database seeded users once loaded
+  React.useEffect(() => {
+    if (dbEmployees && !initialized) {
+      setEmployees(dbEmployees.map((emp: any) => ({
+        id: emp.staffId || emp.id,
+        dbId: emp.id,
+        name: emp.fullName || `${emp.firstName} ${emp.lastName}`,
+        email: emp.email,
+        role: emp.roleName || 'EMPLOYEE',
+        hub: emp.branch || 'Lagos HQ',
+        status: emp.status || 'ACTIVE',
+        department: emp.departmentName || 'Operations',
+        designation: emp.jobTitle || 'Staff Practitioner',
+        phone: emp.phone || '',
+        performanceRating: emp.performanceRating || 4.2,
+        startDate: emp.createdAt || emp.hireDate || '2026-01-01',
+        contractType: 'Full-Time',
+        grade: emp.grade || 'Grade 6',
+        reportingManager: 'Olumide Adeyemi',
+        salary: emp.salary || 350000,
+        annualLeaveBalance: 21,
+        sickLeaveBalance: 14,
+      })));
+      setInitialized(true);
+    }
+  }, [dbEmployees, initialized]);
 
   const addAuditLog = useCallback((log: Omit<AuditLog, 'id' | 'timestamp'>) => {
     const newLog: AuditLog = {
