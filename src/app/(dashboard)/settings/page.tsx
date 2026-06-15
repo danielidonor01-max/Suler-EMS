@@ -1,142 +1,125 @@
-"use client";
+'use client';
 
-import React, { useState } from 'react';
-import { 
-  Settings, 
-  ShieldCheck, 
-  Bell, 
-  Key, 
-  Globe, 
-  Database,
+/**
+ * System Configuration hub — landing page for /settings.
+ *
+ * The previous version rendered four placeholder tabs ("General",
+ * "Governance & Roles", "Security & Auth", "Alert Protocols") whose
+ * content was unimplemented. The actual settings work lives in the four
+ * dedicated sub-pages already wired in the sidebar:
+ *   /settings/compliance  (compliance & tax)
+ *   /settings/security    (security policies)
+ *   /settings/integrations (third-party + webhooks)
+ *   /settings/data         (export, backup, restore)
+ *
+ * This page is now a navigation grid that surfaces those four entry
+ * points with a one-line description each. No duplicate tabs.
+ *
+ * Governance / Roles is intentionally not listed here — it lives under
+ * /admin/roles + /admin/users (Phase 6.1) which is the correct module
+ * for permission management.
+ */
+
+import React from 'react';
+import Link from 'next/link';
+import {
+  ShieldCheck,
   Lock,
-  UserCheck,
+  Plug,
+  Database,
   ChevronRight,
-  Activity,
-  Zap,
-  Save
 } from 'lucide-react';
-
 import { PermissionGate } from '@/components/common/PermissionGate';
 import { Permissions } from '@/modules/auth/domain/permission.model';
 
-const SETTINGS_TABS = [
-  { id: 'general', label: 'General Configuration', icon: Settings },
-  { id: 'governance', label: 'Governance & Roles', icon: ShieldCheck },
-  { id: 'security', label: 'Security & Auth', icon: Lock },
-  { id: 'notifications', label: 'Alert Protocols', icon: Bell },
+interface SettingsModule {
+  id: string;
+  title: string;
+  description: string;
+  icon: React.ComponentType<{ className?: string }>;
+  href: string;
+  permission?: string;
+}
+
+const MODULES: SettingsModule[] = [
+  {
+    id: 'compliance',
+    title: 'Compliance & Tax',
+    description: 'PAYE bands, pension rates, NHF / NHIS, CRA. Updates take effect on the next payroll run.',
+    icon: ShieldCheck,
+    href: '/settings/compliance',
+    permission: Permissions.SETTINGS_MANAGE,
+  },
+  {
+    id: 'security',
+    title: 'Security',
+    description: 'Password policy, session lifetime, IP allowlist, 2FA enforcement, login audit thresholds.',
+    icon: Lock,
+    href: '/settings/security',
+    permission: Permissions.SECURITY_MANAGE,
+  },
+  {
+    id: 'integrations',
+    title: 'Integrations',
+    description: 'Third-party connectors (Slack, payroll vendors, SSO providers) and outbound webhooks.',
+    icon: Plug,
+    href: '/settings/integrations',
+    permission: Permissions.SETTINGS_MANAGE,
+  },
+  {
+    id: 'data',
+    title: 'Data Management',
+    description: 'Export, backup, restore, retention. Triggers operate against the live database.',
+    icon: Database,
+    href: '/settings/data',
+    permission: Permissions.DATA_MANAGE,
+  },
 ];
 
-export default function SettingsPage() {
-  const [activeTab, setActiveTab] = useState('general');
-
+export default function SettingsHubPage() {
   return (
-    <div className="section-breathing max-w-[1600px] mx-auto animate-in space-y-10">
-      {/* Executive Hero */}
-      <div className="bg-white rounded-[24px] p-8 border border-slate-200/60 shadow-sm relative overflow-hidden">
-        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-8">
-          <div>
-            <div className="flex items-center gap-2 mb-3">
-              <div className="px-2.5 py-1 bg-slate-900 text-white rounded-md text-[9px] font-bold uppercase tracking-[0.2em] flex items-center gap-1.5">
-                <Database className="w-3 h-3" />
-                Root Configuration Active
-              </div>
-            </div>
-            <h1 className="text-3xl font-bold text-slate-900 tracking-tighter leading-none mb-3">
-              System Configuration
-            </h1>
-            <p className="text-[13px] font-medium text-slate-400 leading-relaxed max-w-[480px]">
-              Manage organizational governance policies, security protocols, and core system parameters.
-            </p>
+    <div className="p-8 max-w-6xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+      <div>
+        <div className="flex items-center gap-2 mb-3">
+          <div className="px-2.5 py-1 bg-slate-900 text-white rounded-md text-[9px] font-bold uppercase tracking-[0.2em] flex items-center gap-1.5">
+            <Database className="w-3 h-3" />
+            System Configuration
           </div>
-
-          <PermissionGate permission={Permissions.SETTINGS_MANAGE} showLocked>
-            <button className="bg-slate-900 hover:bg-black text-white flex items-center gap-2.5 px-8 py-3 rounded-xl text-[11px] font-bold uppercase tracking-wider transition-all shadow-md">
-              <Save className="w-4 h-4" />
-              Persist Changes
-            </button>
-          </PermissionGate>
         </div>
+        <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Settings</h1>
+        <p className="text-[14px] text-slate-500 mt-2 max-w-xl">
+          Pick a module to configure. Role &amp; permission management lives separately under{' '}
+          <Link href="/admin/roles" className="text-indigo-600 font-bold hover:underline">Governance → Roles &amp; Permissions</Link>.
+        </p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-10">
-        {/* Navigation Sidebar */}
-        <div className="space-y-1">
-          {SETTINGS_TABS.map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`w-full flex items-center gap-3.5 px-5 py-4 rounded-xl transition-all duration-200 ${
-                activeTab === tab.id 
-                  ? 'bg-white border border-slate-200 shadow-sm text-slate-900' 
-                  : 'text-slate-400 hover:bg-white hover:text-slate-600'
-              }`}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {MODULES.map((m) => {
+          const card = (
+            <Link
+              key={m.id}
+              href={m.href}
+              className="group flex items-start gap-4 p-6 bg-white border border-slate-200 hover:border-indigo-200 hover:shadow-md rounded-[20px] transition-all"
             >
-              <tab.icon className={`w-5 h-5 ${activeTab === tab.id ? 'text-indigo-600' : 'text-slate-300'}`} />
-              <span className="text-[13px] font-bold tracking-tight">{tab.label}</span>
-              {activeTab === tab.id && <ChevronRight className="ml-auto w-4 h-4 text-slate-300" />}
-            </button>
-          ))}
-        </div>
-
-        {/* Content Area */}
-        <div className="lg:col-span-3 space-y-8">
-          {activeTab === 'general' && (
-             <div className="space-y-6 animate-in">
-                <section className="bg-white p-8 rounded-[24px] border border-slate-200/60 shadow-sm space-y-8">
-                   <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400 border border-slate-100">
-                         <Globe className="w-5 h-5" />
-                      </div>
-                      <div>
-                         <h3 className="text-base font-bold text-slate-900 tracking-tight">Organization Profile</h3>
-                         <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mt-1">Core Identity Parameters</p>
-                      </div>
-                   </div>
-
-                   <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                      <div className="space-y-2">
-                         <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Organization Name</label>
-                         <input type="text" defaultValue="Suler Operational OS" className="w-full bg-slate-50 border border-slate-100 rounded-xl py-3 px-4 text-sm font-bold text-slate-900 focus:outline-none focus:bg-white focus:border-indigo-600 transition-all" />
-                      </div>
-                      <div className="space-y-2">
-                         <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Primary Domain</label>
-                         <input type="text" defaultValue="ops.suler.com" className="w-full bg-slate-50 border border-slate-100 rounded-xl py-3 px-4 text-sm font-bold text-slate-900 focus:outline-none focus:bg-white focus:border-indigo-600 transition-all" />
-                      </div>
-                   </div>
-                </section>
-
-                <section className="bg-white p-8 rounded-[24px] border border-slate-200/60 shadow-sm space-y-8">
-                   <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400 border border-slate-100">
-                         <Zap className="w-5 h-5" />
-                      </div>
-                      <div>
-                         <h3 className="text-base font-bold text-slate-900 tracking-tight">Operational Hours</h3>
-                         <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mt-1">Timeframe Protocols</p>
-                      </div>
-                   </div>
-                   
-                   <div className="flex items-center justify-between p-4 bg-slate-50 rounded-xl border border-slate-100">
-                      <div className="space-y-1">
-                         <p className="text-[13px] font-bold text-slate-900">Standard Business Week</p>
-                         <p className="text-[11px] font-bold text-slate-400">Monday - Friday, 08:00 AM - 05:00 PM</p>
-                      </div>
-                      <button className="text-[11px] font-bold text-indigo-600 uppercase tracking-widest hover:underline">Edit Protocol</button>
-                   </div>
-                </section>
-             </div>
-          )}
-
-          {activeTab !== 'general' && (
-            <div className="h-[400px] flex flex-col items-center justify-center bg-slate-50/50 rounded-[24px] border-2 border-dashed border-slate-200 animate-in">
-               <div className="w-16 h-16 rounded-2xl bg-white border border-slate-200 shadow-sm flex items-center justify-center text-slate-300 mb-6">
-                  <Activity className="w-8 h-8" />
-               </div>
-               <h3 className="text-lg font-bold text-slate-900 tracking-tight mb-2">Protocol Interface Loading</h3>
-               <p className="text-sm font-medium text-slate-400">Fetching sub-system configuration surfaces...</p>
-            </div>
-          )}
-        </div>
+              <div className="w-11 h-11 rounded-[12px] bg-slate-900 group-hover:bg-indigo-600 flex items-center justify-center text-white shrink-0 transition-colors">
+                <m.icon className="w-5 h-5" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center justify-between gap-3 mb-1.5">
+                  <h2 className="text-[15px] font-bold text-slate-900 tracking-tight">{m.title}</h2>
+                  <ChevronRight className="w-4 h-4 text-slate-300 group-hover:text-indigo-500 group-hover:translate-x-0.5 transition-all" />
+                </div>
+                <p className="text-[12px] text-slate-500 leading-relaxed">{m.description}</p>
+              </div>
+            </Link>
+          );
+          if (!m.permission) return card;
+          return (
+            <PermissionGate key={m.id} permission={m.permission as any} showLocked>
+              {card}
+            </PermissionGate>
+          );
+        })}
       </div>
     </div>
   );

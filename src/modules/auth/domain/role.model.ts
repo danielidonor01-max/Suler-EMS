@@ -1,6 +1,6 @@
 import { PermissionType, Permissions } from './permission.model';
 
-export type RoleName = 'SUPER_ADMIN' | 'HR' | 'MANAGER' | 'EMPLOYEE' | 'FINANCE';
+export type RoleName = 'SUPER_ADMIN' | 'HR' | 'HR_ADMIN' | 'MANAGER' | 'EMPLOYEE' | 'FINANCE' | 'FINANCE_MANAGER';
 
 export interface RoleModel {
   name: RoleName;
@@ -8,7 +8,7 @@ export interface RoleModel {
   permissions: PermissionType[];
 }
 
-export const ROLES: Record<RoleName, RoleModel> = {
+export const ROLES: Partial<Record<RoleName, RoleModel>> = {
   SUPER_ADMIN: {
     name: 'SUPER_ADMIN',
     label: 'Super Admin',

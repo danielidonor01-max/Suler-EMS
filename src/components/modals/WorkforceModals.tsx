@@ -22,6 +22,7 @@ import { useWorkforce, Employee } from '@/context/WorkforceContext';
 import { useToast } from '../common/ToastContext';
 import { useOrganization } from '@/context/OrganizationContext';
 import { Select } from '../forms/Select';
+import { DatePicker } from '../forms/DatePicker';
 import { ROLES } from '@/modules/auth/domain/role.model';
 
 interface EditEmployeeModalProps {
@@ -97,7 +98,7 @@ export const EditEmployeeModal: React.FC<EditEmployeeModalProps> = ({ isOpen, on
                 <div className="grid grid-cols-2 gap-4">
                    <div className="space-y-2">
                       <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Full Name</label>
-                      <input 
+                      <input aria-label="Full Name" 
                         value={formData.name} 
                         onChange={e => setFormData({...formData, name: e.target.value})}
                         className="w-full h-[48px] bg-slate-50 border border-slate-200 rounded-xl px-4 text-[13px] font-bold outline-none focus:border-indigo-500 transition-all shadow-sm"
@@ -105,7 +106,7 @@ export const EditEmployeeModal: React.FC<EditEmployeeModalProps> = ({ isOpen, on
                    </div>
                    <div className="space-y-2">
                       <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Email Address</label>
-                      <input 
+                      <input aria-label="Email Address" 
                         value={formData.email} 
                         onChange={e => setFormData({...formData, email: e.target.value})}
                         className="w-full h-[48px] bg-slate-50 border border-slate-200 rounded-xl px-4 text-[13px] font-bold outline-none focus:border-indigo-500 transition-all shadow-sm"
@@ -115,7 +116,7 @@ export const EditEmployeeModal: React.FC<EditEmployeeModalProps> = ({ isOpen, on
                 <div className="grid grid-cols-2 gap-4">
                    <div className="space-y-2">
                       <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Operational Mobile</label>
-                      <input 
+                      <input aria-label="Operational Mobile" 
                         value={formData.phone || ''} 
                         onChange={e => setFormData({...formData, phone: e.target.value})}
                         className="w-full h-[48px] bg-slate-50 border border-slate-200 rounded-xl px-4 text-[13px] font-bold outline-none focus:border-indigo-500 transition-all shadow-sm"
@@ -123,7 +124,7 @@ export const EditEmployeeModal: React.FC<EditEmployeeModalProps> = ({ isOpen, on
                    </div>
                    <div className="space-y-2">
                       <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Principal Designation</label>
-                      <input 
+                      <input aria-label="Principal Designation" 
                         value={formData.designation} 
                         onChange={e => setFormData({...formData, designation: e.target.value})}
                         className="w-full h-[48px] bg-slate-50 border border-slate-200 rounded-xl px-4 text-[13px] font-bold outline-none focus:border-indigo-500 transition-all shadow-sm"
@@ -132,7 +133,7 @@ export const EditEmployeeModal: React.FC<EditEmployeeModalProps> = ({ isOpen, on
                 </div>
                 <div className="space-y-2">
                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Residential Address</label>
-                   <input 
+                   <input aria-label="Residential Address" 
                      value={formData.address || ''} 
                      onChange={e => setFormData({...formData, address: e.target.value})}
                      className="w-full h-[48px] bg-slate-50 border border-slate-200 rounded-xl px-4 text-[13px] font-bold outline-none focus:border-indigo-500 transition-all shadow-sm"
@@ -146,7 +147,7 @@ export const EditEmployeeModal: React.FC<EditEmployeeModalProps> = ({ isOpen, on
                 <div className="grid grid-cols-2 gap-4">
                    <div className="space-y-2">
                       <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">National ID (NIN)</label>
-                      <input 
+                      <input aria-label="National ID (NIN)" 
                         value={formData.nationalId || ''} 
                         onChange={e => setFormData({...formData, nationalId: e.target.value})}
                         className="w-full h-[48px] bg-slate-50 border border-slate-200 rounded-xl px-4 text-[13px] font-bold outline-none focus:border-indigo-500 transition-all shadow-sm"
@@ -154,7 +155,7 @@ export const EditEmployeeModal: React.FC<EditEmployeeModalProps> = ({ isOpen, on
                    </div>
                    <div className="space-y-2">
                       <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Bank Account / Institution</label>
-                      <input 
+                      <input aria-label="Bank Account / Institution" 
                         value={formData.bankAccount || ''} 
                         onChange={e => setFormData({...formData, bankAccount: e.target.value})}
                         className="w-full h-[48px] bg-slate-50 border border-slate-200 rounded-xl px-4 text-[13px] font-bold outline-none focus:border-indigo-500 transition-all shadow-sm"
@@ -164,7 +165,7 @@ export const EditEmployeeModal: React.FC<EditEmployeeModalProps> = ({ isOpen, on
                 <div className="grid grid-cols-2 gap-4">
                    <div className="space-y-2">
                       <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Annual Salary (NGN)</label>
-                      <input 
+                      <input aria-label="Annual Salary (NGN)" 
                         type="number"
                         value={formData.salary || 0} 
                         onChange={e => setFormData({...formData, salary: parseFloat(e.target.value)})}
@@ -173,7 +174,7 @@ export const EditEmployeeModal: React.FC<EditEmployeeModalProps> = ({ isOpen, on
                    </div>
                    <div className="space-y-2">
                       <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Emergency Contact</label>
-                      <input 
+                      <input aria-label="Emergency Contact" 
                         value={formData.emergencyContact || ''} 
                         onChange={e => setFormData({...formData, emergencyContact: e.target.value})}
                         className="w-full h-[48px] bg-slate-50 border border-slate-200 rounded-xl px-4 text-[13px] font-bold outline-none focus:border-indigo-500 transition-all shadow-sm"
@@ -553,7 +554,7 @@ export const OnboardMemberModal: React.FC<OnboardMemberModalProps> = ({ isOpen, 
                <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Full Name</label>
-                     <input 
+                     <input aria-label="Full Name" 
                        placeholder="e.g. Jane Doe"
                        value={formData.name} 
                        onChange={e => setFormData({...formData, name: e.target.value})}
@@ -562,7 +563,7 @@ export const OnboardMemberModal: React.FC<OnboardMemberModalProps> = ({ isOpen, 
                   </div>
                   <div className="space-y-2">
                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Email Address</label>
-                     <input 
+                     <input aria-label="Email Address" 
                        type="email"
                        placeholder="jane@sulerglobal.com"
                        value={formData.email} 
@@ -574,22 +575,18 @@ export const OnboardMemberModal: React.FC<OnboardMemberModalProps> = ({ isOpen, 
                <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Operational Mobile</label>
-                     <input 
+                     <input aria-label="Operational Mobile" 
                        placeholder="+234 ..."
                        value={formData.phone} 
                        onChange={e => setFormData({...formData, phone: e.target.value})}
                        className="w-full h-[48px] bg-slate-50 border border-slate-200 rounded-xl px-4 text-[13px] font-bold outline-none focus:border-indigo-500 transition-all shadow-sm"
                      />
                   </div>
-                  <div className="space-y-2">
-                     <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Start Date</label>
-                     <input 
-                       type="date"
-                       value={formData.startDate}
-                       onChange={e => setFormData({...formData, startDate: e.target.value})}
-                       className="w-full h-[48px] bg-slate-50 border border-slate-200 rounded-xl px-4 text-[13px] font-bold outline-none focus:border-indigo-500 transition-all shadow-sm"
-                     />
-                  </div>
+                   <DatePicker
+                     label="Start Date"
+                     value={formData.startDate}
+                     onChange={val => setFormData({...formData, startDate: val})}
+                   />
                </div>
             </div>
 
@@ -618,7 +615,7 @@ export const OnboardMemberModal: React.FC<OnboardMemberModalProps> = ({ isOpen, 
                </div>
                <div className="space-y-2">
                   <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Principal Designation</label>
-                  <input 
+                  <input aria-label="Principal Designation" 
                     placeholder="e.g. Electrical Maintenance Engineer"
                     value={formData.designation} 
                     onChange={e => setFormData({...formData, designation: e.target.value})}
@@ -720,7 +717,7 @@ export const PromoteEmployeeModal: React.FC<PromoteEmployeeModalProps> = ({ isOp
          <div className="space-y-6">
             <div className="space-y-2">
                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">New Principal Designation</label>
-               <input 
+               <input aria-label="New Principal Designation" 
                  placeholder="e.g. Finance Manager"
                  value={designation} 
                  onChange={e => setDesignation(e.target.value)}

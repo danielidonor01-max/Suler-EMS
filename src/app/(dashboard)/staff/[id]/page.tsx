@@ -6,7 +6,7 @@ import {
   User, Briefcase, Banknote, Calendar, Activity, Star,
   CheckSquare, FileText, History, MapPin, Mail, Phone,
   Building2, Shield, ChevronLeft, TrendingUp, Clock,
-  Heart, AlertCircle, CreditCard, Users, Award, MessageSquare
+  Heart, AlertCircle, CreditCard, Users, Award, MessageSquare, Plus
 } from 'lucide-react';
 import { useWorkforce } from '@/context/WorkforceContext';
 import { formatCurrency } from '@/lib/utils/formatCurrency';

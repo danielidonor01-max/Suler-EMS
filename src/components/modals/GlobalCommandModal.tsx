@@ -51,12 +51,13 @@ export const GlobalCommandModal: React.FC<GlobalCommandModalProps> = ({ isOpen, 
       <div className="space-y-6">
         <div className="relative group">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-300 group-focus-within:text-indigo-600 transition-colors" />
-          <input 
+          <input
             autoFocus
-            type="text" 
+            type="text"
+            aria-label="Search commands"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search commands or operational data..." 
+            placeholder="Search commands or operational data..."
             className="w-full h-[56px] bg-slate-50 border border-slate-200 rounded-2xl pl-12 pr-4 text-[15px] font-bold text-slate-900 placeholder:text-slate-400 outline-none focus:border-indigo-500 focus:bg-white transition-all shadow-sm"
           />
           <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-1.5 px-2 py-1 bg-white border border-slate-200 rounded-lg text-[10px] font-black text-slate-400">

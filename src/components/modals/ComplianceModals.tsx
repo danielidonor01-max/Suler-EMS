@@ -48,7 +48,7 @@ export const AddSalaryGradeModal: React.FC<{ isOpen: boolean; onClose: () => voi
         <div className="space-y-4">
           <div className="space-y-1.5">
             <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Grade Level Identifier</label>
-            <input 
+            <input aria-label="Grade Level Identifier" 
               required
               value={level}
               onChange={(e) => setLevel(e.target.value)}
@@ -60,7 +60,7 @@ export const AddSalaryGradeModal: React.FC<{ isOpen: boolean; onClose: () => voi
           <div className="grid grid-cols-2 gap-4">
              <div className="space-y-1.5">
                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Minimum Base (₦)</label>
-               <input 
+               <input aria-label="Minimum Base (₦)" 
                  required
                  type="number"
                  value={minSalary}
@@ -70,7 +70,7 @@ export const AddSalaryGradeModal: React.FC<{ isOpen: boolean; onClose: () => voi
              </div>
              <div className="space-y-1.5">
                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Maximum Base (₦)</label>
-               <input 
+               <input aria-label="Maximum Base (₦)" 
                  required
                  type="number"
                  value={maxSalary}
@@ -82,7 +82,7 @@ export const AddSalaryGradeModal: React.FC<{ isOpen: boolean; onClose: () => voi
 
           <div className="space-y-1.5">
             <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Annual Step Increment (₦)</label>
-            <input 
+            <input aria-label="Annual Step Increment (₦)" 
               required
               type="number"
               value={stepIncrement}

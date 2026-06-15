@@ -18,10 +18,10 @@ import { useActivity, ActivityLog } from '@/context/ActivityContext';
 import { RouteGuard } from '@/components/common/RouteGuard';
 import { format } from 'date-fns';
 import { useSearchParams } from 'next/navigation';
-import { useState, useMemo } from 'react';
+import { useState, useMemo, Suspense } from 'react';
 import { useToast } from '@/components/common/ToastContext';
 
-export default function GovernanceAuditPage() {
+function GovernanceAuditContent() {
   const { activities } = useActivity();
   const searchParams = useSearchParams();
   const initialQuery = searchParams.get('q') || '';
@@ -29,10 +29,10 @@ export default function GovernanceAuditPage() {
   const { addToast } = useToast();
 
   const handleExport = () => {
-    addToast('Generating Immutable Audit Trail...', 'INFO');
-    setTimeout(() => {
-      addToast('Forensic audit registry exported to CSV successfully.', 'SUCCESS');
-    }, 1500);
+    // Trigger a real CSV download against the live audit endpoint. Default
+    // scope = last 90 days, capped at 10k rows (override via query params).
+    addToast('Preparing audit registry CSV…', 'INFO');
+    window.location.href = '/api/audit/export';
   };
   
   // Filtering for high-impact governance events
@@ -41,9 +41,9 @@ export default function GovernanceAuditPage() {
       .filter(a => ['SYSTEM', 'GOVERNANCE', 'FINANCE', 'IAM'].includes(a.type))
       .filter(a => 
         !searchQuery || 
-        a.label.toLowerCase().includes(searchQuery.toLowerCase()) || 
-        a.message.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        a.author.toLowerCase().includes(searchQuery.toLowerCase())
+        (a.label || '').toLowerCase().includes(searchQuery.toLowerCase()) || 
+        (a.message || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (a.author || a.actor || '').toLowerCase().includes(searchQuery.toLowerCase())
       )
       .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
   }, [activities, searchQuery]);
@@ -78,7 +78,9 @@ export default function GovernanceAuditPage() {
             </p>
           </div>
 
-          <button 
+          <button
+            type="button"
+            aria-label="Export audit trail as CSV"
             onClick={handleExport}
             className="h-11 px-6 bg-white border border-slate-200 text-slate-600 rounded-xl text-[11px] font-bold uppercase tracking-widest hover:border-slate-300 transition-all flex items-center gap-2 shadow-sm"
           >
@@ -97,9 +99,10 @@ export default function GovernanceAuditPage() {
             <div className="flex items-center gap-4">
                <div className="relative">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
-                  <input 
-                    type="text" 
-                    placeholder="Search by actor or event..." 
+                  <input
+                    type="text"
+                    aria-label="Search audit registry"
+                    placeholder="Search by actor or event..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     className="h-9 pl-9 pr-4 bg-white border border-slate-200 rounded-lg text-[11px] font-bold outline-none focus:border-indigo-500 w-64 transition-all"
@@ -131,8 +134,8 @@ export default function GovernanceAuditPage() {
                         <div className="flex items-center gap-3">
                            <h3 className="text-[14px] font-black text-slate-900 tracking-tight">{log.label}</h3>
                            <div className="flex items-center gap-1.5 px-2 py-0.5 bg-slate-100 rounded text-[9px] font-bold text-slate-500 uppercase tracking-widest">
-                              {getStatusIcon(log.status)}
-                              {log.status}
+                              {getStatusIcon(log.status || 'UNKNOWN')}
+                              {log.status || 'UNKNOWN'}
                            </div>
                         </div>
                         <p className="text-[13px] font-medium text-slate-500 leading-relaxed">{log.message}</p>
@@ -171,5 +174,13 @@ export default function GovernanceAuditPage() {
 
       </div>
     </RouteGuard>
+  );
+}
+
+export default function GovernanceAuditPage() {
+  return (
+    <Suspense fallback={<div className="p-8 text-center text-slate-500">Loading Governance Portal...</div>}>
+      <GovernanceAuditContent />
+    </Suspense>
   );
 }

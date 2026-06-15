@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { 
   Inbox, 
   User, 
@@ -13,13 +13,22 @@ import {
 } from 'lucide-react';
 import { RouteGuard } from '@/components/common/RouteGuard';
 import { useCommunication } from '@/context/CommunicationContext';
+import { useAccess } from '@/context/AccessContext';
 import { ConversationList, ChatWindow, BroadcastPanel } from '@/components/messaging/ChatComponents';
 import { useSearchParams } from 'next/navigation';
 
-export default function MessagesPage() {
-  const { activeConversationId, setActiveConversationId, conversations, openDMWithUser, openGroupChat } = useCommunication();
+function MessagesContent() {
+  const { activeConversationId, setActiveConversationId, openDMWithUser, openGroupChat } = useCommunication();
+  const { checkPermission } = useAccess();
   const searchParams = useSearchParams();
   const [activeTab, setActiveTab] = useState<'inbox' | 'dm' | 'groups' | 'broadcasts'>('inbox');
+
+  // Broadcasts tab is ALWAYS visible — everyone in the org receives them.
+  // The compose form inside the tab is what's permission-gated; users
+  // without `communication:broadcast` see the received list with a hint
+  // pointing to who can publish.
+  const canBroadcast = checkPermission('communication:broadcast' as any).allowed;
+  void canBroadcast;
 
   // Handle deep linking from URL (e.g. /messages?id=EMP001&name=John)
   useEffect(() => {
@@ -60,6 +69,9 @@ export default function MessagesPage() {
             <div className="space-y-1">
               {tabs.map(tab => (
                 <button
+                  type="button"
+                  aria-label={`Switch to ${tab.label}`}
+                  aria-current={activeTab === tab.id ? 'page' : undefined}
                   key={tab.id}
                   onClick={() => { setActiveTab(tab.id as any); setActiveConversationId(null); }}
                   className={`w-full flex items-center gap-3 px-3 py-3 rounded-xl transition-all ${
@@ -74,10 +86,14 @@ export default function MessagesPage() {
           </div>
 
           <div className="mt-auto px-3 pb-4">
-             <button className="w-full flex items-center gap-3 px-3 py-3 rounded-xl text-slate-400 hover:bg-slate-800 hover:text-white transition-all">
+             <a
+                href="/preferences"
+                aria-label="Open notification & messaging preferences"
+                className="w-full flex items-center gap-3 px-3 py-3 rounded-xl text-slate-400 hover:bg-slate-800 hover:text-white transition-all"
+             >
                 <Settings className="w-5 h-5 shrink-0" />
                 <span className="hidden md:block text-[13px] font-bold tracking-tight">Preferences</span>
-             </button>
+             </a>
           </div>
         </div>
 
@@ -101,5 +117,13 @@ export default function MessagesPage() {
 
       </div>
     </RouteGuard>
+  );
+}
+
+export default function MessagesPage() {
+  return (
+    <Suspense fallback={<div className="p-8 text-center text-slate-500">Loading Messages...</div>}>
+      <MessagesContent />
+    </Suspense>
   );
 }

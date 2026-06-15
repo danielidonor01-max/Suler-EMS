@@ -40,6 +40,32 @@ export const useToast = () => {
   return context;
 };
 
+/**
+ * Honour the per-user "Toast notifications" preference written by
+ * PreferencesContext. We don't import the hook here to keep the
+ * ToastProvider mountable independently of preferences ordering — just
+ * sniff the localStorage value the preferences page writes. Errors fall
+ * through to "enabled" so misconfigured users still get critical errors.
+ */
+function toastsAreEnabled(): boolean {
+  if (typeof window === 'undefined') return true;
+  try {
+    // Match the keys PreferencesContext uses. We scan for any prefs key so
+    // multi-account browsers still get the right answer.
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (!key || !key.startsWith('suler_prefs_')) continue;
+      const raw = localStorage.getItem(key);
+      if (!raw) continue;
+      const parsed = JSON.parse(raw);
+      if (typeof parsed?.toastsEnabled === 'boolean' && parsed.toastsEnabled === false) {
+        return false;
+      }
+    }
+  } catch { /* honor default */ }
+  return true;
+}
+
 export const ToastProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [toasts, setToasts] = useState<Toast[]>([]);
 
@@ -48,9 +74,15 @@ export const ToastProvider: React.FC<{ children: ReactNode }> = ({ children }) =
   }, []);
 
   const toast = useCallback((options: Omit<Toast, 'id'>) => {
+    // Hard errors always show; the user's "mute toasts" toggle only quiets
+    // success/info/warning/governance noise. Loading toasts also pass
+    // because they signal in-flight async work.
+    const force = options.type === 'error' || options.type === 'loading';
+    if (!force && !toastsAreEnabled()) return '';
+
     const id = Math.random().toString(36).substring(2, 9);
     const newToast = { ...options, id };
-    
+
     setToasts((prev) => [...prev, newToast]);
 
     if (options.type !== 'loading' && options.duration !== 0) {
@@ -116,7 +148,9 @@ const ToastItem = ({ toast, onRemove }: { toast: Toast; onRemove: () => void }) 
         )}
       </div>
 
-      <button 
+      <button
+        type="button"
+        aria-label="Dismiss notification"
         onClick={onRemove}
         className="absolute top-3 right-3 text-slate-300 hover:text-slate-900 transition-colors opacity-0 group-hover:opacity-100"
       >

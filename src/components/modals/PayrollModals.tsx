@@ -25,11 +25,12 @@ import {
   Calculator
 } from 'lucide-react';
 import { Modal } from '../common/Modal';
-import { usePayroll, SalaryStructure, BulkAdjustmentRequest } from '@/context/PayrollContext';
+import { usePayroll, SalaryStructure, BulkAdjustmentRequest, PayrollEntry } from '@/context/PayrollContext';
 import { useWorkforce } from '@/context/WorkforceContext';
 import { useOrganization } from '@/context/OrganizationContext';
 import { useTeams } from '@/context/TeamContext';
 import { formatCurrency, formatNumber } from '@/lib/utils/formatCurrency';
+import { Select } from '../forms/Select';
 
 export const AddAdjustmentModal: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOpen, onClose }) => {
   const { addAdjustment } = usePayroll();
@@ -59,49 +60,38 @@ export const AddAdjustmentModal: React.FC<{ isOpen: boolean; onClose: () => void
     <Modal isOpen={isOpen} onClose={onClose} title="Add Individual Adjustment" size="md">
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="space-y-4">
-          <div className="space-y-1.5">
-            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Select Personnel</label>
-            <select 
-              required
-              value={employeeId}
-              onChange={(e) => setEmployeeId(e.target.value)}
-              className="w-full h-12 bg-slate-50 border border-slate-100 rounded-xl px-4 text-sm font-bold outline-none"
-            >
-              <option value="">Select Employee</option>
-              {employees.map(emp => (
-                <option key={emp.id} value={emp.id}>{emp.name} ({emp.designation})</option>
-              ))}
-            </select>
-          </div>
+          <Select
+            label="Select Personnel"
+            value={employeeId}
+            onChange={setEmployeeId}
+            placeholder="Select Employee"
+            options={employees.map(emp => ({ label: `${emp.name} (${emp.designation})`, value: emp.id }))}
+          />
           <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-1.5">
-              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Adjustment Type</label>
-              <select 
-                value={type}
-                onChange={(e) => setType(e.target.value)}
-                className="w-full h-12 bg-slate-50 border border-slate-100 rounded-xl px-4 text-sm font-bold outline-none"
-              >
-                <option value="BONUS">Bonus</option>
-                <option value="AWARD">Performance Award</option>
-                <option value="ALLOWANCE">Extra Allowance</option>
-                <option value="DEDUCTION">Deduction</option>
-              </select>
-            </div>
-            <div className="space-y-1.5">
-              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Payroll Period</label>
-              <select 
-                value={period}
-                onChange={(e) => setPeriod(e.target.value)}
-                className="w-full h-12 bg-slate-50 border border-slate-100 rounded-xl px-4 text-sm font-bold outline-none"
-              >
-                <option value="May 2026">May 2026</option>
-                <option value="June 2026">June 2026</option>
-              </select>
-            </div>
+            <Select
+              label="Adjustment Type"
+              value={type}
+              onChange={setType}
+              options={[
+                { label: 'Bonus', value: 'BONUS' },
+                { label: 'Performance Award', value: 'AWARD' },
+                { label: 'Extra Allowance', value: 'ALLOWANCE' },
+                { label: 'Deduction', value: 'DEDUCTION' },
+              ]}
+            />
+            <Select
+              label="Payroll Period"
+              value={period}
+              onChange={setPeriod}
+              options={[
+                { label: 'May 2026', value: 'May 2026' },
+                { label: 'June 2026', value: 'June 2026' },
+              ]}
+            />
           </div>
           <div className="space-y-1.5">
             <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Label / Justification</label>
-            <input 
+            <input aria-label="Label / Justification" 
               required
               value={label}
               onChange={(e) => setLabel(e.target.value)}
@@ -111,7 +101,7 @@ export const AddAdjustmentModal: React.FC<{ isOpen: boolean; onClose: () => void
           </div>
           <div className="space-y-1.5">
             <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Amount (₦)</label>
-            <input 
+            <input aria-label="Amount (₦)" 
               required
               type="number"
               value={amount}
@@ -226,35 +216,31 @@ export const BulkAdjustmentModal: React.FC<{ isOpen: boolean; onClose: () => voi
            {step === 1 && (
              <div className="space-y-6 animate-in slide-in-from-right-4">
                 <div className="grid grid-cols-2 gap-6">
-                   <div className="space-y-2">
-                      <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Adjustment Type</label>
-                      <select 
-                        value={formData.type}
-                        onChange={e => setFormData({...formData, type: e.target.value as any})}
-                        className="w-full h-14 bg-slate-50 border border-slate-100 rounded-2xl px-6 text-[13px] font-bold outline-none"
-                      >
-                         <option value="BONUS">Organizational Bonus</option>
-                         <option value="ALLOWANCE">Allowance Adjustment</option>
-                         <option value="DEDUCTION">Institutional Deduction</option>
-                         <option value="AWARD">Performance Award</option>
-                         <option value="COMPENSATION">Special Compensation</option>
-                      </select>
-                   </div>
-                   <div className="space-y-2">
-                      <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Payroll Cycle</label>
-                      <select 
-                        value={formData.period}
-                        onChange={e => setFormData({...formData, period: e.target.value})}
-                        className="w-full h-14 bg-slate-50 border border-slate-100 rounded-2xl px-6 text-[13px] font-bold outline-none"
-                      >
-                         <option value="May 2026">May 2026</option>
-                         <option value="June 2026">June 2026</option>
-                      </select>
-                   </div>
+                   <Select
+                     label="Adjustment Type"
+                     value={formData.type}
+                     onChange={val => setFormData({...formData, type: val as any})}
+                     options={[
+                       { label: 'Organizational Bonus', value: 'BONUS' },
+                       { label: 'Allowance Adjustment', value: 'ALLOWANCE' },
+                       { label: 'Institutional Deduction', value: 'DEDUCTION' },
+                       { label: 'Performance Award', value: 'AWARD' },
+                       { label: 'Special Compensation', value: 'COMPENSATION' },
+                     ]}
+                   />
+                   <Select
+                     label="Payroll Cycle"
+                     value={formData.period}
+                     onChange={val => setFormData({...formData, period: val})}
+                     options={[
+                       { label: 'May 2026', value: 'May 2026' },
+                       { label: 'June 2026', value: 'June 2026' },
+                     ]}
+                   />
                 </div>
                 <div className="space-y-2">
                    <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Title</label>
-                   <input 
+                   <input aria-label="Title" 
                      placeholder="e.g. Q2 Performance Bonus"
                      value={formData.title}
                      onChange={e => setFormData({...formData, title: e.target.value})}
@@ -278,7 +264,8 @@ export const BulkAdjustmentModal: React.FC<{ isOpen: boolean; onClose: () => voi
                    </div>
                    <div className="space-y-2">
                       <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Value ({formData.amountType === 'FIXED' ? '₦' : '%'})</label>
-                      <input 
+                      <input
+                        aria-label="Adjustment value"
                         type="number"
                         value={formData.amount || ''}
                         onChange={e => setFormData({...formData, amount: parseFloat(e.target.value) || 0})}
@@ -482,19 +469,19 @@ export const UpdateSalaryModal: React.FC<{ isOpen: boolean; onClose: () => void;
         <div className="grid grid-cols-2 gap-4">
            <div className="space-y-1.5">
               <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Base Salary</label>
-              <input type="number" value={base} onChange={e => setBase(e.target.value)} className="w-full h-12 bg-slate-50 border border-slate-100 rounded-xl px-4 text-sm font-bold" />
+              <input aria-label="Base Salary" type="number" value={base} onChange={e => setBase(e.target.value)} className="w-full h-12 bg-slate-50 border border-slate-100 rounded-xl px-4 text-sm font-bold" />
            </div>
            <div className="space-y-1.5">
               <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Housing</label>
-              <input type="number" value={housing} onChange={e => setHousing(e.target.value)} className="w-full h-12 bg-slate-50 border border-slate-100 rounded-xl px-4 text-sm font-bold" />
+              <input aria-label="Housing" type="number" value={housing} onChange={e => setHousing(e.target.value)} className="w-full h-12 bg-slate-50 border border-slate-100 rounded-xl px-4 text-sm font-bold" />
            </div>
            <div className="space-y-1.5">
               <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Transport</label>
-              <input type="number" value={transport} onChange={e => setTransport(e.target.value)} className="w-full h-12 bg-slate-50 border border-slate-100 rounded-xl px-4 text-sm font-bold" />
+              <input aria-label="Transport" type="number" value={transport} onChange={e => setTransport(e.target.value)} className="w-full h-12 bg-slate-50 border border-slate-100 rounded-xl px-4 text-sm font-bold" />
            </div>
            <div className="space-y-1.5">
               <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Meal</label>
-              <input type="number" value={meal} onChange={e => setMeal(e.target.value)} className="w-full h-12 bg-slate-50 border border-slate-100 rounded-xl px-4 text-sm font-bold" />
+              <input aria-label="Meal" type="number" value={meal} onChange={e => setMeal(e.target.value)} className="w-full h-12 bg-slate-50 border border-slate-100 rounded-xl px-4 text-sm font-bold" />
            </div>
         </div>
         <button type="submit" className="w-full h-12 bg-indigo-600 text-white rounded-xl text-xs font-black uppercase tracking-widest shadow-xl shadow-indigo-100">

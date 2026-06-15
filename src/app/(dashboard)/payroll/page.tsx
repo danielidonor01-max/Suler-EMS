@@ -35,8 +35,11 @@ export default function PayrollOverviewPage() {
   const { currentHub } = useOrganization();
   const { userRole } = useAccess();
 
-  // Access Control
-  const isFinanceAdmin = userRole === 'FINANCE_ADMIN';
+  // Access Control. Canonical role name is FINANCE_MANAGER (ARCHITECTURE.md
+  // §2 — system roles seeded in DB are SUPER_ADMIN, HR_ADMIN, FINANCE_MANAGER,
+  // MANAGER, EMPLOYEE). 'FINANCE_ADMIN' was a typo that silently disabled
+  // every payroll-admin affordance for the actual finance role.
+  const isFinanceAdmin = userRole === 'FINANCE_MANAGER' || userRole === 'SUPER_ADMIN';
 
   // Hub Filtering
   const filteredRuns = payrollRuns.filter(r => currentHub === 'All Regions' || r.hub === currentHub);

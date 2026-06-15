@@ -51,8 +51,8 @@ export default function PayrollRegisterPage() {
     }, 1500);
   };
 
-  // Access Control
-  const isFinanceAdmin = userRole === 'FINANCE_ADMIN';
+  // Access Control. Canonical role name is FINANCE_MANAGER (ARCHITECTURE.md §2).
+  const isFinanceAdmin = userRole === 'FINANCE_MANAGER' || userRole === 'SUPER_ADMIN';
 
   // Hub Filtering
   const filteredRuns = payrollRuns.filter(r => currentHub === 'All Regions' || r.hub === currentHub);
@@ -228,6 +228,7 @@ export default function PayrollRegisterPage() {
           <DataTable 
             title="Compensation Breakdown"
             description="Detailed salary structure and statutory compliance logs."
+            data={displayRun.entries}
             columns={columns}
             rowActions={[
               { label: 'View Payslip', icon: FileText, onClick: (e: PayrollEntry) => setActiveEntry(e) },

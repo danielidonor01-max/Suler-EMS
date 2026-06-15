@@ -1,34 +1,141 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from 'react';
-import { 
-  Search, 
-  Send, 
-  Paperclip, 
-  MoreVertical, 
-  Phone, 
-  Video, 
-  User, 
-  Users, 
-  Megaphone, 
+import React, { useMemo, useRef, useState, useEffect } from 'react';
+import useSWR from 'swr';
+import {
+  Search,
+  Send,
+  Paperclip,
+  MoreVertical,
+  Phone,
+  Video,
+  User,
+  Users,
+  Megaphone,
   CheckCheck,
   Plus,
   ArrowLeft,
   ShieldAlert,
   MessageSquare,
+  X,
   Lock
 } from 'lucide-react';
 import { Conversation, Message, useCommunication } from '@/context/CommunicationContext';
 import { useAccess } from '@/context/AccessContext';
+import { useEscapeDismiss } from '@/lib/hooks/use-dismiss';
+import { apiFetcher } from '@/lib/api/fetcher';
 import { format } from 'date-fns';
 
-export const ConversationList = ({ onSelect, activeId, filterTab }: { 
-  onSelect: (id: string) => void, 
+interface Contact {
+  id: string;
+  name: string;
+  email: string;
+  role: { name: string };
+  employee?: {
+    staffId: string;
+    jobTitle: string;
+    branch: string | null;
+    department: { name: string } | null;
+  } | null;
+}
+
+function initials(name: string) {
+  return name.split(' ').filter(Boolean).slice(0, 2).map(p => p[0]).join('').toUpperCase();
+}
+
+function NewMessageModal({ onClose, onPick }: { onClose: () => void; onPick: (c: Contact) => void }) {
+  useEscapeDismiss(onClose, true);
+  const [query, setQuery] = useState('');
+  const { data: contacts, error, isLoading } = useSWR<Contact[]>('/api/communication/contacts', apiFetcher);
+
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return contacts ?? [];
+    return (contacts ?? []).filter(c =>
+      c.name.toLowerCase().includes(q)
+      || c.email.toLowerCase().includes(q)
+      || c.employee?.staffId?.toLowerCase().includes(q)
+      || c.employee?.jobTitle?.toLowerCase().includes(q)
+    );
+  }, [contacts, query]);
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
+      role="dialog"
+      aria-modal="true"
+      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
+    >
+      <div className="bg-white rounded-[24px] w-full max-w-[480px] shadow-premium overflow-hidden flex flex-col max-h-[80vh]">
+        <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between gap-3">
+          <div>
+            <h2 className="text-[15px] font-bold text-slate-900 tracking-tight">New Message</h2>
+            <p className="text-[11px] text-slate-500 mt-0.5">Pick a teammate to start a direct conversation.</p>
+          </div>
+          <button type="button" onClick={onClose} aria-label="Close" className="w-8 h-8 rounded-md text-slate-400 hover:bg-slate-100 flex items-center justify-center">
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+
+        <div className="px-5 py-4 border-b border-slate-100">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+            <input
+              autoFocus
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Search by name, email, staff ID, or job title…"
+              aria-label="Search contacts"
+              className="w-full h-10 pl-9 pr-3 rounded-[10px] border border-slate-200 text-[13px] text-slate-900 bg-white focus:outline-none focus:border-indigo-500"
+            />
+          </div>
+        </div>
+
+        <div className="flex-1 overflow-y-auto custom-scrollbar">
+          {isLoading && <div className="px-6 py-10 text-center text-[12px] text-slate-500">Loading contacts…</div>}
+          {error && <div className="px-6 py-10 text-center text-[12px] text-rose-700">{error.message}</div>}
+          {!isLoading && !error && filtered.length === 0 && (
+            <div className="px-6 py-10 text-center text-[12px] text-slate-500">No teammates match.</div>
+          )}
+          <div className="divide-y divide-slate-100">
+            {filtered.map(c => (
+              <button
+                key={c.id}
+                type="button"
+                onClick={() => onPick(c)}
+                className="w-full px-5 py-3 flex items-center gap-3 text-left hover:bg-slate-50"
+              >
+                <div className="w-10 h-10 rounded-lg bg-slate-900 text-white flex items-center justify-center text-[11px] font-bold shrink-0">
+                  {initials(c.name)}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="text-[13px] font-bold text-slate-900 truncate">{c.name}</span>
+                    <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-widest bg-indigo-50 text-indigo-700">{c.role.name}</span>
+                  </div>
+                  <div className="text-[11px] text-slate-500 truncate">
+                    {c.employee?.jobTitle ?? c.email}
+                    {c.employee?.department?.name ? ` · ${c.employee.department.name}` : ''}
+                    {c.employee?.branch ? ` · ${c.employee.branch}` : ''}
+                  </div>
+                </div>
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export const ConversationList = ({ onSelect, activeId, filterTab }: {
+  onSelect: (id: string) => void,
   activeId: string | null,
   filterTab: 'inbox' | 'dm' | 'groups' | 'broadcasts'
 }) => {
-  const { conversations } = useCommunication();
+  const { conversations, openDMWithUser } = useCommunication();
   const [search, setSearch] = useState('');
+  const [showNewMessage, setShowNewMessage] = useState(false);
 
   const filtered = conversations.filter(c => {
     const matchesSearch = c.title.toLowerCase().includes(search.toLowerCase());
@@ -39,22 +146,60 @@ export const ConversationList = ({ onSelect, activeId, filterTab }: {
     return matchesSearch;
   });
 
+  const showNewMessageButton = filterTab === 'inbox' || filterTab === 'dm';
+
   return (
     <div className="flex flex-col h-full bg-white border-r border-slate-200 w-full md:w-[320px] shrink-0">
       <div className="p-4 border-b border-slate-100 space-y-4">
-        <h2 className="text-xl font-bold text-slate-900 tracking-tight">Messages</h2>
+        <div className="flex items-center justify-between gap-2">
+          <h2 className="text-xl font-bold text-slate-900 tracking-tight">Messages</h2>
+          {showNewMessageButton && (
+            <button
+              type="button"
+              aria-label="New direct message"
+              onClick={() => setShowNewMessage(true)}
+              className="inline-flex items-center gap-1 h-8 px-2.5 rounded-[10px] bg-slate-900 hover:bg-black text-white text-[10px] font-bold uppercase tracking-widest"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              New
+            </button>
+          )}
+        </div>
         <div className="relative group">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 transition-colors group-focus-within:text-indigo-500" />
-          <input 
-            type="text" 
-            placeholder="Search conversations..." 
+          <input
+            type="text"
+            aria-label="Search conversations"
+            placeholder="Search conversations..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="w-full bg-slate-50 border border-slate-100 rounded-xl py-2 pl-10 pr-4 text-[13px] font-medium text-slate-900 outline-none focus:bg-white focus:border-indigo-200 transition-all"
           />
         </div>
       </div>
+      {showNewMessage && (
+        <NewMessageModal
+          onClose={() => setShowNewMessage(false)}
+          onPick={(c) => {
+            setShowNewMessage(false);
+            openDMWithUser(c.id, c.name);
+          }}
+        />
+      )}
       <div className="flex-1 overflow-y-auto p-2 space-y-1 custom-scrollbar">
+        {filtered.length === 0 && showNewMessageButton && (
+          <div className="px-3 py-12 text-center text-[12px] text-slate-400 space-y-2">
+            <MessageSquare className="w-6 h-6 mx-auto text-slate-300" />
+            <p>No conversations yet.</p>
+            <button
+              type="button"
+              onClick={() => setShowNewMessage(true)}
+              className="inline-flex items-center gap-1 px-3 py-1.5 rounded-md text-[11px] font-bold uppercase tracking-widest text-indigo-600 hover:bg-indigo-50"
+            >
+              <Plus className="w-3 h-3" /> Start one
+            </button>
+          </div>
+        )}
         {filtered.map(c => (
           <button
             key={c.id}
@@ -136,16 +281,18 @@ export const ChatWindow = ({ conversationId }: { conversationId: string }) => {
           </div>
         </div>
         <div className="flex items-center gap-2 text-slate-400">
-          <button className="w-9 h-9 flex items-center justify-center hover:bg-slate-50 hover:text-slate-900 rounded-xl transition-all"><Phone className="w-4 h-4" /></button>
-          <button className="w-9 h-9 flex items-center justify-center hover:bg-slate-50 hover:text-slate-900 rounded-xl transition-all"><Video className="w-4 h-4" /></button>
-          <button className="w-9 h-9 flex items-center justify-center hover:bg-slate-50 hover:text-slate-900 rounded-xl transition-all"><MoreVertical className="w-4 h-4" /></button>
+          <button type="button" aria-label="Start voice call" className="w-9 h-9 flex items-center justify-center hover:bg-slate-50 hover:text-slate-900 rounded-xl transition-all"><Phone className="w-4 h-4" /></button>
+          <button type="button" aria-label="Start video call" className="w-9 h-9 flex items-center justify-center hover:bg-slate-50 hover:text-slate-900 rounded-xl transition-all"><Video className="w-4 h-4" /></button>
+          <button type="button" aria-label="More options" className="w-9 h-9 flex items-center justify-center hover:bg-slate-50 hover:text-slate-900 rounded-xl transition-all"><MoreVertical className="w-4 h-4" /></button>
         </div>
       </div>
 
       {/* Messages */}
       <div ref={scrollRef} className="flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar bg-slate-50/30">
         {activeMessages.map((m, i) => {
-          const isOwn = m.senderId === user?.employeeId;
+          // Messages persist senderId = User.id (NOT employeeId). The
+          // CommunicationContext rewrite (Phase 3) aligned this with the DB.
+          const isOwn = m.senderId === user?.id;
           return (
             <div key={m.id} className={`flex flex-col ${isOwn ? 'items-end' : 'items-start'} animate-in fade-in slide-in-from-bottom-2`}>
               {!isOwn && <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1 mb-1.5">{m.senderName}</span>}
@@ -166,16 +313,19 @@ export const ChatWindow = ({ conversationId }: { conversationId: string }) => {
       {/* Input */}
       <div className="p-4 bg-white border-t border-slate-100">
         <div className="flex items-end gap-3 bg-slate-50 border border-slate-200 rounded-2xl p-2 focus-within:border-indigo-300 focus-within:bg-white transition-all">
-          <button className="w-10 h-10 flex items-center justify-center text-slate-400 hover:text-indigo-600 transition-colors"><Paperclip className="w-5 h-5" /></button>
-          <textarea 
+          <button type="button" aria-label="Attach file" className="w-10 h-10 flex items-center justify-center text-slate-400 hover:text-indigo-600 transition-colors"><Paperclip className="w-5 h-5" /></button>
+          <textarea
             rows={1}
+            aria-label="Message"
             placeholder="Type your message..."
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && (e.preventDefault(), handleSend())}
             className="flex-1 bg-transparent border-none outline-none py-2.5 text-[13px] font-medium text-slate-900 placeholder:text-slate-400 resize-none max-h-[120px]"
           />
-          <button 
+          <button
+            type="button"
+            aria-label="Send message"
             onClick={handleSend}
             disabled={!input.trim()}
             className={`w-10 h-10 flex items-center justify-center rounded-xl transition-all ${
@@ -191,24 +341,46 @@ export const ChatWindow = ({ conversationId }: { conversationId: string }) => {
 };
 
 export const BroadcastPanel = () => {
-  const { postBroadcast } = useCommunication();
-  const { userRole } = useAccess();
+  const { postBroadcast, conversations } = useCommunication();
+  const { checkPermission, userRole } = useAccess();
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [scope, setScope] = useState<'TEAM' | 'DEPARTMENT' | 'HUB' | 'GLOBAL'>('GLOBAL');
+  const [posting, setPosting] = useState(false);
+  const [postError, setPostError] = useState<string | null>(null);
 
-  const handlePost = () => {
+  // Received broadcasts come from the context as BROADCAST-typed conversations
+  // (synthesized from /api/communication/announcements).
+  const receivedBroadcasts = conversations.filter(c => c.type === 'BROADCAST');
+
+  const handlePost = async () => {
     if (!title || !content) return;
-    postBroadcast(title, content, scope);
-    setTitle('');
-    setContent('');
+    setPosting(true);
+    setPostError(null);
+    try {
+      await postBroadcast(title, content, scope);
+      setTitle('');
+      setContent('');
+    } catch (err) {
+      setPostError(err instanceof Error ? err.message : 'Failed to dispatch broadcast');
+    } finally {
+      setPosting(false);
+    }
   };
 
-  const allowedScopes = () => {
+  // Gate by the canonical permission rather than hard-coded role names. This
+  // means custom roles can be granted communication:broadcast in /admin/roles
+  // without code changes.
+  const canPost = checkPermission('communication:broadcast' as any).allowed;
+  const allowedScopes = (): Array<'TEAM' | 'DEPARTMENT' | 'HUB' | 'GLOBAL'> => {
+    if (!canPost) return [];
     if (userRole === 'SUPER_ADMIN') return ['GLOBAL', 'HUB', 'DEPARTMENT', 'TEAM'];
-    if (userRole === 'HUB_MANAGER') return ['HUB', 'DEPARTMENT', 'TEAM'];
+    if (userRole === 'HR_ADMIN') return ['GLOBAL', 'DEPARTMENT'];
+    if (userRole === 'FINANCE_MANAGER') return ['GLOBAL', 'DEPARTMENT'];
     if (userRole === 'MANAGER') return ['TEAM'];
-    return [];
+    // Custom role with the permission granted but no role-specific scope
+    // mapping yet — default to TEAM only.
+    return ['TEAM'];
   };
 
   return (
@@ -216,19 +388,60 @@ export const BroadcastPanel = () => {
       <div className="space-y-2">
         <div className="flex items-center gap-2">
           <Megaphone className="w-5 h-5 text-indigo-600" />
-          <h2 className="text-xl font-bold text-slate-900 tracking-tight">Post Official Broadcast</h2>
+          <h2 className="text-xl font-bold text-slate-900 tracking-tight">Announcements</h2>
         </div>
         <p className="text-[13px] font-medium text-slate-400 leading-relaxed">
-          Dispatch platform-wide alerts and high-priority announcements to specific institutional levels.
+          {canPost
+            ? 'Dispatch platform-wide alerts and high-priority announcements to specific institutional levels.'
+            : 'Active broadcasts targeted at you, your department, and your role.'}
         </p>
       </div>
 
+      {/* Received broadcasts */}
+      {receivedBroadcasts.length > 0 && (
+        <div className="space-y-3">
+          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Current Broadcasts ({receivedBroadcasts.length})</p>
+          {receivedBroadcasts.map(b => (
+            <div key={b.id} className="bg-white p-5 rounded-[20px] border border-slate-200 shadow-sm">
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex-1 min-w-0">
+                  <h3 className="text-[14px] font-bold text-slate-900">{b.title}</h3>
+                  <p className="text-[13px] text-slate-600 mt-1.5 leading-relaxed">{b.lastMessage}</p>
+                </div>
+                <span className="inline-flex items-center px-2 py-1 rounded-md text-[10px] font-bold uppercase tracking-widest bg-indigo-50 text-indigo-700 shrink-0">
+                  {b.scope}
+                </span>
+              </div>
+              {b.lastMessageAt && (
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-3">
+                  {format(new Date(b.lastMessageAt), 'MMM d, HH:mm')}
+                </p>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {!canPost && receivedBroadcasts.length === 0 && (
+        <div className="p-12 border-2 border-dashed border-slate-200 rounded-[24px] flex flex-col items-center justify-center text-center text-[13px] text-slate-500">
+          <Megaphone className="w-6 h-6 text-slate-300 mb-3" />
+          <p>No active broadcasts.</p>
+          <p className="text-[11px] mt-2 max-w-[280px]">
+            Organization-wide announcements are published by SUPER_ADMIN, HR, and Finance.
+            They&apos;ll appear here automatically when sent.
+          </p>
+        </div>
+      )}
+
+      {canPost && (
       <div className="space-y-6 bg-white p-8 rounded-[32px] border border-slate-200 shadow-premium">
         <div className="space-y-1.5">
           <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Announcement Scope</label>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
             {allowedScopes().map(s => (
-              <button 
+              <button
+                type="button"
+                aria-label={`Select scope ${s}`}
                 key={s}
                 onClick={() => setScope(s as any)}
                 className={`h-11 rounded-xl border text-[11px] font-bold transition-all ${
@@ -243,7 +456,7 @@ export const BroadcastPanel = () => {
 
         <div className="space-y-1.5">
           <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Headline</label>
-          <input 
+          <input aria-label="Headline" 
             type="text" 
             placeholder="e.g. System Maintenance, New Policy Update..."
             value={title}
@@ -254,7 +467,7 @@ export const BroadcastPanel = () => {
 
         <div className="space-y-1.5">
           <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Payload Content</label>
-          <textarea 
+          <textarea aria-label="Payload Content" 
             rows={4}
             placeholder="Provide detailed instructions or information..."
             value={content}
@@ -270,14 +483,20 @@ export const BroadcastPanel = () => {
           </p>
         </div>
 
-        <button 
+        {postError && (
+          <div className="px-4 py-3 rounded-[12px] bg-rose-50 border border-rose-100 text-[12px] text-rose-700">{postError}</div>
+        )}
+
+        <button
+          type="button"
           onClick={handlePost}
-          disabled={!title || !content}
+          disabled={!title || !content || posting}
           className="w-full h-[52px] bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-200 disabled:text-slate-400 text-white rounded-2xl text-[12px] font-bold uppercase tracking-wider transition-all shadow-premium flex items-center justify-center gap-2"
         >
-          <Send className="w-4 h-4" /> Dispatch Broadcast
+          <Send className="w-4 h-4" /> {posting ? 'Dispatching…' : 'Dispatch Broadcast'}
         </button>
       </div>
+      )}
     </div>
   );
 };

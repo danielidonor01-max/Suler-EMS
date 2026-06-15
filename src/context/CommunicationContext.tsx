@@ -1,13 +1,32 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+/**
+ * CommunicationContext (v3 — API-backed)
+ *
+ * Public surface unchanged: ChatComponents and the /messages page do not need
+ * code changes (except `senderId` comparison — see ChatComponents update).
+ *
+ * Internally:
+ *   - conversations loaded from /api/communication/conversations every 10s
+ *   - messages loaded from /api/communication/conversations/:id/messages every 5s while a thread is active
+ *   - sendMessage POSTs and revalidates
+ *   - createConversation / openDMWithUser POSTs and revalidates
+ *   - postBroadcast posts an Announcement (Phase 3 keeps "BROADCAST" as a
+ *     conversation-shaped item synthesized from announcements so the UI tabs
+ *     keep working without restructure)
+ *   - markAsRead just optimistically zeroes unreadCount; server already marks
+ *     read on the message-history fetch.
+ */
+
+import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback, useMemo } from 'react';
 import { useActivity } from './ActivityContext';
 import { useAccess } from './AccessContext';
+import { apiFetcher, apiMutate } from '@/lib/api/fetcher';
 
 export interface Message {
   id: string;
   conversationId: string;
-  senderId: string;
+  senderId: string;       // User.id (NOT employeeId) — matches messaging.service.ts
   senderName: string;
   content: string;
   createdAt: string;
@@ -18,11 +37,21 @@ export interface Conversation {
   id: string;
   type: 'DM' | 'GROUP' | 'BROADCAST';
   title: string;
-  participants: string[]; // User IDs
+  participants: string[];
   lastMessage?: string;
   lastMessageAt?: string;
   scope?: 'TEAM' | 'DEPARTMENT' | 'HUB' | 'GLOBAL';
   unreadCount: number;
+}
+
+interface AnnouncementRow {
+  id: string;
+  title: string;
+  content: string;
+  category: 'GLOBAL' | 'DEPARTMENT' | 'ROLE';
+  scopeId?: string | null;
+  createdAt: string;
+  author?: { name?: string | null };
 }
 
 interface CommunicationContextType {
@@ -30,157 +59,283 @@ interface CommunicationContextType {
   messages: Message[];
   activeConversationId: string | null;
   setActiveConversationId: (id: string | null) => void;
-  sendMessage: (conversationId: string, content: string) => void;
-  createConversation: (participants: string[], title?: string, type?: 'DM' | 'GROUP') => string;
-  postBroadcast: (title: string, content: string, scope: 'TEAM' | 'DEPARTMENT' | 'HUB' | 'GLOBAL') => void;
+  sendMessage: (conversationId: string, content: string) => Promise<void>;
+  createConversation: (participants: string[], title?: string, type?: 'DM' | 'GROUP') => Promise<string>;
+  postBroadcast: (title: string, content: string, scope: 'TEAM' | 'DEPARTMENT' | 'HUB' | 'GLOBAL') => Promise<void>;
   markAsRead: (conversationId: string) => void;
-  openDMWithUser: (userId: string, userName: string) => void;
-  openGroupChat: (groupId: string, groupName: string) => void;
+  openDMWithUser: (userId: string, userName: string) => Promise<void>;
+  openGroupChat: (groupId: string, groupName: string) => Promise<void>;
+  refreshAll: () => Promise<void>;
 }
 
 const CommunicationContext = createContext<CommunicationContextType | undefined>(undefined);
 
-const MOCK_CONVERSATIONS: Conversation[] = [
-  { id: 'C1', type: 'GROUP', title: 'Lagos Ops Team', participants: ['U1', 'U2', 'U3'], lastMessage: 'The payroll run is ready for review.', lastMessageAt: new Date().toISOString(), scope: 'HUB', unreadCount: 2 },
-  { id: 'C2', type: 'DM', title: 'Sarah Williams', participants: ['U1', 'U2'], lastMessage: 'Thanks for the update!', lastMessageAt: new Date().toISOString(), unreadCount: 0 },
-  { id: 'B1', type: 'BROADCAST', title: 'System Maintenance Alert', participants: [], lastMessage: 'Scheduled maintenance this Sunday at 2 AM.', lastMessageAt: new Date().toISOString(), scope: 'GLOBAL', unreadCount: 1 },
-];
-
-const MOCK_MESSAGES: Message[] = [
-  { id: 'M1', conversationId: 'C1', senderId: 'U2', senderName: 'Sarah Williams', content: 'The payroll run is ready for review.', createdAt: new Date().toISOString(), readBy: ['U1'] },
-  { id: 'M2', conversationId: 'C2', senderId: 'U2', senderName: 'Sarah Williams', content: 'Thanks for the update!', createdAt: new Date().toISOString(), readBy: ['U1'] },
-];
+const CONV_POLL_MS = 10_000;
+const MSG_POLL_MS = 5_000;
 
 export const CommunicationProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [conversations, setConversations] = useState<Conversation[]>(MOCK_CONVERSATIONS);
-  const [messages, setMessages] = useState<Message[]>(MOCK_MESSAGES);
-  const [activeConversationId, setActiveConversationId] = useState<string | null>(null);
-  const { pushActivity } = useActivity();
   const { user, userRole } = useAccess();
+  const { pushActivity } = useActivity();
 
+  const [apiConversations, setApiConversations] = useState<Conversation[]>([]);
+  const [announcements, setAnnouncements] = useState<AnnouncementRow[]>([]);
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [activeConversationId, setActiveConversationId] = useState<string | null>(null);
+
+  // --- Polling: conversations + announcements ---
   useEffect(() => {
-    const saved = localStorage.getItem('suler_comms_v1');
-    if (saved) {
-      const { conversations: c, messages: m } = JSON.parse(saved);
-      setConversations(c);
-      setMessages(m);
+    if (!user) return;
+    let cancelled = false;
+    async function load() {
+      try {
+        const [convs, anns] = await Promise.all([
+          apiFetcher<Conversation[]>('/api/communication/conversations'),
+          apiFetcher<AnnouncementRow[]>('/api/communication/announcements'),
+        ]);
+        if (cancelled) return;
+        setApiConversations(convs);
+        setAnnouncements(anns);
+      } catch {
+        // silent — UI will show empty
+      }
     }
-  }, []);
+    load();
+    const t = setInterval(load, CONV_POLL_MS);
+    return () => { cancelled = true; clearInterval(t); };
+  }, [user]);
 
-  const save = (c: Conversation[], m: Message[]) => {
-    localStorage.setItem('suler_comms_v1', JSON.stringify({ conversations: c, messages: m }));
-  };
+  // --- Polling: messages for the active conversation ---
+  useEffect(() => {
+    if (!activeConversationId) return;
+    let cancelled = false;
+    async function loadMessages() {
+      try {
+        const list = await apiFetcher<Message[]>(`/api/communication/conversations/${activeConversationId}/messages`);
+        if (cancelled) return;
+        // Service returns desc-by-createdAt; UI renders ascending so reverse here.
+        setMessages(prev => {
+          const otherConvs = prev.filter(m => m.conversationId !== activeConversationId);
+          return [...otherConvs, ...list.slice().reverse()];
+        });
+      } catch {
+        // silent
+      }
+    }
+    loadMessages();
+    const t = setInterval(loadMessages, MSG_POLL_MS);
+    return () => { cancelled = true; clearInterval(t); };
+  }, [activeConversationId]);
 
-  const sendMessage = (conversationId: string, content: string) => {
-    const newMessage: Message = {
-      id: `M-${Date.now()}`,
-      conversationId,
-      senderId: user?.employeeId || 'SYSTEM',
-      senderName: user?.name || 'Administrator',
-      content,
-      createdAt: new Date().toISOString(),
-      readBy: [user?.employeeId || 'SYSTEM']
-    };
-
-    const nextMessages = [...messages, newMessage];
-    const nextConversations = conversations.map(c => 
-      c.id === conversationId ? { ...c, lastMessage: content, lastMessageAt: newMessage.createdAt } : c
+  // Mark conv as read locally when opened — server is also notified by the
+  // message-history fetch (auto markAsRead in the route).
+  useEffect(() => {
+    if (!activeConversationId) return;
+    setApiConversations(prev =>
+      prev.map(c => c.id === activeConversationId ? { ...c, unreadCount: 0 } : c),
     );
+  }, [activeConversationId]);
 
-    setMessages(nextMessages);
-    setConversations(nextConversations);
-    save(nextConversations, nextMessages);
-  };
+  // Synthesize announcement rows as BROADCAST-typed conversations so the
+  // existing /messages "Broadcasts" tab UI continues to work.
+  const broadcastsAsConversations = useMemo<Conversation[]>(() => {
+    return announcements.map(a => ({
+      id: `ann_${a.id}`,
+      type: 'BROADCAST' as const,
+      title: a.title,
+      participants: [],
+      lastMessage: a.content,
+      lastMessageAt: a.createdAt,
+      scope: a.category === 'GLOBAL' ? 'GLOBAL'
+           : a.category === 'DEPARTMENT' ? 'DEPARTMENT'
+           : 'TEAM',
+      unreadCount: 0,
+    }));
+  }, [announcements]);
 
-  const createConversation = (participants: string[], title?: string, type: 'DM' | 'GROUP' = 'DM') => {
-    const id = `C-${Date.now()}`;
-    const newConv: Conversation = {
-      id,
-      type,
-      title: title || (type === 'DM' ? 'Direct Message' : 'New Group'),
-      participants: Array.from(new Set([...participants, user?.employeeId || ''])),
-      unreadCount: 0
+  const conversations = useMemo(
+    () => [...apiConversations, ...broadcastsAsConversations]
+            .sort((a, b) => (b.lastMessageAt ?? '').localeCompare(a.lastMessageAt ?? '')),
+    [apiConversations, broadcastsAsConversations],
+  );
+
+  const refreshAll = useCallback(async () => {
+    if (!user) return;
+    try {
+      const [convs, anns] = await Promise.all([
+        apiFetcher<Conversation[]>('/api/communication/conversations'),
+        apiFetcher<AnnouncementRow[]>('/api/communication/announcements'),
+      ]);
+      setApiConversations(convs);
+      setAnnouncements(anns);
+    } catch { /* swallow */ }
+  }, [user]);
+
+  const sendMessage = useCallback(async (conversationId: string, content: string) => {
+    if (!user || !content.trim()) return;
+    // Optimistic insert.
+    const optimistic: Message = {
+      id: `tmp-${Date.now()}`,
+      conversationId,
+      senderId: user.id,
+      senderName: user.name ?? 'You',
+      content: content.trim(),
+      createdAt: new Date().toISOString(),
+      readBy: [user.id],
     };
+    setMessages(prev => [...prev, optimistic]);
 
-    const nextConversations = [newConv, ...conversations];
-    setConversations(nextConversations);
-    save(nextConversations, messages);
-    
-    if (type === 'GROUP') {
+    try {
+      const persisted = await apiMutate<{ content: string }, Message>(
+        `/api/communication/conversations/${conversationId}/messages`,
+        'POST',
+        { content: content.trim() },
+      );
+      // Replace optimistic with persisted (same id substitution by content + ts).
+      setMessages(prev => prev.map(m => m.id === optimistic.id ? persisted : m));
+      // Move conversation to top of list with new lastMessage.
+      setApiConversations(prev => prev.map(c =>
+        c.id === conversationId ? { ...c, lastMessage: content, lastMessageAt: persisted.createdAt } : c,
+      ));
+    } catch (err) {
+      // Roll back optimistic on failure.
+      setMessages(prev => prev.filter(m => m.id !== optimistic.id));
+      throw err;
+    }
+  }, [user]);
+
+  const createConversation = useCallback(async (participants: string[], title?: string, type: 'DM' | 'GROUP' = 'DM') => {
+    if (type === 'DM' && participants[0]) {
+      const conv = await apiMutate<{ type: string; targetId: string }, { id: string }>(
+        '/api/communication/conversations',
+        'POST',
+        { type: 'DM', targetId: participants[0] },
+      );
+      await refreshAll();
+      return conv.id;
+    }
+    // Groups: department channels are created via syncDepartmentChannel; ad-hoc
+    // group creation is out-of-scope for Phase 3. Fall back to no-op + activity.
+    pushActivity({
+      type: 'SYSTEM',
+      label: 'Group Channel Requested',
+      message: `Ad-hoc group creation isn't wired yet. Use department channels instead.`,
+      author: userRole,
+      status: 'WARNING',
+    } as any);
+    return '';
+  }, [refreshAll, pushActivity, userRole]);
+
+  const postBroadcast = useCallback(async (title: string, content: string, scope: 'TEAM' | 'DEPARTMENT' | 'HUB' | 'GLOBAL') => {
+    // Map UI scope → API category. TEAM and HUB collapse to DEPARTMENT for now.
+    const category = scope === 'GLOBAL' ? 'GLOBAL'
+                   : scope === 'DEPARTMENT' || scope === 'TEAM' || scope === 'HUB' ? 'DEPARTMENT'
+                   : 'GLOBAL';
+    try {
+      await apiMutate('/api/communication/announcements', 'POST', {
+        title,
+        content,
+        category,
+        // For department scope, scopeId would be required — skip for now until
+        // the UI exposes a picker. Falls back to GLOBAL behavior server-side
+        // if scopeId is missing for DEPARTMENT/ROLE.
+      });
+      await refreshAll();
+      pushActivity({
+        type: 'GOVERNANCE',
+        label: 'Institutional Broadcast Dispatched',
+        message: `Announcement [${title}] published (${scope}).`,
+        author: userRole,
+        status: 'SUCCESS',
+      } as any);
+    } catch (err) {
       pushActivity({
         type: 'SYSTEM',
-        label: 'Collaboration Group Created',
-        message: `New communication group [${newConv.title}] established by ${user?.name}.`,
+        label: 'Broadcast Failed',
+        message: err instanceof Error ? err.message : 'Unknown error',
         author: userRole,
-        status: 'SUCCESS'
+        status: 'FAILURE',
+      } as any);
+      throw err;
+    }
+  }, [refreshAll, pushActivity, userRole]);
+
+  const markAsRead = useCallback((conversationId: string) => {
+    setApiConversations(prev => prev.map(c => c.id === conversationId ? { ...c, unreadCount: 0 } : c));
+  }, []);
+
+  const openDMWithUser = useCallback(async (userId: string, _userName: string) => {
+    // Try existing local match first to avoid a roundtrip.
+    const existing = apiConversations.find(c => c.type === 'DM' && c.participants.includes(userId));
+    if (existing) {
+      setActiveConversationId(existing.id);
+      return;
+    }
+    try {
+      const conv = await apiMutate<{ type: string; targetId: string }, { id: string }>(
+        '/api/communication/conversations',
+        'POST',
+        { type: 'DM', targetId: userId },
+      );
+      await refreshAll();
+      setActiveConversationId(conv.id);
+    } catch {
+      // swallow — context UI will simply not open the thread
+    }
+  }, [apiConversations, refreshAll]);
+
+  const openGroupChat = useCallback(async (groupId: string, groupName: string) => {
+    // 1. Try local match first to avoid a roundtrip.
+    const existing = apiConversations.find(c =>
+      c.id === groupId
+      || c.title === groupName
+      || (c as any).resourceId === groupId,
+    );
+    if (existing) {
+      setActiveConversationId(existing.id);
+      return;
+    }
+    // 2. Create a workflow-classified conversation for this team / group. The
+    // current user is the initial member; other team members get added as
+    // the team-roster API matures. The server-side ChannelService writes a
+    // long-retention conversation with name + resource ref so it surfaces in
+    // /messages → Groups and stays linked to the originating team.
+    try {
+      const conv = await apiMutate<
+        { type: string; name: string; resourceId: string; resourceType: string; participantIds: string[] },
+        { id: string }
+      >('/api/communication/conversations', 'POST', {
+        type: 'WORKFLOW',
+        name: groupName,
+        resourceId: groupId,
+        resourceType: 'Team',
+        participantIds: user?.id ? [user.id] : [],
+      });
+      await refreshAll();
+      setActiveConversationId(conv.id);
+    } catch (err) {
+      pushActivity({
+        type: 'SYSTEM',
+        label: 'Group Chat Creation Failed',
+        message: err instanceof Error ? err.message : 'Could not open team chat',
+        author: userRole,
+        status: 'FAILURE',
       } as any);
     }
-
-    return id;
-  };
-
-  const postBroadcast = (title: string, content: string, scope: 'TEAM' | 'DEPARTMENT' | 'HUB' | 'GLOBAL') => {
-    const id = `B-${Date.now()}`;
-    const newBroadcast: Conversation = {
-      id,
-      type: 'BROADCAST',
-      title,
-      participants: [],
-      scope,
-      lastMessage: content,
-      lastMessageAt: new Date().toISOString(),
-      unreadCount: 1
-    };
-
-    const nextConversations = [newBroadcast, ...conversations];
-    setConversations(nextConversations);
-    save(nextConversations, messages);
-
-    pushActivity({
-      type: 'GOVERNANCE',
-      label: 'Institutional Broadcast Dispatched',
-      message: `System-wide announcement [${title}] broadcasted to all users in [${scope}] scope.`,
-      author: userRole,
-      status: 'SUCCESS'
-    } as any);
-  };
-
-  const markAsRead = (conversationId: string) => {
-    setConversations(prev => prev.map(c => c.id === conversationId ? { ...c, unreadCount: 0 } : c));
-  };
-
-  const openDMWithUser = (userId: string, userName: string) => {
-    const existing = conversations.find(c => c.type === 'DM' && c.participants.includes(userId));
-    if (existing) {
-      setActiveConversationId(existing.id);
-    } else {
-      const newId = createConversation([userId], userName, 'DM');
-      setActiveConversationId(newId);
-    }
-  };
-
-  const openGroupChat = (groupId: string, groupName: string) => {
-    const existing = conversations.find(c => c.id === groupId || (c.type === 'GROUP' && c.title === groupName));
-    if (existing) {
-      setActiveConversationId(existing.id);
-    } else {
-      const newId = createConversation([], groupName, 'GROUP');
-      setActiveConversationId(newId);
-    }
-  };
+  }, [apiConversations, user, refreshAll, pushActivity, userRole]);
 
   return (
-    <CommunicationContext.Provider value={{ 
-      conversations, 
-      messages, 
-      activeConversationId, 
-      setActiveConversationId, 
-      sendMessage, 
-      createConversation, 
-      postBroadcast, 
+    <CommunicationContext.Provider value={{
+      conversations,
+      messages,
+      activeConversationId,
+      setActiveConversationId,
+      sendMessage,
+      createConversation,
+      postBroadcast,
       markAsRead,
       openDMWithUser,
-      openGroupChat
+      openGroupChat,
+      refreshAll,
     }}>
       {children}
     </CommunicationContext.Provider>

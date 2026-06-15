@@ -87,6 +87,30 @@ body {
   overflow: hidden;
 }
 
+/* ============================================================
+   THEME OVERRIDES
+   PreferencesContext writes `data-theme="dark"` on <html> (or
+   "light"). Override only the body-level CSS variables here so
+   the visual mode changes without rewriting every card/component.
+   Cards stay white intentionally — a hybrid that reads well and
+   keeps focus on content. Full surface-level dark mode is a
+   larger sweep deferred to a dedicated phase.
+   ============================================================ */
+html[data-theme="dark"] {
+  --color-bg: #0b1220;
+  --color-text-primary: #e2e8f0;
+  --color-text-secondary: #94a3b8;
+}
+html[data-theme="dark"] body {
+  background-color: var(--color-bg);
+  color: var(--color-text-primary);
+}
+/* Main workspace shell — defaults to a slightly elevated slate so
+   the dark body reads as a vertical gradient against the sidebar. */
+html[data-theme="dark"] .workspace-main {
+  background-color: #0f172a;
+}
+
 /* ========================================
    SURFACE SYSTEM
    Solid, no transparency, no blur

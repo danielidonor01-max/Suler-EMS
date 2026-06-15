@@ -80,6 +80,7 @@ const ConversationSidebar: React.FC<ConversationSidebarProps> = ({ onSelect, sel
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
           <input
             type="text"
+            aria-label="Search conversations"
             placeholder="Search conversations..."
             value={filter}
             onChange={(e) => setFilter(e.target.value)}

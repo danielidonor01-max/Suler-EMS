@@ -30,6 +30,7 @@ import {
   BarChart3,
   Sparkles,
   Database,
+  Plug,
   Bell,
   FileBarChart2,
   Cpu,
@@ -56,19 +57,14 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle }) => {
 
   const handleSignOut = async () => {
     setIsSigningOut(true);
+    // signOut(redirect:false) clears the cookie server-side and returns
+    // without navigating. We then hard-navigate to /login ourselves —
+    // reliable regardless of NextAuth's `data.url` resolution, which can
+    // override `redirectTo` in v5 beta and send the user back to dashboard.
     try {
-      // Write audit event before destroying session
-      await fetch('/api/system/security-event', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          type: 'SESSION_EXPIRED',
-          description: `[SIGN_OUT] ${session?.user?.name || 'User'} (${userRole}) signed out successfully.`,
-          metadata: { role: userRole, initiatedBy: 'USER_ACTION' },
-        }),
-      }).catch(() => { /* non-blocking — don't block logout if audit fails */ });
+      await signOut({ redirect: false });
     } finally {
-      await signOut({ callbackUrl: '/login' });
+      window.location.href = '/login';
     }
   };
 
@@ -87,7 +83,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle }) => {
 
   // Administrative Workspace (Permission-based)
   const operationsModules = [
-    { name: 'Workforce Registry', icon: Building2, href: '/workforce', permission: Permissions.WORKFORCE_VIEW },
+    { name: 'Workforce Registry', icon: Building2, href: '/employees', permission: Permissions.WORKFORCE_VIEW },
     { name: 'Team Management', icon: Users, href: '/team', permission: Permissions.WORKFORCE_VIEW },
     { name: 'Attendance Admin', icon: Calendar, href: '/attendance/admin', permission: Permissions.ATTENDANCE_VIEW },
     { name: 'Leave Admin', icon: Activity, href: '/leave/admin', permission: Permissions.LEAVE_VIEW },
@@ -100,15 +96,20 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle }) => {
 
   const governanceModules = [
     { name: 'Command Center', icon: Cpu, href: '/admin/ecc', permission: Permissions.COMMAND_CENTER_VIEW },
-    { name: 'Roles & Permissions', icon: ShieldCheck, href: '/admin/ecc', permission: Permissions.ROLE_MANAGE },
+    { name: 'Roles & Permissions', icon: ShieldCheck, href: '/admin/roles', permission: Permissions.ROLE_MANAGE },
+    { name: 'Users', icon: UserCircle, href: '/admin/users', permission: Permissions.ROLE_MANAGE },
     { name: 'Audit Registry', icon: History, href: '/governance', permission: Permissions.AUDIT_VIEW },
   ].filter(m => !m.permission || checkPermission(m.permission as any).allowed);
 
-  const settingSubModules = [
-    { name: 'Compliance & Tax', href: '/settings/compliance', permission: Permissions.SETTINGS_MANAGE },
-    { name: 'Security', href: '/settings/security', permission: Permissions.SECURITY_MANAGE },
-    { name: 'Integrations', href: '/settings/integrations', permission: Permissions.SECURITY_MANAGE },
-    { name: 'Data Management', href: '/settings/data', permission: Permissions.DATA_MANAGE },
+  // System Control modules — flat list (no parent "Global Settings"
+  // entry; that was a redundant hub that just linked to the same four
+  // pages). Icons match the visual rhythm of governance / operations /
+  // accounts so this section reads consistently.
+  const systemControlModules = [
+    { name: 'Compliance & Tax',  icon: ShieldCheck, href: '/settings/compliance',   permission: Permissions.SETTINGS_MANAGE },
+    { name: 'Security',          icon: Lock,        href: '/settings/security',     permission: Permissions.SECURITY_MANAGE },
+    { name: 'Integrations',      icon: Plug,        href: '/settings/integrations', permission: Permissions.SETTINGS_MANAGE },
+    { name: 'Data Management',   icon: Database,    href: '/settings/data',         permission: Permissions.DATA_MANAGE },
   ].filter(m => !m.permission || checkPermission(m.permission as any).allowed);
 
   return (
@@ -207,20 +208,13 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle }) => {
             )}
             
             <div className="space-y-1">
-               <SidebarLink 
-                 item={{ name: 'Global Settings', icon: Settings, href: '/settings' }} 
-                 isActive={pathname === '/settings'} 
-                 isCollapsed={isCollapsed} 
-               />
-               {!isCollapsed && settingSubModules.map(item => (
-                 <Link 
-                   key={item.name}
-                   href={item.href}
-                   className={`flex items-center gap-3.5 px-4 py-2 rounded-xl transition-all ${pathname === item.href ? 'text-indigo-400 bg-indigo-500/5' : 'text-slate-500 hover:text-slate-300'}`}
-                 >
-                    <div className="w-1.5 h-1.5 rounded-full bg-current opacity-20" />
-                    <span className="text-[11px] font-bold tracking-tight uppercase">{item.name}</span>
-                 </Link>
+               {systemControlModules.map(item => (
+                 <SidebarLink
+                   key={item.href}
+                   item={item}
+                   isActive={pathname === item.href}
+                   isCollapsed={isCollapsed}
+                 />
                ))}
             </div>
           </div>
@@ -234,6 +228,8 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle }) => {
               </div>
             )}
             <button
+              type="button"
+              aria-label="Sign out"
               onClick={() => setShowSignOutModal(true)}
               className={`flex items-center gap-3.5 px-4 py-2.5 rounded-xl transition-all duration-200 text-rose-400 hover:bg-rose-900/20 hover:text-rose-300 w-full ${isCollapsed ? 'justify-center h-[44px] w-[44px] mx-auto px-0' : ''}`}
             >
@@ -292,6 +288,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle }) => {
           {/* Actions */}
           <div className="flex flex-col gap-3">
             <button
+              type="button"
               onClick={handleSignOut}
               disabled={isSigningOut}
               className="w-full h-[52px] bg-rose-600 hover:bg-rose-700 disabled:opacity-60 text-white rounded-xl text-[11px] font-bold uppercase tracking-widest transition-all shadow-lg shadow-rose-600/20 flex items-center justify-center gap-2"
@@ -307,6 +304,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle }) => {
               {isSigningOut ? 'Terminating Session...' : 'Sign Out'}
             </button>
             <button
+              type="button"
               onClick={() => setShowSignOutModal(false)}
               disabled={isSigningOut}
               className="w-full h-[48px] text-[11px] font-bold uppercase tracking-widest text-slate-400 hover:text-slate-600 transition-colors"
@@ -319,7 +317,9 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle }) => {
       </Modal>
 
       {/* Edge-Mounted Collapse Trigger */}
-      <button 
+      <button
+        type="button"
+        aria-label={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
         onClick={onToggle}
         className="absolute -right-3 top-[88px] w-6 h-6 bg-slate-900 border border-slate-700 rounded-full flex items-center justify-center text-slate-400 hover:text-white hover:border-slate-500 transition-all shadow-premium z-[60]"
       >

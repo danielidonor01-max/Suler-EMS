@@ -16,7 +16,7 @@ const ROLE_PERMISSION_MAP: Record<string, string[]> = {
     Permissions.ANALYTICS_VIEW
   ],
   FINANCE_MANAGER: [
-    Permissions.PAYROLL_VIEW, Permissions.PAYROLL_APPROVE, Permissions.PAYROLL_PROCESS,
+    Permissions.PAYROLL_VIEW, Permissions.PAYROLL_EDIT, Permissions.PAYROLL_APPROVE, Permissions.PAYROLL_PROCESS,
     Permissions.FINANCE_VIEW, Permissions.FINANCE_ALLOCATE, Permissions.FINANCE_APPROVE, Permissions.FINANCE_DISBURSE,
     Permissions.AUDIT_VIEW,
     Permissions.ANALYTICS_VIEW
@@ -26,12 +26,14 @@ const ROLE_PERMISSION_MAP: Record<string, string[]> = {
     Permissions.LEAVE_VIEW, Permissions.LEAVE_SUBMIT,
     Permissions.ATTENDANCE_VIEW,
     Permissions.ANALYTICS_VIEW,
-    Permissions.REPORTS_GENERATE
+    Permissions.REPORTS_GENERATE,
+    Permissions.FINANCE_VIEW
   ],
   EMPLOYEE: [
     Permissions.LEAVE_VIEW, Permissions.LEAVE_SUBMIT,
     Permissions.ATTENDANCE_VIEW,
-    Permissions.WORKFORCE_VIEW // Can view colleagues
+    Permissions.WORKFORCE_VIEW, // Can view colleagues
+    Permissions.FINANCE_VIEW
   ]
 };
 
@@ -50,16 +52,21 @@ export function AccessProvider({ children }: { children: ReactNode }) {
 
   const user = useMemo(() => {
     if (!session?.user) return null;
-    
-    // In MVP, we derive permissions from the role map if not provided by session
-    const role = (session.user.role as string) || 'GUEST';
+
+    // Session.user.role MUST exist for an authenticated user — Credentials
+    // provider sets it from the DB Role.name. If it's missing the JWT is
+    // corrupt; treat as unauthenticated rather than silently falling back to
+    // a 'GUEST' role (which used to expose the unauthenticated dashboard).
+    const role = (session.user.role as string) || null;
+    if (!role) return null;
+
     const permissions = (session.user.permissions as string[]) || ROLE_PERMISSION_MAP[role] || [];
 
     return {
       id: session.user.id,
       name: session.user.name,
-      role: role,
-      permissions: permissions,
+      role,
+      permissions,
       departmentId: session.user.departmentId,
       employeeId: session.user.employeeId,
     };
@@ -67,17 +74,18 @@ export function AccessProvider({ children }: { children: ReactNode }) {
 
   const checkPermission = (permission: PermissionType): PolicyResult => {
     if (!user) return { allowed: false, reason: 'Not logged in' };
-    
-    // Check if the user has the permission in their mapped permission list
     const hasPerm = user.permissions.includes(permission) || user.role === 'SUPER_ADMIN';
-
     return {
       allowed: hasPerm,
-      reason: hasPerm ? undefined : `Insufficient permission: ${permission}`
+      reason: hasPerm ? undefined : `Insufficient permission: ${permission}`,
     };
   };
 
-  const userRole = useMemo(() => user?.role || 'GUEST', [user]);
+  // No GUEST fallback. If a UI element renders before session loads it'll see
+  // 'UNAUTHENTICATED' and should render a skeleton, not role-gated content.
+  // Middleware guarantees authenticated users by the time any dashboard route
+  // is reached.
+  const userRole = useMemo(() => user?.role || 'UNAUTHENTICATED', [user]);
 
   const value = {
     user,

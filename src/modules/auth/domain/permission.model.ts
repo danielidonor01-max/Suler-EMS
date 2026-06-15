@@ -90,6 +90,9 @@ export const Permissions = {
   // Settings
   SETTINGS_MANAGE: 'settings:manage',
 
+  // Communication
+  COMMUNICATION_BROADCAST: 'communication:broadcast',
+
   // Intelligence
   REPORTS_GENERATE: 'reports:generate',
   ANALYTICS_VIEW: 'analytics:view',

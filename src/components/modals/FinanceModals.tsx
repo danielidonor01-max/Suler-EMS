@@ -57,7 +57,7 @@ export const CreateExpenditureModal: React.FC<{ isOpen: boolean; onClose: () => 
         <div className="space-y-4">
           <div className="space-y-1.5">
             <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Description</label>
-            <input 
+            <input aria-label="Description" 
               required
               value={description}
               onChange={(e) => setDescription(e.target.value)}
@@ -68,7 +68,7 @@ export const CreateExpenditureModal: React.FC<{ isOpen: boolean; onClose: () => 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1.5">
               <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Amount (₦)</label>
-              <input 
+              <input aria-label="Amount (₦)" 
                 required
                 type="number"
                 value={amount}
@@ -77,19 +77,17 @@ export const CreateExpenditureModal: React.FC<{ isOpen: boolean; onClose: () => 
                 className="w-full h-12 bg-slate-50 border border-slate-100 rounded-xl px-4 text-sm font-bold focus:ring-2 focus:ring-slate-900 outline-none transition-all"
               />
             </div>
-            <div className="space-y-1.5">
-              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Category</label>
-              <select 
+            <Select
+                label="Category"
                 value={category}
-                onChange={(e) => setCategory(e.target.value)}
-                className="w-full h-12 bg-slate-50 border border-slate-100 rounded-xl px-4 text-sm font-bold outline-none"
-              >
-                <option value="OPEX">Operational Exp (OPEX)</option>
-                <option value="CAPEX">Capital Exp (CAPEX)</option>
-                <option value="PROCUREMENT">Procurement</option>
-                <option value="PETTY_CASH">Petty Cash</option>
-              </select>
-            </div>
+                onChange={setCategory}
+                options={[
+                  { label: 'Operational Exp (OPEX)', value: 'OPEX' },
+                  { label: 'Capital Exp (CAPEX)', value: 'CAPEX' },
+                  { label: 'Procurement', value: 'PROCUREMENT' },
+                  { label: 'Petty Cash', value: 'PETTY_CASH' },
+                ]}
+              />
           </div>
           <div className="grid grid-cols-2 gap-4">
              <Select 
@@ -150,7 +148,7 @@ export const AllocateProjectFundingModal: React.FC<{ isOpen: boolean; onClose: (
         <div className="space-y-4">
           <div className="space-y-1.5">
             <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Project Name</label>
-            <input 
+            <input aria-label="Project Name" 
               required
               value={projectName}
               onChange={(e) => setProjectName(e.target.value)}
@@ -161,7 +159,7 @@ export const AllocateProjectFundingModal: React.FC<{ isOpen: boolean; onClose: (
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1.5">
               <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Total Funding (₦)</label>
-              <input 
+              <input aria-label="Total Funding (₦)" 
                 required
                 type="number"
                 value={allocation}

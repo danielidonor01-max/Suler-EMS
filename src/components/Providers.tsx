@@ -1,6 +1,7 @@
 "use client";
 
 import { SessionProvider } from "next-auth/react";
+import { SessionVersionWatcher } from "@/lib/auth/SessionVersionWatcher";
 import { ToastProvider } from "./common/ToastContext";
 import { ObservabilityProvider } from "@/context/ObservabilityContext";
 import { AccessProvider } from "@/context/AccessContext";
@@ -14,11 +15,14 @@ import { TeamProvider } from "@/context/TeamContext";
 import { FinanceProvider } from "@/context/FinanceContext";
 import { PayrollProvider } from "@/context/PayrollContext";
 import { CommunicationProvider } from "@/context/CommunicationContext";
+import { PreferencesProvider } from "@/context/PreferencesContext";
 import { AuthPersistence } from "@/components/auth/AuthPersistence";
 
 export function Providers({ children }: { children: React.ReactNode }) {
   return (
     <SessionProvider>
+      <SessionVersionWatcher />
+      <PreferencesProvider>
       <ToastProvider>
         <ObservabilityProvider>
           <AccessProvider>
@@ -48,6 +52,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
           </AccessProvider>
         </ObservabilityProvider>
       </ToastProvider>
+      </PreferencesProvider>
     </SessionProvider>
   );
 }

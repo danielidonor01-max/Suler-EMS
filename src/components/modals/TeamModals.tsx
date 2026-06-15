@@ -19,6 +19,7 @@ import { Modal } from '../common/Modal';
 import { useTeams, Team } from '@/context/TeamContext';
 import { useOrganization } from '@/context/OrganizationContext';
 import { useWorkforce } from '@/context/WorkforceContext';
+import { Select } from '../forms/Select';
 
 // --- Team Modals ---
 
@@ -47,7 +48,7 @@ export const CreateTeamModal: React.FC<{ isOpen: boolean; onClose: () => void }>
         <div className="space-y-4">
           <div className="space-y-1.5">
             <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Team Identity</label>
-            <input 
+            <input aria-label="Team Identity" 
               required
               value={name}
               onChange={(e) => setName(e.target.value)}
@@ -57,7 +58,7 @@ export const CreateTeamModal: React.FC<{ isOpen: boolean; onClose: () => void }>
           </div>
           <div className="space-y-1.5">
             <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Strategic Description</label>
-            <textarea 
+            <textarea aria-label="Strategic Description" 
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Briefly define the team mission..."
@@ -65,45 +66,26 @@ export const CreateTeamModal: React.FC<{ isOpen: boolean; onClose: () => void }>
             />
           </div>
           <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-1.5">
-              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Hub</label>
-              <select 
-                value={hub}
-                onChange={(e) => setHub(e.target.value)}
-                className="w-full h-12 bg-slate-50 border border-slate-100 rounded-xl px-4 text-sm font-bold outline-none"
-              >
-                {hubs.filter(h => h.id !== 'HUB-00').map(h => (
-                  <option key={h.id} value={h.name}>{h.name}</option>
-                ))}
-              </select>
-            </div>
-            <div className="space-y-1.5">
-              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Department</label>
-              <select 
-                value={department}
-                onChange={(e) => setDepartment(e.target.value)}
-                className="w-full h-12 bg-slate-50 border border-slate-100 rounded-xl px-4 text-sm font-bold outline-none"
-              >
-                {departments.filter(d => d.parentHub === hub).map(d => (
-                  <option key={d.id} value={d.name}>{d.name}</option>
-                ))}
-              </select>
-            </div>
+            <Select
+              label="Hub"
+              value={hub}
+              onChange={setHub}
+              options={hubs.filter(h => h.id !== 'HUB-00').map(h => ({ label: h.name, value: h.name }))}
+            />
+            <Select
+              label="Department"
+              value={department}
+              onChange={setDepartment}
+              options={departments.filter(d => d.parentHub === hub).map(d => ({ label: d.name, value: d.name }))}
+            />
           </div>
-          <div className="space-y-1.5">
-            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Team Manager</label>
-            <select 
-              required
-              value={managerId}
-              onChange={(e) => setManagerId(e.target.value)}
-              className="w-full h-12 bg-slate-50 border border-slate-100 rounded-xl px-4 text-sm font-bold outline-none"
-            >
-              <option value="">Select Manager</option>
-              {employees.filter(emp => emp.hub === hub).map(emp => (
-                <option key={emp.id} value={emp.id}>{emp.name} ({emp.role})</option>
-              ))}
-            </select>
-          </div>
+          <Select
+            label="Team Manager"
+            value={managerId}
+            onChange={setManagerId}
+            placeholder="Select Manager"
+            options={employees.filter(emp => emp.hub === hub).map(emp => ({ label: `${emp.name} (${emp.role})`, value: emp.id }))}
+          />
         </div>
         <button 
           type="submit"
@@ -141,20 +123,13 @@ export const AddMemberModal: React.FC<{ isOpen: boolean; onClose: () => void; te
               <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Target Team</p>
               <h4 className="text-[14px] font-bold text-slate-900">{team.name}</h4>
            </div>
-           <div className="space-y-1.5">
-            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Select Personnel</label>
-            <select 
-              required
-              value={selectedMember}
-              onChange={(e) => setSelectedMember(e.target.value)}
-              className="w-full h-12 bg-slate-50 border border-slate-100 rounded-xl px-4 text-sm font-bold outline-none"
-            >
-              <option value="">Choose employee...</option>
-              {availableEmployees.map(emp => (
-                <option key={emp.id} value={emp.id}>{emp.name} ({emp.role})</option>
-              ))}
-            </select>
-          </div>
+           <Select
+            label="Select Personnel"
+            value={selectedMember}
+            onChange={setSelectedMember}
+            placeholder="Choose employee..."
+            options={availableEmployees.map(emp => ({ label: `${emp.name} (${emp.role})`, value: emp.id }))}
+          />
         </div>
         <button 
           type="submit"

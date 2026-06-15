@@ -1,18 +1,24 @@
 "use client";
 
-import React, { createContext, useContext, useState, useCallback, ReactNode, useEffect } from 'react';
+import React, { createContext, useContext, useState, useCallback, ReactNode, useEffect, useRef } from 'react';
 
-interface ActivityItem {
+export interface ActivityItem {
   id: string;
-  type: 'MUTATION' | 'ACCESS' | 'GOVERNANCE' | 'SYSTEM' | 'SECURITY';
+  type: 'MUTATION' | 'ACCESS' | 'GOVERNANCE' | 'SYSTEM' | 'SECURITY' | 'FINANCE' | 'IAM';
   actor: string;
+  author?: string;
   action: string;
   label?: string;
   hub?: string;
   message?: string;
+  status?: 'SUCCESS' | 'FAILURE' | 'WARNING' | string;
   timestamp: string;
   metadata?: any;
 }
+
+// Alias for backward compatibility
+export type ActivityLog = ActivityItem;
+
 
 interface ActivityContextType {
   presenceCount: number;
@@ -35,6 +41,7 @@ export const useActivity = () => {
 export const ActivityProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [presenceCount, setPresenceCount] = useState(1); // Default to at least the current user
   const [recentActivity, setRecentActivity] = useState<ActivityItem[]>([]);
+  const localIdsRef = useRef<Set<string>>(new Set());
 
   // Simulation of presence tracking
   useEffect(() => {
@@ -47,10 +54,39 @@ export const ActivityProvider: React.FC<{ children: ReactNode }> = ({ children }
     return () => clearInterval(interval);
   }, []);
 
+  // Hydrate from server-side audit feed (workflow transitions + security events).
+  // Local pushActivity calls are preserved by tracking their ids and merging.
+  useEffect(() => {
+    let cancelled = false;
+    async function loadAudit() {
+      try {
+        const res = await fetch('/api/audit/recent?limit=50', { credentials: 'include' });
+        if (!res.ok) return;
+        const body = await res.json();
+        const items: ActivityItem[] = (body?.data ?? []) as ActivityItem[];
+        if (cancelled) return;
+        setRecentActivity(prev => {
+          const localOnly = prev.filter(p => localIdsRef.current.has(p.id));
+          const merged = [...localOnly, ...items]
+            .sort((a, b) => b.timestamp.localeCompare(a.timestamp))
+            .slice(0, 50);
+          return merged;
+        });
+      } catch {
+        // silent — context falls back to whatever pushActivity has accumulated
+      }
+    }
+    loadAudit();
+    const poll = setInterval(loadAudit, 30_000);
+    return () => { cancelled = true; clearInterval(poll); };
+  }, []);
+
   const pushActivity = useCallback((data: any) => {
+    const id = Math.random().toString(36).substring(2, 9);
+    localIdsRef.current.add(id);
     const newItem: ActivityItem = {
       ...data,
-      id: Math.random().toString(36).substring(2, 9),
+      id,
       timestamp: new Date().toISOString()
     };
     setRecentActivity(prev => [newItem, ...prev].slice(0, 50));

@@ -218,7 +218,6 @@ export default function WorkforcePage() {
                             <KebabItem icon={ExternalLink} label="View Full Dossier" onClick={() => router.push(`/staff/${row.id}`)} />
                             <KebabItem icon={UserCog} label="Edit Identity" onClick={() => handleKebabAction('EDIT', row)} />
                             <KebabItem icon={ArrowRightLeft} label="Transfer Placement" onClick={() => addToast(`Initializing transfer protocol for [${row.name}]`, 'INFO')} />
-                            <KebabItem icon={ShieldCheck} label="Modify Access" onClick={() => handleKebabAction('ROLE', row)} />
                             <KebabItem icon={Zap} label="Promote Member" onClick={() => handleKebabAction('PROMOTE', row)} />
                             <KebabItem icon={ShieldAlert} label="Suspend Access" variant="danger" onClick={() => handleKebabAction('SUSPEND', row)} />
                             
@@ -313,17 +312,10 @@ export default function WorkforcePage() {
                 </button>
                 <button 
                   onClick={() => addToast(`Initializing transfer protocol for [${selectedStaff.name}]`, 'INFO')}
-                  className="bg-slate-900 hover:bg-black text-white h-[44px] rounded-xl text-[11px] font-bold uppercase tracking-widest shadow-md transition-all flex items-center justify-center gap-2"
+                  className="col-span-2 bg-slate-900 hover:bg-black text-white h-[44px] rounded-xl text-[11px] font-bold uppercase tracking-widest shadow-md transition-all flex items-center justify-center gap-2"
                 >
                    <Target className="w-4 h-4 stroke-[1.5px]" />
                    Initiate Transfer
-                </button>
-                <button 
-                  onClick={() => { setSelectedStaff(null); setIsRoleOpen(true); setTargetEmployee(selectedStaff); }}
-                  className="bg-white border border-slate-200 text-slate-600 h-[44px] rounded-xl text-[11px] font-bold uppercase tracking-widest hover:border-slate-300 transition-all shadow-sm flex items-center justify-center gap-2"
-                >
-                   <ShieldCheck className="w-4 h-4 stroke-[1.5px]" />
-                   Modify Access
                 </button>
              </div>
           </div>

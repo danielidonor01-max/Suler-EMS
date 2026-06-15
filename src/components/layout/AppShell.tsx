@@ -8,7 +8,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
   return (
-    <div className="flex h-screen bg-[#F8FAFC] overflow-hidden">
+    <div className="workspace-main flex h-screen bg-[#F8FAFC] overflow-hidden">
       {/* Sidebar: Anchored Operational Rail */}
       <Sidebar 
         isCollapsed={isSidebarCollapsed} 
@@ -20,7 +20,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
         <Header onToggleSidebar={() => setIsSidebarCollapsed(!isSidebarCollapsed)} />
 
         {/* Main Workspace: Anchored Content Canvas */}
-        <main className="flex-1 overflow-y-auto custom-scrollbar bg-[#F8FAFC]">
+        <main className="workspace-main flex-1 overflow-y-auto custom-scrollbar bg-[#F8FAFC]">
           <div className="workspace-safe-zone min-h-full flex flex-col">
             <div className="flex-1">
               {children}

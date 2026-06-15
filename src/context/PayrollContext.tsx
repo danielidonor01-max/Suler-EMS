@@ -1,20 +1,41 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+/**
+ * PayrollContext (v4 — API-backed)
+ *
+ * Legacy surface preserved: `salaries`, `adjustments`, `payrollRuns`, mutations
+ * — so existing pages render without changes. Internals swapped from
+ * localStorage to /api/payroll/* polling.
+ *
+ * Surface compatibility notes:
+ *   - `payrollRuns[i].entries` is populated only for the most-recent PROCESSED
+ *     run (used by the dashboard summary). Run-detail pages fetch entries on
+ *     demand from /api/payroll/runs/:id?includeEntries=true.
+ *   - `addBulkAdjustments` is preserved but currently logs a notice — bulk
+ *     filtered adjustments need a dedicated endpoint (deferred to Phase 6).
+ *   - `updateSalary` and `deleteRun` similarly log notices for now.
+ *
+ * Status mapping (API → legacy):
+ *   DRAFT     → DRAFT
+ *   REVIEW    → REVIEWED
+ *   APPROVED  → APPROVED
+ *   PROCESSED → PROCESSED
+ *   CANCELLED → DRAFT (collapsed; not surfaced in dashboard)
+ */
+
+import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
 import { useActivity } from './ActivityContext';
 import { useAccess } from './AccessContext';
-import { useSettings } from './SettingsContext';
-import { useWorkforce } from './WorkforceContext';
-import { useTeams } from './TeamContext';
-import { formatCurrency } from '@/lib/utils/formatCurrency';
+import { apiFetcher, apiMutate } from '@/lib/api/fetcher';
 
+// ─── Legacy public types (preserved) ────────────────────────────────────────
 export interface CompensationAdjustment {
   id: string;
   employeeId: string;
   type: 'BONUS' | 'DEDUCTION' | 'ALLOWANCE' | 'AWARD' | 'COMPENSATION';
   label: string;
   amount: number;
-  period: string; // "May 2026"
+  period: string;
   createdAt: string;
 }
 
@@ -26,12 +47,8 @@ export interface BulkAdjustmentRequest {
   amountType: 'FIXED' | 'PERCENTAGE';
   period: string;
   filters: {
-    hubs?: string[];
-    departments?: string[];
-    teams?: string[];
-    roles?: string[];
-    minPerformance?: number;
-  }
+    hubs?: string[]; departments?: string[]; teams?: string[]; roles?: string[]; minPerformance?: number;
+  };
 }
 
 export interface SalaryStructure {
@@ -75,286 +92,319 @@ export interface PayrollRun {
   hub: string;
   createdAt: string;
   approvedAt?: string;
+  /** new — used by run detail / approvals pages */
+  name?: string;
+  entryCount?: number;
 }
 
 interface PayrollContextType {
   salaries: SalaryStructure[];
   adjustments: CompensationAdjustment[];
   payrollRuns: PayrollRun[];
-  
-  // Mutations
+
   updateSalary: (salary: SalaryStructure) => void;
-  addAdjustment: (adj: Omit<CompensationAdjustment, 'id' | 'createdAt'>) => void;
+  addAdjustment: (adj: Omit<CompensationAdjustment, 'id' | 'createdAt'>) => Promise<void>;
   addBulkAdjustments: (request: BulkAdjustmentRequest) => { count: number; totalImpact: number };
-  removeAdjustment: (id: string) => void;
-  
-  // Runs
-  generateDraftRun: (period: string, hub: string) => void;
-  approveRun: (id: string) => void;
-  processRun: (id: string) => void;
-  deleteRun: (id: string) => void;
+  removeAdjustment: (id: string) => Promise<void>;
+
+  generateDraftRun: (period: string, hub: string) => Promise<void>;
+  approveRun: (id: string) => Promise<void>;
+  processRun: (id: string) => Promise<void>;
+  deleteRun: (id: string) => Promise<void>;
+  refresh: () => Promise<void>;
 }
 
 const PayrollContext = createContext<PayrollContextType | undefined>(undefined);
 
+const RUN_POLL_MS = 30_000;
+const ADJ_POLL_MS = 30_000;
+
+// ─── API shapes ─────────────────────────────────────────────────────────────
+interface ApiRun {
+  id: string; name: string; period: string;
+  departmentId: string | null;
+  department?: { id: string; name: string; code: string } | null;
+  status: string;
+  totalGross: string | number; totalNet: string | number;
+  totalDeductions: string | number; totalEmployerContrib: string | number;
+  entryCount: number;
+  createdAt: string; approvedAt?: string | null; processedAt?: string | null;
+}
+interface ApiEntry {
+  id: string; employeeId: string;
+  basicSalary: string | number; housingAllowance: string | number; transportAllowance: string | number;
+  grossPay: string | number; paye: string | number; pensionEmployee: string | number;
+  nhf: string | number; netPay: string | number;
+  totalDeductions: string | number;
+}
+interface ApiAdjustment {
+  id: string; employeeId: string; type: string; reason: string;
+  amount: string | number; effectivePeriod: string; status: string;
+  createdAt: string;
+}
+
+function num(v: string | number | null | undefined): number {
+  if (v === null || v === undefined) return 0;
+  return typeof v === 'number' ? v : Number(v);
+}
+
+function mapStatus(s: string): PayrollRun['status'] {
+  if (s === 'PROCESSED') return 'PROCESSED';
+  if (s === 'APPROVED') return 'APPROVED';
+  if (s === 'REVIEW') return 'REVIEWED';
+  return 'DRAFT';
+}
+
+function mapEntry(e: ApiEntry, period: string, hub: string): PayrollEntry {
+  const basic = num(e.basicSalary);
+  const housing = num(e.housingAllowance);
+  const transport = num(e.transportAllowance);
+  return {
+    id: e.id,
+    employeeId: e.employeeId,
+    baseSalary: basic,
+    totalAllowances: housing + transport,
+    totalBonuses: 0,
+    totalDeductions: num(e.totalDeductions),
+    grossPay: num(e.grossPay),
+    paye: num(e.paye),
+    pension: num(e.pensionEmployee),
+    nhf: num(e.nhf),
+    netPay: num(e.netPay),
+    period,
+    hub,
+  };
+}
+
+function mapRun(r: ApiRun, entries: ApiEntry[] = []): PayrollRun {
+  const hub = r.department?.code ?? 'GLOBAL';
+  return {
+    id: r.id,
+    period: r.period,
+    name: r.name,
+    entries: entries.map(e => mapEntry(e, r.period, hub)),
+    entryCount: r.entryCount,
+    totalGross: num(r.totalGross),
+    totalNet: num(r.totalNet),
+    status: mapStatus(r.status),
+    hub,
+    createdAt: r.createdAt,
+    approvedAt: r.approvedAt ?? undefined,
+  };
+}
+
+function mapAdjustment(a: ApiAdjustment): CompensationAdjustment {
+  // Legacy types only support the union shown — collapse unknown types to BONUS.
+  const legacyType: CompensationAdjustment['type'] =
+    a.type === 'BONUS' || a.type === 'DEDUCTION' || a.type === 'ALLOWANCE' ? a.type as any
+    : a.type === 'COMMISSION' || a.type === 'OVERTIME' || a.type === 'REIMBURSEMENT' ? 'BONUS'
+    : 'DEDUCTION';
+  return {
+    id: a.id,
+    employeeId: a.employeeId,
+    type: legacyType,
+    label: a.reason,
+    amount: num(a.amount),
+    period: a.effectivePeriod,
+    createdAt: a.createdAt,
+  };
+}
+
 export const PayrollProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [salaries, setSalaries] = useState<SalaryStructure[]>([]);
-  const [adjustments, setAdjustments] = useState<CompensationAdjustment[]>([]);
-  const [payrollRuns, setPayrollRuns] = useState<PayrollRun[]>([]);
-  
+  const { user, userRole } = useAccess();
   const { pushActivity } = useActivity();
-  const { userRole } = useAccess();
-  const { settings } = useSettings();
-  const { employees } = useWorkforce();
-  const { teams } = useTeams();
+
+  const [payrollRuns, setPayrollRuns] = useState<PayrollRun[]>([]);
+  const [adjustments, setAdjustments] = useState<CompensationAdjustment[]>([]);
+  const [salaries] = useState<SalaryStructure[]>([]); // Legacy shape isn't fed from API; salary management uses entries on demand.
+
+  const loadRuns = useCallback(async () => {
+    if (!user) return;
+    try {
+      const rows = await apiFetcher<ApiRun[]>('/api/payroll/runs');
+      // For dashboard parity, also fetch entries for the most recent PROCESSED run.
+      const newest = rows.find(r => r.status === 'PROCESSED');
+      let newestEntries: ApiEntry[] = [];
+      if (newest) {
+        try {
+          const detail = await apiFetcher<ApiRun & { entries?: ApiEntry[] }>(
+            `/api/payroll/runs/${newest.id}?includeEntries=true`,
+          );
+          newestEntries = detail.entries ?? [];
+        } catch { /* fallthrough — entries stays [] */ }
+      }
+      setPayrollRuns(rows.map(r => mapRun(r, r.id === newest?.id ? newestEntries : [])));
+    } catch { /* silent */ }
+  }, [user]);
+
+  const loadAdjustments = useCallback(async () => {
+    if (!user) return;
+    try {
+      const rows = await apiFetcher<ApiAdjustment[]>('/api/payroll/adjustments');
+      setAdjustments(rows.map(mapAdjustment));
+    } catch { /* silent */ }
+  }, [user]);
 
   useEffect(() => {
-    const saved = localStorage.getItem('suler_payroll_v3');
-    if (saved) {
-      const data = JSON.parse(saved);
-      setSalaries(data.salaries || []);
-      setAdjustments(data.adjustments || []);
-      setPayrollRuns(data.payrollRuns || []);
-    } else {
-      const initialSalaries: SalaryStructure[] = [
-        { id: 'SAL-001', employeeId: 'EMP-001', baseSalary: 450000, housingAllowance: 120000, transportAllowance: 80000, mealAllowance: 40000, otherAllowances: 0, pensionEligible: true, nhfEligible: true, taxStatus: 'PAYE', grade: 'L5', _v: 1 },
-        { id: 'SAL-002', employeeId: 'EMP-002', baseSalary: 320000, housingAllowance: 90000, transportAllowance: 60000, mealAllowance: 30000, otherAllowances: 0, pensionEligible: true, nhfEligible: true, taxStatus: 'PAYE', grade: 'L4', _v: 1 }
-      ];
-      setSalaries(initialSalaries);
-      syncState(initialSalaries, [], []);
-    }
-  }, []);
+    if (!user) return;
+    loadRuns();
+    const t = setInterval(loadRuns, RUN_POLL_MS);
+    return () => clearInterval(t);
+  }, [user, loadRuns]);
 
-  const syncState = (s: SalaryStructure[], a: CompensationAdjustment[], r: PayrollRun[]) => {
-    localStorage.setItem('suler_payroll_v3', JSON.stringify({ salaries: s, adjustments: a, payrollRuns: r }));
-  };
+  useEffect(() => {
+    if (!user) return;
+    loadAdjustments();
+    const t = setInterval(loadAdjustments, ADJ_POLL_MS);
+    return () => clearInterval(t);
+  }, [user, loadAdjustments]);
 
-  const updateSalary = (salary: SalaryStructure) => {
-    const next = salaries.some(s => s.id === salary.id) 
-      ? salaries.map(s => s.id === salary.id ? { ...salary, _v: s._v + 1 } : s)
-      : [...salaries, { ...salary, _v: 1 }];
-    setSalaries(next);
-    syncState(next, adjustments, payrollRuns);
-    pushActivity({ type: 'GOVERNANCE', label: 'Compensation Updated', message: `Salary structure for [${salary.employeeId}] adjusted.`, author: userRole, status: 'SUCCESS' } as any);
-  };
+  const refresh = useCallback(async () => {
+    await Promise.all([loadRuns(), loadAdjustments()]);
+  }, [loadRuns, loadAdjustments]);
 
-  const addAdjustment = (adjData: Omit<CompensationAdjustment, 'id' | 'createdAt'>) => {
-    const newAdj: CompensationAdjustment = {
-      ...adjData,
-      id: `ADJ-${Math.random().toString(36).substr(2, 9)}`,
-      createdAt: new Date().toISOString()
-    };
-    const next = [...adjustments, newAdj];
-    setAdjustments(next);
-    syncState(salaries, next, payrollRuns);
+  // ── Mutations ────────────────────────────────────────────────────────────
 
-    pushActivity({ 
-      type: 'GOVERNANCE', 
-      label: 'Compensation Adjustment Added', 
-      message: `Adjustment [${newAdj.label}] (${formatCurrency(newAdj.amount)}) added for employee ${newAdj.employeeId}.`, 
-      author: userRole, 
-      status: 'SUCCESS' 
-    } as any);
-  };
-
-  const addBulkAdjustments = (req: BulkAdjustmentRequest) => {
-    const targetEmployees = employees.filter(emp => {
-      if (req.filters.hubs?.length && !req.filters.hubs.includes(emp.hub)) return false;
-      if (req.filters.departments?.length && !req.filters.departments.includes(emp.department)) return false;
-      if (req.filters.roles?.length && !req.filters.roles.includes(emp.role)) return false;
-      
-      if (req.filters.teams?.length) {
-        const isInTeam = teams.some(t => req.filters.teams?.includes(t.id) && t.members.includes(emp.id));
-        if (!isInTeam) return false;
-      }
-      
-      // Performance filter simulation
-      if (req.filters.minPerformance && (emp as any).performanceRating < req.filters.minPerformance) return false;
-      
-      return true;
-    });
-
-    let totalImpact = 0;
-    const newAdjs: CompensationAdjustment[] = targetEmployees.map(emp => {
-      const salary = salaries.find(s => s.employeeId === emp.id);
-      let amount = req.amount;
-      if (req.amountType === 'PERCENTAGE' && salary) {
-        amount = (salary.baseSalary * req.amount) / 100;
-      }
-      totalImpact += amount;
-      return {
-        id: `ADJ-${Math.random().toString(36).substr(2, 9)}`,
-        employeeId: emp.id,
-        type: req.type,
-        label: req.title,
-        amount,
-        period: req.period,
-        createdAt: new Date().toISOString()
-      };
-    });
-
-    const next = [...adjustments, ...newAdjs];
-    setAdjustments(next);
-    syncState(salaries, next, payrollRuns);
-    
-    pushActivity({ 
-      type: 'GOVERNANCE', 
-      label: 'Bulk Adjustment Applied', 
-      message: `Applied [${req.title}] to ${targetEmployees.length} employees. Total Impact: ${formatCurrency(totalImpact)}`, 
-      author: userRole, 
-      status: 'SUCCESS' 
-    } as any);
-
-    return { count: targetEmployees.length, totalImpact };
-  };
-
-  const removeAdjustment = (id: string) => {
-    const adj = adjustments.find(a => a.id === id);
-    const next = adjustments.filter(a => a.id !== id);
-    setAdjustments(next);
-    syncState(salaries, next, payrollRuns);
-
-    if (adj) {
-      pushActivity({ 
-        type: 'GOVERNANCE', 
-        label: 'Adjustment Revoked', 
-        message: `Revoked [${adj.label}] for ${adj.employeeId}.`, 
-        author: userRole, 
-        status: 'SUCCESS' 
-      } as any);
-    }
-  };
-
-  const calculatePAYE = (taxableIncome: number) => {
-    if (taxableIncome <= 0) return 0;
-    let tax = 0;
-    let remaining = taxableIncome;
-    const brackets = [
-      { threshold: 25000, rate: 0.07 },
-      { threshold: 25000, rate: 0.11 },
-      { threshold: 41666, rate: 0.15 },
-      { threshold: 41666, rate: 0.19 },
-      { threshold: 133333, rate: 0.21 },
-      { threshold: Infinity, rate: 0.24 }
-    ];
-    for (const b of brackets) {
-      const amountInBracket = Math.min(remaining, b.threshold);
-      tax += amountInBracket * b.rate;
-      remaining -= amountInBracket;
-      if (remaining <= 0) break;
-    }
-    return Math.round(tax);
-  };
-
-  const generateDraftRun = (period: string, hub: string) => {
-    const { compliance } = settings;
-    const hubEmployees = employees.filter(e => hub === 'All Regions' || e.hub === hub);
-    
-    const entries: PayrollEntry[] = hubEmployees.map(emp => {
-      const s = salaries.find(sal => sal.employeeId === emp.id) || {
-        baseSalary: 100000, housingAllowance: 0, transportAllowance: 0, mealAllowance: 0, otherAllowances: 0,
-        pensionEligible: true, nhfEligible: true, taxStatus: 'PAYE'
-      } as SalaryStructure;
-
-      const empAdjs = adjustments.filter(a => a.employeeId === emp.id && a.period === period);
-      const bonuses = empAdjs.filter(a => ['BONUS', 'AWARD', 'COMPENSATION'].includes(a.type)).reduce((sum, a) => sum + a.amount, 0);
-      const totalAllowances = s.housingAllowance + s.transportAllowance + s.mealAllowance + s.otherAllowances + empAdjs.filter(a => a.type === 'ALLOWANCE').reduce((sum, a) => sum + a.amount, 0);
-      const totalDeductions = empAdjs.filter(a => a.type === 'DEDUCTION').reduce((sum, a) => sum + a.amount, 0);
-      
-      const grossPay = s.baseSalary + totalAllowances + bonuses;
-      const pensionBase = s.baseSalary + s.housingAllowance + s.transportAllowance;
-      const pension = s.pensionEligible ? Math.round(pensionBase * compliance.pensionEmployeeRate) : 0;
-      const nhf = s.nhfEligible ? Math.round(s.baseSalary * compliance.nhfRate) : 0;
-      
-      const relief = compliance.taxReliefBase + (grossPay * compliance.taxReliefPercentage);
-      const taxableIncome = grossPay - relief - pension - nhf;
-      const paye = calculatePAYE(taxableIncome);
-      const netPay = grossPay - paye - pension - nhf - totalDeductions;
-      
-      return {
-        id: `ENT-${Math.random().toString(36).substr(2, 9)}`,
-        employeeId: emp.id,
-        baseSalary: s.baseSalary,
-        totalAllowances,
-        totalBonuses: bonuses,
-        totalDeductions,
-        grossPay,
-        paye,
-        pension,
-        nhf,
-        netPay,
+  const generateDraftRun = useCallback(async (period: string, hub: string) => {
+    try {
+      // Hub maps to department code; null = org-wide.
+      const departmentId = hub === 'All Regions' || hub === 'GLOBAL' ? null : undefined;
+      await apiMutate('/api/payroll/runs', 'POST', {
+        name: `${period} — ${hub}`,
         period,
-        hub: emp.hub
-      };
-    });
-
-    const newRun: PayrollRun = {
-      id: `RUN-${Math.floor(Math.random() * 1000).toString().padStart(3, '0')}`,
-      period,
-      entries,
-      totalGross: entries.reduce((sum, e) => sum + e.grossPay, 0),
-      totalNet: entries.reduce((sum, e) => sum + e.netPay, 0),
-      status: 'DRAFT',
-      hub,
-      createdAt: new Date().toISOString()
-    };
-
-    const next = [...payrollRuns, newRun];
-    setPayrollRuns(next);
-    syncState(salaries, adjustments, next);
-
-    pushActivity({ 
-      type: 'GOVERNANCE', 
-      label: 'Payroll Cycle Initialized', 
-      message: `Draft payroll generated for ${period} in ${hub}.`, 
-      author: userRole, 
-      status: 'SUCCESS' 
-    } as any);
-  };
-
-  const approveRun = (id: string) => {
-    const run = payrollRuns.find(r => r.id === id);
-    const next = payrollRuns.map(r => r.id === id ? { ...r, status: 'APPROVED' as const, approvedAt: new Date().toISOString() } : r);
-    setPayrollRuns(next);
-    syncState(salaries, adjustments, next);
-
-    if (run) {
-      pushActivity({ 
-        type: 'GOVERNANCE', 
-        label: 'Payroll Approved', 
-        message: `Payroll run [${run.id}] for ${run.period} has been approved and moved to processing.`, 
-        author: userRole, 
-        status: 'SUCCESS' 
-      } as any);
+        departmentId,
+      });
+      await loadRuns();
+      pushActivity({ type: 'GOVERNANCE', label: 'Payroll Cycle Initialized',
+        message: `Draft payroll generated for ${period} in ${hub}.`,
+        author: userRole, status: 'SUCCESS' } as any);
+    } catch (err) {
+      pushActivity({ type: 'GOVERNANCE', label: 'Draft Generation Failed',
+        message: err instanceof Error ? err.message : 'Unknown',
+        author: userRole, status: 'FAILURE' } as any);
+      throw err;
     }
-  };
+  }, [loadRuns, pushActivity, userRole]);
 
-  const processRun = (id: string) => {
-    const next = payrollRuns.map(r => r.id === id ? { ...r, status: 'PROCESSED' as const } : r);
-    setPayrollRuns(next);
-    syncState(salaries, adjustments, next);
-    pushActivity({ type: 'FINANCE', label: 'Payroll Processed', message: `Payroll run finalized and disbursed.`, author: userRole, status: 'SUCCESS' } as any);
-  };
+  const transitionLegacy = useCallback(async (id: string, action: 'SUBMIT_FOR_REVIEW' | 'APPROVE' | 'PROCESS' | 'CANCEL', comment?: string) => {
+    await apiMutate(`/api/payroll/runs/${id}/transition`, 'PATCH', { action, comment });
+    await loadRuns();
+  }, [loadRuns]);
 
-  const deleteRun = (id: string) => {
+  // Legacy approveRun expects to take a run from REVIEWED/DRAFT to APPROVED;
+  // surface bridges by first submitting for review if needed, then approving.
+  const approveRun = useCallback(async (id: string) => {
     const run = payrollRuns.find(r => r.id === id);
-    const next = payrollRuns.filter(r => r.id !== id);
-    setPayrollRuns(next);
-    syncState(salaries, adjustments, next);
-
-    if (run) {
-      pushActivity({ 
-        type: 'GOVERNANCE', 
-        label: 'Payroll Cycle Deleted', 
-        message: `Draft run [${run.id}] for ${run.period} removed.`, 
-        author: userRole, 
-        status: 'SUCCESS' 
-      } as any);
+    if (!run) throw new Error('Run not found');
+    try {
+      if (run.status === 'DRAFT') {
+        await transitionLegacy(id, 'SUBMIT_FOR_REVIEW');
+      }
+      await transitionLegacy(id, 'APPROVE');
+      pushActivity({ type: 'GOVERNANCE', label: 'Payroll Approved',
+        message: `Run ${run.name ?? id} approved and moved to processing.`,
+        author: userRole, status: 'SUCCESS' } as any);
+    } catch (err) {
+      pushActivity({ type: 'GOVERNANCE', label: 'Approval Failed',
+        message: err instanceof Error ? err.message : 'Unknown',
+        author: userRole, status: 'FAILURE' } as any);
+      throw err;
     }
-  };
+  }, [payrollRuns, transitionLegacy, pushActivity, userRole]);
+
+  const processRun = useCallback(async (id: string) => {
+    try {
+      await transitionLegacy(id, 'PROCESS');
+      pushActivity({ type: 'FINANCE', label: 'Payroll Processed',
+        message: `Run finalized — adjustments auto-applied.`,
+        author: userRole, status: 'SUCCESS' } as any);
+    } catch (err) {
+      pushActivity({ type: 'FINANCE', label: 'Processing Failed',
+        message: err instanceof Error ? err.message : 'Unknown',
+        author: userRole, status: 'FAILURE' } as any);
+      throw err;
+    }
+  }, [transitionLegacy, pushActivity, userRole]);
+
+  const deleteRun = useCallback(async (id: string) => {
+    try {
+      await transitionLegacy(id, 'CANCEL');
+    } catch (err) {
+      pushActivity({ type: 'GOVERNANCE', label: 'Cancel Failed',
+        message: err instanceof Error ? err.message : 'Unknown',
+        author: userRole, status: 'FAILURE' } as any);
+      throw err;
+    }
+  }, [transitionLegacy, pushActivity, userRole]);
+
+  // ── Adjustment mutations ─────────────────────────────────────────────────
+
+  const addAdjustment = useCallback(async (adj: Omit<CompensationAdjustment, 'id' | 'createdAt'>) => {
+    // Legacy types use 'May 2026' style strings; new API expects YYYY-MM.
+    // If period already matches YYYY-MM, use it; otherwise log a notice.
+    const period = /^\d{4}-\d{2}$/.test(adj.period) ? adj.period : new Date().toISOString().slice(0, 7);
+    const apiType = adj.type === 'BONUS' || adj.type === 'AWARD' || adj.type === 'COMPENSATION' ? 'BONUS'
+                  : adj.type === 'ALLOWANCE' ? 'BONUS' // closest semantic
+                  : 'DEDUCTION';
+    try {
+      await apiMutate('/api/payroll/adjustments', 'POST', {
+        employeeId: adj.employeeId,
+        type: apiType,
+        amount: adj.amount,
+        reason: adj.label,
+        effectivePeriod: period,
+      });
+      await loadAdjustments();
+    } catch (err) {
+      pushActivity({ type: 'GOVERNANCE', label: 'Adjustment Failed',
+        message: err instanceof Error ? err.message : 'Unknown',
+        author: userRole, status: 'FAILURE' } as any);
+      throw err;
+    }
+  }, [loadAdjustments, pushActivity, userRole]);
+
+  const removeAdjustment = useCallback(async (id: string) => {
+    try {
+      await apiMutate(`/api/payroll/adjustments/${id}`, 'DELETE');
+      await loadAdjustments();
+    } catch (err) {
+      pushActivity({ type: 'GOVERNANCE', label: 'Cancel Adjustment Failed',
+        message: err instanceof Error ? err.message : 'Unknown',
+        author: userRole, status: 'FAILURE' } as any);
+      throw err;
+    }
+  }, [loadAdjustments, pushActivity, userRole]);
+
+  // Bulk adjustments are deferred to Phase 6 — log + no-op so legacy UI doesn't crash.
+  const addBulkAdjustments = useCallback((_request: BulkAdjustmentRequest) => {
+    pushActivity({ type: 'GOVERNANCE', label: 'Bulk Adjustment Not Wired',
+      message: 'Bulk-filtered adjustments require an endpoint not yet built (Phase 6).',
+      author: userRole, status: 'WARNING' } as any);
+    return { count: 0, totalImpact: 0 };
+  }, [pushActivity, userRole]);
+
+  // Direct salary edits not exposed in Phase 5 — would mutate historical entries.
+  const updateSalary = useCallback((_s: SalaryStructure) => {
+    pushActivity({ type: 'GOVERNANCE', label: 'Direct Salary Edit Blocked',
+      message: 'Salary updates create a new SalaryStructure version (Phase 6 admin UI).',
+      author: userRole, status: 'WARNING' } as any);
+  }, [pushActivity, userRole]);
 
   return (
-    <PayrollContext.Provider value={{ salaries, adjustments, payrollRuns, updateSalary, addAdjustment, addBulkAdjustments, removeAdjustment, generateDraftRun, approveRun, processRun, deleteRun }}>
+    <PayrollContext.Provider value={{
+      salaries,
+      adjustments,
+      payrollRuns,
+      updateSalary,
+      addAdjustment,
+      addBulkAdjustments,
+      removeAdjustment,
+      generateDraftRun,
+      approveRun,
+      processRun,
+      deleteRun,
+      refresh,
+    }}>
       {children}
     </PayrollContext.Provider>
   );

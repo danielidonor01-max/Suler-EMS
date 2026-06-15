@@ -16,7 +16,7 @@ export const EmployeePolicy = {
     if (!baseCheck.allowed) return baseCheck;
 
     // 2. Resource-level logic (e.g., scoping)
-    if (context.user.role === 'SUPER_ADMIN' || context.user.role === 'HR') {
+    if (context.user.role === 'SUPER_ADMIN' || context.user.role === 'HR' || context.user.role === 'HR_ADMIN') {
       return { allowed: true };
     }
 
@@ -47,7 +47,7 @@ export const EmployeePolicy = {
     const baseCheck = BaseEvaluator.hasPermission(context, Permissions.WORKFORCE_EDIT);
     if (!baseCheck.allowed) return baseCheck;
 
-    if (context.user.role === 'SUPER_ADMIN' || context.user.role === 'HR') {
+    if (context.user.role === 'SUPER_ADMIN' || context.user.role === 'HR' || context.user.role === 'HR_ADMIN') {
       return { allowed: true };
     }
 

@@ -76,12 +76,6 @@ export default function EmployeesPage() {
       onClick: (emp: Employee) => setActiveGovernance({ type: 'EDIT', employee: emp }) 
     },
     { 
-      label: 'Modify Role', 
-      icon: UserCog, 
-      permission: Permissions.WORKFORCE_EDIT,
-      onClick: (emp: Employee) => setActiveGovernance({ type: 'ROLE', employee: emp }) 
-    },
-    { 
       label: 'Audit Trail', 
       icon: History, 
       permission: Permissions.WORKFORCE_VIEW,
