@@ -96,6 +96,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle }) => {
 
   const governanceModules = [
     { name: 'Command Center', icon: Cpu, href: '/admin/ecc', permission: Permissions.COMMAND_CENTER_VIEW },
+    { name: 'Organization', icon: Building2, href: '/admin/organization', permission: Permissions.SETTINGS_MANAGE },
     { name: 'Roles & Permissions', icon: ShieldCheck, href: '/admin/roles', permission: Permissions.ROLE_MANAGE },
     { name: 'Users', icon: UserCircle, href: '/admin/users', permission: Permissions.ROLE_MANAGE },
     { name: 'Audit Registry', icon: History, href: '/governance', permission: Permissions.AUDIT_VIEW },

@@ -1,14 +1,14 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
-import { 
-  Search, 
-  Command, 
-  Users, 
-  Building2, 
-  ShieldCheck, 
-  Activity, 
-  FileText, 
+import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import {
+  Search,
+  Users,
+  Building2,
+  ShieldCheck,
+  Activity,
+  FileText,
   Settings,
   ChevronRight,
   Sparkles
@@ -22,18 +22,22 @@ interface GlobalCommandModalProps {
 
 export const GlobalCommandModal: React.FC<GlobalCommandModalProps> = ({ isOpen, onClose }) => {
   const [query, setQuery] = useState('');
-
-  // Close on Escape is handled by common Modal
-  // Here we handle the CMD+K toggle if we want it global, but it's already in Header.
+  const router = useRouter();
 
   const actions = [
-    { icon: Users, label: 'Add Employee', shortcut: 'E', category: 'Workforce' },
-    { icon: Building2, label: 'Establish Hub', shortcut: 'H', category: 'Organization' },
-    { icon: ShieldCheck, label: 'Audit Logs', shortcut: 'A', category: 'Governance' },
-    { icon: FileText, label: 'Generate Report', shortcut: 'R', category: 'Intelligence' },
-    { icon: Activity, label: 'System Health', shortcut: 'S', category: 'System' },
-    { icon: Settings, label: 'Account Settings', shortcut: ',', category: 'Preferences' },
+    { icon: Users,       label: 'Add Employee',     shortcut: 'E', category: 'Workforce',    href: '/employees' },
+    { icon: Building2,   label: 'Manage Hubs',      shortcut: 'H', category: 'Organization', href: '/admin/organization' },
+    { icon: ShieldCheck, label: 'Audit Logs',       shortcut: 'A', category: 'Governance',   href: '/governance' },
+    { icon: FileText,    label: 'Generate Report',  shortcut: 'R', category: 'Intelligence', href: '/admin/intelligence' },
+    { icon: Activity,    label: 'System Health',    shortcut: 'S', category: 'System',       href: '/admin/ecc' },
+    { icon: Settings,    label: 'Account Settings', shortcut: ',', category: 'Preferences',  href: '/preferences' },
   ];
+
+  const go = (href: string) => {
+    onClose();
+    setQuery('');
+    router.push(href);
+  };
 
   const filteredActions = actions.filter(a => 
     a.label.toLowerCase().includes(query.toLowerCase()) || 
@@ -76,9 +80,11 @@ export const GlobalCommandModal: React.FC<GlobalCommandModalProps> = ({ isOpen, 
 
           <div className="grid grid-cols-1 gap-2">
             {filteredActions.map((action, idx) => (
-              <button 
+              <button
+                type="button"
                 key={idx}
-                className="group flex items-center justify-between p-3.5 bg-white hover:bg-slate-50 border border-slate-100 hover:border-slate-200 rounded-xl transition-all"
+                onClick={() => go(action.href)}
+                className="group flex items-center justify-between p-3.5 bg-white hover:bg-slate-50 border border-slate-100 hover:border-slate-200 rounded-xl transition-all text-left"
               >
                 <div className="flex items-center gap-4">
                   <div className="w-10 h-10 rounded-lg bg-slate-50 flex items-center justify-center text-slate-400 group-hover:bg-indigo-50 group-hover:text-indigo-600 transition-colors">

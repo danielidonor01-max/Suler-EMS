@@ -34,7 +34,7 @@ export interface Preferences {
 }
 
 const DEFAULTS: Preferences = {
-  theme: 'system',
+  theme: 'light',
   toastsEnabled: true,
   messageBadge: true,
   broadcastSounds: false,
