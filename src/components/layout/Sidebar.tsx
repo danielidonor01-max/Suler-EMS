@@ -82,7 +82,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle }) => {
 
   // Administrative Workspace (Permission-based)
   const operationsModules = [
-    { name: 'Workforce Registry', icon: Building2, href: '/workforce', permission: Permissions.WORKFORCE_VIEW },
+    { name: 'Workforce Registry', icon: Building2, href: '/employees', permission: Permissions.WORKFORCE_VIEW },
     { name: 'Team Management', icon: Users, href: '/team', permission: Permissions.WORKFORCE_VIEW },
     { name: 'Attendance Admin', icon: Calendar, href: '/attendance/admin', permission: Permissions.ATTENDANCE_VIEW },
     { name: 'Leave Admin', icon: Activity, href: '/leave/admin', permission: Permissions.LEAVE_VIEW },
