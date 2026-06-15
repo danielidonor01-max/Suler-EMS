@@ -41,6 +41,153 @@ export class RoleError extends Error {
   }
 }
 
+export interface CreateRoleInput {
+  name: string;
+  description?: string | null;
+}
+
+/**
+ * Create a new custom role. Starts with ZERO permissions — admin must
+ * grant explicitly afterward. Name must be unique and may not collide
+ * with a system role (case-insensitive).
+ */
+export async function createRole(input: CreateRoleInput, actor: Actor) {
+  const trimmedName = input.name.trim();
+  if (trimmedName.length < 2 || trimmedName.length > 40) {
+    throw new RoleError('VALIDATION_ERROR', 'name must be 2–40 characters');
+  }
+  if (!/^[A-Z][A-Z0-9_]*$/.test(trimmedName)) {
+    throw new RoleError(
+      'VALIDATION_ERROR',
+      'name must be UPPER_SNAKE_CASE (letters, digits, underscores; start with a letter)',
+    );
+  }
+  if (SYSTEM_ROLE_NAMES.has(trimmedName)) {
+    throw new RoleError('SYSTEM_ROLE_PROTECTED', `${trimmedName} is reserved as a system role.`, 409);
+  }
+  const existing = await prisma.role.findFirst({
+    where: { name: { equals: trimmedName, mode: 'insensitive' } },
+    select: { id: true },
+  });
+  if (existing) {
+    throw new RoleError('ROLE_EXISTS', `Role "${trimmedName}" already exists.`, 409);
+  }
+
+  return prisma.$transaction(async (tx) => {
+    const role = await tx.role.create({
+      data: {
+        name: trimmedName,
+        description: input.description?.trim() || `${trimmedName} — custom role`,
+      },
+      include: {
+        permissions: { select: { id: true, code: true, name: true } },
+        _count: { select: { users: true } },
+      },
+    });
+    await tx.systemEvent.create({
+      data: {
+        type: 'ROLE_CREATED',
+        source: 'role-service',
+        actorId: actor.id,
+        resourceId: role.id,
+        resourceType: 'Role',
+        payload: { roleName: role.name, actorRole: actor.role },
+      },
+    });
+    await tx.securityEvent.create({
+      data: {
+        type: 'PERMISSION_DENIED', // closest existing type
+        description: `[RBAC] Role created: ${role.name} by ${actor.name}`,
+        userId: actor.id,
+        metadata: { event: 'ROLE_CREATED', roleId: role.id, roleName: role.name },
+      },
+    });
+    return role;
+  });
+}
+
+export interface UpdateRoleInput {
+  name?: string;
+  description?: string | null;
+}
+
+/**
+ * Rename / re-describe a role. C1: system role NAMES are immutable;
+ * description can still be edited. Custom roles can be renamed (still
+ * uppercased + uniqueness checked).
+ */
+export async function updateRole(roleId: string, input: UpdateRoleInput, actor: Actor) {
+  const role = await prisma.role.findUniqueOrThrow({ where: { id: roleId } });
+  const isSystem = SYSTEM_ROLE_NAMES.has(role.name);
+
+  const data: Record<string, unknown> = {};
+  if (typeof input.description === 'string') {
+    data.description = input.description.trim() || null;
+  }
+
+  if (typeof input.name === 'string') {
+    const newName = input.name.trim();
+    if (isSystem && newName !== role.name) {
+      throw new RoleError('SYSTEM_ROLE_PROTECTED', `${role.name} is a system role and cannot be renamed.`, 409);
+    }
+    if (newName !== role.name) {
+      if (newName.length < 2 || newName.length > 40) {
+        throw new RoleError('VALIDATION_ERROR', 'name must be 2–40 characters');
+      }
+      if (!/^[A-Z][A-Z0-9_]*$/.test(newName)) {
+        throw new RoleError('VALIDATION_ERROR', 'name must be UPPER_SNAKE_CASE');
+      }
+      if (SYSTEM_ROLE_NAMES.has(newName)) {
+        throw new RoleError('SYSTEM_ROLE_PROTECTED', `${newName} is reserved.`, 409);
+      }
+      const clash = await prisma.role.findFirst({
+        where: { name: { equals: newName, mode: 'insensitive' }, NOT: { id: roleId } },
+        select: { id: true },
+      });
+      if (clash) throw new RoleError('ROLE_EXISTS', `Role "${newName}" already exists.`, 409);
+      data.name = newName;
+    }
+  }
+
+  if (Object.keys(data).length === 0) {
+    return prisma.role.findUniqueOrThrow({
+      where: { id: roleId },
+      include: { permissions: { select: { id: true, code: true, name: true } }, _count: { select: { users: true } } },
+    });
+  }
+
+  return prisma.$transaction(async (tx) => {
+    const updated = await tx.role.update({
+      where: { id: roleId },
+      data,
+      include: { permissions: { select: { id: true, code: true, name: true } }, _count: { select: { users: true } } },
+    });
+    await tx.systemEvent.create({
+      data: {
+        type: 'ROLE_UPDATED',
+        source: 'role-service',
+        actorId: actor.id,
+        resourceId: roleId,
+        resourceType: 'Role',
+        payload: {
+          before: { name: role.name, description: role.description },
+          after: { name: updated.name, description: updated.description },
+          actorRole: actor.role,
+        },
+      },
+    });
+    await tx.securityEvent.create({
+      data: {
+        type: 'PERMISSION_DENIED',
+        description: `[RBAC] Role updated: ${role.name} → ${updated.name} by ${actor.name}`,
+        userId: actor.id,
+        metadata: { event: 'ROLE_UPDATED', roleId, before: role.name, after: updated.name },
+      },
+    });
+    return updated;
+  });
+}
+
 export async function listRoles() {
   return prisma.role.findMany({
     orderBy: { name: 'asc' },
