@@ -21,6 +21,10 @@ const eslintConfig = defineConfig([
         ignoreElements: ["td"],
         depth: 3,
       }],
+      // Phase 9a — keep error/warn channels open for actual diagnostics
+      // (server logs, SSE failures, etc.), but flag `console.log` so new
+      // code doesn't ship debug noise.
+      "no-console": ["warn", { allow: ["warn", "error", "info"] }],
     },
   },
   // Override default ignores of eslint-config-next.

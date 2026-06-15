@@ -8,6 +8,16 @@ const SubmitLeaveSchema = z.object({
   startDate: z.coerce.date(),
   endDate: z.coerce.date(),
   reason: z.string().min(3, 'reason must be at least 3 characters').max(500),
+}).refine(d => d.endDate >= d.startDate, {
+  message: 'endDate must be on or after startDate',
+  path: ['endDate'],
+}).refine(d => {
+  // Reject leave > 365 days — guards against UI bug or hostile input.
+  const days = Math.round((d.endDate.getTime() - d.startDate.getTime()) / 86_400_000) + 1;
+  return days <= 365;
+}, {
+  message: 'leave duration cannot exceed 365 days',
+  path: ['endDate'],
 });
 
 const ListQuerySchema = z.object({

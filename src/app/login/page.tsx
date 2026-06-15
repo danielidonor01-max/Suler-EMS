@@ -30,7 +30,20 @@ function LoginContent() {
       });
 
       if (result?.error) {
-        setErrorMessage('Invalid email or password.');
+        // NextAuth v5 returns generic error codes; we deliberately do not
+        // distinguish "user not found" from "wrong password" (anti-enumeration).
+        // Common codes:
+        //   CredentialsSignin  — bad email or password (default case)
+        //   AccessDenied        — user.isActive === false (deactivated)
+        //   Configuration       — server-side misconfig; ask admin
+        const code = result.error;
+        if (code === 'AccessDenied') {
+          setErrorMessage('This account is deactivated. Contact your administrator.');
+        } else if (code === 'Configuration') {
+          setErrorMessage('Sign-in is temporarily unavailable. Please try again shortly.');
+        } else {
+          setErrorMessage("Couldn't sign you in. Double-check your email and password.");
+        }
         setIsLoading(false);
       } else {
         // Hard navigation forces a full reload so server components, every
@@ -40,8 +53,8 @@ function LoginContent() {
         // viewable as the (no longer existing) GUEST fallback.
         window.location.href = callbackUrl;
       }
-    } catch (err) {
-      setErrorMessage('An unexpected error occurred.');
+    } catch {
+      setErrorMessage('Network error — please check your connection and try again.');
       setIsLoading(false);
     }
   };
