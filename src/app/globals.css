@@ -63,16 +63,59 @@
   --shadow-overlay: 0 20px 50px -12px rgba(15, 23, 42, 0.12);
 }
 
-/* ========================================
-   ROOT VARIABLES
-   ======================================== */
+/* ============================================================
+   THEME TOKENS — drive light vs. dark via CSS variables.
+   Components keep their Tailwind classes; the cascade below
+   re-points the most common `slate-*` utilities to the active
+   token set when [data-theme="dark"] is on <html>.
+   ============================================================ */
 :root {
+  --surface-card: #ffffff;
+  --surface-elevated: #ffffff;
+  --surface-inset: #f8fafc;
+  --surface-hover: #f1f5f9;
+  --surface-emphasis: #e2e8f0;
+
+  --text-strong: #0f172a;
+  --text-default: #334155;
+  --text-secondary: #475569;
+  --text-muted: #64748b;
+  --text-subtle: #94a3b8;
+
+  --border-default: #e2e8f0;
+  --border-subtle: #f1f5f9;
+  --border-strong: #cbd5e1;
+
   --bg: var(--color-bg);
   --surface: var(--color-surface);
   --text-primary: var(--color-text-primary);
-  --text-secondary: var(--color-text-secondary);
   --border: var(--color-border);
   --secondary: var(--color-text-secondary);
+}
+
+html[data-theme="dark"] {
+  --color-bg: #0b1220;
+  --color-surface: #111827;
+  --color-text-primary: #e2e8f0;
+  --color-text-secondary: #94a3b8;
+  --color-border: #334155;
+  --color-border-subtle: #1e293b;
+
+  --surface-card: #111827;
+  --surface-elevated: #1e293b;
+  --surface-inset: #0f172a;
+  --surface-hover: #1e293b;
+  --surface-emphasis: #334155;
+
+  --text-strong: #f1f5f9;
+  --text-default: #e2e8f0;
+  --text-secondary: #cbd5e1;
+  --text-muted: #94a3b8;
+  --text-subtle: #64748b;
+
+  --border-default: #334155;
+  --border-subtle: #1e293b;
+  --border-strong: #475569;
 }
 
 /* ========================================
@@ -87,70 +130,128 @@ body {
   overflow: hidden;
 }
 
-/* ============================================================
-   THEME OVERRIDES
-   PreferencesContext writes `data-theme="dark"` on <html> (or
-   "light"). Override only the body-level CSS variables here so
-   the visual mode changes without rewriting every card/component.
-   Cards stay white intentionally — a hybrid that reads well and
-   keeps focus on content. Full surface-level dark mode is a
-   larger sweep deferred to a dedicated phase.
-   ============================================================ */
-html[data-theme="dark"] {
-  --color-bg: #0b1220;
-  --color-text-primary: #e2e8f0;
-  --color-text-secondary: #94a3b8;
-}
 html[data-theme="dark"] body {
   background-color: var(--color-bg);
   color: var(--color-text-primary);
 }
-/* Main workspace shell — defaults to a slightly elevated slate so
-   the dark body reads as a vertical gradient against the sidebar. */
+
 html[data-theme="dark"] .workspace-main {
   background-color: #0f172a;
 }
 
+/* ============================================================
+   DARK MODE — utility class overrides
+
+   Targets the ~3000 actual slate-* utility classes the codebase
+   emits. Specificity (html[data-theme="dark"] .x) is one level
+   higher than Tailwind's (.x), so these win without !important.
+   Light-tier classes flip to dark surfaces; dark text flips to
+   light. Intentionally-dark classes (bg-slate-900, text-slate-300
+   used on the dark sidebar) are NOT overridden — they're already
+   correct in both themes.
+   ============================================================ */
+
+/* Backgrounds — light surfaces become dark */
+html[data-theme="dark"] .bg-white       { background-color: var(--surface-card); }
+html[data-theme="dark"] .bg-slate-50    { background-color: var(--surface-inset); }
+html[data-theme="dark"] .bg-slate-100   { background-color: var(--surface-hover); }
+html[data-theme="dark"] .bg-slate-200   { background-color: var(--surface-emphasis); }
+
+/* Text — dark text becomes light. Mid-tones map to muted. */
+html[data-theme="dark"] .text-slate-900 { color: var(--text-strong); }
+html[data-theme="dark"] .text-slate-800 { color: var(--text-strong); }
+html[data-theme="dark"] .text-slate-700 { color: var(--text-default); }
+html[data-theme="dark"] .text-slate-600 { color: var(--text-secondary); }
+html[data-theme="dark"] .text-slate-500 { color: var(--text-muted); }
+html[data-theme="dark"] .text-slate-400 { color: var(--text-subtle); }
+
+/* Borders — light borders flip to dark-mode borders */
+html[data-theme="dark"] .border-slate-50  { border-color: var(--border-subtle); }
+html[data-theme="dark"] .border-slate-100 { border-color: var(--border-subtle); }
+html[data-theme="dark"] .border-slate-200 { border-color: var(--border-default); }
+html[data-theme="dark"] .border-slate-300 { border-color: var(--border-strong); }
+
+/* Hover states */
+html[data-theme="dark"] .hover\:bg-slate-50:hover  { background-color: var(--surface-hover); }
+html[data-theme="dark"] .hover\:bg-slate-100:hover { background-color: var(--surface-emphasis); }
+html[data-theme="dark"] .hover\:bg-white:hover     { background-color: var(--surface-elevated); }
+html[data-theme="dark"] .hover\:text-slate-900:hover { color: var(--text-strong); }
+html[data-theme="dark"] .hover\:text-slate-700:hover { color: var(--text-default); }
+html[data-theme="dark"] .hover\:text-slate-600:hover { color: var(--text-secondary); }
+html[data-theme="dark"] .hover\:text-slate-500:hover { color: var(--text-muted); }
+
+/* Dividers */
+html[data-theme="dark"] .divide-slate-50  > :not([hidden]) ~ :not([hidden]) { border-color: var(--border-subtle); }
+html[data-theme="dark"] .divide-slate-100 > :not([hidden]) ~ :not([hidden]) { border-color: var(--border-subtle); }
+
+/* Form inputs — native and textarea fall back to the dark surface */
+html[data-theme="dark"] input,
+html[data-theme="dark"] textarea,
+html[data-theme="dark"] select {
+  background-color: var(--surface-card);
+  color: var(--text-strong);
+  border-color: var(--border-default);
+}
+html[data-theme="dark"] input::placeholder,
+html[data-theme="dark"] textarea::placeholder {
+  color: var(--text-subtle);
+}
+
+/* Placeholder utility variants used in the codebase */
+html[data-theme="dark"] .placeholder\:text-slate-400::placeholder,
+html[data-theme="dark"] .placeholder-slate-400::placeholder {
+  color: var(--text-subtle);
+}
+
+/* Focus rings — keep visible against dark backgrounds */
+html[data-theme="dark"] .focus\:ring-slate-200:focus,
+html[data-theme="dark"] .focus\:ring-slate-300:focus {
+  --tw-ring-color: var(--border-strong);
+}
+
+/* Scrollbar in dark mode */
+html[data-theme="dark"] .custom-scrollbar::-webkit-scrollbar-thumb {
+  background: var(--border-default);
+}
+html[data-theme="dark"] .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: var(--border-strong);
+}
+
 /* ========================================
-   SURFACE SYSTEM
-   Solid, no transparency, no blur
+   SURFACE SYSTEM — driven by theme tokens
    ======================================== */
 
-/* Primary card surface */
 .surface-card {
-  background: #ffffff;
+  background: var(--surface-card);
   border-radius: var(--radius-card);
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--border-default);
   box-shadow: var(--shadow-card);
 }
 
-/* Raised surface (modals, dropdowns) */
 .surface-raised {
-  background: #ffffff;
+  background: var(--surface-card);
   border-radius: var(--radius-card);
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--border-default);
   box-shadow: var(--shadow-raised);
 }
 
-/* Inset surface (secondary panels within cards) */
 .surface-inset {
-  background: var(--color-slate-50);
+  background: var(--surface-inset);
   border-radius: var(--radius-lg);
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--border-subtle);
 }
 
-/* Legacy aliases — mapped to new system */
 .surface-premium {
-  background: #ffffff;
+  background: var(--surface-card);
   border-radius: var(--radius-card);
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--border-default);
   box-shadow: var(--shadow-card);
 }
 
 .surface-floating {
-  background: #ffffff;
+  background: var(--surface-card);
   border-radius: var(--radius-card);
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--border-default);
   box-shadow: var(--shadow-overlay);
 }
 
@@ -215,11 +316,11 @@ html[data-theme="dark"] .workspace-main {
    MODAL STRUCTURAL INTEGRITY
    ======================================== */
 .modal-surface {
-  background: #ffffff;
+  background: var(--surface-card);
   border-radius: var(--radius-modal);
   box-shadow: var(--shadow-overlay);
   overflow: hidden;
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--border-default);
 }
 
 .modal-content-padding {
