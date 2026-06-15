@@ -27,34 +27,34 @@ const LEAVE_TYPES: { type: LeaveType; icon: React.ElementType; color: string; bg
 ];
 
 const EMPLOYEES_LEAVE = [
-  { name: 'Alex Okereke',     annual: 21, usedAnnual: 8,  sick: 14, usedSick: 2,  comp: 5, usedComp: 0 },
-  { name: 'Sarah Williams',   annual: 21, usedAnnual: 12, sick: 14, usedSick: 5,  comp: 5, usedComp: 1 },
-  { name: 'David Okafor',     annual: 21, usedAnnual: 5,  sick: 14, usedSick: 7,  comp: 5, usedComp: 0 },
-  { name: 'Blessing Adeyemi', annual: 21, usedAnnual: 16, sick: 14, usedSick: 0,  comp: 5, usedComp: 2 },
-  { name: 'Kemi Adesanya',    annual: 21, usedAnnual: 3,  sick: 14, usedSick: 1,  comp: 5, usedComp: 0 },
+  { name: 'Bola Akinwale',     annual: 21, usedAnnual: 8,  sick: 14, usedSick: 2,  comp: 5, usedComp: 0 },
+  { name: 'Chiamaka Obi',   annual: 21, usedAnnual: 12, sick: 14, usedSick: 5,  comp: 5, usedComp: 1 },
+  { name: 'Emeka Okafor',     annual: 21, usedAnnual: 5,  sick: 14, usedSick: 7,  comp: 5, usedComp: 0 },
+  { name: 'Tunde Bakare', annual: 21, usedAnnual: 16, sick: 14, usedSick: 0,  comp: 5, usedComp: 2 },
+  { name: 'Kemi Adekunle',    annual: 21, usedAnnual: 3,  sick: 14, usedSick: 1,  comp: 5, usedComp: 0 },
 ];
 
 // Calendar events for current month
 const CALENDAR_EVENTS = [
-  { day: 3,  name: 'Alex Okereke',     type: 'Annual Leave',       color: 'bg-indigo-100 text-indigo-700' },
-  { day: 3,  name: 'Alex Okereke',     type: 'Annual Leave',       color: 'bg-indigo-100 text-indigo-700' },
-  { day: 4,  name: 'Alex Okereke',     type: 'Annual Leave',       color: 'bg-indigo-100 text-indigo-700' },
-  { day: 6,  name: 'David Okafor',     type: 'Sick Leave',         color: 'bg-rose-100 text-rose-700' },
-  { day: 7,  name: 'David Okafor',     type: 'Sick Leave',         color: 'bg-rose-100 text-rose-700' },
-  { day: 10, name: 'Sarah Williams',   type: 'Compassionate Leave',color: 'bg-amber-100 text-amber-700' },
-  { day: 15, name: 'Blessing Adeyemi', type: 'Annual Leave',       color: 'bg-indigo-100 text-indigo-700' },
-  { day: 16, name: 'Blessing Adeyemi', type: 'Annual Leave',       color: 'bg-indigo-100 text-indigo-700' },
-  { day: 20, name: 'Kemi Adesanya',    type: 'Annual Leave',       color: 'bg-indigo-100 text-indigo-700' },
+  { day: 3,  name: 'Bola Akinwale',     type: 'Annual Leave',       color: 'bg-indigo-100 text-indigo-700' },
+  { day: 3,  name: 'Bola Akinwale',     type: 'Annual Leave',       color: 'bg-indigo-100 text-indigo-700' },
+  { day: 4,  name: 'Bola Akinwale',     type: 'Annual Leave',       color: 'bg-indigo-100 text-indigo-700' },
+  { day: 6,  name: 'Emeka Okafor',     type: 'Sick Leave',         color: 'bg-rose-100 text-rose-700' },
+  { day: 7,  name: 'Emeka Okafor',     type: 'Sick Leave',         color: 'bg-rose-100 text-rose-700' },
+  { day: 10, name: 'Chiamaka Obi',   type: 'Compassionate Leave',color: 'bg-amber-100 text-amber-700' },
+  { day: 15, name: 'Tunde Bakare', type: 'Annual Leave',       color: 'bg-indigo-100 text-indigo-700' },
+  { day: 16, name: 'Tunde Bakare', type: 'Annual Leave',       color: 'bg-indigo-100 text-indigo-700' },
+  { day: 20, name: 'Kemi Adekunle',    type: 'Annual Leave',       color: 'bg-indigo-100 text-indigo-700' },
 ];
 
 const INITIAL_LEAVE_REQUESTS: (WorkflowInstance & { employeeName: string, type: string, dates: string, days: number })[] = [
   {
     id: 'leave-001' as any, workflowId: 'leave-workflow', version: 1,
     currentState: 'SUBMITTED', resourceId: 'res-001' as any,
-    employeeName: 'Alex Okereke', type: 'Annual Leave', dates: '10 Jun – 15 Jun', days: 5,
+    employeeName: 'Bola Akinwale', type: 'Annual Leave', dates: '10 Jun – 15 Jun', days: 5,
     history: [
       { id: 'audit-001' as any, instanceId: 'leave-001' as any, timestamp: '2024-05-01T10:00:00Z',
-        actorId: 'user-emp-001' as any, actorName: 'Alex Okereke', actorRole: 'EMPLOYEE',
+        actorId: 'user-emp-001' as any, actorName: 'Bola Akinwale', actorRole: 'EMPLOYEE',
         fromState: 'DRAFT', toState: 'SUBMITTED', action: 'SUBMIT', comment: 'Vacation with family in Enugu.' }
     ],
     createdAt: '2024-05-01T10:00:00Z', updatedAt: '2024-05-01T10:00:00Z',
@@ -62,19 +62,19 @@ const INITIAL_LEAVE_REQUESTS: (WorkflowInstance & { employeeName: string, type: 
   {
     id: 'leave-002' as any, workflowId: 'leave-workflow', version: 1,
     currentState: 'MANAGER_APPROVED', resourceId: 'res-002' as any,
-    employeeName: 'David Okafor', type: 'Sick Leave', dates: '06 May – 07 May', days: 2,
+    employeeName: 'Emeka Okafor', type: 'Sick Leave', dates: '06 May – 07 May', days: 2,
     history: [
-      { id: 'a1' as any, instanceId: 'l2' as any, timestamp: '2024-05-01T09:00:00Z', actorId: 'u1' as any, actorName: 'David Okafor', actorRole: 'EMPLOYEE', fromState: 'DRAFT', toState: 'SUBMITTED', action: 'SUBMIT' },
-      { id: 'a2' as any, instanceId: 'l2' as any, timestamp: '2024-05-02T14:00:00Z', actorId: 'u2' as any, actorName: 'Segun Manager', actorRole: 'MANAGER', fromState: 'SUBMITTED', toState: 'MANAGER_APPROVED', action: 'APPROVE_MANAGER', comment: 'Approved. Get well soon.' },
+      { id: 'a1' as any, instanceId: 'l2' as any, timestamp: '2024-05-01T09:00:00Z', actorId: 'u1' as any, actorName: 'Emeka Okafor', actorRole: 'EMPLOYEE', fromState: 'DRAFT', toState: 'SUBMITTED', action: 'SUBMIT' },
+      { id: 'a2' as any, instanceId: 'l2' as any, timestamp: '2024-05-02T14:00:00Z', actorId: 'u2' as any, actorName: 'Ibrahim Yusuf', actorRole: 'MANAGER', fromState: 'SUBMITTED', toState: 'MANAGER_APPROVED', action: 'APPROVE_MANAGER', comment: 'Approved. Get well soon.' },
     ],
     createdAt: '2024-05-01T09:00:00Z', updatedAt: '2024-05-02T14:00:00Z',
   },
   {
     id: 'leave-003' as any, workflowId: 'leave-workflow', version: 1,
     currentState: 'SUBMITTED', resourceId: 'res-003' as any,
-    employeeName: 'Sarah Williams', type: 'Compassionate Leave', dates: '10 May – 10 May', days: 1,
+    employeeName: 'Chiamaka Obi', type: 'Compassionate Leave', dates: '10 May – 10 May', days: 1,
     history: [
-      { id: 'a3' as any, instanceId: 'l3' as any, timestamp: '2024-05-09T11:00:00Z', actorId: 'u3' as any, actorName: 'Sarah Williams', actorRole: 'EMPLOYEE', fromState: 'DRAFT', toState: 'SUBMITTED', action: 'SUBMIT', comment: 'Family emergency.' }
+      { id: 'a3' as any, instanceId: 'l3' as any, timestamp: '2024-05-09T11:00:00Z', actorId: 'u3' as any, actorName: 'Chiamaka Obi', actorRole: 'EMPLOYEE', fromState: 'DRAFT', toState: 'SUBMITTED', action: 'SUBMIT', comment: 'Family emergency.' }
     ],
     createdAt: '2024-05-09T11:00:00Z', updatedAt: '2024-05-09T11:00:00Z',
   },

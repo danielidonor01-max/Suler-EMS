@@ -10,7 +10,7 @@ import { useSettings } from '@/context/SettingsContext';
 import { Select } from '@/components/forms/Select';
 
 const MOCK_AUDIT = [
-  { action: 'Successful Login', user: 'Chinedu Okoro', ip: '197.210.66.12', time: '2026-05-11T14:00:00Z', status: 'SUCCESS' },
+  { action: 'Successful Login', user: 'Olumide Adeyemi', ip: '197.210.66.12', time: '2026-05-11T14:00:00Z', status: 'SUCCESS' },
   { action: 'Failed Login Attempt', user: 'unknown@test.com', ip: '45.22.101.88', time: '2026-05-11T13:45:00Z', status: 'FAILED' },
 ];
 

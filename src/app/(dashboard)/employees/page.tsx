@@ -155,7 +155,7 @@ export default function EmployeesPage() {
                 Operational Integrity
              </div>
              <div className="w-1 h-1 rounded-full bg-slate-200" />
-             <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Active Hub: Lagos HQ</span>
+             <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Active Hub: Lagos</span>
           </div>
           <div className="space-y-1">
             <h1 className="text-4xl font-bold text-slate-900 tracking-tighter leading-none">

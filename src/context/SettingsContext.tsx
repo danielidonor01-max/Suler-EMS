@@ -121,7 +121,7 @@ const DEFAULT_SESSIONS: UserSession[] = [
 const DEFAULT_SETTINGS: Settings = {
   theme: 'light',
   notifications: { email: true, push: true, sms: false, criticalOnly: false },
-  workspace: { compactMode: false, sidebarCollapsed: false, defaultHub: 'Lagos HQ' },
+  workspace: { compactMode: false, sidebarCollapsed: false, defaultHub: 'Lagos' },
   security: {
     enforceMFA: true,
     ipAllowlist: ['197.210.0.0/16', '196.220.0.0/16'],
