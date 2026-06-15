@@ -225,10 +225,11 @@ const ChatPanel: React.FC<ChatPanelProps> = ({ conversationId, conversationName,
       {/* Input Area */}
       <div className="p-4 border-t border-slate-200 bg-white">
         <div className="flex items-end gap-2 bg-slate-50 border border-slate-200 rounded-2xl p-2 focus-within:border-indigo-300 focus-within:ring-2 focus-within:ring-indigo-100 transition-all">
-          <button className="p-2 text-slate-400 hover:text-slate-600 transition-colors">
+          <button type="button" aria-label="Attach file" className="p-2 text-slate-400 hover:text-slate-600 transition-colors">
             <Paperclip className="w-5 h-5" />
           </button>
           <textarea
+            aria-label="Message"
             value={inputValue}
             onChange={(e) => {
               setInputValue(e.target.value);

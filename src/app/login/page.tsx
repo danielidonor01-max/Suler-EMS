@@ -71,6 +71,7 @@ function LoginContent() {
             <Mail className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-300 group-focus-within:text-indigo-600 transition-colors" />
             <input
               type="email"
+              aria-label="Principal Email"
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -89,6 +90,7 @@ function LoginContent() {
             <Lock className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-300 group-focus-within:text-indigo-600 transition-colors" />
             <input
               type="password"
+              aria-label="Secret Key"
               required
               value={password}
               onChange={(e) => setPassword(e.target.value)}

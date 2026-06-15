@@ -45,9 +45,10 @@ export const ConversationList = ({ onSelect, activeId, filterTab }: {
         <h2 className="text-xl font-bold text-slate-900 tracking-tight">Messages</h2>
         <div className="relative group">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 transition-colors group-focus-within:text-indigo-500" />
-          <input 
-            type="text" 
-            placeholder="Search conversations..." 
+          <input
+            type="text"
+            aria-label="Search conversations"
+            placeholder="Search conversations..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="w-full bg-slate-50 border border-slate-100 rounded-xl py-2 pl-10 pr-4 text-[13px] font-medium text-slate-900 outline-none focus:bg-white focus:border-indigo-200 transition-all"
@@ -169,8 +170,9 @@ export const ChatWindow = ({ conversationId }: { conversationId: string }) => {
       <div className="p-4 bg-white border-t border-slate-100">
         <div className="flex items-end gap-3 bg-slate-50 border border-slate-200 rounded-2xl p-2 focus-within:border-indigo-300 focus-within:bg-white transition-all">
           <button type="button" aria-label="Attach file" className="w-10 h-10 flex items-center justify-center text-slate-400 hover:text-indigo-600 transition-colors"><Paperclip className="w-5 h-5" /></button>
-          <textarea 
+          <textarea
             rows={1}
+            aria-label="Message"
             placeholder="Type your message..."
             value={input}
             onChange={(e) => setInput(e.target.value)}

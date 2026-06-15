@@ -118,6 +118,10 @@ export default function IntegrationsPage() {
                   </div>
                 </div>
                 <button
+                  type="button"
+                  role="switch"
+                  aria-checked={Boolean(integration.connected)}
+                  aria-label={`${integration.connected ? 'Disconnect' : 'Connect'} ${integration.name}`}
                   onClick={() => toggleIntegration(integration.id)}
                   className={`relative w-12 h-6 rounded-full transition-all shrink-0 ${integration.connected ? 'bg-emerald-500' : 'bg-slate-200'}`}
                 >

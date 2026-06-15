@@ -57,8 +57,15 @@ export default function SecurityPage() {
     pushGovernanceActivity('Authentication Policy Mutated', `Global password standards updated: [${key}] set to [${value}].`);
   };
 
-  const ToggleSwitch = ({ checked, onChange }: { checked: boolean; onChange: () => void }) => (
-    <button onClick={onChange} className={`relative w-12 h-6 rounded-full transition-all ${checked ? 'bg-indigo-600' : 'bg-slate-200'}`}>
+  const ToggleSwitch = ({ checked, onChange, label }: { checked: boolean; onChange: () => void; label?: string }) => (
+    <button
+      type="button"
+      role="switch"
+      aria-checked={Boolean(checked)}
+      aria-label={label ?? 'Toggle'}
+      onClick={onChange}
+      className={`relative w-12 h-6 rounded-full transition-all ${checked ? 'bg-indigo-600' : 'bg-slate-200'}`}
+    >
       <div className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-all ${checked ? 'left-6' : 'left-0.5'}`} />
     </button>
   );
@@ -207,8 +214,8 @@ export default function SecurityPage() {
               </div>
             ))}
             <div className="flex gap-2">
-              <input type="text" value={newIp} onChange={(e) => setNewIp(e.target.value)} placeholder="e.g. 197.210.0.0/16" className="flex-1 h-11 bg-slate-50 border border-slate-100 rounded-xl px-4 text-[13px] font-bold font-mono outline-none" onKeyDown={(e) => e.key === 'Enter' && addIp()} />
-              <button onClick={addIp} className="w-11 h-11 bg-slate-900 text-white rounded-xl flex items-center justify-center hover:bg-black"><Plus className="w-4 h-4" /></button>
+              <input aria-label="IP address or CIDR range" type="text" value={newIp} onChange={(e) => setNewIp(e.target.value)} placeholder="e.g. 197.210.0.0/16" className="flex-1 h-11 bg-slate-50 border border-slate-100 rounded-xl px-4 text-[13px] font-bold font-mono outline-none" onKeyDown={(e) => e.key === 'Enter' && addIp()} />
+              <button type="button" aria-label="Add IP to allowlist" onClick={addIp} className="w-11 h-11 bg-slate-900 text-white rounded-xl flex items-center justify-center hover:bg-black"><Plus className="w-4 h-4" /></button>
             </div>
           </div>
           {/* User Recovery & Reset */}

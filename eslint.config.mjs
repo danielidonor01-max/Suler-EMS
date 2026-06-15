@@ -7,15 +7,18 @@ const eslintConfig = defineConfig([
   ...nextTs,
   {
     rules: {
-      // Phase 6 acceptance gate — every interactive control must be
-      // labelled either by visible text or an explicit aria-label /
-      // aria-labelledby / title. Lifted as 'warn' so the build doesn't
-      // collapse on the existing pre-Phase-6 buttons we haven't swept
-      // yet; ratchet to 'error' once the codebase is clean.
-      "jsx-a11y/control-has-associated-label": ["warn", {
+      // Phase 6 acceptance gate. Phase 8 swept Phase 4-6 code + the
+      // legacy modal cluster (75 → 0 violations) so this is now an
+      // 'error', not a 'warn' — regressions block CI.
+      //
+      // `ignoreElements: ['td']` — td is not an interactive control by
+      // ARIA spec; the rule mis-flagged loading-skeleton cells because
+      // `depth: 3` recursed past empty placeholder divs. Excluding td
+      // keeps the rule strict on actual controls (button/input/textarea/select).
+      "jsx-a11y/control-has-associated-label": ["error", {
         labelAttributes: ["aria-label", "aria-labelledby", "title"],
         controlComponents: [],
-        ignoreElements: [],
+        ignoreElements: ["td"],
         depth: 3,
       }],
     },

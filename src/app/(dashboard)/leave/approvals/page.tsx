@@ -186,6 +186,7 @@ export default function LeaveApprovalsPage() {
                           <textarea
                             value={rejectReason} onChange={(e) => setRejectReason(e.target.value)}
                             rows={2} minLength={5}
+                            aria-label="Reason for rejection"
                             placeholder="Reason for rejection (min 5 chars)"
                             className="flex-1 px-4 py-3 rounded-[12px] border border-rose-200 text-[13px] bg-white focus:outline-none focus:border-rose-400 resize-none"
                           />

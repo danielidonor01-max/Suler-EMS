@@ -264,7 +264,8 @@ export const BulkAdjustmentModal: React.FC<{ isOpen: boolean; onClose: () => voi
                    </div>
                    <div className="space-y-2">
                       <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Value ({formData.amountType === 'FIXED' ? '₦' : '%'})</label>
-                      <input 
+                      <input
+                        aria-label="Adjustment value"
                         type="number"
                         value={formData.amount || ''}
                         onChange={e => setFormData({...formData, amount: parseFloat(e.target.value) || 0})}

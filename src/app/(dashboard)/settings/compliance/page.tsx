@@ -91,11 +91,12 @@ export default function CompliancePoliciesPage() {
                      <div className="space-y-2">
                         <label className="text-[11px] font-black text-slate-500 uppercase tracking-widest">Pension (Employee %)</label>
                         <div className="relative">
-                           <input 
-                             type="number" 
+                           <input
+                             aria-label="Pension (Employee %)"
+                             type="number"
                              step="0.01"
                              disabled={!isSuperAdmin}
-                             value={policy.pensionEmployeeRate * 100} 
+                             value={policy.pensionEmployeeRate * 100}
                              onChange={e => setPolicy({...policy, pensionEmployeeRate: parseFloat(e.target.value) / 100})}
                              className="w-full h-14 bg-slate-50 border border-slate-100 rounded-2xl px-6 text-lg font-black text-slate-900 outline-none focus:ring-2 focus:ring-indigo-500 transition-all" 
                            />
@@ -108,11 +109,12 @@ export default function CompliancePoliciesPage() {
                      <div className="space-y-2">
                         <label className="text-[11px] font-black text-slate-500 uppercase tracking-widest">NHF (Basic Salary %)</label>
                         <div className="relative">
-                           <input 
-                             type="number" 
+                           <input
+                             aria-label="NHF (Basic Salary %)"
+                             type="number"
                              step="0.01"
                              disabled={!isSuperAdmin}
-                             value={policy.nhfRate * 100} 
+                             value={policy.nhfRate * 100}
                              onChange={e => setPolicy({...policy, nhfRate: parseFloat(e.target.value) / 100})}
                              className="w-full h-14 bg-slate-50 border border-slate-100 rounded-2xl px-6 text-lg font-black text-slate-900 outline-none focus:ring-2 focus:ring-indigo-500 transition-all" 
                            />
@@ -138,11 +140,12 @@ export default function CompliancePoliciesPage() {
                      <div className="space-y-2">
                         <label className="text-[11px] font-black text-slate-500 uppercase tracking-widest">ITF Contribution (%)</label>
                         <div className="relative">
-                           <input 
-                             type="number" 
+                           <input
+                             aria-label="ITF Contribution (%)"
+                             type="number"
                              step="0.01"
                              disabled={!isSuperAdmin}
-                             value={policy.itfContributionRate * 100} 
+                             value={policy.itfContributionRate * 100}
                              onChange={e => setPolicy({...policy, itfContributionRate: parseFloat(e.target.value) / 100})}
                              className="w-full h-14 bg-slate-50 border border-slate-100 rounded-2xl px-6 text-lg font-black text-slate-900 outline-none focus:ring-2 focus:ring-indigo-500 transition-all" 
                            />
@@ -154,10 +157,11 @@ export default function CompliancePoliciesPage() {
                      <div className="space-y-2">
                         <label className="text-[11px] font-black text-slate-500 uppercase tracking-widest">Pension (Employer %)</label>
                         <div className="relative">
-                           <input 
-                             type="number" 
+                           <input
+                             aria-label="Pension (Employer %)"
+                             type="number"
                              disabled={!isSuperAdmin}
-                             value={10} 
+                             value={10}
                              readOnly
                              className="w-full h-14 bg-slate-50 border border-slate-100 rounded-2xl px-6 text-lg font-black text-slate-500 outline-none transition-all" 
                            />
@@ -169,10 +173,11 @@ export default function CompliancePoliciesPage() {
                      <div className="space-y-2">
                         <label className="text-[11px] font-black text-slate-500 uppercase tracking-widest">NSITF Rate (%)</label>
                         <div className="relative">
-                           <input 
-                             type="number" 
+                           <input
+                             aria-label="NSITF Rate (%)"
+                             type="number"
                              disabled={!isSuperAdmin}
-                             value={1.0} 
+                             value={1.0}
                              readOnly
                              className="w-full h-14 bg-slate-50 border border-slate-100 rounded-2xl px-6 text-lg font-black text-slate-500 outline-none transition-all" 
                            />

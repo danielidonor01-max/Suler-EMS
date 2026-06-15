@@ -99,9 +99,10 @@ function GovernanceAuditContent() {
             <div className="flex items-center gap-4">
                <div className="relative">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
-                  <input 
-                    type="text" 
-                    placeholder="Search by actor or event..." 
+                  <input
+                    type="text"
+                    aria-label="Search audit registry"
+                    placeholder="Search by actor or event..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     className="h-9 pl-9 pr-4 bg-white border border-slate-200 rounded-lg text-[11px] font-bold outline-none focus:border-indigo-500 w-64 transition-all"

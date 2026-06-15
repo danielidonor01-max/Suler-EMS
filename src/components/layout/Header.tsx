@@ -131,9 +131,10 @@ const Header = ({ onToggleSidebar }: { onToggleSidebar: () => void }) => {
 
         <div className="hidden lg:relative lg:max-w-[360px] lg:w-full lg:group lg:flex lg:items-center">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300 transition-colors group-focus-within:text-slate-900" />
-          <input 
-            type="text" 
-            placeholder="Search operational data..." 
+          <input
+            type="text"
+            aria-label="Search operational data"
+            placeholder="Search operational data..."
             className="w-full bg-slate-50 border border-slate-200 focus:border-indigo-200 focus:bg-white rounded-[12px] py-2.5 pl-12 pr-10 text-[13px] font-medium text-slate-900 placeholder:text-slate-400 transition-all outline-none"
           />
           <div className="absolute right-3.5 top-1/2 -translate-y-1/2 flex items-center gap-1 px-1.5 py-0.5 bg-white border border-slate-200 rounded text-[9px] font-bold text-slate-400">
