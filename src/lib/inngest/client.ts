@@ -12,6 +12,15 @@ export type Events = {
       parameters?: any;
     };
   };
+  "payroll/run.process.requested": {
+    data: {
+      runId: string;
+      actorId: string;
+      actorName: string;
+      actorRole: string;
+      actorPermissions: string[];
+    };
+  };
 };
 
 // Create the Inngest client
@@ -25,6 +34,15 @@ export const inngest = new Inngest({
         type: "string",
         format: "string",
         parameters: "object"
+      }
+    },
+    "payroll/run.process.requested": {
+      data: {
+        runId: "string",
+        actorId: "string",
+        actorName: "string",
+        actorRole: "string",
+        actorPermissions: "object"
       }
     }
   }
