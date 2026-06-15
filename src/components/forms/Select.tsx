@@ -67,6 +67,16 @@ export const Select: React.FC<SelectProps> = ({
     return () => window.removeEventListener('scroll', handleScroll, true);
   }, [isOpen]);
 
+  // Escape-to-close. Click-outside is already handled by the Portal backdrop.
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setIsOpen(false);
+    };
+    document.addEventListener('keydown', handleKey);
+    return () => document.removeEventListener('keydown', handleKey);
+  }, [isOpen]);
+
   const popupStyle: React.CSSProperties = rect ? {
     top: rect.bottom + 8,
     left: rect.left,

@@ -1,15 +1,13 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import Link from 'next/link';
 import { useSession, signOut } from 'next-auth/react';
-import { 
-  Search, 
-  Bell, 
-  Command, 
-  Plus, 
+import {
+  Search,
+  Bell,
+  Command,
   ChevronDown,
-  ShieldCheck,
   Activity,
   Globe,
   PlusCircle,
@@ -23,21 +21,27 @@ import {
 } from 'lucide-react';
 import { GlobalCommandModal } from '../modals/GlobalCommandModal';
 
-import { useActivity } from '@/context/ActivityContext';
 import { useAccess } from '@/context/AccessContext';
 import { useOrganization } from '@/context/OrganizationContext';
 import { useCommunication } from '@/context/CommunicationContext';
 import { useRouter } from 'next/navigation';
+import { useDismiss } from '@/lib/hooks/use-dismiss';
 
 const Header = ({ onToggleSidebar }: { onToggleSidebar: () => void }) => {
   const [isCommandModalOpen, setIsCommandModalOpen] = useState(false);
-  const { presenceCount } = useActivity();
+  const [isHubOpen, setIsHubOpen] = useState(false);
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
   const { userRole } = useAccess();
   const { currentHub, hubs, switchHub } = useOrganization();
   const { conversations } = useCommunication();
   const router = useRouter();
   const { data: session } = useSession();
-  
+
+  const hubRef = useRef<HTMLDivElement>(null);
+  const profileRef = useRef<HTMLDivElement>(null);
+  useDismiss(hubRef, () => setIsHubOpen(false), isHubOpen);
+  useDismiss(profileRef, () => setIsProfileOpen(false), isProfileOpen);
+
   const handleSignOut = async () => {
     // signOut(redirect:false) clears the cookie server-side and returns
     // without navigating. We then hard-navigate to /login ourselves —
@@ -53,10 +57,12 @@ const Header = ({ onToggleSidebar }: { onToggleSidebar: () => void }) => {
 
   return (
     <header className="h-[72px] bg-white border-b border-slate-200 flex items-center justify-between px-4 md:px-8 sticky top-0 z-40">
-      
+
       {/* Left: Workspace & Search Command */}
       <div className="flex items-center gap-4 md:gap-8 flex-1">
-        <button 
+        <button
+          type="button"
+          aria-label="Toggle sidebar"
           onClick={onToggleSidebar}
           className="lg:hidden p-2 hover:bg-slate-50 rounded-lg text-slate-500 transition-colors"
         >
@@ -75,52 +81,67 @@ const Header = ({ onToggleSidebar }: { onToggleSidebar: () => void }) => {
           </div>
         </div>
 
-        <div className="hidden lg:flex items-center gap-3 min-w-[200px] relative group">
-          <div className="w-7 h-7 rounded-lg bg-slate-100 flex items-center justify-center text-slate-900 text-[10px] font-bold group-hover:bg-slate-200 transition-colors">
+        <div className="hidden lg:flex items-center gap-3 min-w-[200px] relative">
+          <div className="w-7 h-7 rounded-lg bg-slate-100 flex items-center justify-center text-slate-900 text-[10px] font-bold transition-colors">
             {currentHub[0]}
           </div>
           <div className="flex flex-col">
             <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest leading-none mb-1">Operational Hub</span>
             <div className="flex items-center gap-1">
               {userRole === 'SUPER_ADMIN' ? (
-                <div className="relative group/hub">
-                  <button className="flex items-center gap-1 text-[12px] font-bold text-slate-600 tracking-tight leading-none whitespace-nowrap hover:text-indigo-600 transition-colors">
+                <div className="relative" ref={hubRef}>
+                  <button
+                    type="button"
+                    aria-haspopup="menu"
+                    aria-expanded={Boolean(isHubOpen)}
+                    aria-label="Switch operational hub"
+                    onClick={() => setIsHubOpen((v) => !v)}
+                    className="flex items-center gap-1 text-[12px] font-bold text-slate-600 tracking-tight leading-none whitespace-nowrap hover:text-indigo-600 transition-colors"
+                  >
                     {currentHub}
-                    <ChevronDown className="w-3.5 h-3.5 text-slate-300" />
+                    <ChevronDown className={`w-3.5 h-3.5 text-slate-300 transition-transform ${isHubOpen ? 'rotate-180' : ''}`} />
                   </button>
-                  
-                  {/* Hub Switcher Dropdown */}
-                  <div className="absolute top-full left-0 mt-4 w-[220px] bg-white border border-slate-200 rounded-[20px] shadow-premium opacity-0 translate-y-2 pointer-events-none group-hover/hub:opacity-100 group-hover/hub:translate-y-0 group-hover/hub:pointer-events-auto transition-all duration-300 p-2 overflow-hidden">
-                     <div className="px-3 py-2 border-b border-slate-50 mb-1">
-                        <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Select Operational Context</span>
-                     </div>
-                     <div className="space-y-0.5">
-                        {hubs.map((hub) => (
-                          <button 
-                            key={hub.id}
-                            onClick={() => switchHub(hub.id)}
-                            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all ${
-                              currentHub === hub.name ? 'bg-indigo-50 text-indigo-600' : 'hover:bg-slate-50 text-slate-600'
+
+                  {isHubOpen && (
+                    <div
+                      role="menu"
+                      className="absolute top-full left-0 mt-3 w-[220px] bg-white border border-slate-200 rounded-[20px] shadow-premium p-2 overflow-hidden z-50 animate-in fade-in slide-in-from-top-1 duration-150"
+                    >
+                       <div className="px-3 py-2 border-b border-slate-50 mb-1">
+                          <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Select Operational Context</span>
+                       </div>
+                       <div className="space-y-0.5">
+                          {hubs.map((hub) => (
+                            <button
+                              type="button"
+                              key={hub.id}
+                              role="menuitem"
+                              onClick={() => { switchHub(hub.id); setIsHubOpen(false); }}
+                              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all ${
+                                currentHub === hub.name ? 'bg-indigo-50 text-indigo-600' : 'hover:bg-slate-50 text-slate-600'
+                              }`}
+                            >
+                               <Globe className={`w-3.5 h-3.5 ${currentHub === hub.name ? 'text-indigo-500' : 'text-slate-400'}`} />
+                               <div className="flex flex-col items-start">
+                                  <span className="text-[12px] font-bold leading-none mb-1">{hub.name}</span>
+                                  <span className="text-[9px] font-medium opacity-60 leading-none">{hub.category}</span>
+                               </div>
+                            </button>
+                          ))}
+                          <button
+                            type="button"
+                            role="menuitem"
+                            onClick={() => { switchHub('HUB-00'); setIsHubOpen(false); }}
+                            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all border-t border-slate-50 mt-1 ${
+                              currentHub === 'All Regions' ? 'bg-indigo-50 text-indigo-600' : 'hover:bg-slate-50 text-slate-400'
                             }`}
                           >
-                             <Globe className={`w-3.5 h-3.5 ${currentHub === hub.name ? 'text-indigo-500' : 'text-slate-400'}`} />
-                             <div className="flex flex-col items-start">
-                                <span className="text-[12px] font-bold leading-none mb-1">{hub.name}</span>
-                                <span className="text-[9px] font-medium opacity-60 leading-none">{hub.category}</span>
-                             </div>
+                             <Activity className={`w-3.5 h-3.5 ${currentHub === 'All Regions' ? 'text-indigo-500' : 'text-slate-400'}`} />
+                             <span className="text-[11px] font-bold">All Regions View</span>
                           </button>
-                        ))}
-                        <button 
-                          onClick={() => switchHub('HUB-00')}
-                          className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all border-t border-slate-50 mt-1 ${
-                            currentHub === 'All Regions' ? 'bg-indigo-50 text-indigo-600' : 'hover:bg-slate-50 text-slate-400'
-                          }`}
-                        >
-                           <Activity className={`w-3.5 h-3.5 ${currentHub === 'All Regions' ? 'text-indigo-500' : 'text-slate-400'}`} />
-                           <span className="text-[11px] font-bold">All Regions View</span>
-                        </button>
-                     </div>
-                  </div>
+                       </div>
+                    </div>
+                  )}
                 </div>
               ) : (
                 <span className="text-[12px] font-bold text-slate-600 tracking-tight leading-none whitespace-nowrap">{currentHub}</span>
@@ -153,8 +174,10 @@ const Header = ({ onToggleSidebar }: { onToggleSidebar: () => void }) => {
            </span>
         </div>
 
-        <button 
+        <button
+          type="button"
           onClick={() => setIsCommandModalOpen(true)}
+          aria-label="Open quick actions"
           className="w-10 h-10 flex items-center justify-center rounded-[12px] text-slate-400 hover:text-slate-900 hover:bg-slate-50 transition-all group relative"
           title="Quick Action (Ctrl+K)"
         >
@@ -165,7 +188,9 @@ const Header = ({ onToggleSidebar }: { onToggleSidebar: () => void }) => {
         </button>
 
         <div className="flex items-center gap-1.5">
-           <button 
+           <button
+             type="button"
+             aria-label={`Notifications${totalUnread > 0 ? ` (${totalUnread} unread)` : ''}`}
              onClick={() => router.push('/notifications')}
              className="relative w-10 h-10 flex items-center justify-center rounded-[12px] text-slate-400 hover:text-slate-900 hover:bg-slate-50 transition-all"
            >
@@ -174,49 +199,65 @@ const Header = ({ onToggleSidebar }: { onToggleSidebar: () => void }) => {
               <div className="absolute top-2.5 right-2.5 w-1.5 h-1.5 bg-indigo-600 rounded-full border-2 border-white" />
             )}
           </button>
-          
-          <div className="relative group/profile">
-            <div className="w-10 h-10 rounded-[12px] bg-slate-900 border border-slate-800 flex items-center justify-center text-white font-bold text-[11px] cursor-pointer hover:scale-105 transition-all shadow-premium">
+
+          <div className="relative" ref={profileRef}>
+            <button
+              type="button"
+              aria-haspopup="menu"
+              aria-expanded={Boolean(isProfileOpen)}
+              aria-label="Open user menu"
+              onClick={() => setIsProfileOpen((v) => !v)}
+              className="w-10 h-10 rounded-[12px] bg-slate-900 border border-slate-800 flex items-center justify-center text-white font-bold text-[11px] cursor-pointer hover:scale-105 transition-all shadow-premium"
+            >
               {(session?.user?.name || 'U').split(' ').map((n: string) => n[0]).join('').slice(0, 2).toUpperCase()}
-            </div>
-            
-            {/* Profile Dropdown */}
-            <div className="absolute top-full right-0 mt-4 w-[240px] bg-white border border-slate-200 rounded-[20px] shadow-premium opacity-0 translate-y-2 pointer-events-none group-hover/profile:opacity-100 group-hover/profile:translate-y-0 group-hover/profile:pointer-events-auto transition-all duration-300 p-2 overflow-hidden z-50">
-               <div className="px-3 py-3 border-b border-slate-50 mb-1 flex flex-col">
-                  <span className="text-[13px] font-bold text-slate-900 truncate">{session?.user?.name || 'User'}</span>
-                  <span className="text-[10px] font-medium text-slate-400 truncate">{session?.user?.email || 'user@suler.com'}</span>
-               </div>
-               <div className="space-y-0.5">
-                  <Link href="/profile" className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all hover:bg-slate-50 text-slate-600">
-                     <UserCircle className="w-4 h-4 text-slate-400" />
-                     <span className="text-[12px] font-bold">My Profile</span>
-                  </Link>
-                  <Link href="/my-payroll" className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all hover:bg-slate-50 text-slate-600">
-                     <Wallet className="w-4 h-4 text-slate-400" />
-                     <span className="text-[12px] font-bold">My Payslips</span>
-                  </Link>
-                  <Link href="/leave" className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all hover:bg-slate-50 text-slate-600">
-                     <Activity className="w-4 h-4 text-slate-400" />
-                     <span className="text-[12px] font-bold">My Leave Requests</span>
-                  </Link>
-                  <Link href="/tasks" className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all hover:bg-slate-50 text-slate-600">
-                     <CheckSquare className="w-4 h-4 text-slate-400" />
-                     <span className="text-[12px] font-bold">My Tasks</span>
-                  </Link>
-                  <Link href="/messages" className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all hover:bg-slate-50 text-slate-600">
-                     <MessageSquare className="w-4 h-4 text-slate-400" />
-                     <span className="text-[12px] font-bold">Messages</span>
-                  </Link>
-                  <Link href="/settings" className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all hover:bg-slate-50 text-slate-600 border-b border-slate-50 pb-3 mb-1">
-                     <Settings className="w-4 h-4 text-slate-400" />
-                     <span className="text-[12px] font-bold">Settings</span>
-                  </Link>
-                  <button onClick={handleSignOut} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all hover:bg-rose-50 text-rose-600 mt-1">
-                     <LogOut className="w-4 h-4 text-rose-500" />
-                     <span className="text-[12px] font-bold">Sign Out</span>
-                  </button>
-               </div>
-            </div>
+            </button>
+
+            {isProfileOpen && (
+              <div
+                role="menu"
+                className="absolute top-full right-0 mt-3 w-[240px] bg-white border border-slate-200 rounded-[20px] shadow-premium p-2 overflow-hidden z-50 animate-in fade-in slide-in-from-top-1 duration-150"
+              >
+                 <div className="px-3 py-3 border-b border-slate-50 mb-1 flex flex-col">
+                    <span className="text-[13px] font-bold text-slate-900 truncate">{session?.user?.name || 'User'}</span>
+                    <span className="text-[10px] font-medium text-slate-400 truncate">{session?.user?.email || 'user@suler.com'}</span>
+                 </div>
+                 <div className="space-y-0.5">
+                    <Link href="/profile" role="menuitem" onClick={() => setIsProfileOpen(false)} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all hover:bg-slate-50 text-slate-600">
+                       <UserCircle className="w-4 h-4 text-slate-400" />
+                       <span className="text-[12px] font-bold">My Profile</span>
+                    </Link>
+                    <Link href="/my-payroll" role="menuitem" onClick={() => setIsProfileOpen(false)} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all hover:bg-slate-50 text-slate-600">
+                       <Wallet className="w-4 h-4 text-slate-400" />
+                       <span className="text-[12px] font-bold">My Payslips</span>
+                    </Link>
+                    <Link href="/leave" role="menuitem" onClick={() => setIsProfileOpen(false)} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all hover:bg-slate-50 text-slate-600">
+                       <Activity className="w-4 h-4 text-slate-400" />
+                       <span className="text-[12px] font-bold">My Leave Requests</span>
+                    </Link>
+                    <Link href="/tasks" role="menuitem" onClick={() => setIsProfileOpen(false)} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all hover:bg-slate-50 text-slate-600">
+                       <CheckSquare className="w-4 h-4 text-slate-400" />
+                       <span className="text-[12px] font-bold">My Tasks</span>
+                    </Link>
+                    <Link href="/messages" role="menuitem" onClick={() => setIsProfileOpen(false)} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all hover:bg-slate-50 text-slate-600">
+                       <MessageSquare className="w-4 h-4 text-slate-400" />
+                       <span className="text-[12px] font-bold">Messages</span>
+                    </Link>
+                    <Link href="/settings" role="menuitem" onClick={() => setIsProfileOpen(false)} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all hover:bg-slate-50 text-slate-600 border-b border-slate-50 pb-3 mb-1">
+                       <Settings className="w-4 h-4 text-slate-400" />
+                       <span className="text-[12px] font-bold">Settings</span>
+                    </Link>
+                    <button
+                      type="button"
+                      role="menuitem"
+                      onClick={() => { setIsProfileOpen(false); handleSignOut(); }}
+                      className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all hover:bg-rose-50 text-rose-600 mt-1"
+                    >
+                       <LogOut className="w-4 h-4 text-rose-500" />
+                       <span className="text-[12px] font-bold">Sign Out</span>
+                    </button>
+                 </div>
+              </div>
+            )}
           </div>
         </div>
       </div>

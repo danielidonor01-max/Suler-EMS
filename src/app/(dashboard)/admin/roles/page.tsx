@@ -1,9 +1,10 @@
 'use client';
 
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useRef, useState } from 'react';
 import useSWR from 'swr';
 import { Shield, ShieldCheck, Users, Check, X, Lock, AlertTriangle, Plus, Pencil, Trash2 } from 'lucide-react';
 import { apiFetcher, apiMutate } from '@/lib/api/fetcher';
+import { useDismiss } from '@/lib/hooks/use-dismiss';
 
 interface Permission { id: string; code: string; name: string }
 interface Role {
@@ -289,6 +290,9 @@ function RoleEditorModal({ mode, role, onClose, onSaved }: {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const dialogRef = useRef<HTMLDivElement>(null);
+  useDismiss(dialogRef, () => { if (!busy) onClose(); }, true);
+
   const nameValid = /^[A-Z][A-Z0-9_]*$/.test(name) && name.length >= 2 && name.length <= 40;
 
   async function save() {
@@ -313,8 +317,8 @@ function RoleEditorModal({ mode, role, onClose, onSaved }: {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-      <div className="bg-white rounded-[24px] w-full max-w-[440px] shadow-premium overflow-hidden">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" role="dialog" aria-modal="true">
+      <div ref={dialogRef} className="bg-white rounded-[24px] w-full max-w-[440px] shadow-premium overflow-hidden">
         <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
           <h2 className="text-[15px] font-bold text-slate-900 tracking-tight">
             {mode === 'create' ? 'Create Role' : 'Rename Role'}
@@ -386,6 +390,9 @@ function DeleteRoleModal({ role, onClose, onDeleted }: {
   const [error, setError] = useState<string | null>(null);
   const hasUsers = role._count.users > 0;
 
+  const dialogRef = useRef<HTMLDivElement>(null);
+  useDismiss(dialogRef, () => { if (!busy) onClose(); }, true);
+
   async function confirm() {
     setBusy(true);
     setError(null);
@@ -399,8 +406,8 @@ function DeleteRoleModal({ role, onClose, onDeleted }: {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-      <div className="bg-white rounded-[24px] w-full max-w-[420px] shadow-premium overflow-hidden">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" role="dialog" aria-modal="true">
+      <div ref={dialogRef} className="bg-white rounded-[24px] w-full max-w-[420px] shadow-premium overflow-hidden">
         <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
           <h2 className="text-[15px] font-bold text-rose-700 tracking-tight">Delete Role</h2>
           <button type="button" onClick={onClose} aria-label="Close" className="w-8 h-8 rounded-md text-slate-400 hover:bg-slate-100 flex items-center justify-center">

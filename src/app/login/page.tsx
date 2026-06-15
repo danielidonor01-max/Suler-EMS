@@ -140,23 +140,28 @@ function LoginContent() {
         </>
       )}
 
-      {/* Governance Verification Tokens */}
-      <div className="mt-12 pt-10 border-t border-slate-50">
-        <div className="flex items-center gap-2 mb-5">
-          <CheckCircle2 className="w-4 h-4 text-emerald-500" />
-          <span className="text-[10px] text-slate-400 font-bold uppercase tracking-[0.15em]">Verified Admin Tokens</span>
-        </div>
-        <div className="space-y-3">
-          <div className="flex items-center justify-between p-4 bg-slate-50/50 rounded-2xl border border-slate-100/50">
-            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">Principal</span>
-            <code className="text-xs text-indigo-600 font-bold">admin@suler.com</code>
+      {/* Dev-only seeded credentials hint. Never rendered in production
+          builds — `NEXT_PUBLIC_SHOW_SEED_CREDENTIALS=true` opts in for
+          short-lived demo deploys (e.g. staging review apps). */}
+      {(process.env.NODE_ENV !== 'production'
+        || process.env.NEXT_PUBLIC_SHOW_SEED_CREDENTIALS === 'true') && (
+        <div className="mt-12 pt-10 border-t border-slate-50">
+          <div className="flex items-center gap-2 mb-5">
+            <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+            <span className="text-[10px] text-slate-400 font-bold uppercase tracking-[0.15em]">Seeded Demo Credentials (dev only)</span>
           </div>
-          <div className="flex items-center justify-between p-4 bg-slate-50/50 rounded-2xl border border-slate-100/50">
-            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">Secret</span>
-            <code className="text-xs text-indigo-600 font-bold">Admin123!</code>
+          <div className="space-y-3">
+            <div className="flex items-center justify-between p-4 bg-slate-50/50 rounded-2xl border border-slate-100/50">
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">Principal</span>
+              <code className="text-xs text-indigo-600 font-bold">admin@suler.com</code>
+            </div>
+            <div className="flex items-center justify-between p-4 bg-slate-50/50 rounded-2xl border border-slate-100/50">
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">Secret</span>
+              <code className="text-xs text-indigo-600 font-bold">Admin123!</code>
+            </div>
           </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }
