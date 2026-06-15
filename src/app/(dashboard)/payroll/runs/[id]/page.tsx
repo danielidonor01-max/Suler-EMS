@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { useParams } from 'next/navigation';
 import useSWR from 'swr';
-import { Send, CheckCircle2, Banknote, ArrowLeft, History, Users } from 'lucide-react';
+import { Send, CheckCircle2, Banknote, ArrowLeft, History, Users, Download } from 'lucide-react';
 import Link from 'next/link';
 import { apiFetcher, apiMutate } from '@/lib/api/fetcher';
 
@@ -79,6 +79,8 @@ export default function PayrollRunDetailPage() {
   const canApprove = data.status === 'REVIEW';
   const canProcess = data.status === 'APPROVED';
   const canCancel = ['DRAFT', 'APPROVED'].includes(data.status);
+  // Register CSV is gated on the API side by run.status ∈ {APPROVED, PROCESSED}.
+  const canDownloadRegister = ['APPROVED', 'PROCESSED'].includes(data.status);
 
   return (
     <div className="p-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -102,29 +104,39 @@ export default function PayrollRunDetailPage() {
             </p>
           </div>
           <div className="flex items-center gap-2">
+            {canDownloadRegister && (
+              <a
+                href={`/api/payroll/runs/${id}/register`}
+                aria-label="Download payroll register CSV"
+                className="h-[40px] px-4 rounded-[12px] bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-[11px] font-bold uppercase tracking-widest flex items-center gap-1.5"
+              >
+                <Download className="w-3.5 h-3.5" />
+                Register CSV
+              </a>
+            )}
             {canSubmit && (
-              <button onClick={() => transition('SUBMIT_FOR_REVIEW')} disabled={busy}
+              <button type="button" onClick={() => transition('SUBMIT_FOR_REVIEW')} disabled={busy}
                 className="h-[40px] px-4 rounded-[12px] bg-amber-600 hover:bg-amber-700 text-white text-[11px] font-bold uppercase tracking-widest flex items-center gap-1.5 disabled:opacity-60">
                 <Send className="w-3.5 h-3.5" />
                 Submit for Review
               </button>
             )}
             {canApprove && (
-              <button onClick={() => transition('APPROVE')} disabled={busy}
+              <button type="button" onClick={() => transition('APPROVE')} disabled={busy}
                 className="h-[40px] px-4 rounded-[12px] bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-bold uppercase tracking-widest flex items-center gap-1.5 disabled:opacity-60">
                 <CheckCircle2 className="w-3.5 h-3.5" />
                 Approve
               </button>
             )}
             {canProcess && (
-              <button onClick={() => transition('PROCESS')} disabled={busy}
+              <button type="button" onClick={() => transition('PROCESS')} disabled={busy}
                 className="h-[40px] px-4 rounded-[12px] bg-slate-900 hover:bg-black text-white text-[11px] font-bold uppercase tracking-widest flex items-center gap-1.5 disabled:opacity-60">
                 <Banknote className="w-3.5 h-3.5" />
                 Process Run
               </button>
             )}
             {canCancel && (
-              <button onClick={() => transition('CANCEL')} disabled={busy}
+              <button type="button" onClick={() => transition('CANCEL')} disabled={busy}
                 className="h-[40px] px-4 rounded-[12px] bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-[11px] font-bold uppercase tracking-widest disabled:opacity-60">
                 Cancel
               </button>

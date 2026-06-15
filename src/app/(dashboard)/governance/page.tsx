@@ -29,10 +29,10 @@ function GovernanceAuditContent() {
   const { addToast } = useToast();
 
   const handleExport = () => {
-    addToast('Generating Immutable Audit Trail...', 'INFO');
-    setTimeout(() => {
-      addToast('Forensic audit registry exported to CSV successfully.', 'SUCCESS');
-    }, 1500);
+    // Trigger a real CSV download against the live audit endpoint. Default
+    // scope = last 90 days, capped at 10k rows (override via query params).
+    addToast('Preparing audit registry CSV…', 'INFO');
+    window.location.href = '/api/audit/export';
   };
   
   // Filtering for high-impact governance events
@@ -78,7 +78,9 @@ function GovernanceAuditContent() {
             </p>
           </div>
 
-          <button 
+          <button
+            type="button"
+            aria-label="Export audit trail as CSV"
             onClick={handleExport}
             className="h-11 px-6 bg-white border border-slate-200 text-slate-600 rounded-xl text-[11px] font-bold uppercase tracking-widest hover:border-slate-300 transition-all flex items-center gap-2 shadow-sm"
           >

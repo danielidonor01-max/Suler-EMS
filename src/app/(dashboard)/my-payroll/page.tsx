@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import useSWR from 'swr';
-import { Banknote, ChevronDown, ChevronRight, Calendar } from 'lucide-react';
+import { Banknote, ChevronDown, ChevronRight, Calendar, Download } from 'lucide-react';
 import { apiFetcher } from '@/lib/api/fetcher';
 
 interface PayslipRow {
@@ -113,6 +113,16 @@ export default function MyPayrollPage() {
                   </button>
                   {open && (
                     <div className="px-6 pb-6 pt-2 grid grid-cols-2 gap-x-8 gap-y-3 text-[13px]">
+                      <div className="col-span-2 flex justify-end">
+                        <a
+                          href={`/api/payroll/me/payslip/${p.id}`}
+                          aria-label={`Download payslip for ${p.run.period}`}
+                          className="inline-flex items-center gap-2 h-[32px] px-3 rounded-[10px] bg-slate-900 hover:bg-black text-white text-[10px] font-bold uppercase tracking-widest"
+                        >
+                          <Download className="w-3.5 h-3.5" />
+                          Download PDF
+                        </a>
+                      </div>
                       <PayslipRowLine label="Basic Salary" value={fmt(p.basicSalary)} />
                       <PayslipRowLine label="Housing" value={fmt(p.housingAllowance)} />
                       <PayslipRowLine label="Transport" value={fmt(p.transportAllowance)} />
