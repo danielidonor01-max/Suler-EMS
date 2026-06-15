@@ -23,9 +23,12 @@ function MessagesContent() {
   const searchParams = useSearchParams();
   const [activeTab, setActiveTab] = useState<'inbox' | 'dm' | 'groups' | 'broadcasts'>('inbox');
 
-  // Broadcast tab: visible only to users with communication:broadcast.
-  // Inbox + Direct + Groups are universal (everyone messages).
+  // Broadcasts tab is ALWAYS visible — everyone in the org receives them.
+  // The compose form inside the tab is what's permission-gated; users
+  // without `communication:broadcast` see the received list with a hint
+  // pointing to who can publish.
   const canBroadcast = checkPermission('communication:broadcast' as any).allowed;
+  void canBroadcast;
 
   // Handle deep linking from URL (e.g. /messages?id=EMP001&name=John)
   useEffect(() => {
@@ -52,7 +55,7 @@ function MessagesContent() {
     { id: 'inbox', label: 'All Inbox', icon: Inbox },
     { id: 'dm', label: 'Direct', icon: User },
     { id: 'groups', label: 'Groups', icon: Users },
-    ...(canBroadcast ? [{ id: 'broadcasts', label: 'Broadcasts', icon: Megaphone }] : []),
+    { id: 'broadcasts', label: 'Broadcasts', icon: Megaphone },
   ];
 
   return (
@@ -66,6 +69,9 @@ function MessagesContent() {
             <div className="space-y-1">
               {tabs.map(tab => (
                 <button
+                  type="button"
+                  aria-label={`Switch to ${tab.label}`}
+                  aria-current={activeTab === tab.id ? 'page' : undefined}
                   key={tab.id}
                   onClick={() => { setActiveTab(tab.id as any); setActiveConversationId(null); }}
                   className={`w-full flex items-center gap-3 px-3 py-3 rounded-xl transition-all ${
@@ -80,10 +86,14 @@ function MessagesContent() {
           </div>
 
           <div className="mt-auto px-3 pb-4">
-             <button className="w-full flex items-center gap-3 px-3 py-3 rounded-xl text-slate-400 hover:bg-slate-800 hover:text-white transition-all">
+             <a
+                href="/preferences"
+                aria-label="Open notification & messaging preferences"
+                className="w-full flex items-center gap-3 px-3 py-3 rounded-xl text-slate-400 hover:bg-slate-800 hover:text-white transition-all"
+             >
                 <Settings className="w-5 h-5 shrink-0" />
                 <span className="hidden md:block text-[13px] font-bold tracking-tight">Preferences</span>
-             </button>
+             </a>
           </div>
         </div>
 

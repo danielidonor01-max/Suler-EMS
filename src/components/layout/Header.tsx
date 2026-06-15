@@ -24,6 +24,7 @@ import { GlobalCommandModal } from '../modals/GlobalCommandModal';
 import { useAccess } from '@/context/AccessContext';
 import { useOrganization } from '@/context/OrganizationContext';
 import { useCommunication } from '@/context/CommunicationContext';
+import { usePreferences } from '@/context/PreferencesContext';
 import { useRouter } from 'next/navigation';
 import { useDismiss } from '@/lib/hooks/use-dismiss';
 
@@ -34,6 +35,7 @@ const Header = ({ onToggleSidebar }: { onToggleSidebar: () => void }) => {
   const { userRole } = useAccess();
   const { currentHub, hubs, switchHub } = useOrganization();
   const { conversations } = useCommunication();
+  const { prefs } = usePreferences();
   const router = useRouter();
   const { data: session } = useSession();
 
@@ -53,7 +55,9 @@ const Header = ({ onToggleSidebar }: { onToggleSidebar: () => void }) => {
     }
   };
 
-  const totalUnread = conversations.reduce((sum, c) => sum + c.unreadCount, 0);
+  const rawUnread = conversations.reduce((sum, c) => sum + c.unreadCount, 0);
+  // Respect the per-user "Unread badge counter" preference.
+  const totalUnread = prefs.messageBadge ? rawUnread : 0;
 
   return (
     <header className="h-[72px] bg-white border-b border-slate-200 flex items-center justify-between px-4 md:px-8 sticky top-0 z-40">
@@ -190,14 +194,28 @@ const Header = ({ onToggleSidebar }: { onToggleSidebar: () => void }) => {
         <div className="flex items-center gap-1.5">
            <button
              type="button"
-             aria-label={`Notifications${totalUnread > 0 ? ` (${totalUnread} unread)` : ''}`}
+             aria-label={`Messages${totalUnread > 0 ? ` (${totalUnread} unread)` : ''}`}
+             onClick={() => router.push('/messages')}
+             className="relative w-10 h-10 flex items-center justify-center rounded-[12px] text-slate-400 hover:text-slate-900 hover:bg-slate-50 transition-all"
+           >
+            <MessageSquare className="w-[18px] h-[18px] stroke-[1.5px]" />
+            {totalUnread > 0 && (
+              <span
+                className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 bg-rose-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center border-2 border-white shadow-sm"
+                aria-hidden="true"
+              >
+                {totalUnread > 99 ? '99+' : totalUnread}
+              </span>
+            )}
+          </button>
+
+          <button
+             type="button"
+             aria-label="Notifications"
              onClick={() => router.push('/notifications')}
              className="relative w-10 h-10 flex items-center justify-center rounded-[12px] text-slate-400 hover:text-slate-900 hover:bg-slate-50 transition-all"
            >
             <Bell className="w-[18px] h-[18px] stroke-[1.5px]" />
-            {totalUnread > 0 && (
-              <div className="absolute top-2.5 right-2.5 w-1.5 h-1.5 bg-indigo-600 rounded-full border-2 border-white" />
-            )}
           </button>
 
           <div className="relative" ref={profileRef}>
@@ -242,9 +260,9 @@ const Header = ({ onToggleSidebar }: { onToggleSidebar: () => void }) => {
                        <MessageSquare className="w-4 h-4 text-slate-400" />
                        <span className="text-[12px] font-bold">Messages</span>
                     </Link>
-                    <Link href="/settings" role="menuitem" onClick={() => setIsProfileOpen(false)} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all hover:bg-slate-50 text-slate-600 border-b border-slate-50 pb-3 mb-1">
+                    <Link href="/preferences" role="menuitem" onClick={() => setIsProfileOpen(false)} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all hover:bg-slate-50 text-slate-600 border-b border-slate-50 pb-3 mb-1">
                        <Settings className="w-4 h-4 text-slate-400" />
-                       <span className="text-[12px] font-bold">Settings</span>
+                       <span className="text-[12px] font-bold">My Preferences</span>
                     </Link>
                     <button
                       type="button"

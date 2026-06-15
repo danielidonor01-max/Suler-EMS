@@ -281,11 +281,13 @@ export const BroadcastPanel = () => {
       {!canPost && receivedBroadcasts.length === 0 && (
         <div className="p-12 border-2 border-dashed border-slate-200 rounded-[24px] flex flex-col items-center justify-center text-center text-[13px] text-slate-500">
           <Megaphone className="w-6 h-6 text-slate-300 mb-3" />
-          No active broadcasts.
+          <p>No active broadcasts.</p>
+          <p className="text-[11px] mt-2 max-w-[280px]">
+            Organization-wide announcements are published by SUPER_ADMIN, HR, and Finance.
+            They&apos;ll appear here automatically when sent.
+          </p>
         </div>
       )}
-
-      {!canPost && receivedBroadcasts.length > 0 && null}
 
       {canPost && (
       <div className="space-y-6 bg-white p-8 rounded-[32px] border border-slate-200 shadow-premium">
