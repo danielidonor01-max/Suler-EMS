@@ -1,11 +1,11 @@
 'use client';
 
-import React, { useMemo, useRef, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import useSWR from 'swr';
 import { Search, Shield, X, AlertTriangle, Lock, UserCircle2, ChevronLeft, ChevronRight, Fingerprint, Loader2 } from 'lucide-react';
 import { apiFetcher, apiMutate } from '@/lib/api/fetcher';
 import { Select } from '@/components/forms/Select';
-import { useDismiss } from '@/lib/hooks/use-dismiss';
+import { useEscapeDismiss } from '@/lib/hooks/use-dismiss';
 
 interface Role { id: string; name: string }
 interface AdminUser {
@@ -274,8 +274,7 @@ function RoleChangeModal({ user, roles, onClose, onSaved }: {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const dialogRef = useRef<HTMLDivElement>(null);
-  useDismiss(dialogRef, () => { if (!busy) onClose(); }, true);
+  useEscapeDismiss(() => { if (!busy) onClose(); }, true);
 
   const changed = roleId !== user.role.id;
   const isLastSuperAdminCandidate =
@@ -294,8 +293,17 @@ function RoleChangeModal({ user, roles, onClose, onSaved }: {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" role="dialog" aria-modal="true">
-      <div ref={dialogRef} className="bg-white rounded-[24px] w-full max-w-[440px] shadow-premium overflow-hidden">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
+      role="dialog"
+      aria-modal="true"
+      onClick={(e) => {
+        // Close only when the click landed on the backdrop itself, not on the
+        // dialog or any portal'd descendant (e.g. the Select dropdown).
+        if (e.target === e.currentTarget && !busy) onClose();
+      }}
+    >
+      <div className="bg-white rounded-[24px] w-full max-w-[440px] shadow-premium overflow-hidden">
         <div className="px-6 py-5 border-b border-slate-100 flex items-center justify-between">
           <div>
             <h2 className="text-[16px] font-bold text-slate-900 tracking-tight">Modify Authority Scope</h2>

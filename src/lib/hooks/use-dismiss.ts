@@ -1,21 +1,20 @@
 'use client';
 
 /**
- * useDismiss — close-on-Escape + click-outside hook.
+ * Dismiss helpers for popovers and modals.
  *
- * Pass a ref to the dismissible element, the `isOpen` state, and the
- * `onDismiss` callback. While open, the hook attaches a document-level
- * mousedown + keydown listener that calls `onDismiss` when the user
- * clicks anywhere outside the element OR hits Escape.
+ *   useDismiss(ref, onDismiss, isOpen)  — Escape + click-outside.
+ *     Use for popovers / dropdowns that have NO portal'd children.
+ *     Listens on document mousedown; if the click target is outside `ref`
+ *     it fires onDismiss.
  *
- * Use for header dropdowns, profile menus, modals built without the
- * shared Modal component, etc. Idempotent across re-renders.
- *
- * @example
- *   const ref = useRef<HTMLDivElement>(null);
- *   const [open, setOpen] = useState(false);
- *   useDismiss(ref, () => setOpen(false), open);
- *   return <div ref={ref}>…</div>;
+ *   useEscapeDismiss(onDismiss, isOpen)  — Escape only.
+ *     Use for MODALS. Modals also have portal'd children (Select, Toast,
+ *     etc.) whose clicks land outside the modal's DOM subtree. The
+ *     mousedown-based outside-click would close the modal as soon as the
+ *     user picks an option in a Select. Use this hook + a backdrop
+ *     `onClick` handler that checks `e.target === e.currentTarget` so
+ *     only clicks on the dimmed area itself close the modal.
  */
 import { RefObject, useEffect } from 'react';
 
@@ -45,4 +44,15 @@ export function useDismiss<T extends HTMLElement>(
       document.removeEventListener('keydown', onKeyDown);
     };
   }, [isOpen, onDismiss, ref]);
+}
+
+export function useEscapeDismiss(onDismiss: () => void, isOpen: boolean): void {
+  useEffect(() => {
+    if (!isOpen) return;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') onDismiss();
+    };
+    document.addEventListener('keydown', onKeyDown);
+    return () => document.removeEventListener('keydown', onKeyDown);
+  }, [isOpen, onDismiss]);
 }
