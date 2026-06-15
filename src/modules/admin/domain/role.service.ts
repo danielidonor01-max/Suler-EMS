@@ -220,8 +220,9 @@ export async function deleteRole(roleId: string) {
 }
 
 /**
- * Used by user-downgrade flows (Phase 7+). Phase 6 doesn't expose user role
- * change UI but the invariant is checked here so any future caller is safe.
+ * Used by user-downgrade flows. The invariant is checked here so any caller
+ * is safe; the endpoint that actually changes the user.roleId is
+ * `changeUserRole` below.
  */
 export async function assertCanDemoteSuperAdmin(userId: string) {
   const user = await prisma.user.findUniqueOrThrow({
@@ -240,4 +241,70 @@ export async function assertCanDemoteSuperAdmin(userId: string) {
       409,
     );
   }
+}
+
+/**
+ * Reassign a user to a different role. Enforces:
+ *   C4 — Cannot demote the last active SUPER_ADMIN.
+ *   §11 — User.version bumped so the affected user picks up new permissions
+ *         on the next session-version poll without re-login.
+ *
+ * Caller's role:manage permission is checked at the route layer.
+ */
+export async function changeUserRole(userId: string, newRoleId: string, actor: Actor) {
+  const [user, newRole] = await Promise.all([
+    prisma.user.findUniqueOrThrow({
+      where: { id: userId },
+      include: { role: { select: { id: true, name: true } } },
+    }),
+    prisma.role.findUniqueOrThrow({ where: { id: newRoleId }, select: { id: true, name: true } }),
+  ]);
+
+  if (user.role.id === newRole.id) {
+    return user; // idempotent — same role, no audit churn
+  }
+
+  // C4: if the user is currently SUPER_ADMIN and the new role is not, we are
+  // demoting them. Assert at least one OTHER active SUPER_ADMIN exists.
+  if (user.role.name === 'SUPER_ADMIN' && newRole.name !== 'SUPER_ADMIN') {
+    await assertCanDemoteSuperAdmin(userId);
+  }
+
+  return prisma.$transaction(async (tx) => {
+    const updated = await tx.user.update({
+      where: { id: userId },
+      data: { roleId: newRole.id, version: { increment: 1 } },
+      include: { role: { select: { id: true, name: true } } },
+    });
+
+    await tx.systemEvent.create({
+      data: {
+        type: 'USER_ROLE_CHANGED',
+        source: 'role-service',
+        actorId: actor.id,
+        resourceId: userId,
+        resourceType: 'User',
+        payload: {
+          fromRole: user.role.name,
+          toRole: newRole.name,
+          actorRole: actor.role,
+        },
+      },
+    });
+    await tx.securityEvent.create({
+      data: {
+        type: 'PERMISSION_DENIED', // closest existing type; details in description
+        description: `[RBAC] User ${user.id} role changed: ${user.role.name} → ${newRole.name} by ${actor.name}`,
+        userId: actor.id,
+        metadata: {
+          event: 'USER_ROLE_CHANGED',
+          targetUserId: userId,
+          fromRole: user.role.name,
+          toRole: newRole.name,
+        },
+      },
+    });
+
+    return updated;
+  });
 }

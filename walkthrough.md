@@ -65,7 +65,7 @@ Prior phase summaries (signed off):
 
 ```text
 TODO after run:
-1. Login as admin@suler.com  →  navigate to /admin/ecc
+1. Login as admin@suler.com  →  navigate to /admin/roles
 2. Grant 'finance:view' to EMPLOYEE role
 3. Verify: SystemEvent + SecurityEvent created
 4. Verify: every User with EMPLOYEE role has User.version bumped
@@ -77,7 +77,7 @@ TODO after run:
 
 ```text
 TODO after run:
-1. Login as admin@suler.com  →  /admin/ecc  →  pick MANAGER
+1. Login as admin@suler.com  →  /admin/roles  →  pick MANAGER
 2. Revoke 'leave:approve'
 3. Verify: existing leave requests in MANAGER's queue still visible
 4. But: trying to APPROVE returns 403 UNAUTHORIZED_WORKFLOW_ACTION
@@ -89,7 +89,9 @@ TODO after run:
 TODO after run:
 1. Unauthenticated request to /finance  →  302 → /login
 2. Login as employee@suler.com
-3. Request /admin/ecc  →  403 (no role:manage permission)
+3. Request /admin/roles  →  302 → /forbidden?path=/admin/roles (no role:manage permission)
+   (proxy.ts gates server-side; the response is a redirect to the
+   forbidden landing page, not a literal 403)
 4. Request /finance  →  200 (has finance:view)
 5. Request /api/finance/budgets without session  →  401 (handled by withAuth, not middleware)
 ```
@@ -99,7 +101,7 @@ TODO after run:
 ```text
 TODO after run:
 1. Login as admin@suler.com
-2. Open /admin/ecc, pick SUPER_ADMIN role
+2. Open /admin/roles, pick SUPER_ADMIN role
 3. Attempt to revoke 'role:manage'
 4. Expected: 409 SELF_LOCKOUT_PREVENTED
 ```
