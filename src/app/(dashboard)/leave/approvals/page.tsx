@@ -2,7 +2,7 @@
 
 import React, { useMemo, useState } from 'react';
 import useSWR from 'swr';
-import { CheckCircle2, XCircle, Clock, ShieldCheck } from 'lucide-react';
+import { CheckCircle2, XCircle, Clock, ShieldCheck, Download } from 'lucide-react';
 import { apiFetcher, apiMutate } from '@/lib/api/fetcher';
 
 interface LeaveRow {
@@ -75,9 +75,19 @@ export default function LeaveApprovalsPage() {
   return (
     <div className="p-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="max-w-6xl mx-auto space-y-6">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Leave Approvals</h1>
-          <p className="text-slate-500 text-[14px] mt-2">Pending leave requests for your review. Approves are atomic and audited.</p>
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Leave Approvals</h1>
+            <p className="text-slate-500 text-[14px] mt-2">Pending leave requests for your review. Approves are atomic and audited.</p>
+          </div>
+          <a
+            href="/api/leave/report"
+            aria-label="Download leave report CSV (last 12 months)"
+            className="h-[40px] px-4 rounded-[12px] bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-[11px] font-bold uppercase tracking-widest flex items-center gap-1.5 shrink-0"
+          >
+            <Download className="w-3.5 h-3.5" />
+            Report CSV
+          </a>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

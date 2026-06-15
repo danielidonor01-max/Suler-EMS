@@ -107,6 +107,19 @@ export default function FinanceDashboard() {
           </div>
         );
       }
+    },
+    {
+      header: "Report",
+      accessor: "id",
+      render: (_val: string, b: Budget) => (
+        <a
+          href={`/api/finance/budgets/${b.id}/report`}
+          aria-label={`Download budget report for ${b.name}`}
+          className="inline-flex items-center gap-1.5 h-[30px] px-2.5 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-[10px] font-bold uppercase tracking-widest"
+        >
+          PDF
+        </a>
+      )
     }
   ];
 
