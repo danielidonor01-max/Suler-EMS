@@ -13,6 +13,7 @@ COPY . .
 # Generate Prisma Client
 RUN npx prisma generate
 # Build the application
+ENV SKIP_MIGRATION=true
 RUN npm run build
 
 # --- Stage 3: Runner ---
