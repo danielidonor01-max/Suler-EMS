@@ -1,34 +1,141 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from 'react';
-import { 
-  Search, 
-  Send, 
-  Paperclip, 
-  MoreVertical, 
-  Phone, 
-  Video, 
-  User, 
-  Users, 
-  Megaphone, 
+import React, { useMemo, useRef, useState, useEffect } from 'react';
+import useSWR from 'swr';
+import {
+  Search,
+  Send,
+  Paperclip,
+  MoreVertical,
+  Phone,
+  Video,
+  User,
+  Users,
+  Megaphone,
   CheckCheck,
   Plus,
   ArrowLeft,
   ShieldAlert,
   MessageSquare,
+  X,
   Lock
 } from 'lucide-react';
 import { Conversation, Message, useCommunication } from '@/context/CommunicationContext';
 import { useAccess } from '@/context/AccessContext';
+import { useEscapeDismiss } from '@/lib/hooks/use-dismiss';
+import { apiFetcher } from '@/lib/api/fetcher';
 import { format } from 'date-fns';
 
-export const ConversationList = ({ onSelect, activeId, filterTab }: { 
-  onSelect: (id: string) => void, 
+interface Contact {
+  id: string;
+  name: string;
+  email: string;
+  role: { name: string };
+  employee?: {
+    staffId: string;
+    jobTitle: string;
+    branch: string | null;
+    department: { name: string } | null;
+  } | null;
+}
+
+function initials(name: string) {
+  return name.split(' ').filter(Boolean).slice(0, 2).map(p => p[0]).join('').toUpperCase();
+}
+
+function NewMessageModal({ onClose, onPick }: { onClose: () => void; onPick: (c: Contact) => void }) {
+  useEscapeDismiss(onClose, true);
+  const [query, setQuery] = useState('');
+  const { data: contacts, error, isLoading } = useSWR<Contact[]>('/api/communication/contacts', apiFetcher);
+
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return contacts ?? [];
+    return (contacts ?? []).filter(c =>
+      c.name.toLowerCase().includes(q)
+      || c.email.toLowerCase().includes(q)
+      || c.employee?.staffId?.toLowerCase().includes(q)
+      || c.employee?.jobTitle?.toLowerCase().includes(q)
+    );
+  }, [contacts, query]);
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
+      role="dialog"
+      aria-modal="true"
+      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
+    >
+      <div className="bg-white rounded-[24px] w-full max-w-[480px] shadow-premium overflow-hidden flex flex-col max-h-[80vh]">
+        <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between gap-3">
+          <div>
+            <h2 className="text-[15px] font-bold text-slate-900 tracking-tight">New Message</h2>
+            <p className="text-[11px] text-slate-500 mt-0.5">Pick a teammate to start a direct conversation.</p>
+          </div>
+          <button type="button" onClick={onClose} aria-label="Close" className="w-8 h-8 rounded-md text-slate-400 hover:bg-slate-100 flex items-center justify-center">
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+
+        <div className="px-5 py-4 border-b border-slate-100">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+            <input
+              autoFocus
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Search by name, email, staff ID, or job title…"
+              aria-label="Search contacts"
+              className="w-full h-10 pl-9 pr-3 rounded-[10px] border border-slate-200 text-[13px] text-slate-900 bg-white focus:outline-none focus:border-indigo-500"
+            />
+          </div>
+        </div>
+
+        <div className="flex-1 overflow-y-auto custom-scrollbar">
+          {isLoading && <div className="px-6 py-10 text-center text-[12px] text-slate-500">Loading contacts…</div>}
+          {error && <div className="px-6 py-10 text-center text-[12px] text-rose-700">{error.message}</div>}
+          {!isLoading && !error && filtered.length === 0 && (
+            <div className="px-6 py-10 text-center text-[12px] text-slate-500">No teammates match.</div>
+          )}
+          <div className="divide-y divide-slate-100">
+            {filtered.map(c => (
+              <button
+                key={c.id}
+                type="button"
+                onClick={() => onPick(c)}
+                className="w-full px-5 py-3 flex items-center gap-3 text-left hover:bg-slate-50"
+              >
+                <div className="w-10 h-10 rounded-lg bg-slate-900 text-white flex items-center justify-center text-[11px] font-bold shrink-0">
+                  {initials(c.name)}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="text-[13px] font-bold text-slate-900 truncate">{c.name}</span>
+                    <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-widest bg-indigo-50 text-indigo-700">{c.role.name}</span>
+                  </div>
+                  <div className="text-[11px] text-slate-500 truncate">
+                    {c.employee?.jobTitle ?? c.email}
+                    {c.employee?.department?.name ? ` · ${c.employee.department.name}` : ''}
+                    {c.employee?.branch ? ` · ${c.employee.branch}` : ''}
+                  </div>
+                </div>
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export const ConversationList = ({ onSelect, activeId, filterTab }: {
+  onSelect: (id: string) => void,
   activeId: string | null,
   filterTab: 'inbox' | 'dm' | 'groups' | 'broadcasts'
 }) => {
-  const { conversations } = useCommunication();
+  const { conversations, openDMWithUser } = useCommunication();
   const [search, setSearch] = useState('');
+  const [showNewMessage, setShowNewMessage] = useState(false);
 
   const filtered = conversations.filter(c => {
     const matchesSearch = c.title.toLowerCase().includes(search.toLowerCase());
@@ -39,10 +146,25 @@ export const ConversationList = ({ onSelect, activeId, filterTab }: {
     return matchesSearch;
   });
 
+  const showNewMessageButton = filterTab === 'inbox' || filterTab === 'dm';
+
   return (
     <div className="flex flex-col h-full bg-white border-r border-slate-200 w-full md:w-[320px] shrink-0">
       <div className="p-4 border-b border-slate-100 space-y-4">
-        <h2 className="text-xl font-bold text-slate-900 tracking-tight">Messages</h2>
+        <div className="flex items-center justify-between gap-2">
+          <h2 className="text-xl font-bold text-slate-900 tracking-tight">Messages</h2>
+          {showNewMessageButton && (
+            <button
+              type="button"
+              aria-label="New direct message"
+              onClick={() => setShowNewMessage(true)}
+              className="inline-flex items-center gap-1 h-8 px-2.5 rounded-[10px] bg-slate-900 hover:bg-black text-white text-[10px] font-bold uppercase tracking-widest"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              New
+            </button>
+          )}
+        </div>
         <div className="relative group">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 transition-colors group-focus-within:text-indigo-500" />
           <input
@@ -55,7 +177,29 @@ export const ConversationList = ({ onSelect, activeId, filterTab }: {
           />
         </div>
       </div>
+      {showNewMessage && (
+        <NewMessageModal
+          onClose={() => setShowNewMessage(false)}
+          onPick={(c) => {
+            setShowNewMessage(false);
+            openDMWithUser(c.id, c.name);
+          }}
+        />
+      )}
       <div className="flex-1 overflow-y-auto p-2 space-y-1 custom-scrollbar">
+        {filtered.length === 0 && showNewMessageButton && (
+          <div className="px-3 py-12 text-center text-[12px] text-slate-400 space-y-2">
+            <MessageSquare className="w-6 h-6 mx-auto text-slate-300" />
+            <p>No conversations yet.</p>
+            <button
+              type="button"
+              onClick={() => setShowNewMessage(true)}
+              className="inline-flex items-center gap-1 px-3 py-1.5 rounded-md text-[11px] font-bold uppercase tracking-widest text-indigo-600 hover:bg-indigo-50"
+            >
+              <Plus className="w-3 h-3" /> Start one
+            </button>
+          </div>
+        )}
         {filtered.map(c => (
           <button
             key={c.id}

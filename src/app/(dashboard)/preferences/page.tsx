@@ -1,9 +1,33 @@
 'use client';
 
-import React, { useState } from 'react';
-import { Bell, MessageSquare, Volume2, Mail, Palette, KeyRound, CheckCircle2, AlertCircle, Save } from 'lucide-react';
+import React, { useRef, useState } from 'react';
+import { Bell, MessageSquare, Volume2, Mail, Palette, KeyRound, CheckCircle2, AlertCircle, Save, RotateCcw } from 'lucide-react';
 import { usePreferences, ThemePref, EmailDigestPref } from '@/context/PreferencesContext';
 import { apiMutate } from '@/lib/api/fetcher';
+
+/** Brief inline "Saved" indicator that fades out. Bypasses ToastContext so it
+ *  still appears even if the user has muted toasts in this same screen. */
+function useSavedFlash(): { savedKey: string | null; flash: (key: string) => void } {
+  const [savedKey, setSavedKey] = useState<string | null>(null);
+  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const flash = (key: string) => {
+    setSavedKey(key);
+    if (timer.current) clearTimeout(timer.current);
+    timer.current = setTimeout(() => setSavedKey(null), 1500);
+  };
+  return { savedKey, flash };
+}
+
+function SavedTick({ visible }: { visible: boolean }) {
+  return (
+    <span
+      aria-live="polite"
+      className={`inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-emerald-600 transition-opacity ${visible ? 'opacity-100' : 'opacity-0'}`}
+    >
+      <CheckCircle2 className="w-3 h-3" /> Saved
+    </span>
+  );
+}
 
 /**
  * Personal preferences — distinct from /settings (which is admin-only
@@ -19,6 +43,18 @@ import { apiMutate } from '@/lib/api/fetcher';
 
 export default function PreferencesPage() {
   const { prefs, setPref, resetAll, ready } = usePreferences();
+  const { savedKey, flash } = useSavedFlash();
+  const [resetTick, setResetTick] = useState(false);
+
+  function setAndFlash<K extends keyof typeof prefs>(key: K, value: typeof prefs[K]) {
+    setPref(key, value);
+    flash(String(key));
+  }
+  function handleReset() {
+    resetAll();
+    setResetTick(true);
+    setTimeout(() => setResetTick(false), 2000);
+  }
 
   if (!ready) {
     return (
@@ -44,10 +80,10 @@ export default function PreferencesPage() {
 
         {/* Appearance */}
         <Section icon={Palette} title="Appearance">
-          <RowGroup label="Theme">
+          <RowGroup label="Theme" tick={<SavedTick visible={savedKey === 'theme'} />}>
             <Segmented<ThemePref>
               value={prefs.theme}
-              onChange={(v) => setPref('theme', v)}
+              onChange={(v) => setAndFlash('theme', v)}
               options={[
                 { value: 'light',  label: 'Light' },
                 { value: 'dark',   label: 'Dark' },
@@ -64,30 +100,33 @@ export default function PreferencesPage() {
             title="Unread badge counter"
             description="Show a red counter on the messages icon in the header."
             checked={prefs.messageBadge}
-            onChange={(v) => setPref('messageBadge', v)}
+            onChange={(v) => setAndFlash('messageBadge', v)}
+            tick={<SavedTick visible={savedKey === 'messageBadge'} />}
           />
           <ToggleRow
             icon={MessageSquare}
             title="Toast notifications"
             description="Pop-up confirmations for actions like sent messages, saved settings, and broadcasts."
             checked={prefs.toastsEnabled}
-            onChange={(v) => setPref('toastsEnabled', v)}
+            onChange={(v) => setAndFlash('toastsEnabled', v)}
+            tick={<SavedTick visible={savedKey === 'toastsEnabled'} />}
           />
           <ToggleRow
             icon={Volume2}
             title="Broadcast sounds"
             description="Play a soft tone when an organization-wide broadcast arrives."
             checked={prefs.broadcastSounds}
-            onChange={(v) => setPref('broadcastSounds', v)}
+            onChange={(v) => setAndFlash('broadcastSounds', v)}
+            tick={<SavedTick visible={savedKey === 'broadcastSounds'} />}
           />
         </Section>
 
         {/* Email digest */}
         <Section icon={Mail} title="Email Digest">
-          <RowGroup label="Send me a summary email">
+          <RowGroup label="Send me a summary email" tick={<SavedTick visible={savedKey === 'emailDigest'} />}>
             <Segmented<EmailDigestPref>
               value={prefs.emailDigest}
-              onChange={(v) => setPref('emailDigest', v)}
+              onChange={(v) => setAndFlash('emailDigest', v)}
               options={[
                 { value: 'off',    label: 'Off' },
                 { value: 'daily',  label: 'Daily' },
@@ -106,12 +145,18 @@ export default function PreferencesPage() {
         </Section>
 
         {/* Reset */}
-        <div className="flex justify-end">
+        <div className="flex items-center justify-end gap-3">
+          {resetTick && (
+            <span aria-live="polite" className="inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-widest text-emerald-600">
+              <CheckCircle2 className="w-3.5 h-3.5" /> Reset to defaults
+            </span>
+          )}
           <button
             type="button"
-            onClick={resetAll}
-            className="h-9 px-4 rounded-[10px] text-[11px] font-bold uppercase tracking-widest text-slate-500 hover:bg-slate-100"
+            onClick={handleReset}
+            className="inline-flex items-center gap-1.5 h-9 px-4 rounded-[10px] text-[11px] font-bold uppercase tracking-widest text-slate-500 hover:bg-slate-100 border border-slate-200"
           >
+            <RotateCcw className="w-3.5 h-3.5" />
             Reset preferences to defaults
           </button>
         </div>
@@ -136,21 +181,25 @@ function Section({ icon: Icon, title, children }: {
   );
 }
 
-function RowGroup({ label, children }: { label: string; children: React.ReactNode }) {
+function RowGroup({ label, children, tick }: { label: string; children: React.ReactNode; tick?: React.ReactNode }) {
   return (
     <div className="flex items-center justify-between gap-4 flex-wrap">
-      <p className="text-[12px] font-bold text-slate-700">{label}</p>
+      <div className="flex items-center gap-3">
+        <p className="text-[12px] font-bold text-slate-700">{label}</p>
+        {tick}
+      </div>
       <div>{children}</div>
     </div>
   );
 }
 
-function ToggleRow({ icon: Icon, title, description, checked, onChange }: {
+function ToggleRow({ icon: Icon, title, description, checked, onChange, tick }: {
   icon: React.ComponentType<{ className?: string }>;
   title: string;
   description: string;
   checked: boolean;
   onChange: (v: boolean) => void;
+  tick?: React.ReactNode;
 }) {
   return (
     <div className="flex items-start gap-4">
@@ -158,7 +207,10 @@ function ToggleRow({ icon: Icon, title, description, checked, onChange }: {
         <Icon className="w-4 h-4" />
       </div>
       <div className="flex-1 min-w-0">
-        <p className="text-[13px] font-bold text-slate-900">{title}</p>
+        <div className="flex items-center gap-2 flex-wrap">
+          <p className="text-[13px] font-bold text-slate-900">{title}</p>
+          {tick}
+        </div>
         <p className="text-[11px] text-slate-500 mt-0.5 leading-relaxed">{description}</p>
       </div>
       <button

@@ -111,7 +111,10 @@ export function PreferencesProvider({ children }: { children: ReactNode }) {
     };
     const apply = () => {
       const effective = resolve(prefs.theme);
-      root.dataset.theme = effective;
+      // `data-theme` attr on <html> is the canonical signal — globals.css
+      // overrides body + workspace-main background under [data-theme="dark"].
+      // `dark` class kept for any future Tailwind dark: variant usage.
+      root.setAttribute('data-theme', effective);
       root.classList.toggle('dark', effective === 'dark');
     };
     apply();

@@ -30,6 +30,7 @@ import {
   BarChart3,
   Sparkles,
   Database,
+  Plug,
   Bell,
   FileBarChart2,
   Cpu,
@@ -100,11 +101,15 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle }) => {
     { name: 'Audit Registry', icon: History, href: '/governance', permission: Permissions.AUDIT_VIEW },
   ].filter(m => !m.permission || checkPermission(m.permission as any).allowed);
 
-  const settingSubModules = [
-    { name: 'Compliance & Tax', href: '/settings/compliance', permission: Permissions.SETTINGS_MANAGE },
-    { name: 'Security', href: '/settings/security', permission: Permissions.SECURITY_MANAGE },
-    { name: 'Integrations', href: '/settings/integrations', permission: Permissions.SECURITY_MANAGE },
-    { name: 'Data Management', href: '/settings/data', permission: Permissions.DATA_MANAGE },
+  // System Control modules — flat list (no parent "Global Settings"
+  // entry; that was a redundant hub that just linked to the same four
+  // pages). Icons match the visual rhythm of governance / operations /
+  // accounts so this section reads consistently.
+  const systemControlModules = [
+    { name: 'Compliance & Tax',  icon: ShieldCheck, href: '/settings/compliance',   permission: Permissions.SETTINGS_MANAGE },
+    { name: 'Security',          icon: Lock,        href: '/settings/security',     permission: Permissions.SECURITY_MANAGE },
+    { name: 'Integrations',      icon: Plug,        href: '/settings/integrations', permission: Permissions.SETTINGS_MANAGE },
+    { name: 'Data Management',   icon: Database,    href: '/settings/data',         permission: Permissions.DATA_MANAGE },
   ].filter(m => !m.permission || checkPermission(m.permission as any).allowed);
 
   return (
@@ -203,20 +208,13 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle }) => {
             )}
             
             <div className="space-y-1">
-               <SidebarLink 
-                 item={{ name: 'Global Settings', icon: Settings, href: '/settings' }} 
-                 isActive={pathname === '/settings'} 
-                 isCollapsed={isCollapsed} 
-               />
-               {!isCollapsed && settingSubModules.map(item => (
-                 <Link 
-                   key={item.name}
-                   href={item.href}
-                   className={`flex items-center gap-3.5 px-4 py-2 rounded-xl transition-all ${pathname === item.href ? 'text-indigo-400 bg-indigo-500/5' : 'text-slate-500 hover:text-slate-300'}`}
-                 >
-                    <div className="w-1.5 h-1.5 rounded-full bg-current opacity-20" />
-                    <span className="text-[11px] font-bold tracking-tight uppercase">{item.name}</span>
-                 </Link>
+               {systemControlModules.map(item => (
+                 <SidebarLink
+                   key={item.href}
+                   item={item}
+                   isActive={pathname === item.href}
+                   isCollapsed={isCollapsed}
+                 />
                ))}
             </div>
           </div>
