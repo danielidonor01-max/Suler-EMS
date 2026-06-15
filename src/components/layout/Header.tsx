@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useSession, signOut } from 'next-auth/react';
 import {
@@ -43,6 +43,18 @@ const Header = ({ onToggleSidebar }: { onToggleSidebar: () => void }) => {
   const profileRef = useRef<HTMLDivElement>(null);
   useDismiss(hubRef, () => setIsHubOpen(false), isHubOpen);
   useDismiss(profileRef, () => setIsProfileOpen(false), isProfileOpen);
+
+  // Global Cmd/Ctrl+K opens the command palette from anywhere in the app.
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        setIsCommandModalOpen(prev => !prev);
+      }
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, []);
 
   const handleSignOut = async () => {
     // signOut(redirect:false) clears the cookie server-side and returns
@@ -154,15 +166,17 @@ const Header = ({ onToggleSidebar }: { onToggleSidebar: () => void }) => {
           </div>
         </div>
 
-        <div className="hidden lg:relative lg:max-w-[360px] lg:w-full lg:group lg:flex lg:items-center">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300 transition-colors group-focus-within:text-slate-900" />
-          <input
-            type="text"
-            aria-label="Search operational data"
-            placeholder="Search operational data..."
-            className="w-full bg-slate-50 border border-slate-200 focus:border-indigo-200 focus:bg-white rounded-[12px] py-2.5 pl-12 pr-10 text-[13px] font-medium text-slate-900 placeholder:text-slate-400 transition-all outline-none"
-          />
-          <div className="absolute right-3.5 top-1/2 -translate-y-1/2 flex items-center gap-1 px-1.5 py-0.5 bg-white border border-slate-200 rounded text-[9px] font-bold text-slate-400">
+        <div className="hidden lg:flex relative max-w-[520px] w-full items-center group">
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300 transition-colors group-hover:text-slate-600" />
+          <button
+            type="button"
+            aria-label="Open global search and quick actions"
+            onClick={() => setIsCommandModalOpen(true)}
+            className="w-full bg-slate-50 hover:bg-white border border-slate-200 hover:border-indigo-200 rounded-[12px] py-2.5 pl-12 pr-16 text-[13px] font-medium text-slate-400 hover:text-slate-900 transition-all outline-none text-left cursor-text"
+          >
+            Search operational data, jump to a page…
+          </button>
+          <div className="absolute right-3.5 top-1/2 -translate-y-1/2 flex items-center gap-1 px-1.5 py-0.5 bg-white border border-slate-200 rounded text-[9px] font-bold text-slate-400 pointer-events-none">
              <Command className="w-2.5 h-2.5" />
              K
           </div>
