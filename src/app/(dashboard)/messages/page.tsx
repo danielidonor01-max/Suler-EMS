@@ -13,13 +13,19 @@ import {
 } from 'lucide-react';
 import { RouteGuard } from '@/components/common/RouteGuard';
 import { useCommunication } from '@/context/CommunicationContext';
+import { useAccess } from '@/context/AccessContext';
 import { ConversationList, ChatWindow, BroadcastPanel } from '@/components/messaging/ChatComponents';
 import { useSearchParams } from 'next/navigation';
 
 function MessagesContent() {
-  const { activeConversationId, setActiveConversationId, conversations, openDMWithUser, openGroupChat } = useCommunication();
+  const { activeConversationId, setActiveConversationId, openDMWithUser, openGroupChat } = useCommunication();
+  const { checkPermission } = useAccess();
   const searchParams = useSearchParams();
   const [activeTab, setActiveTab] = useState<'inbox' | 'dm' | 'groups' | 'broadcasts'>('inbox');
+
+  // Broadcast tab: visible only to users with communication:broadcast.
+  // Inbox + Direct + Groups are universal (everyone messages).
+  const canBroadcast = checkPermission('communication:broadcast' as any).allowed;
 
   // Handle deep linking from URL (e.g. /messages?id=EMP001&name=John)
   useEffect(() => {
@@ -46,7 +52,7 @@ function MessagesContent() {
     { id: 'inbox', label: 'All Inbox', icon: Inbox },
     { id: 'dm', label: 'Direct', icon: User },
     { id: 'groups', label: 'Groups', icon: Users },
-    { id: 'broadcasts', label: 'Broadcasts', icon: Megaphone },
+    ...(canBroadcast ? [{ id: 'broadcasts', label: 'Broadcasts', icon: Megaphone }] : []),
   ];
 
   return (

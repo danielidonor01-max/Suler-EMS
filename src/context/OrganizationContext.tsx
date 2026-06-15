@@ -41,12 +41,23 @@ interface OrganizationContextType {
 
 const OrganizationContext = createContext<OrganizationContextType | undefined>(undefined);
 
+// Names align with the seed's Employee.branch values so filters
+// (employees/finance/payroll) match. Bump the storage key below if you
+// change this list — stale localStorage caches will otherwise keep the
+// previous names and break hub-scoped filtering.
 const SEEDED_HUBS: Hub[] = [
-  { id: 'HUB-00', name: 'All Regions', geography: 'Global Organization', category: 'Enterprise View', status: 'ACTIVE', departments: 25, staff: 1280, _v: 1 },
-  { id: 'HUB-01', name: 'Lagos HQ', geography: 'Nigeria (South-West)', category: 'Primary HQ', status: 'ACTIVE', departments: 12, staff: 840, _v: 1 },
-  { id: 'HUB-02', name: 'Abuja Operations', geography: 'Nigeria (North-Central)', category: 'Regional Operations', status: 'ACTIVE', departments: 8, staff: 320, _v: 1 },
-  { id: 'HUB-03', name: 'Benin Branch', geography: 'Nigeria (South-South)', category: 'Satellite Branch', status: 'ACTIVE', departments: 5, staff: 120, _v: 1 },
+  { id: 'HUB-00', name: 'All Regions',    geography: 'Global Organization',    category: 'Enterprise View',  status: 'ACTIVE', departments: 3,  staff: 25, _v: 2 },
+  { id: 'HUB-01', name: 'Lagos',          geography: 'Nigeria (South-West)',    category: 'Primary HQ',       status: 'ACTIVE', departments: 1,  staff: 14, _v: 2 },
+  { id: 'HUB-02', name: 'Abuja',          geography: 'Nigeria (North-Central)', category: 'Regional Ops',     status: 'ACTIVE', departments: 1,  staff: 5,  _v: 2 },
+  { id: 'HUB-03', name: 'Port Harcourt',  geography: 'Nigeria (South-South)',   category: 'Logistics Branch', status: 'ACTIVE', departments: 1,  staff: 6,  _v: 2 },
 ];
+
+// Bumped to wipe pre-fix `Lagos HQ` caches.
+const STORAGE_KEYS = {
+  hubs: 'suler_hubs_v2',
+  depts: 'suler_depts_v2',
+  active: 'suler_active_hub_v2',
+} as const;
 
 const SEEDED_DEPTS: Department[] = [
   { id: 'DEPT-01', name: 'Executive Management', lead: 'Chinedu Okoro', reportingLine: 'Board', parentHub: 'Lagos HQ', staff: 12, _v: 1 },
@@ -61,36 +72,52 @@ import { useAccess } from './AccessContext';
 export const OrganizationProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [hubs, setHubs] = useState<Hub[]>([]);
   const [departments, setDepartments] = useState<Department[]>([]);
-  const [currentHub, setCurrentHubState] = useState('Lagos HQ');
+  // Default to All Regions so the dashboard shows the full org until the
+  // user explicitly narrows scope. This also matches the seed's mix of
+  // Lagos / Abuja / Port Harcourt staff — narrowing too early hides data.
+  const [currentHub, setCurrentHubState] = useState('All Regions');
   const [history, setHistory] = useState<{hubs: Hub[], depts: Department[]}[]>([]);
   const { pushActivity } = useActivity();
   const { userRole } = useAccess();
 
   useEffect(() => {
     const loadOrg = () => {
-      const savedHubs = localStorage.getItem('suler_hubs');
-      const savedDepts = localStorage.getItem('suler_depts');
-      const savedActive = localStorage.getItem('suler_active_hub');
-      
+      const savedHubs = localStorage.getItem(STORAGE_KEYS.hubs);
+      const savedDepts = localStorage.getItem(STORAGE_KEYS.depts);
+      const savedActive = localStorage.getItem(STORAGE_KEYS.active);
+
       if (savedHubs) setHubs(JSON.parse(savedHubs));
       else {
         setHubs(SEEDED_HUBS);
-        localStorage.setItem('suler_hubs', JSON.stringify(SEEDED_HUBS));
+        localStorage.setItem(STORAGE_KEYS.hubs, JSON.stringify(SEEDED_HUBS));
       }
 
       if (savedDepts) setDepartments(JSON.parse(savedDepts));
       else {
         setDepartments(SEEDED_DEPTS);
-        localStorage.setItem('suler_depts', JSON.stringify(SEEDED_DEPTS));
+        localStorage.setItem(STORAGE_KEYS.depts, JSON.stringify(SEEDED_DEPTS));
       }
 
-      if (savedActive) setCurrentHubState(savedActive);
+      // Only honor the saved active hub if it resolves to a hub in the
+      // current canonical list; otherwise reset to the safe default so a
+      // stale `Lagos HQ` cache doesn't strand the user looking at an
+      // empty workforce table.
+      if (savedActive && SEEDED_HUBS.some(h => h.name === savedActive)) {
+        setCurrentHubState(savedActive);
+      }
+
+      // Best-effort cleanup of pre-v2 keys (idempotent, swallows missing).
+      try {
+        localStorage.removeItem('suler_hubs');
+        localStorage.removeItem('suler_depts');
+        localStorage.removeItem('suler_active_hub');
+      } catch { /* private mode etc. */ }
     };
 
     loadOrg();
 
     const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === 'suler_hubs' || e.key === 'suler_depts' || e.key === 'suler_active_hub') {
+      if (e.key === STORAGE_KEYS.hubs || e.key === STORAGE_KEYS.depts || e.key === STORAGE_KEYS.active) {
         loadOrg();
       }
     };
@@ -103,7 +130,7 @@ export const OrganizationProvider: React.FC<{ children: ReactNode }> = ({ childr
     const hub = hubs.find(h => h.id === id);
     if (hub) {
       setCurrentHubState(hub.name);
-      localStorage.setItem('suler_active_hub', hub.name);
+      localStorage.setItem(STORAGE_KEYS.active, hub.name);
       
       pushActivity({
         type: 'SYSTEM',
@@ -114,7 +141,7 @@ export const OrganizationProvider: React.FC<{ children: ReactNode }> = ({ childr
       } as any);
     } else if (id === 'HUB-00') {
       setCurrentHubState('All Regions');
-      localStorage.setItem('suler_active_hub', 'All Regions');
+      localStorage.setItem(STORAGE_KEYS.active, 'All Regions');
       
       pushActivity({
         type: 'SYSTEM',
@@ -130,8 +157,8 @@ export const OrganizationProvider: React.FC<{ children: ReactNode }> = ({ childr
     setHistory(prev => [{ hubs, depts: departments }, ...prev].slice(0, 5));
     setHubs(nextHubs);
     setDepartments(nextDepts);
-    localStorage.setItem('suler_hubs', JSON.stringify(nextHubs));
-    localStorage.setItem('suler_depts', JSON.stringify(nextDepts));
+    localStorage.setItem(STORAGE_KEYS.hubs, JSON.stringify(nextHubs));
+    localStorage.setItem(STORAGE_KEYS.depts, JSON.stringify(nextDepts));
   }, [hubs, departments]);
 
   const undoMutation = React.useCallback(() => {
@@ -140,8 +167,8 @@ export const OrganizationProvider: React.FC<{ children: ReactNode }> = ({ childr
       setHubs(prev.hubs);
       setDepartments(prev.depts);
       setHistory(rest);
-      localStorage.setItem('suler_hubs', JSON.stringify(prev.hubs));
-      localStorage.setItem('suler_depts', JSON.stringify(prev.depts));
+      localStorage.setItem(STORAGE_KEYS.hubs, JSON.stringify(prev.hubs));
+      localStorage.setItem(STORAGE_KEYS.depts, JSON.stringify(prev.depts));
       
       pushActivity({
         type: 'SYSTEM',

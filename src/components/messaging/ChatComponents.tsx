@@ -198,7 +198,7 @@ export const ChatWindow = ({ conversationId }: { conversationId: string }) => {
 
 export const BroadcastPanel = () => {
   const { postBroadcast, conversations } = useCommunication();
-  const { userRole } = useAccess();
+  const { checkPermission, userRole } = useAccess();
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [scope, setScope] = useState<'TEAM' | 'DEPARTMENT' | 'HUB' | 'GLOBAL'>('GLOBAL');
@@ -224,14 +224,20 @@ export const BroadcastPanel = () => {
     }
   };
 
-  const allowedScopes = () => {
+  // Gate by the canonical permission rather than hard-coded role names. This
+  // means custom roles can be granted communication:broadcast in /admin/roles
+  // without code changes.
+  const canPost = checkPermission('communication:broadcast' as any).allowed;
+  const allowedScopes = (): Array<'TEAM' | 'DEPARTMENT' | 'HUB' | 'GLOBAL'> => {
+    if (!canPost) return [];
     if (userRole === 'SUPER_ADMIN') return ['GLOBAL', 'HUB', 'DEPARTMENT', 'TEAM'];
-    if (userRole === 'HUB_MANAGER') return ['HUB', 'DEPARTMENT', 'TEAM'];
-    if (userRole === 'MANAGER') return ['TEAM'];
     if (userRole === 'HR_ADMIN') return ['GLOBAL', 'DEPARTMENT'];
-    return [];
+    if (userRole === 'FINANCE_MANAGER') return ['GLOBAL', 'DEPARTMENT'];
+    if (userRole === 'MANAGER') return ['TEAM'];
+    // Custom role with the permission granted but no role-specific scope
+    // mapping yet — default to TEAM only.
+    return ['TEAM'];
   };
-  const canPost = allowedScopes().length > 0;
 
   return (
     <div className="p-8 space-y-8 animate-in fade-in max-w-2xl">

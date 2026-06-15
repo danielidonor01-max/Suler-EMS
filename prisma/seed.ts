@@ -54,6 +54,7 @@ const ALL_PERMISSIONS = [
   { code: 'data:backup',      name: 'Backup Data' },
   { code: 'data:restore',     name: 'Restore Data' },
   { code: 'settings:manage',  name: 'Manage Settings' },
+  { code: 'communication:broadcast', name: 'Publish Announcements / Broadcasts' },
   { code: 'reports:generate', name: 'Generate Reports' },
   { code: 'analytics:view',   name: 'View Analytics' },
   { code: 'strategy:simulate',name: 'Run Strategy Simulations' },
@@ -69,6 +70,7 @@ const ROLE_PERMISSIONS: Record<string, string[]> = {
     'audit:view',
     'analytics:view',
     'reports:generate',
+    'communication:broadcast',
   ],
   FINANCE_MANAGER: [
     'payroll:view', 'payroll:edit', 'payroll:approve', 'payroll:process',
@@ -77,6 +79,7 @@ const ROLE_PERMISSIONS: Record<string, string[]> = {
     'analytics:view',
     'reports:generate',
     'data:export',
+    'communication:broadcast',
   ],
   MANAGER: [
     'workforce:view',

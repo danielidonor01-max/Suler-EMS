@@ -283,23 +283,45 @@ export const CommunicationProvider: React.FC<{ children: ReactNode }> = ({ child
     }
   }, [apiConversations, refreshAll]);
 
-  const openGroupChat = useCallback(async (groupId: string, _groupName: string) => {
-    // Phase 3 treats group channels as pre-existing (department channels seeded
-    // by ChannelService.syncDepartmentChannel). Select by id if present.
-    const existing = apiConversations.find(c => c.id === groupId);
+  const openGroupChat = useCallback(async (groupId: string, groupName: string) => {
+    // 1. Try local match first to avoid a roundtrip.
+    const existing = apiConversations.find(c =>
+      c.id === groupId
+      || c.title === groupName
+      || (c as any).resourceId === groupId,
+    );
     if (existing) {
       setActiveConversationId(existing.id);
       return;
     }
-    // No ad-hoc group creation yet — see createConversation note.
-    pushActivity({
-      type: 'SYSTEM',
-      label: 'Group Channel Not Found',
-      message: `Requested channel ${groupId} does not exist yet. Department channels are synced automatically.`,
-      author: userRole,
-      status: 'WARNING',
-    } as any);
-  }, [apiConversations, pushActivity, userRole]);
+    // 2. Create a workflow-classified conversation for this team / group. The
+    // current user is the initial member; other team members get added as
+    // the team-roster API matures. The server-side ChannelService writes a
+    // long-retention conversation with name + resource ref so it surfaces in
+    // /messages → Groups and stays linked to the originating team.
+    try {
+      const conv = await apiMutate<
+        { type: string; name: string; resourceId: string; resourceType: string; participantIds: string[] },
+        { id: string }
+      >('/api/communication/conversations', 'POST', {
+        type: 'WORKFLOW',
+        name: groupName,
+        resourceId: groupId,
+        resourceType: 'Team',
+        participantIds: user?.id ? [user.id] : [],
+      });
+      await refreshAll();
+      setActiveConversationId(conv.id);
+    } catch (err) {
+      pushActivity({
+        type: 'SYSTEM',
+        label: 'Group Chat Creation Failed',
+        message: err instanceof Error ? err.message : 'Could not open team chat',
+        author: userRole,
+        status: 'FAILURE',
+      } as any);
+    }
+  }, [apiConversations, user, refreshAll, pushActivity, userRole]);
 
   return (
     <CommunicationContext.Provider value={{
