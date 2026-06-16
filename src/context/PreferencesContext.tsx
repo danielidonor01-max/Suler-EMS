@@ -3,18 +3,27 @@
 /**
  * Per-user personal preferences.
  *
- * Stored in localStorage under `suler_prefs_<userId>_v1` so the same browser
- * can host multiple sessions without cross-contamination. Server-side mirror
- * lives on User.metadata (Phase 10+) — for now this is client-only state
- * with sensible defaults, which is fine because nothing in the data model
- * depends on a preference value.
+ * Three-tier storage:
+ *
+ *   1. localStorage (instant first paint, offline-safe). Keyed per userId so
+ *      multiple sessions in the same browser don't bleed.
+ *   2. Server (authoritative — User.preferences Json column). Loaded once
+ *      on session boot and rewritten whenever the user changes a value.
+ *      A failure to read or write the server falls back silently to local
+ *      only, so the UI never breaks if the API is briefly unavailable.
+ *   3. DEFAULTS (compiled in) — what new accounts see until they save.
+ *
+ * Flow:
+ *   - mount → seed from localStorage (instant)
+ *   - mount → fetch server, replace state, write to localStorage
+ *   - setPref → update state, write to localStorage, fire-and-forget PATCH
  *
  * Surface:
  *   theme            'light' | 'dark' | 'system'   visual mode
  *   toastsEnabled    boolean                       suppress all toasts
  *   messageBadge     boolean                       show unread badge in header
- *   broadcastSounds  boolean                       play a tone on new broadcast (future)
- *   emailDigest      'off' | 'daily' | 'weekly'    email summary cadence (future server)
+ *   broadcastSounds  boolean                       play a tone on new broadcast
+ *   emailDigest      'off' | 'daily' | 'weekly'    email summary cadence
  *   language         'en'                          reserved; only EN today
  */
 
@@ -55,49 +64,90 @@ function storageKey(userId: string | undefined): string {
   return `suler_prefs_${userId ?? 'anon'}_v1`;
 }
 
+function loadFromStorage(userId: string | undefined): Preferences {
+  if (typeof window === 'undefined') return DEFAULTS;
+  try {
+    const raw = localStorage.getItem(storageKey(userId));
+    if (!raw) return DEFAULTS;
+    const parsed = JSON.parse(raw) as Partial<Preferences>;
+    return { ...DEFAULTS, ...parsed };
+  } catch {
+    return DEFAULTS;
+  }
+}
+
+function saveToStorage(userId: string | undefined, prefs: Preferences) {
+  if (typeof window === 'undefined') return;
+  try {
+    localStorage.setItem(storageKey(userId), JSON.stringify(prefs));
+  } catch { /* private mode / quota — preferences just won't persist locally */ }
+}
+
 export function PreferencesProvider({ children }: { children: ReactNode }) {
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
   const userId = session?.user?.id;
 
   const [prefs, setPrefs] = useState<Preferences>(DEFAULTS);
   const [ready, setReady] = useState(false);
 
-  // Load on userId change.
+  // Seed from localStorage immediately on userId change so the UI doesn't
+  // flicker waiting for the server. Then go fetch the server copy.
   useEffect(() => {
-    if (typeof window === 'undefined') return;
-    try {
-      const raw = localStorage.getItem(storageKey(userId));
-      if (raw) {
-        const parsed = JSON.parse(raw) as Partial<Preferences>;
-        setPrefs({ ...DEFAULTS, ...parsed });
-      } else {
-        setPrefs(DEFAULTS);
-      }
-    } catch {
-      setPrefs(DEFAULTS);
-    }
+    setPrefs(loadFromStorage(userId));
     setReady(true);
   }, [userId]);
 
-  const persist = useCallback((next: Preferences) => {
-    if (typeof window === 'undefined') return;
-    try {
-      localStorage.setItem(storageKey(userId), JSON.stringify(next));
-    } catch { /* private mode or quota; preferences just won't persist */ }
-  }, [userId]);
+  // Pull authoritative copy from the server once the session is known.
+  useEffect(() => {
+    if (status !== 'authenticated' || !userId) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch('/api/profile/preferences', { credentials: 'include' });
+        if (!res.ok) return;
+        const json = await res.json();
+        const serverPrefs = (json?.data ?? json) as Preferences;
+        if (cancelled) return;
+        const merged = { ...DEFAULTS, ...serverPrefs };
+        setPrefs(merged);
+        saveToStorage(userId, merged);
+      } catch {
+        // Server unavailable — keep the localStorage copy and move on.
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [status, userId]);
 
   const setPref = useCallback<PreferencesContextValue['setPref']>((key, value) => {
     setPrefs(prev => {
       const next = { ...prev, [key]: value };
-      persist(next);
+      saveToStorage(userId, next);
+      // Fire-and-forget PATCH. Failure is silent — we already updated the
+      // local copy, and the next session boot will reconcile if needed.
+      if (status === 'authenticated' && userId) {
+        fetch('/api/profile/preferences', {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ [key]: value }),
+        }).catch(() => { /* swallow — local is source of truth this paint */ });
+      }
       return next;
     });
-  }, [persist]);
+  }, [userId, status]);
 
   const resetAll = useCallback(() => {
     setPrefs(DEFAULTS);
-    persist(DEFAULTS);
-  }, [persist]);
+    saveToStorage(userId, DEFAULTS);
+    if (status === 'authenticated' && userId) {
+      fetch('/api/profile/preferences', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify(DEFAULTS),
+      }).catch(() => { /* same as setPref */ });
+    }
+  }, [userId, status]);
 
   // Apply theme to document root.
   useEffect(() => {
@@ -111,9 +161,6 @@ export function PreferencesProvider({ children }: { children: ReactNode }) {
     };
     const apply = () => {
       const effective = resolve(prefs.theme);
-      // `data-theme` attr on <html> is the canonical signal — globals.css
-      // overrides body + workspace-main background under [data-theme="dark"].
-      // `dark` class kept for any future Tailwind dark: variant usage.
       root.setAttribute('data-theme', effective);
       root.classList.toggle('dark', effective === 'dark');
     };

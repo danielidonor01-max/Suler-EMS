@@ -1,19 +1,17 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
-  Activity, Plus, Download, ShieldCheck, History, Calendar,
-  Clock, ArrowRight, User, Sun, Heart, Baby, Stethoscope,
-  CheckCircle2, XCircle, BarChart3, Users, AlertTriangle
+  Activity, Plus, ShieldCheck, History, Calendar,
+  Clock, User, Sun, Heart, Baby, Stethoscope
 } from 'lucide-react';
 import { DataTable } from "@/components/tables/DataTable";
 import { Drawer } from "@/components/common/Drawer";
-import { WorkflowInstance, WorkflowAction } from '@/modules/workflow/domain/workflow.types';
-import { WorkflowEngine } from '@/modules/workflow/engine/workflow.engine';
+import { WorkflowAction } from '@/modules/workflow/domain/workflow.types';
 import { LeaveWorkflow } from '@/modules/workflow/definitions/leave.workflow';
 import { WorkflowStatusBadge, ApprovalTimeline, WorkflowActionBar } from '@/components/workflow/WorkflowUI';
-import { useAccess } from '@/context/AccessContext';
 import { MetricCard } from '@/components/dashboard/MetricCard';
+import { useApi, useApiMutation } from '@/lib/api/use-api';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 type LeaveType = 'Annual Leave' | 'Sick Leave' | 'Compassionate Leave' | 'Maternity Leave' | 'Paternity Leave';
@@ -26,94 +24,95 @@ const LEAVE_TYPES: { type: LeaveType; icon: React.ElementType; color: string; bg
   { type: 'Paternity Leave',    icon: Baby,         color: 'text-sky-600',     bg: 'bg-sky-50',     border: 'border-sky-100',    quota: 14, desc: '14-day paternity leave entitlement.' },
 ];
 
-const EMPLOYEES_LEAVE = [
-  { name: 'Bola Akinwale',     annual: 21, usedAnnual: 8,  sick: 14, usedSick: 2,  comp: 5, usedComp: 0 },
-  { name: 'Chiamaka Obi',   annual: 21, usedAnnual: 12, sick: 14, usedSick: 5,  comp: 5, usedComp: 1 },
-  { name: 'Emeka Okafor',     annual: 21, usedAnnual: 5,  sick: 14, usedSick: 7,  comp: 5, usedComp: 0 },
-  { name: 'Tunde Bakare', annual: 21, usedAnnual: 16, sick: 14, usedSick: 0,  comp: 5, usedComp: 2 },
-  { name: 'Kemi Adekunle',    annual: 21, usedAnnual: 3,  sick: 14, usedSick: 1,  comp: 5, usedComp: 0 },
-];
-
-// Calendar events for current month
-const CALENDAR_EVENTS = [
-  { day: 3,  name: 'Bola Akinwale',     type: 'Annual Leave',       color: 'bg-indigo-100 text-indigo-700' },
-  { day: 3,  name: 'Bola Akinwale',     type: 'Annual Leave',       color: 'bg-indigo-100 text-indigo-700' },
-  { day: 4,  name: 'Bola Akinwale',     type: 'Annual Leave',       color: 'bg-indigo-100 text-indigo-700' },
-  { day: 6,  name: 'Emeka Okafor',     type: 'Sick Leave',         color: 'bg-rose-100 text-rose-700' },
-  { day: 7,  name: 'Emeka Okafor',     type: 'Sick Leave',         color: 'bg-rose-100 text-rose-700' },
-  { day: 10, name: 'Chiamaka Obi',   type: 'Compassionate Leave',color: 'bg-amber-100 text-amber-700' },
-  { day: 15, name: 'Tunde Bakare', type: 'Annual Leave',       color: 'bg-indigo-100 text-indigo-700' },
-  { day: 16, name: 'Tunde Bakare', type: 'Annual Leave',       color: 'bg-indigo-100 text-indigo-700' },
-  { day: 20, name: 'Kemi Adekunle',    type: 'Annual Leave',       color: 'bg-indigo-100 text-indigo-700' },
-];
-
-const INITIAL_LEAVE_REQUESTS: (WorkflowInstance & { employeeName: string, type: string, dates: string, days: number })[] = [
-  {
-    id: 'leave-001' as any, workflowId: 'leave-workflow', version: 1,
-    currentState: 'SUBMITTED', resourceId: 'res-001' as any,
-    employeeName: 'Bola Akinwale', type: 'Annual Leave', dates: '10 Jun – 15 Jun', days: 5,
-    history: [
-      { id: 'audit-001' as any, instanceId: 'leave-001' as any, timestamp: '2024-05-01T10:00:00Z',
-        actorId: 'user-emp-001' as any, actorName: 'Bola Akinwale', actorRole: 'EMPLOYEE',
-        fromState: 'DRAFT', toState: 'SUBMITTED', action: 'SUBMIT', comment: 'Vacation with family in Enugu.' }
-    ],
-    createdAt: '2024-05-01T10:00:00Z', updatedAt: '2024-05-01T10:00:00Z',
-  },
-  {
-    id: 'leave-002' as any, workflowId: 'leave-workflow', version: 1,
-    currentState: 'MANAGER_APPROVED', resourceId: 'res-002' as any,
-    employeeName: 'Emeka Okafor', type: 'Sick Leave', dates: '06 May – 07 May', days: 2,
-    history: [
-      { id: 'a1' as any, instanceId: 'l2' as any, timestamp: '2024-05-01T09:00:00Z', actorId: 'u1' as any, actorName: 'Emeka Okafor', actorRole: 'EMPLOYEE', fromState: 'DRAFT', toState: 'SUBMITTED', action: 'SUBMIT' },
-      { id: 'a2' as any, instanceId: 'l2' as any, timestamp: '2024-05-02T14:00:00Z', actorId: 'u2' as any, actorName: 'Ibrahim Yusuf', actorRole: 'MANAGER', fromState: 'SUBMITTED', toState: 'MANAGER_APPROVED', action: 'APPROVE_MANAGER', comment: 'Approved. Get well soon.' },
-    ],
-    createdAt: '2024-05-01T09:00:00Z', updatedAt: '2024-05-02T14:00:00Z',
-  },
-  {
-    id: 'leave-003' as any, workflowId: 'leave-workflow', version: 1,
-    currentState: 'SUBMITTED', resourceId: 'res-003' as any,
-    employeeName: 'Chiamaka Obi', type: 'Compassionate Leave', dates: '10 May – 10 May', days: 1,
-    history: [
-      { id: 'a3' as any, instanceId: 'l3' as any, timestamp: '2024-05-09T11:00:00Z', actorId: 'u3' as any, actorName: 'Chiamaka Obi', actorRole: 'EMPLOYEE', fromState: 'DRAFT', toState: 'SUBMITTED', action: 'SUBMIT', comment: 'Family emergency.' }
-    ],
-    createdAt: '2024-05-09T11:00:00Z', updatedAt: '2024-05-09T11:00:00Z',
-  },
-];
-
 const TABS = ['Approval Pipeline', 'Leave Calendar', 'Balance Tracker', 'Leave Types'];
-const DAYS_OF_WEEK = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
-function BalanceBar({ used, total, color }: { used: number; total: number; color: string }) {
-  return (
-    <div className="space-y-1">
-      <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
-        <div className={`h-full rounded-full ${color}`} style={{ width: `${(used / total) * 100}%` }} />
-      </div>
-      <div className="flex justify-between text-[9px] font-bold text-slate-400 uppercase tracking-widest">
-        <span>{used} used</span>
-        <span>{total - used} left</span>
-      </div>
-    </div>
-  );
+const TYPE_LABEL: Record<string, string> = {
+  ANNUAL: 'Annual Leave',
+  SICK: 'Sick Leave',
+  CASUAL: 'Casual Leave',
+  COMPASSIONATE: 'Compassionate Leave',
+  MATERNITY: 'Maternity Leave',
+  PATERNITY: 'Paternity Leave',
+};
+
+interface ApiLeaveRequest {
+  id: string;
+  type: string;
+  startDate: string;
+  endDate: string;
+  status: string;
+  workflowInstanceId: string | null;
+  createdAt: string;
+  updatedAt: string;
+  employee: { id: string; staffId: string; firstName: string; lastName: string };
+}
+
+interface TableRow {
+  id: string;
+  employeeName: string;
+  type: string;
+  dates: string;
+  days: number;
+  currentState: string;
+  updatedAt: string;
+  raw: ApiLeaveRequest;
+}
+
+function formatDates(start: string, end: string): { label: string; days: number } {
+  const s = new Date(start);
+  const e = new Date(end);
+  const days = Math.round((e.getTime() - s.getTime()) / 86_400_000) + 1;
+  const fmt = (d: Date) =>
+    new Intl.DateTimeFormat('en-NG', { day: '2-digit', month: 'short' }).format(d);
+  return { label: `${fmt(s)} – ${fmt(e)}`, days };
 }
 
 export default function LeaveRequestsPage() {
-  const { user } = useAccess();
-  const [requests, setRequests] = useState(INITIAL_LEAVE_REQUESTS);
-  const [selectedRequest, setSelectedRequest] = useState<typeof INITIAL_LEAVE_REQUESTS[0] | null>(null);
+  const [selectedRequest, setSelectedRequest] = useState<TableRow | null>(null);
   const [tab, setTab] = useState(0);
 
-  const handleAction = (action: WorkflowAction, comment?: string) => {
-    if (!selectedRequest) return;
-    const result = WorkflowEngine.executeTransition(LeaveWorkflow, {
-      instance: selectedRequest,
-      actor: { id: user.id as any, name: user.name, role: user.role, permissions: user.permissions },
-      action, comment, payload: { comment }
+  // Fetch ALL active leave requests from the DB. SUPER_ADMIN / HR_ADMIN get
+  // every record via scope=all; managers should use the /leave/approvals page
+  // (different scope) — this page is the admin-wide registry.
+  const { data: apiRequests, refresh } =
+    useApi<ApiLeaveRequest[]>('/api/leave/requests?scope=all&limit=200', { pollMs: 30_000 });
+
+  const transitionMutation = useApiMutation<
+    { action: WorkflowAction; comment?: string },
+    unknown
+  >(
+    (body) => `/api/leave/requests/${selectedRequest?.id ?? ''}/transition`,
+    'PATCH',
+  );
+
+  const requests = useMemo<TableRow[]>(() => {
+    if (!apiRequests) return [];
+    return apiRequests.map((r) => {
+      const { label, days } = formatDates(r.startDate, r.endDate);
+      return {
+        id: r.id,
+        employeeName: `${r.employee.firstName} ${r.employee.lastName}`,
+        type: TYPE_LABEL[r.type] ?? r.type,
+        dates: label,
+        days,
+        currentState: r.status,
+        updatedAt: r.updatedAt,
+        raw: r,
+      };
     });
-    if (result.success) {
-      const updated = { ...selectedRequest, ...result.data };
-      setRequests(prev => prev.map(r => r.id === updated.id ? { ...r, ...updated } : r));
-      setSelectedRequest(updated as any);
+  }, [apiRequests]);
+
+  const handleAction = async (action: WorkflowAction, comment?: string) => {
+    if (!selectedRequest) return;
+    try {
+      await transitionMutation.trigger({ action, comment });
+      await refresh();
+      // Close drawer on success; the table reflects the new state.
+      setSelectedRequest(null);
+    } catch (err) {
+      // Surface failure inline so the actor sees why a transition was blocked
+      // (RBAC / state guard / invalid action). Toast wiring is a polish item.
+      console.error('Leave transition failed', err);
     }
   };
 
@@ -157,18 +156,6 @@ export default function LeaveRequestsPage() {
 
   const pending = requests.filter(r => r.currentState === 'SUBMITTED').length;
   const totalDaysOut = requests.reduce((s, r) => s + r.days, 0);
-
-  // Build calendar grid for May 2026 (starts on Friday = index 4)
-  const startDay = 4; // May 2026 starts on Friday
-  const daysInMonth = 31;
-  const calendarCells: (number | null)[] = [
-    ...Array(startDay).fill(null),
-    ...Array.from({ length: daysInMonth }, (_, i) => i + 1),
-  ];
-  const weeks: (number | null)[][] = [];
-  for (let i = 0; i < calendarCells.length; i += 7) {
-    weeks.push(calendarCells.slice(i, i + 7).concat(Array(7 - calendarCells.slice(i, i + 7).length).fill(null)));
-  }
 
   return (
     <div className="section-breathing max-w-[1600px] mx-auto animate-in space-y-10">
@@ -289,115 +276,31 @@ export default function LeaveRequestsPage() {
 
       {/* ── TAB 1: Leave Calendar ─────────────────────────────────────────── */}
       {tab === 1 && (
-        <div className="bg-white rounded-[24px] border border-slate-200 p-8 space-y-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <h2 className="text-lg font-bold text-slate-900">May 2026</h2>
-              <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">Team Availability Overview</p>
-            </div>
-            <div className="flex items-center gap-4">
-              {[
-                { label: 'Annual', color: 'bg-indigo-400' },
-                { label: 'Sick', color: 'bg-rose-400' },
-                { label: 'Compassionate', color: 'bg-amber-400' },
-              ].map(l => (
-                <div key={l.label} className="flex items-center gap-1.5">
-                  <div className={`w-2.5 h-2.5 rounded-full ${l.color}`} />
-                  <span className="text-[11px] font-bold text-slate-500 uppercase tracking-widest">{l.label}</span>
-                </div>
-              ))}
-            </div>
+        <div className="bg-white rounded-[24px] border border-slate-200 p-12 text-center space-y-4">
+          <div className="w-14 h-14 mx-auto rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-center">
+            <Calendar className="w-6 h-6 text-slate-400" />
           </div>
-
-          <div className="grid grid-cols-7 gap-1">
-            {DAYS_OF_WEEK.map(d => (
-              <div key={d} className="text-center text-[10px] font-bold text-slate-400 uppercase tracking-widest pb-2">{d}</div>
-            ))}
-            {weeks.flat().map((day, idx) => {
-              const events = day ? CALENDAR_EVENTS.filter(e => e.day === day) : [];
-              const isToday = day === 12;
-              return (
-                <div
-                  key={idx}
-                  className={`min-h-[80px] rounded-xl p-1.5 border transition-all ${
-                    day ? 'border-slate-100 hover:border-slate-200 hover:bg-slate-50/50' : 'border-transparent'
-                  } ${isToday ? 'bg-indigo-50 border-indigo-200' : ''}`}
-                >
-                  {day && (
-                    <>
-                      <div className={`text-[11px] font-black mb-1.5 ${isToday ? 'text-indigo-600' : 'text-slate-500'}`}>
-                        {day}
-                      </div>
-                      <div className="space-y-0.5">
-                        {events.slice(0, 2).map((e, i) => (
-                          <div key={i} className={`${e.color} rounded-md px-1.5 py-0.5 text-[8px] font-bold truncate uppercase`}>
-                            {e.name.split(' ')[0]}
-                          </div>
-                        ))}
-                        {events.length > 2 && (
-                          <div className="text-[8px] font-bold text-slate-400 pl-1">+{events.length - 2} more</div>
-                        )}
-                      </div>
-                    </>
-                  )}
-                </div>
-              );
-            })}
-          </div>
+          <h3 className="text-lg font-bold text-slate-900">Team availability calendar — pending API</h3>
+          <p className="text-[13px] text-slate-500 max-w-[420px] mx-auto leading-relaxed">
+            A month-view showing every approved leave across the org will land once the
+            leave-by-date endpoint is wired. Until then, switch to <strong>Approval Pipeline</strong>
+            for the live list of requests with workflow state.
+          </p>
         </div>
       )}
 
       {/* ── TAB 2: Balance Tracker ─────────────────────────────────────────── */}
       {tab === 2 && (
-        <div className="bg-white rounded-[24px] border border-slate-200 p-8">
-          <div className="flex items-center justify-between mb-6">
-            <div>
-              <h2 className="text-lg font-bold text-slate-900">Leave Balance Tracker</h2>
-              <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">2026 Entitlement vs Utilization</p>
-            </div>
-            <button className="flex items-center gap-2 px-5 py-2.5 bg-slate-50 border border-slate-200 text-slate-600 rounded-xl text-[11px] font-bold uppercase tracking-wide hover:bg-slate-100 transition-all">
-              <Download className="w-3.5 h-3.5" />
-              Export CSV
-            </button>
+        <div className="bg-white rounded-[24px] border border-slate-200 p-12 text-center space-y-4">
+          <div className="w-14 h-14 mx-auto rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-center">
+            <Activity className="w-6 h-6 text-slate-400" />
           </div>
-
-          <div className="space-y-4">
-            {EMPLOYEES_LEAVE.map(emp => (
-              <div key={emp.name} className="p-5 bg-slate-50 border border-slate-100 rounded-[20px] space-y-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-[10px] font-black text-slate-400">
-                      {emp.name.split(' ').map(n => n[0]).join('')}
-                    </div>
-                    <span className="text-[14px] font-bold text-slate-900">{emp.name}</span>
-                  </div>
-                </div>
-                <div className="grid grid-cols-3 gap-6">
-                  <div>
-                    <div className="flex justify-between mb-1">
-                      <span className="text-[10px] font-bold text-indigo-600 uppercase tracking-widest">Annual</span>
-                      <span className="text-[10px] font-bold text-slate-600">{emp.usedAnnual}/{emp.annual}</span>
-                    </div>
-                    <BalanceBar used={emp.usedAnnual} total={emp.annual} color="bg-indigo-400" />
-                  </div>
-                  <div>
-                    <div className="flex justify-between mb-1">
-                      <span className="text-[10px] font-bold text-rose-600 uppercase tracking-widest">Sick</span>
-                      <span className="text-[10px] font-bold text-slate-600">{emp.usedSick}/{emp.sick}</span>
-                    </div>
-                    <BalanceBar used={emp.usedSick} total={emp.sick} color="bg-rose-400" />
-                  </div>
-                  <div>
-                    <div className="flex justify-between mb-1">
-                      <span className="text-[10px] font-bold text-amber-600 uppercase tracking-widest">Compassionate</span>
-                      <span className="text-[10px] font-bold text-slate-600">{emp.usedComp}/{emp.comp}</span>
-                    </div>
-                    <BalanceBar used={emp.usedComp} total={emp.comp} color="bg-amber-400" />
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
+          <h3 className="text-lg font-bold text-slate-900">Balance tracker — pending API</h3>
+          <p className="text-[13px] text-slate-500 max-w-[420px] mx-auto leading-relaxed">
+            Per-employee entitlement vs. utilization will appear here once the
+            leave-balance aggregation endpoint is built. The data needs to roll up
+            approved leave across all leave types per fiscal year — not in scope yet.
+          </p>
         </div>
       )}
 
