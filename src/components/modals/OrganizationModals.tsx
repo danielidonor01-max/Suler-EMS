@@ -1,18 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
-import { 
-  Building2, 
-  MapPin, 
-  Briefcase, 
-  ShieldCheck, 
-  X, 
-  Plus, 
-  Trash2, 
-  Edit3,
-  Globe,
-  Layers
-} from 'lucide-react';
+import React, { useState } from 'react';
 import { Modal } from '../common/Modal';
 import { useWorkforce } from '@/context/WorkforceContext';
 import { useOrganization, Hub, Department } from '@/context/OrganizationContext';
@@ -194,18 +182,33 @@ export const EditHubModal: React.FC<{ isOpen: boolean; onClose: () => void; hub:
 export const CreateDepartmentModal: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOpen, onClose }) => {
   const { addDepartment, hubs } = useOrganization();
   const { employees } = useWorkforce();
+  const [code, setCode] = useState('');
   const [name, setName] = useState('');
-  const [lead, setLead] = useState('');
-  const [parentHub, setParentHub] = useState(hubs[0]?.name || '');
+  const [hubId, setHubId] = useState<string>(hubs[0]?.id ?? '');
+  const [managerId, setManagerId] = useState<string>('');
   const [reportingLine, setReportingLine] = useState('Executive Office');
+  const [error, setError] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name || !lead || !parentHub) return;
-    addDepartment({ name, lead, parentHub, reportingLine });
-    onClose();
-    setName('');
-    setLead('');
+    setError(null);
+    setBusy(true);
+    try {
+      await addDepartment({
+        code: code.toUpperCase(),
+        name,
+        hubId: hubId || null,
+        managerId: managerId || null,
+        reportingLine: reportingLine || null,
+      });
+      onClose();
+      setCode(''); setName(''); setManagerId('');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Could not create department');
+    } finally {
+      setBusy(false);
+    }
   };
 
   return (
@@ -213,8 +216,19 @@ export const CreateDepartmentModal: React.FC<{ isOpen: boolean; onClose: () => v
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="space-y-4">
           <div className="space-y-1.5">
+            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Department Code</label>
+            <input
+              aria-label="Department Code"
+              required
+              value={code}
+              onChange={(e) => setCode(e.target.value)}
+              placeholder="e.g. TALENT"
+              className="w-full h-[48px] bg-slate-50 border border-slate-200 rounded-xl px-4 text-[13px] font-bold outline-none focus:border-indigo-500 transition-all shadow-sm uppercase"
+            />
+          </div>
+          <div className="space-y-1.5">
             <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Unit Identity</label>
-            <input aria-label="Unit Identity" 
+            <input aria-label="Unit Identity"
               required
               value={name}
               onChange={(e) => setName(e.target.value)}
@@ -222,24 +236,42 @@ export const CreateDepartmentModal: React.FC<{ isOpen: boolean; onClose: () => v
               className="w-full h-[48px] bg-slate-50 border border-slate-200 rounded-xl px-4 text-[13px] font-bold outline-none focus:border-indigo-500 transition-all shadow-sm"
             />
           </div>
-          <Select 
+          <Select
             label="Parent Operational Hub"
-            value={parentHub}
-            onChange={setParentHub}
-            options={hubs.filter(h => h.id !== 'HUB-00').map(hub => ({ label: hub.name, value: hub.name }))}
+            value={hubId}
+            onChange={setHubId}
+            options={[
+              { label: '— Unassigned —', value: '' },
+              ...hubs.map(hub => ({ label: hub.name, value: hub.id })),
+            ]}
           />
-          <Select 
+          <Select
             label="Functional Lead"
-            value={lead}
-            onChange={setLead}
-            options={employees.map(e => ({ label: e.name, value: e.name }))}
+            value={managerId}
+            onChange={setManagerId}
+            options={[
+              { label: '— Unassigned —', value: '' },
+              ...employees.map(e => ({ label: e.name, value: e.id })),
+            ]}
           />
+          <div className="space-y-1.5">
+            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Reports To</label>
+            <input
+              aria-label="Reports To"
+              value={reportingLine}
+              onChange={(e) => setReportingLine(e.target.value)}
+              placeholder="e.g. Executive Office"
+              className="w-full h-[48px] bg-slate-50 border border-slate-200 rounded-xl px-4 text-[13px] font-bold outline-none focus:border-indigo-500 transition-all shadow-sm"
+            />
+          </div>
+          {error && <div className="text-[12px] font-medium text-rose-600 px-1">{error}</div>}
         </div>
-        <button 
+        <button
           type="submit"
-          className="w-full h-12 bg-slate-900 text-white rounded-xl text-xs font-black uppercase tracking-widest hover:bg-slate-800 transition-all shadow-xl shadow-slate-200"
+          disabled={busy}
+          className="w-full h-12 bg-slate-900 text-white rounded-xl text-xs font-black uppercase tracking-widest hover:bg-slate-800 transition-all shadow-xl shadow-slate-200 disabled:opacity-60"
         >
-          Initialize Department
+          {busy ? 'Initializing…' : 'Initialize Department'}
         </button>
       </form>
     </Modal>
@@ -250,14 +282,29 @@ export const EditDepartmentModal: React.FC<{ isOpen: boolean; onClose: () => voi
   const { updateDepartment, hubs } = useOrganization();
   const { employees } = useWorkforce();
   const [name, setName] = useState(dept.name);
-  const [lead, setLead] = useState(dept.lead);
-  const [parentHub, setParentHub] = useState(dept.parentHub);
-  const [reportingLine, setReportingLine] = useState(dept.reportingLine);
+  const [hubId, setHubId] = useState<string>(dept.hubId ?? dept.hub?.id ?? '');
+  const [managerId, setManagerId] = useState<string>(dept.managerId ?? dept.manager?.id ?? '');
+  const [reportingLine, setReportingLine] = useState(dept.reportingLine ?? '');
+  const [error, setError] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    updateDepartment(dept.id, { name, lead, parentHub, reportingLine });
-    onClose();
+    setError(null);
+    setBusy(true);
+    try {
+      await updateDepartment(dept.id, {
+        name,
+        hubId: hubId || null,
+        managerId: managerId || null,
+        reportingLine: reportingLine || null,
+      });
+      onClose();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Could not update department');
+    } finally {
+      setBusy(false);
+    }
   };
 
   return (
@@ -266,31 +313,49 @@ export const EditDepartmentModal: React.FC<{ isOpen: boolean; onClose: () => voi
         <div className="space-y-4">
           <div className="space-y-1.5">
             <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Department Name</label>
-            <input aria-label="Department Name" 
+            <input aria-label="Department Name"
               required
               value={name}
               onChange={(e) => setName(e.target.value)}
               className="w-full h-[48px] bg-slate-50 border border-slate-200 rounded-xl px-4 text-[13px] font-bold outline-none focus:border-indigo-500 transition-all shadow-sm"
             />
           </div>
-          <Select 
+          <Select
             label="Operational Hub"
-            value={parentHub}
-            onChange={setParentHub}
-            options={hubs.filter(h => h.id !== 'HUB-00').map(hub => ({ label: hub.name, value: hub.name }))}
+            value={hubId}
+            onChange={setHubId}
+            options={[
+              { label: '— Unassigned —', value: '' },
+              ...hubs.map(hub => ({ label: hub.name, value: hub.id })),
+            ]}
           />
-          <Select 
+          <Select
             label="Principal Lead"
-            value={lead}
-            onChange={setLead}
-            options={employees.map(e => ({ label: e.name, value: e.name }))}
+            value={managerId}
+            onChange={setManagerId}
+            options={[
+              { label: '— Unassigned —', value: '' },
+              ...employees.map(e => ({ label: e.name, value: e.id })),
+            ]}
           />
+          <div className="space-y-1.5">
+            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Reports To</label>
+            <input
+              aria-label="Reports To"
+              value={reportingLine}
+              onChange={(e) => setReportingLine(e.target.value)}
+              placeholder="e.g. Executive Office"
+              className="w-full h-[48px] bg-slate-50 border border-slate-200 rounded-xl px-4 text-[13px] font-bold outline-none focus:border-indigo-500 transition-all shadow-sm"
+            />
+          </div>
+          {error && <div className="text-[12px] font-medium text-rose-600 px-1">{error}</div>}
         </div>
-        <button 
+        <button
           type="submit"
-          className="w-full h-12 bg-slate-900 text-white rounded-xl text-xs font-black uppercase tracking-widest hover:bg-slate-800 transition-all shadow-xl shadow-slate-200"
+          disabled={busy}
+          className="w-full h-12 bg-slate-900 text-white rounded-xl text-xs font-black uppercase tracking-widest hover:bg-slate-800 transition-all shadow-xl shadow-slate-200 disabled:opacity-60"
         >
-          Synchronize Changes
+          {busy ? 'Synchronizing…' : 'Synchronize Changes'}
         </button>
       </form>
     </Modal>
