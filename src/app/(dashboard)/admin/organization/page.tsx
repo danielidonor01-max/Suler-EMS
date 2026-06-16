@@ -1,19 +1,18 @@
 "use client";
 
 import React, { useState } from 'react';
-import { 
-  Building2, 
-  MapPin, 
-  Briefcase, 
-  ShieldCheck, 
-  Plus, 
-  Trash2, 
+import {
+  Building2,
+  MapPin,
+  Briefcase,
+  ShieldCheck,
+  Plus,
+  Trash2,
   Edit3,
   Globe,
   Layers,
   MoreVertical,
   Activity,
-  History,
   Zap,
   ArrowRightLeft
 } from 'lucide-react';
@@ -29,20 +28,23 @@ import { DataTable } from '@/components/tables/DataTable';
 import { MetricCard } from '@/components/dashboard/MetricCard';
 
 export default function OrganizationPage() {
-  const { hubs, departments, currentHub, switchHub, deleteHub, deleteDepartment, undoMutation, canUndo } = useOrganization();
+  const { hubs, departments, currentHub, switchHub, deleteHub, deleteDepartment } = useOrganization();
   const { employees } = useWorkforce();
-  
+
   // Modal states
   const [isCreateHubOpen, setIsCreateHubOpen] = useState(false);
   const [selectedHub, setSelectedHub] = useState<Hub | null>(null);
   const [isCreateDeptOpen, setIsCreateDeptOpen] = useState(false);
   const [selectedDept, setSelectedDept] = useState<Department | null>(null);
 
-  // Filtered views based on current context
+  // Filtered views based on current context. The legacy HUB-00 / "All
+  // Regions" item lived only in the old localStorage seed — DB-backed
+  // hubs never include it, so the .filter is a no-op for new data and
+  // a safety net for any stale cache that might still surface it.
   const filteredHubs = hubs.filter(h => h.id !== 'HUB-00');
-  const filteredDepts = currentHub === 'All Regions' 
-    ? departments 
-    : departments.filter(d => d.parentHub === currentHub);
+  const filteredDepts = currentHub === 'All Regions'
+    ? departments
+    : departments.filter(d => d.hub?.name === currentHub);
 
   const hubColumns = [
     {
@@ -100,22 +102,28 @@ export default function OrganizationPage() {
           </div>
           <div className="flex flex-col">
             <span className="text-[14px] font-bold text-slate-900 tracking-tight leading-none mb-1">{dept.name}</span>
-            <span className="text-[11px] font-bold text-indigo-400 uppercase tracking-wider">{dept.parentHub}</span>
+            <span className="text-[11px] font-bold text-indigo-400 uppercase tracking-wider">{dept.hub?.name ?? 'Unassigned'}</span>
           </div>
         </div>
       )
     },
     {
       header: "Functional Lead",
-      accessor: "lead",
-      render: (val: string) => (
-        <div className="flex items-center gap-2">
-          <div className="w-6 h-6 rounded-full bg-slate-100 flex items-center justify-center text-[9px] font-black text-slate-400 uppercase">
-            {val.split(' ').map(n => n[0]).join('')}
+      accessor: "manager",
+      render: (_val: unknown, dept: Department) => {
+        const leadName = dept.manager?.name ?? 'Unassigned';
+        const initials = leadName === 'Unassigned'
+          ? '?'
+          : leadName.split(' ').map(n => n[0]).join('');
+        return (
+          <div className="flex items-center gap-2">
+            <div className="w-6 h-6 rounded-full bg-slate-100 flex items-center justify-center text-[9px] font-black text-slate-400 uppercase">
+              {initials}
+            </div>
+            <span className="text-slate-900 font-bold text-[13px]">{leadName}</span>
           </div>
-          <span className="text-slate-900 font-bold text-[13px]">{val}</span>
-        </div>
-      )
+        );
+      }
     },
     {
       header: "Registry Size",
@@ -140,15 +148,6 @@ export default function OrganizationPage() {
                 <Globe className="w-3 h-3" />
                 Enterprise Topology
              </div>
-             {canUndo && (
-               <button 
-                 onClick={undoMutation}
-                 className="flex items-center gap-1.5 text-[10px] font-bold text-indigo-500 hover:text-indigo-600 uppercase tracking-widest transition-all"
-               >
-                 <History className="w-3 h-3" />
-                 Undo Mutation
-               </button>
-             )}
           </div>
           <div className="space-y-1">
             <h1 className="text-4xl font-bold text-slate-900 tracking-tighter leading-none">
