@@ -45,6 +45,11 @@ model User {
   isActive               Boolean                 @default(true)
   version                Int                     @default(1)
   lastLoginAt            DateTime?
+  // Per-user UI preferences (theme, notification toggles, email digest, etc.).
+  // Stored as Json so the shape can evolve without migrations. Authoritative
+  // copy lives here; the client also caches in localStorage for instant
+  // first-paint, but refreshes from server on session boot.
+  preferences            Json?
   loginAttempts          LoginAttempt[]
   sessions               SessionAudit[]
   notifications          Notification[]
