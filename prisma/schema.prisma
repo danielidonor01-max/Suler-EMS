@@ -106,16 +106,32 @@ model SecurityEvent {
 
 // --- Organizational Structure ---
 
+model Hub {
+  id          String       @id @default(uuid())
+  code        String       @unique // e.g. "HUB-01"
+  name        String       @unique // e.g. "Lagos"
+  geography   String                // e.g. "Nigeria (South-West)"
+  category    String                // e.g. "Primary HQ", "Regional Ops", "Logistics Branch"
+  status      String       @default("ACTIVE") // ACTIVE, INITIALIZING, INACTIVE
+  managerId   String?
+  manager     Employee?    @relation("HubManager", fields: [managerId], references: [id])
+  departments Department[]
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+}
+
 model Department {
-  id        String     @id @default(uuid())
-  name      String     @unique
-  code      String     @unique
-  managerId String?
-  employees Employee[]
-  budgets   Budget[]
+  id          String       @id @default(uuid())
+  name        String       @unique
+  code        String       @unique
+  managerId   String?
+  hubId       String?
+  hub         Hub?         @relation(fields: [hubId], references: [id])
+  employees   Employee[]
+  budgets     Budget[]
   payrollRuns PayrollRun[]
-  createdAt DateTime   @default(now())
-  updatedAt DateTime   @updatedAt
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
 }
 
 model Employee {
@@ -145,6 +161,9 @@ model Employee {
   user            User?
   leaveRequests   LeaveRequest[]
   reconciliations AttendanceReconciliation[]
+
+  // --- Organization back-relations ---
+  hubsManaged     Hub[]                      @relation("HubManager")
 
   // --- Finance & Payroll relations ---
   salaryStructures   SalaryStructure[]

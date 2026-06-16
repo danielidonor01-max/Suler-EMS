@@ -22,16 +22,26 @@ import { Select } from '../forms/Select';
 
 export const CreateHubModal: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOpen, onClose }) => {
   const { addHub } = useOrganization();
+  const [code, setCode] = useState('');
   const [name, setName] = useState('');
   const [geography, setGeography] = useState('');
   const [category, setCategory] = useState('Regional Hub');
+  const [error, setError] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    addHub({ name, geography, category });
-    onClose();
-    setName('');
-    setGeography('');
+    setError(null);
+    setBusy(true);
+    try {
+      await addHub({ code: code.toUpperCase(), name, geography, category });
+      onClose();
+      setCode(''); setName(''); setGeography('');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Could not create hub');
+    } finally {
+      setBusy(false);
+    }
   };
 
   return (
@@ -39,22 +49,33 @@ export const CreateHubModal: React.FC<{ isOpen: boolean; onClose: () => void }> 
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="space-y-4">
           <div className="space-y-1.5">
-            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Hub Identity</label>
-            <input aria-label="Hub Identity" 
+            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Hub Code</label>
+            <input
+              aria-label="Hub Code"
+              required
+              value={code}
+              onChange={(e) => setCode(e.target.value)}
+              placeholder="e.g. HUB-04"
+              className="w-full h-12 bg-slate-50 border border-slate-100 rounded-xl px-4 text-sm font-bold focus:ring-2 focus:ring-slate-900 outline-none transition-all uppercase"
+            />
+          </div>
+          <div className="space-y-1.5">
+            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Hub Name</label>
+            <input aria-label="Hub Name"
               required
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="e.g. Lagos Headquarters"
+              placeholder="e.g. Kano Regional"
               className="w-full h-12 bg-slate-50 border border-slate-100 rounded-xl px-4 text-sm font-bold focus:ring-2 focus:ring-slate-900 outline-none transition-all"
             />
           </div>
           <div className="space-y-1.5">
             <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Geographical Context</label>
-            <input aria-label="Geographical Context" 
+            <input aria-label="Geographical Context"
               required
               value={geography}
               onChange={(e) => setGeography(e.target.value)}
-              placeholder="e.g. Nigeria (South-West)"
+              placeholder="e.g. Nigeria (North-West)"
               className="w-full h-12 bg-slate-50 border border-slate-100 rounded-xl px-4 text-sm font-bold focus:ring-2 focus:ring-slate-900 outline-none transition-all"
             />
           </div>
@@ -69,12 +90,14 @@ export const CreateHubModal: React.FC<{ isOpen: boolean; onClose: () => void }> 
               { label: 'International Liaison', value: 'International Liaison' },
             ]}
           />
+          {error && <div className="text-[12px] font-medium text-rose-600 px-1">{error}</div>}
         </div>
-        <button 
+        <button
           type="submit"
-          className="w-full h-12 bg-slate-900 text-white rounded-xl text-xs font-black uppercase tracking-widest hover:bg-slate-800 transition-all shadow-xl shadow-slate-200"
+          disabled={busy}
+          className="w-full h-12 bg-slate-900 text-white rounded-xl text-xs font-black uppercase tracking-widest hover:bg-slate-800 transition-all shadow-xl shadow-slate-200 disabled:opacity-60"
         >
-          Initialize Hub
+          {busy ? 'Initializing…' : 'Initialize Hub'}
         </button>
       </form>
     </Modal>
@@ -87,12 +110,27 @@ export const EditHubModal: React.FC<{ isOpen: boolean; onClose: () => void; hub:
   const [name, setName] = useState(hub.name);
   const [geography, setGeography] = useState(hub.geography);
   const [category, setCategory] = useState(hub.category);
-  const [manager, setManager] = useState(hub.manager || '');
+  // managerId is the FK to Employee. Empty string means "unassigned" — the
+  // API treats that as null when patching.
+  const [managerId, setManagerId] = useState<string>(hub.managerId ?? hub.manager?.id ?? '');
+  const [error, setError] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    updateHub(hub.id, { name, geography, category, manager });
-    onClose();
+    setError(null);
+    setBusy(true);
+    try {
+      await updateHub(hub.id, {
+        name, geography, category,
+        managerId: managerId || null,
+      });
+      onClose();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Could not update hub');
+    } finally {
+      setBusy(false);
+    }
   };
 
   return (
@@ -101,7 +139,7 @@ export const EditHubModal: React.FC<{ isOpen: boolean; onClose: () => void; hub:
         <div className="space-y-4">
           <div className="space-y-1.5">
             <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Hub Name</label>
-            <input aria-label="Hub Name" 
+            <input aria-label="Hub Name"
               required
               value={name}
               onChange={(e) => setName(e.target.value)}
@@ -110,25 +148,41 @@ export const EditHubModal: React.FC<{ isOpen: boolean; onClose: () => void; hub:
           </div>
           <div className="space-y-1.5">
              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Geography</label>
-             <input aria-label="Geography" 
+             <input aria-label="Geography"
                required
                value={geography}
                onChange={(e) => setGeography(e.target.value)}
                className="w-full h-[48px] bg-slate-50 border border-slate-200 rounded-xl px-4 text-[13px] font-bold outline-none focus:border-indigo-500 transition-all shadow-sm"
              />
           </div>
-          <Select 
-            label="Manager Assignment"
-            value={manager}
-            onChange={setManager}
-            options={employees.map(e => ({ label: e.name, value: e.name }))}
+          <Select
+            label="Classification"
+            value={category}
+            onChange={setCategory}
+            options={[
+              { label: 'Primary HQ', value: 'Primary HQ' },
+              { label: 'Regional Operations', value: 'Regional Operations' },
+              { label: 'Satellite Branch', value: 'Satellite Branch' },
+              { label: 'International Liaison', value: 'International Liaison' },
+            ]}
           />
+          <Select
+            label="Manager Assignment"
+            value={managerId}
+            onChange={setManagerId}
+            options={[
+              { label: '— Unassigned —', value: '' },
+              ...employees.map(e => ({ label: e.name, value: e.id })),
+            ]}
+          />
+          {error && <div className="text-[12px] font-medium text-rose-600 px-1">{error}</div>}
         </div>
-        <button 
+        <button
           type="submit"
-          className="w-full h-12 bg-slate-900 text-white rounded-xl text-xs font-black uppercase tracking-widest hover:bg-slate-800 transition-all shadow-xl shadow-slate-200"
+          disabled={busy}
+          className="w-full h-12 bg-slate-900 text-white rounded-xl text-xs font-black uppercase tracking-widest hover:bg-slate-800 transition-all shadow-xl shadow-slate-200 disabled:opacity-60"
         >
-          Synchronize Configuration
+          {busy ? 'Synchronizing…' : 'Synchronize Configuration'}
         </button>
       </form>
     </Modal>

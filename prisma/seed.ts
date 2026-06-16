@@ -295,6 +295,48 @@ async function main() {
   }
   console.log(`✓ Staff provisioned: ${STAFF.length} (Employees + Users + Salary)`);
 
+  // ── Hubs (regional groupings above departments) ──
+  // Hub managers reference real Employee ids set above. Departments created
+  // earlier get their hubId backfilled here so the org tree is fully linked.
+  const hubSeed = [
+    {
+      code: 'HUB-01', name: 'Lagos', geography: 'Nigeria (South-West)',
+      category: 'Primary HQ',
+      managerEmail: 'manager@suler.com',
+      deptCode: 'LAG-HQ',
+    },
+    {
+      code: 'HUB-02', name: 'Abuja', geography: 'Nigeria (North-Central)',
+      category: 'Regional Ops',
+      managerEmail: 'manager2@suler.com',
+      deptCode: 'ABJ-OPS',
+    },
+    {
+      code: 'HUB-03', name: 'Port Harcourt', geography: 'Nigeria (South-South)',
+      category: 'Logistics Branch',
+      managerEmail: 'manager3@suler.com',
+      deptCode: 'PHC-LOG',
+    },
+  ] as const;
+
+  for (const h of hubSeed) {
+    const managerId = employeeIdByEmail[h.managerEmail];
+    const hub = await prisma.hub.upsert({
+      where: { code: h.code },
+      update: { name: h.name, geography: h.geography, category: h.category, managerId, status: 'ACTIVE' },
+      create: {
+        code: h.code, name: h.name, geography: h.geography, category: h.category,
+        managerId, status: 'ACTIVE',
+      },
+    });
+    // Link the matching department to this hub.
+    await prisma.department.update({
+      where: { code: h.deptCode },
+      data: { hubId: hub.id },
+    });
+  }
+  console.log('✓ Hubs: Lagos, Abuja, Port Harcourt (linked to departments)');
+
   const adminId = userIdByEmail['admin@suler.com'];
   const financeId = userIdByEmail['finance@suler.com'];
   const managerLagosId = userIdByEmail['manager@suler.com'];
