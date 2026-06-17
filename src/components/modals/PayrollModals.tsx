@@ -150,7 +150,7 @@ export const BulkAdjustmentModal: React.FC<{ isOpen: boolean; onClose: () => voi
       if (formData.filters.departments?.length && !formData.filters.departments.includes(emp.department)) return false;
       if (formData.filters.roles?.length && !formData.filters.roles.includes(emp.role)) return false;
       if (formData.filters.teams?.length) {
-        const isInTeam = teams.some(t => formData.filters.teams?.includes(t.id) && t.members.includes(emp.id));
+        const isInTeam = teams.some(t => formData.filters.teams?.includes(t.id) && t.members.some(m => m.employee.id === emp.id));
         if (!isInTeam) return false;
       }
       return true;
