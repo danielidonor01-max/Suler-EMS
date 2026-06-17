@@ -4,6 +4,7 @@ import React, { useMemo, useState } from 'react';
 import {
   Activity, Plus, ShieldCheck, Calendar, Clock, User,
   CheckCircle2, XCircle, Edit3, Trash2, Power, AlertTriangle,
+  ChevronLeft, ChevronRight,
 } from 'lucide-react';
 import { DataTable } from "@/components/tables/DataTable";
 import { Drawer } from "@/components/common/Drawer";
@@ -385,34 +386,10 @@ export default function LeaveRequestsPage() {
       )}
 
       {/* ── TAB 1: Leave Calendar ─────────────────────────────────────────── */}
-      {tab === 1 && (
-        <div className="bg-white rounded-[24px] border border-slate-200 p-12 text-center space-y-4">
-          <div className="w-14 h-14 mx-auto rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-center">
-            <Calendar className="w-6 h-6 text-slate-400" />
-          </div>
-          <h3 className="text-lg font-bold text-slate-900">Team availability calendar — pending API</h3>
-          <p className="text-[13px] text-slate-500 max-w-[420px] mx-auto leading-relaxed">
-            A month-view showing every approved leave across the org will land once the
-            leave-by-date endpoint is wired. Until then, switch to <strong>Approval Pipeline</strong>
-            for the live list of requests with workflow state.
-          </p>
-        </div>
-      )}
+      {tab === 1 && <LeaveCalendarTab leaveTypes={leaveTypes} />}
 
       {/* ── TAB 2: Balance Tracker ─────────────────────────────────────────── */}
-      {tab === 2 && (
-        <div className="bg-white rounded-[24px] border border-slate-200 p-12 text-center space-y-4">
-          <div className="w-14 h-14 mx-auto rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-center">
-            <Activity className="w-6 h-6 text-slate-400" />
-          </div>
-          <h3 className="text-lg font-bold text-slate-900">Balance tracker — pending API</h3>
-          <p className="text-[13px] text-slate-500 max-w-[420px] mx-auto leading-relaxed">
-            Per-employee entitlement vs. utilization will appear here once the
-            leave-balance aggregation endpoint is built. The data needs to roll up
-            approved leave across all leave types per fiscal year — not in scope yet.
-          </p>
-        </div>
-      )}
+      {tab === 2 && <BalanceTrackerTab />}
 
       {/* ── TAB 3: Leave Types (DB-backed CRUD) ───────────────────────────── */}
       {tab === 3 && (
@@ -767,5 +744,336 @@ function DeleteLeaveTypeModal({
         </div>
       </div>
     </Modal>
+  );
+}
+
+// ─── Tab 1 — Leave Calendar ──────────────────────────────────────────────────
+
+interface CalendarEntry {
+  id: string;
+  type: string;
+  startDate: string;
+  endDate: string;
+  status: string;
+  isConfirmed: boolean;
+  employeeId: string;
+  employeeName: string;
+  jobTitle: string;
+  branch: string | null;
+}
+
+const MONTH_NAMES = [
+  'January', 'February', 'March', 'April', 'May', 'June',
+  'July', 'August', 'September', 'October', 'November', 'December',
+];
+const DAYS_OF_WEEK = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+
+function toISODate(d: Date): string {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
+function LeaveCalendarTab({ leaveTypes }: { leaveTypes: ApiLeaveType[] }) {
+  const today = new Date();
+  const [cursor, setCursor] = useState(() => new Date(today.getFullYear(), today.getMonth(), 1));
+
+  // First day of the visible month, anchored to UTC noon to avoid edge-day
+  // drift on locales that report negative offsets at midnight.
+  const monthStart = useMemo(() => new Date(cursor.getFullYear(), cursor.getMonth(), 1), [cursor]);
+  const monthEnd   = useMemo(() => new Date(cursor.getFullYear(), cursor.getMonth() + 1, 0), [cursor]);
+
+  // Calendar grid spans Monday-of-week-containing-day-1 through
+  // Sunday-of-week-containing-last-day, so we always render full weeks.
+  // JS getDay: Sun=0, Mon=1, … — shift so Mon=0.
+  const startDow = (monthStart.getDay() + 6) % 7;
+  const fromDate = new Date(monthStart);
+  fromDate.setDate(monthStart.getDate() - startDow);
+  const endDow = (monthEnd.getDay() + 6) % 7;
+  const toDate = new Date(monthEnd);
+  toDate.setDate(monthEnd.getDate() + (6 - endDow));
+
+  const { data: entries = [], isLoading } = useApi<CalendarEntry[]>(
+    `/api/leave/calendar?from=${toISODate(fromDate)}&to=${toISODate(toDate)}`,
+    { pollMs: 60_000 },
+  );
+
+  // Map each visible day → leave entries overlapping it. O(days × entries)
+  // which is fine: a month is ≤42 cells and entries are bounded by the
+  // overlap query.
+  const byDay = useMemo(() => {
+    const m = new Map<string, CalendarEntry[]>();
+    const cur = new Date(fromDate);
+    while (cur <= toDate) {
+      const key = toISODate(cur);
+      const day = new Date(cur);
+      const hits = entries.filter(e => {
+        const s = new Date(e.startDate);
+        const ee = new Date(e.endDate);
+        return day >= startOfDay(s) && day <= endOfDay(ee);
+      });
+      m.set(key, hits);
+      cur.setDate(cur.getDate() + 1);
+    }
+    return m;
+  }, [entries, fromDate, toDate]);
+
+  // Resolve type code → palette token for chip colour.
+  const colorByType = useMemo(() => {
+    const m: Record<string, string> = {};
+    leaveTypes.forEach(t => { m[t.code] = t.color ?? 'slate'; });
+    return m;
+  }, [leaveTypes]);
+
+  const weeks: Date[][] = [];
+  {
+    const cur = new Date(fromDate);
+    while (cur <= toDate) {
+      const week: Date[] = [];
+      for (let i = 0; i < 7; i++) {
+        week.push(new Date(cur));
+        cur.setDate(cur.getDate() + 1);
+      }
+      weeks.push(week);
+    }
+  }
+
+  const prevMonth = () => setCursor(c => new Date(c.getFullYear(), c.getMonth() - 1, 1));
+  const nextMonth = () => setCursor(c => new Date(c.getFullYear(), c.getMonth() + 1, 1));
+  const goToday   = () => setCursor(new Date(today.getFullYear(), today.getMonth(), 1));
+
+  const isToday = (d: Date) =>
+    d.getFullYear() === today.getFullYear() &&
+    d.getMonth()    === today.getMonth() &&
+    d.getDate()     === today.getDate();
+
+  const isInCurrentMonth = (d: Date) => d.getMonth() === cursor.getMonth();
+
+  return (
+    <div className="bg-white rounded-[24px] border border-slate-200 p-8 space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-lg font-bold text-slate-900">
+            {MONTH_NAMES[cursor.getMonth()]} {cursor.getFullYear()}
+          </h2>
+          <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">
+            Team Availability Overview {isLoading && '· loading…'}
+          </p>
+        </div>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={prevMonth}
+            aria-label="Previous month"
+            className="w-9 h-9 flex items-center justify-center rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-600 transition-all"
+          >
+            <ChevronLeft className="w-4 h-4" />
+          </button>
+          <button
+            type="button"
+            onClick={goToday}
+            className="px-3 h-9 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200 text-[10px] font-bold text-slate-600 uppercase tracking-widest"
+          >
+            Today
+          </button>
+          <button
+            type="button"
+            onClick={nextMonth}
+            aria-label="Next month"
+            className="w-9 h-9 flex items-center justify-center rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-600 transition-all"
+          >
+            <ChevronRight className="w-4 h-4" />
+          </button>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-7 gap-1">
+        {DAYS_OF_WEEK.map(d => (
+          <div key={d} className="text-center text-[10px] font-bold text-slate-400 uppercase tracking-widest pb-2">{d}</div>
+        ))}
+        {weeks.flat().map((day, idx) => {
+          const key = toISODate(day);
+          const hits = byDay.get(key) ?? [];
+          const dim = !isInCurrentMonth(day);
+          const todayCell = isToday(day);
+          return (
+            <div
+              key={idx}
+              className={`min-h-[96px] rounded-xl p-1.5 border transition-all ${
+                dim ? 'border-transparent bg-slate-50/40' : 'border-slate-100 hover:border-slate-200 bg-white'
+              } ${todayCell ? 'bg-indigo-50 border-indigo-200' : ''}`}
+            >
+              <div className={`text-[11px] font-black mb-1.5 ${
+                todayCell ? 'text-indigo-600' : dim ? 'text-slate-300' : 'text-slate-500'
+              }`}>
+                {day.getDate()}
+              </div>
+              <div className="space-y-0.5">
+                {hits.slice(0, 3).map(h => {
+                  const palette = paletteFor(colorByType[h.type]);
+                  return (
+                    <div
+                      key={h.id}
+                      title={`${h.employeeName} — ${h.type}${h.isConfirmed ? '' : ' (pending HR)'}`}
+                      className={`${palette.bg} ${palette.text} ${h.isConfirmed ? '' : 'border border-dashed ' + palette.border} rounded-md px-1.5 py-0.5 text-[9px] font-bold truncate uppercase`}
+                    >
+                      {h.employeeName.split(' ')[0]}
+                    </div>
+                  );
+                })}
+                {hits.length > 3 && (
+                  <div className="text-[8px] font-bold text-slate-400 pl-1">+{hits.length - 3} more</div>
+                )}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      <div className="flex items-center gap-4 pt-2 border-t border-slate-100">
+        {leaveTypes.filter(t => t.isActive).slice(0, 6).map(t => {
+          const palette = paletteFor(t.color);
+          return (
+            <div key={t.code} className="flex items-center gap-1.5">
+              <div className={`w-2.5 h-2.5 rounded-full ${palette.dot}`} />
+              <span className="text-[11px] font-bold text-slate-500 uppercase tracking-widest">{t.name}</span>
+            </div>
+          );
+        })}
+        <div className="flex items-center gap-1.5 ml-auto">
+          <div className="w-2.5 h-2.5 rounded-full border-2 border-dashed border-slate-400" />
+          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Pending HR</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function startOfDay(d: Date): Date {
+  const r = new Date(d);
+  r.setHours(0, 0, 0, 0);
+  return r;
+}
+function endOfDay(d: Date): Date {
+  const r = new Date(d);
+  r.setHours(23, 59, 59, 999);
+  return r;
+}
+
+// ─── Tab 2 — Balance Tracker ─────────────────────────────────────────────────
+
+interface BalanceRow {
+  typeCode:  string;
+  typeName:  string;
+  color:     string | null;
+  quota:     number;
+  used:      number;
+  remaining: number;
+}
+interface EmployeeBalanceRow {
+  employeeId:   string;
+  employeeName: string;
+  jobTitle:     string;
+  branch:       string | null;
+  balances:     BalanceRow[];
+}
+
+function BalanceTrackerTab() {
+  const currentYear = new Date().getFullYear();
+  const [year, setYear] = useState(currentYear);
+  const [search, setSearch] = useState('');
+
+  const { data, isLoading } = useApi<{ year: number; employees: EmployeeBalanceRow[] }>(
+    `/api/leave/balances?year=${year}`,
+    { pollMs: 60_000 },
+  );
+
+  const employees = data?.employees ?? [];
+  const filtered = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    if (!q) return employees;
+    return employees.filter(e => e.employeeName.toLowerCase().includes(q));
+  }, [employees, search]);
+
+  return (
+    <div className="bg-white rounded-[24px] border border-slate-200 p-8">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
+        <div>
+          <h2 className="text-lg font-bold text-slate-900">Leave Balance Tracker</h2>
+          <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">
+            {year} Entitlement vs Utilization {isLoading && '· loading…'}
+          </p>
+        </div>
+        <div className="flex items-center gap-2">
+          <input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search employee…"
+            aria-label="Search employee"
+            className="h-9 bg-slate-50 border border-slate-200 rounded-xl px-3 text-[12px] outline-none focus:border-indigo-300 w-[200px]"
+          />
+          <select
+            value={year}
+            onChange={(e) => setYear(Number(e.target.value))}
+            aria-label="Year"
+            className="h-9 bg-slate-50 border border-slate-200 rounded-xl px-3 text-[12px] font-bold outline-none focus:border-indigo-300"
+          >
+            {[currentYear - 1, currentYear, currentYear + 1].map(y => (
+              <option key={y} value={y}>{y}</option>
+            ))}
+          </select>
+        </div>
+      </div>
+
+      {filtered.length === 0 ? (
+        <div className="text-center py-12">
+          <span className="text-[13px] text-slate-500">
+            {employees.length === 0 ? 'No employees found.' : 'No employees match your search.'}
+          </span>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {filtered.map(emp => (
+            <div key={emp.employeeId} className="p-5 bg-slate-50 border border-slate-100 rounded-[20px] space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-[10px] font-black text-slate-400">
+                    {emp.employeeName.split(' ').map(n => n[0]).join('').slice(0, 2)}
+                  </div>
+                  <div>
+                    <span className="text-[14px] font-bold text-slate-900 block leading-none mb-1">{emp.employeeName}</span>
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                      {emp.jobTitle}{emp.branch ? ` · ${emp.branch}` : ''}
+                    </span>
+                  </div>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+                {emp.balances.map(b => {
+                  const palette = paletteFor(b.color);
+                  const pct = b.quota > 0 ? Math.min(100, (b.used / b.quota) * 100) : 0;
+                  return (
+                    <div key={b.typeCode}>
+                      <div className="flex justify-between mb-1">
+                        <span className={`text-[10px] font-bold ${palette.text} uppercase tracking-widest truncate`}>{b.typeName}</span>
+                        <span className="text-[10px] font-bold text-slate-600">{b.used}/{b.quota}</span>
+                      </div>
+                      <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
+                        <div
+                          className={`h-full rounded-full ${palette.dot}`}
+                          data-pct={pct}
+                          ref={(el) => { if (el) el.style.width = `${pct}%`; }}
+                        />
+                      </div>
+                      <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-1">
+                        {b.remaining} left
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
   );
 }
