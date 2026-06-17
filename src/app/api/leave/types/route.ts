@@ -26,12 +26,34 @@ function requireSettingsManage(perms: string[]): boolean {
   return perms.includes('settings:manage');
 }
 
+// Canonical defaults — seeded on first GET if the catalogue is empty.
+// HR can rename / re-quota / delete any of these afterwards; reaching an
+// empty catalogue (everyone deleted) is the only way to trigger re-seed,
+// so deliberate emptiness is rare and acceptable to recover from.
+const DEFAULT_LEAVE_TYPES = [
+  { code: 'ANNUAL',        name: 'Annual Leave',        quotaDays: 21, color: 'indigo', description: 'Annual recreational leave entitlement per employee.' },
+  { code: 'SICK',          name: 'Sick Leave',          quotaDays: 14, color: 'rose',   description: 'Medical / illness-related absence days.' },
+  { code: 'COMPASSIONATE', name: 'Compassionate Leave', quotaDays: 5,  color: 'amber',  description: 'Granted for bereavement or family emergencies.' },
+  { code: 'MATERNITY',     name: 'Maternity Leave',     quotaDays: 90, color: 'pink',   description: '90-day maternity leave per Nigerian labour law.' },
+  { code: 'PATERNITY',     name: 'Paternity Leave',     quotaDays: 14, color: 'sky',    description: '14-day paternity leave entitlement.' },
+];
+
 export const GET = withAuth(async (_req, _session) => {
   const correlationId = crypto.randomUUID();
   try {
-    const types = await prisma.leaveType.findMany({
+    let types = await prisma.leaveType.findMany({
       orderBy: { code: 'asc' },
     });
+    // Bootstrap the catalogue on first read so a fresh deploy doesn't
+    // show an empty Leave Types tab. Skip if the table has been touched
+    // (any row, even soft-deleted via isActive=false, prevents re-seed).
+    if (types.length === 0) {
+      await prisma.leaveType.createMany({
+        data: DEFAULT_LEAVE_TYPES.map(t => ({ ...t, isActive: true })),
+        skipDuplicates: true,
+      });
+      types = await prisma.leaveType.findMany({ orderBy: { code: 'asc' } });
+    }
     return successResponse(types, correlationId);
   } catch (err) {
     const msg = err instanceof Error ? err.message : 'Failed to list leave types';
