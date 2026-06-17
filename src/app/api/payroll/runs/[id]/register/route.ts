@@ -31,7 +31,7 @@ export const GET = withAuth(async (_req, session, context) => {
         include: {
           employee: {
             select: {
-              staffId: true, firstName: true, lastName: true,
+              id: true, staffId: true, firstName: true, lastName: true,
               email: true, jobTitle: true, branch: true,
               department: { select: { name: true } },
             },

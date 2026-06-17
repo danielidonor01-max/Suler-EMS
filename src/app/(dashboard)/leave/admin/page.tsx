@@ -14,6 +14,7 @@ import { MetricCard } from '@/components/dashboard/MetricCard';
 import { useApi } from '@/lib/api/use-api';
 import { apiMutate } from '@/lib/api/fetcher';
 import { LeaveDetailsModal } from '@/components/leave/LeaveDetailsModal';
+import { EmployeeChip } from '@/components/employees/EmployeeChip';
 import { useDismiss } from '@/lib/hooks/use-dismiss';
 
 // ─── Tabs ─────────────────────────────────────────────────────────────────────
@@ -66,6 +67,7 @@ interface ApiLeaveRequest {
 
 interface TableRow {
   id: string;
+  employeeId: string;
   employeeName: string;
   type: string;
   dates: string;
@@ -134,6 +136,7 @@ export default function LeaveRequestsPage() {
       const { label, days } = formatDates(r.startDate, r.endDate);
       return {
         id: r.id,
+        employeeId: r.employee.id,
         employeeName: `${r.employee.firstName} ${r.employee.lastName}`,
         type: typeLabel[r.type] ?? r.type,
         dates: label,
@@ -182,15 +185,12 @@ export default function LeaveRequestsPage() {
     {
       header: "Staff Member", accessor: "employeeName",
       render: (val: string, row: any) => (
-        <div className="flex items-center gap-4">
-          <div className="w-10 h-10 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-400 font-bold text-[10px]">
-            {val.split(' ').map((n: string) => n[0]).join('')}
-          </div>
-          <div>
-            <div className="text-[14px] font-bold text-slate-900 tracking-tight leading-none mb-1">{val}</div>
-            <div className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">{row.type}</div>
-          </div>
-        </div>
+        <EmployeeChip
+          employeeId={row.employeeId}
+          name={val}
+          sublabel={row.type}
+          size="md"
+        />
       )
     },
     {
@@ -215,7 +215,7 @@ export default function LeaveRequestsPage() {
       )
     },
     {
-      header: "Action", accessor: "id",
+      header: "Actions", accessor: "id",
       render: (_val: string, row: any) => (
         <RowKebab
           row={row as TableRow}

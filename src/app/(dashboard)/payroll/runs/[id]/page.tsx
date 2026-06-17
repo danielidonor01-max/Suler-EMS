@@ -6,6 +6,7 @@ import useSWR from 'swr';
 import { Send, CheckCircle2, Banknote, ArrowLeft, History, Users, Download } from 'lucide-react';
 import Link from 'next/link';
 import { apiFetcher, apiMutate } from '@/lib/api/fetcher';
+import { EmployeeChip } from '@/components/employees/EmployeeChip';
 
 interface Entry {
   id: string; employeeId: string;
@@ -14,7 +15,7 @@ interface Entry {
   grossPay: string | number; paye: string | number;
   pensionEmployee: string | number; nhf: string | number; nhis: string | number;
   totalDeductions: string | number; netPay: string | number;
-  employee: { staffId: string; firstName: string; lastName: string; jobTitle?: string; branch?: string };
+  employee: { id: string; staffId: string; firstName: string; lastName: string; jobTitle?: string; branch?: string };
 }
 
 interface AuditEntry { id: string; action: string; fromState: string; toState: string; actorName: string; actorRole: string; comment?: string | null; timestamp: string }
@@ -177,8 +178,12 @@ export default function PayrollRunDetailPage() {
                 {(data.entries ?? []).map(e => (
                   <tr key={e.id} className="hover:bg-slate-50/50">
                     <td className="px-6 py-3">
-                      <div className="text-[13px] font-bold text-slate-900">{e.employee.firstName} {e.employee.lastName}</div>
-                      <div className="text-[11px] text-slate-500 mt-0.5">{e.employee.staffId}{e.employee.jobTitle ? ` · ${e.employee.jobTitle}` : ''}</div>
+                      <EmployeeChip
+                        employeeId={e.employee.id}
+                        name={`${e.employee.firstName} ${e.employee.lastName}`}
+                        sublabel={`${e.employee.staffId}${e.employee.jobTitle ? ` · ${e.employee.jobTitle}` : ''}`}
+                        size="sm"
+                      />
                     </td>
                     <td className="px-6 py-3 text-[12px] text-slate-700">{fmt(e.basicSalary)}</td>
                     <td className="px-6 py-3 text-[12px] text-slate-700">{fmt(e.grossPay)}</td>
