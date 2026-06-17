@@ -231,6 +231,29 @@ export default function WorkforcePage() {
                 )
               }
             ]}
+            filters={[
+              {
+                key: 'status',
+                label: 'Status',
+                options: Array.from(new Set(filteredEmployees.map(e => e.status).filter(Boolean)))
+                  .sort()
+                  .map(v => ({ label: v, value: v })),
+              },
+              {
+                key: 'hub',
+                label: 'Hub',
+                options: Array.from(new Set(filteredEmployees.map(e => e.hub).filter(Boolean)))
+                  .sort()
+                  .map(v => ({ label: v, value: v })),
+              },
+              {
+                key: 'role',
+                label: 'Role',
+                options: Array.from(new Set(filteredEmployees.map(e => e.role).filter(Boolean)))
+                  .sort()
+                  .map(v => ({ label: v, value: v })),
+              },
+            ]}
             onRowClick={(row) => setSelectedStaff(row)}
           />
         </>

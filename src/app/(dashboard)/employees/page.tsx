@@ -41,9 +41,38 @@ export default function EmployeesPage() {
   const { openProfile } = useEmployeeProfile();
   const [viewMode, setViewMode] = useState<'REGISTRY' | 'CHART'>('REGISTRY');
 
-  const filteredEmployees = employees.filter(emp => 
+  const filteredEmployees = employees.filter(emp =>
     currentHub === 'All Regions' || emp.hub === currentHub
   );
+
+  // Build filter dropdown options from the data itself so they reflect
+  // exactly what's present — no stale enum lists. Sorted alphabetically.
+  const filterDefs = React.useMemo(() => {
+    const uniq = (xs: Array<string | undefined | null>) =>
+      Array.from(new Set(xs.filter(Boolean) as string[])).sort();
+    return [
+      {
+        key: 'status',
+        label: 'Status',
+        options: uniq(filteredEmployees.map(e => e.status)).map(v => ({ label: v, value: v })),
+      },
+      {
+        key: 'hub',
+        label: 'Hub',
+        options: uniq(filteredEmployees.map(e => e.hub)).map(v => ({ label: v, value: v })),
+      },
+      {
+        key: 'role',
+        label: 'Role',
+        options: uniq(filteredEmployees.map(e => e.role)).map(v => ({ label: v, value: v })),
+      },
+      {
+        key: 'department',
+        label: 'Department',
+        options: uniq(filteredEmployees.map(e => e.department)).map(v => ({ label: v, value: v })),
+      },
+    ];
+  }, [filteredEmployees]);
   
   // Governance Interaction State
   const [activeGovernance, setActiveGovernance] = useState<{ 
@@ -201,6 +230,7 @@ export default function EmployeesPage() {
           data={filteredEmployees}
           columns={columns}
           rowActions={rowActions}
+          filters={filterDefs}
         />
       ) : (
         <OrgChart />
