@@ -100,7 +100,7 @@ export const CreateExpenditureModal: React.FC<{ isOpen: boolean; onClose: () => 
                label="Departmental Unit"
                value={department}
                onChange={setDepartment}
-               options={departments.filter(d => d.parentHub === hub).map(d => ({ label: d.name, value: d.name }))}
+               options={departments.filter(d => d.hub?.name === hub).map(d => ({ label: d.name, value: d.name }))}
              />
           </div>
           <Select 
