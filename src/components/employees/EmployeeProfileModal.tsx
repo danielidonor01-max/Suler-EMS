@@ -24,6 +24,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import {
   Mail, Phone, Briefcase, Building2, ShieldCheck, AlertTriangle,
   CheckCircle2, Edit3, Lock, ChevronDown, ChevronUp, Send,
+  FileText, Download, Upload, Trash2, Paperclip,
 } from 'lucide-react';
 import { Modal } from '../common/Modal';
 import { useApi } from '@/lib/api/use-api';
@@ -249,6 +250,12 @@ function ViewBlock({
           </div>
         </Section>
       )}
+
+      {/* Documents */}
+      <DocumentsSection
+        employeeId={profile.id}
+        canManage={profile.capabilities.canEdit}
+      />
 
       {/* Compliance (collapsible) */}
       <div className="border border-slate-100 rounded-2xl overflow-hidden">
@@ -557,4 +564,263 @@ function Alert({ tone, message }: { tone: 'rose' | 'emerald'; message: string })
 
 function formatDate(iso: string): string {
   return new Intl.DateTimeFormat('en-NG', { day: '2-digit', month: 'short', year: 'numeric' }).format(new Date(iso));
+}
+
+// ─── Documents section ───────────────────────────────────────────────────────
+
+interface DocRow {
+  id: string;
+  kind: string;
+  fileName: string;
+  mimeType: string;
+  sizeBytes: number;
+  description: string | null;
+  createdAt: string;
+  uploadedBy: { id: string; name: string; email: string };
+}
+
+const KIND_LABEL: Record<string, string> = {
+  RESUME:      'Resume / CV',
+  CERTIFICATE: 'Certificate',
+  ID_CARD:     'ID Card',
+  CONTRACT:    'Contract',
+  TAX_DOC:     'Tax Document',
+  OTHER:       'Other',
+};
+
+function DocumentsSection({ employeeId, canManage }: { employeeId: string; canManage: boolean }) {
+  const { data: docs = [], refresh } = useApi<DocRow[]>(
+    `/api/employees/${employeeId}/documents`,
+    { pollMs: false },
+  );
+
+  const [showUpload, setShowUpload] = useState(false);
+
+  return (
+    <div className="space-y-3">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Paperclip className="w-4 h-4 text-slate-400" />
+          <h4 className="text-[11px] font-bold text-slate-400 uppercase tracking-[0.2em]">
+            Documents
+            <span className="ml-2 text-slate-300">{docs.length > 0 ? `(${docs.length})` : ''}</span>
+          </h4>
+        </div>
+        {canManage && (
+          <button
+            type="button"
+            onClick={() => setShowUpload(v => !v)}
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-900 hover:bg-black text-white rounded-lg text-[10px] font-bold uppercase tracking-widest"
+          >
+            <Upload className="w-3 h-3" />
+            {showUpload ? 'Close' : 'Upload'}
+          </button>
+        )}
+      </div>
+
+      {showUpload && canManage && (
+        <UploadForm
+          employeeId={employeeId}
+          onClose={() => setShowUpload(false)}
+          onUploaded={() => { setShowUpload(false); refresh(); }}
+        />
+      )}
+
+      {docs.length === 0 ? (
+        <div className="p-5 bg-slate-50 border border-slate-100 rounded-xl text-center text-[12px] text-slate-500">
+          No documents on file yet.
+          {canManage && ' Click Upload to add a resume, certificate, contract, etc.'}
+        </div>
+      ) : (
+        <div className="space-y-2">
+          {docs.map(d => (
+            <DocumentRow
+              key={d.id}
+              employeeId={employeeId}
+              doc={d}
+              canManage={canManage}
+              onDeleted={refresh}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function DocumentRow({
+  employeeId, doc, canManage, onDeleted,
+}: {
+  employeeId: string;
+  doc: DocRow;
+  canManage: boolean;
+  onDeleted: () => void;
+}) {
+  const [deleting, setDeleting] = useState(false);
+
+  const handleDelete = async () => {
+    if (!confirm(`Delete "${doc.fileName}"? This cannot be undone.`)) return;
+    setDeleting(true);
+    try {
+      await apiMutate(`/api/employees/${employeeId}/documents/${doc.id}`, 'DELETE');
+      onDeleted();
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Could not delete document');
+    } finally {
+      setDeleting(false);
+    }
+  };
+
+  return (
+    <div className="flex items-center gap-3 p-3 bg-white border border-slate-200 rounded-xl">
+      <div className="w-10 h-10 rounded-lg bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-500 shrink-0">
+        <FileText className="w-5 h-5" />
+      </div>
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2">
+          <span className="text-[12px] font-bold text-slate-900 truncate">{doc.fileName}</span>
+          <span className="px-1.5 py-0.5 bg-slate-100 text-slate-600 rounded text-[9px] font-bold uppercase tracking-widest shrink-0">
+            {KIND_LABEL[doc.kind] ?? doc.kind}
+          </span>
+        </div>
+        <div className="text-[10px] text-slate-400 mt-0.5">
+          {formatFileSize(doc.sizeBytes)} · uploaded by {doc.uploadedBy.name} · {formatDate(doc.createdAt)}
+        </div>
+        {doc.description && (
+          <div className="text-[11px] text-slate-500 mt-1 italic">{doc.description}</div>
+        )}
+      </div>
+      <div className="flex items-center gap-1 shrink-0">
+        <a
+          href={`/api/employees/${employeeId}/documents/${doc.id}/download`}
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label={`Download ${doc.fileName}`}
+          className="w-8 h-8 flex items-center justify-center rounded-lg text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition-colors"
+        >
+          <Download className="w-3.5 h-3.5" />
+        </a>
+        {canManage && (
+          <button
+            type="button"
+            onClick={handleDelete}
+            disabled={deleting}
+            aria-label={`Delete ${doc.fileName}`}
+            className="w-8 h-8 flex items-center justify-center rounded-lg text-slate-500 hover:text-rose-600 hover:bg-rose-50 transition-colors disabled:opacity-60"
+          >
+            <Trash2 className="w-3.5 h-3.5" />
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function UploadForm({
+  employeeId, onClose, onUploaded,
+}: {
+  employeeId: string;
+  onClose: () => void;
+  onUploaded: () => void;
+}) {
+  const [kind, setKind] = useState('RESUME');
+  const [description, setDescription] = useState('');
+  const [file, setFile] = useState<File | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!file) {
+      setError('Pick a file first.');
+      return;
+    }
+    setError(null);
+    setBusy(true);
+    const fd = new FormData();
+    fd.append('file', file);
+    fd.append('kind', kind);
+    if (description) fd.append('description', description);
+    try {
+      const res = await fetch(`/api/employees/${employeeId}/documents`, {
+        method: 'POST',
+        body:   fd,
+        credentials: 'include',
+      });
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        throw new Error(json?.error?.message ?? json?.message ?? `HTTP ${res.status}`);
+      }
+      onUploaded();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Upload failed');
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-3">
+      <div className="grid grid-cols-2 gap-3">
+        <div className="space-y-1.5">
+          <label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Type</label>
+          <select
+            aria-label="Document type"
+            value={kind}
+            onChange={(e) => setKind(e.target.value)}
+            className="w-full h-[40px] bg-white border border-slate-200 rounded-lg px-3 text-[12px] font-bold outline-none focus:border-indigo-500"
+          >
+            {Object.entries(KIND_LABEL).map(([code, label]) => (
+              <option key={code} value={code}>{label}</option>
+            ))}
+          </select>
+        </div>
+        <div className="space-y-1.5">
+          <label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">File (max 4 MB)</label>
+          <input
+            type="file"
+            aria-label="File"
+            accept=".pdf,.jpg,.jpeg,.png,.webp,.doc,.docx,.xls,.xlsx,.txt,application/pdf,image/*"
+            onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+            className="w-full h-[40px] bg-white border border-slate-200 rounded-lg px-2 text-[11px] outline-none focus:border-indigo-500 file:mr-2 file:h-7 file:rounded file:border-0 file:bg-slate-900 file:text-white file:text-[10px] file:font-bold file:uppercase file:tracking-widest file:cursor-pointer"
+          />
+        </div>
+      </div>
+      <div className="space-y-1.5">
+        <label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Description (optional)</label>
+        <input
+          type="text"
+          aria-label="Description"
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          placeholder="e.g. 2024 NIBSS certification"
+          className="w-full h-[40px] bg-white border border-slate-200 rounded-lg px-3 text-[12px] outline-none focus:border-indigo-500"
+        />
+      </div>
+      {error && <Alert tone="rose" message={error} />}
+      <div className="flex gap-2">
+        <button
+          type="button"
+          onClick={onClose}
+          disabled={busy}
+          className="flex-1 h-9 bg-white border border-slate-200 text-slate-700 rounded-lg text-[10px] font-bold uppercase tracking-widest disabled:opacity-60"
+        >
+          Cancel
+        </button>
+        <button
+          type="submit"
+          disabled={busy || !file}
+          className="flex-1 h-9 bg-slate-900 hover:bg-black text-white rounded-lg text-[10px] font-bold uppercase tracking-widest disabled:opacity-60"
+        >
+          {busy ? 'Uploading…' : 'Upload'}
+        </button>
+      </div>
+    </form>
+  );
+}
+
+function formatFileSize(bytes: number): string {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
 }
