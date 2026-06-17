@@ -432,11 +432,17 @@ model ReportJob {
   id              String  @id @default(uuid())
   userId          String
   user            User    @relation(fields: [userId], references: [id])
-  type            String // WORKFORCE_COMPOSITION, ATTENDANCE_COMPLIANCE, etc.
+  type            String // WORKFORCE_HEADCOUNT, LEAVE_BALANCE, AUDIT_LOG, …
   parameters      Json? // Query filters and scope
   status          String  @default("PENDING") // PENDING, PROCESSING, COMPLETED, FAILED, EXPIRED, ARCHIVED
   format          String  @default("CSV") // CSV, PDF
   downloadUrl     String?
+  // Inline file payload — same BYTEA pattern as EmployeeDocument.
+  // Reports for a small/medium EMS are well under Vercel's 4 MB
+  // function body cap. If you outgrow this, swap for a Supabase
+  // Storage key.
+  data            Bytes?
+  fileName        String?
   failureCategory String? // VALIDATION, EXPORT, STORAGE, AUTHORIZATION, TIMEOUT
   error           String?
 

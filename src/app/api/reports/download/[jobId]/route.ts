@@ -1,74 +1,69 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth/auth.config';
 import prisma from '@/lib/prisma';
-import { StorageService } from '@/lib/storage/storage.service';
-import fs from 'fs';
 
 /**
- * Secure Report Download Endpoint
- * Validates session, ownership, and role-based permissions.
+ * GET /api/reports/download/[jobId]
+ *
+ * Streams the COMPLETED report's CSV bytes from ReportJob.data. The
+ * filesystem-backed StorageService approach the prior version used
+ * doesn't survive Vercel's ephemeral filesystem — we now store the
+ * payload inline in Postgres alongside the job row.
+ *
+ * Authorization: job owner OR SUPER_ADMIN. Expired jobs return 410.
  */
 export async function GET(
-  req: NextRequest,
-  { params }: { params: Promise<{ jobId: string }> }
+  _req: NextRequest,
+  { params }: { params: Promise<{ jobId: string }> },
 ) {
   try {
     const session = await auth();
     if (!session?.user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const { jobId } = await params;
 
-    // 1. Fetch Job Metadata
     const job = await prisma.reportJob.findUnique({
-      where: { id: jobId },
-      include: { user: { select: { id: true, role: { select: { name: true } } } } }
+      where:  { id: jobId },
+      select: {
+        id: true, userId: true, type: true, status: true, format: true,
+        data: true, fileName: true, expiresAt: true,
+      },
     });
 
     if (!job) {
-      return NextResponse.json({ error: "Report not found" }, { status: 404 });
+      return NextResponse.json({ error: 'Report not found' }, { status: 404 });
     }
 
-    // 2. Authorization Refinement 2: Ownership & Permission Checks
-    const isOwner = job.userId === session.user.id;
-    const isSuperAdmin = session.user.role === 'SUPER_ADMIN';
-
+    const isOwner      = job.userId === (session.user as any).id;
+    const isSuperAdmin = (session.user as any).role === 'SUPER_ADMIN';
     if (!isOwner && !isSuperAdmin) {
-      return NextResponse.json({ error: "Forbidden: You do not own this report" }, { status: 403 });
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    // 3. Lifecycle Check: Expiry
+    if (job.status !== 'COMPLETED' || !job.data) {
+      return NextResponse.json({ error: `Report is ${job.status.toLowerCase()}` }, { status: 409 });
+    }
     if (job.expiresAt && new Date() > job.expiresAt) {
-      return NextResponse.json({ error: "Report has expired" }, { status: 410 });
+      return NextResponse.json({ error: 'Report has expired' }, { status: 410 });
     }
 
-    // 4. Retrieve File
-    // Note: StorageService.getFilePath returns the physical path
-    // The downloadUrl in DB is /api/reports/download/{secureId}
-    const filePath = StorageService.getFilePath(job.id);
-    if (!filePath || !fs.existsSync(filePath)) {
-      return NextResponse.json({ error: "File artifact missing" }, { status: 404 });
-    }
+    // Wrap as a Blob — same TS 5.7+ BodyInit narrowing we ran into on the
+    // employee document download. Blob is unambiguous.
+    const contentType = job.format === 'PDF' ? 'application/pdf' : 'text/csv';
+    const blob = new Blob([job.data as unknown as ArrayBuffer], { type: contentType });
+    const fileName = (job.fileName ?? `${job.type.toLowerCase()}-${job.id.slice(0, 8)}.${job.format.toLowerCase()}`).replace(/"/g, '');
 
-    const fileBuffer = await fs.promises.readFile(filePath);
-    const contentType = job.format === 'CSV' ? 'text/csv' : 'application/pdf';
-    const filename = `${job.type.toLowerCase()}_${job.id.slice(0, 8)}.${job.format.toLowerCase()}`;
-
-    // 5. Audit: Track download event
-    console.log(`[AUDIT] Report Downloaded: ${job.id} by ${session.user.id}`);
-
-    return new NextResponse(fileBuffer, {
+    return new NextResponse(blob, {
       status: 200,
       headers: {
-        'Content-Type': contentType,
-        'Content-Disposition': `attachment; filename="${filename}"`,
-        'Cache-Control': 'no-store, max-age=0'
-      }
+        'Content-Disposition': `attachment; filename="${fileName}"`,
+        'Cache-Control':       'private, no-store',
+      },
     });
-
-  } catch (err: any) {
-    console.error(`[ERROR] Download failed: ${err.message}`);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : 'Internal server error';
+    return NextResponse.json({ error: msg }, { status: 500 });
   }
 }
