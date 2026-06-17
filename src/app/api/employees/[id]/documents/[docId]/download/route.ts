@@ -46,7 +46,12 @@ export const GET = withAuth(async (_req, session, context) => {
     // Escape quotes in filename to keep the header well-formed.
     const safeName = doc.fileName.replace(/"/g, '');
 
-    return new Response(doc.data as unknown as Buffer, {
+    // Prisma's Bytes column returns a Node Buffer at runtime, but the TS
+    // BodyInit union doesn't include Buffer. Buffer extends Uint8Array, so
+    // a structural cast satisfies the type checker without copying.
+    const body = doc.data as unknown as Uint8Array;
+
+    return new Response(body, {
       status: 200,
       headers: {
         'Content-Type':        doc.mimeType || 'application/octet-stream',
