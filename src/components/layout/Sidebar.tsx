@@ -118,6 +118,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle }) => {
     { name: 'Organization', icon: Building2, href: '/admin/organization', permission: Permissions.SETTINGS_MANAGE },
     { name: 'Roles & Permissions', icon: ShieldCheck, href: '/admin/roles', permission: Permissions.ROLE_MANAGE },
     { name: 'Users', icon: UserCircle, href: '/admin/users', permission: Permissions.ROLE_MANAGE },
+    { name: 'Profile Requests', icon: Send, href: '/admin/profile-requests', permission: Permissions.WORKFORCE_EDIT },
     { name: 'Audit Registry', icon: History, href: '/governance', permission: Permissions.AUDIT_VIEW },
   ].filter(m => !m.permission || checkPermission(m.permission as any).allowed);
 
