@@ -1,207 +1,169 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+/**
+ * Teams — DB-backed via /api/teams.
+ *
+ * Same SWR pattern as OrganizationContext: a 30s polling window so a
+ * change made elsewhere (other tab / device / direct API call) shows
+ * up without manual refresh, and mutations call apiMutate then
+ * revalidate the cache.
+ */
+
+import React, { createContext, useCallback, useContext, useMemo, ReactNode } from 'react';
+import useSWR from 'swr';
+import { apiFetcher, apiMutate } from '@/lib/api/fetcher';
 import { useActivity } from './ActivityContext';
 import { useAccess } from './AccessContext';
 
+export interface TeamMember {
+  membershipId: string;
+  role: string | null;
+  joinedAt: string;
+  employee: {
+    id: string;
+    name: string;
+    staffId: string;
+    jobTitle: string;
+  };
+}
+
 export interface Team {
   id: string;
+  code: string;
   name: string;
-  description: string;
-  department: string;
-  hub: string;
-  managerId: string;    // staffId from the seed (e.g. 'SUL-ADMIN-001')
-  managerName?: string; // Display name — optional, falls back to managerId on display
-  members: string[];   // Array of staffIds
+  description: string | null;
   status: 'ACTIVE' | 'INACTIVE';
-  performanceScore: number;
-  activeTasks: number;
+  hub: { id: string; code: string; name: string } | null;
+  hubId: string | null;
+  department: { id: string; code: string; name: string } | null;
+  departmentId: string | null;
+  manager: { id: string; name: string; jobTitle: string | null } | null;
+  managerId: string | null;
+  members: TeamMember[];
+  memberCount: number;
   createdAt: string;
-  _v: number;
+  updatedAt: string;
+}
+
+interface NewTeamInput {
+  code: string;
+  name: string;
+  description?: string | null;
+  hubId?: string | null;
+  departmentId?: string | null;
+  managerId?: string | null;
+  members?: Array<{ employeeId: string; role?: string | null }>;
+}
+
+interface UpdateTeamInput {
+  name?: string;
+  description?: string | null;
+  status?: Team['status'];
+  hubId?: string | null;
+  departmentId?: string | null;
+  managerId?: string | null;
 }
 
 interface TeamContextType {
   teams: Team[];
-  addTeam: (team: Omit<Team, 'id' | 'status' | 'performanceScore' | 'activeTasks' | 'createdAt' | '_v'>) => void;
-  updateTeam: (id: string, updates: Partial<Team>) => void;
-  deleteTeam: (id: string) => void;
-  addMemberToTeam: (teamId: string, employeeId: string) => void;
-  removeMemberFromTeam: (teamId: string, employeeId: string) => void;
-  assignTeamManager: (teamId: string, employeeId: string) => void;
+  teamsLoading: boolean;
+  teamsError: Error | undefined;
+  addTeam: (input: NewTeamInput) => Promise<void>;
+  updateTeam: (id: string, updates: UpdateTeamInput) => Promise<void>;
+  deleteTeam: (id: string) => Promise<void>;
+  addMemberToTeam: (teamId: string, employeeId: string, role?: string | null) => Promise<void>;
+  removeMemberFromTeam: (teamId: string, employeeId: string) => Promise<void>;
+  assignTeamManager: (teamId: string, employeeId: string | null) => Promise<void>;
 }
 
 const TeamContext = createContext<TeamContextType | undefined>(undefined);
 
-// Manager and member IDs reference seed staffIds (prisma/seed.ts STAFF array).
-// Hub names match OrganizationContext SEEDED_HUBS — 'Lagos' not 'Lagos HQ'.
-// Bump _v + the storage key below when this changes.
-const SEEDED_TEAMS: Team[] = [
-  {
-    id: 'TEAM-01',
-    name: 'Executive Operations',
-    description: 'Core operational leadership and strategic execution.',
-    department: 'Operations',
-    hub: 'Lagos',
-    managerId: 'SUL-ADMIN-001',
-    managerName: 'Olumide Adeyemi',
-    members: ['SUL-ADMIN-001', 'SUL-MGR-001'],
-    status: 'ACTIVE',
-    performanceScore: 94,
-    activeTasks: 12,
-    createdAt: new Date().toISOString(),
-    _v: 2
-  },
-  {
-    id: 'TEAM-02',
-    name: 'Talent & People Ops',
-    description: 'Recruitment, employee experience, and HR partnership.',
-    department: 'Human Resources',
-    hub: 'Lagos',
-    managerId: 'SUL-HR-001',
-    managerName: 'Chiamaka Obi',
-    members: ['SUL-HR-001', 'SUL-HR-002'],
-    status: 'ACTIVE',
-    performanceScore: 88,
-    activeTasks: 5,
-    createdAt: new Date().toISOString(),
-    _v: 2
-  },
-  {
-    id: 'TEAM-03',
-    name: 'Treasury & Disbursement',
-    description: 'Finance controls, payouts, and reconciliation.',
-    department: 'Finance & Treasury',
-    hub: 'Abuja',
-    managerId: 'SUL-FIN-001',
-    managerName: 'Adaeze Nnamdi',
-    members: ['SUL-FIN-001', 'SUL-FIN-002', 'SUL-FIN-003'],
-    status: 'ACTIVE',
-    performanceScore: 91,
-    activeTasks: 7,
-    createdAt: new Date().toISOString(),
-    _v: 2
-  },
-  {
-    id: 'TEAM-04',
-    name: 'Port Harcourt Logistics',
-    description: 'Warehousing, distribution, and field operations.',
-    department: 'Logistics',
-    hub: 'Port Harcourt',
-    managerId: 'SUL-MGR-003',
-    managerName: 'Tunde Bakare',
-    members: ['SUL-MGR-003', 'SUL-EMP-011', 'SUL-EMP-012', 'SUL-EMP-013', 'SUL-EMP-014', 'SUL-EMP-015', 'SUL-EMP-016'],
-    status: 'ACTIVE',
-    performanceScore: 85,
-    activeTasks: 9,
-    createdAt: new Date().toISOString(),
-    _v: 2
-  }
-];
-
 export const TeamProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [teams, setTeams] = useState<Team[]>([]);
+  const {
+    data: teams = [],
+    error: teamsError,
+    isLoading: teamsLoading,
+    mutate: revalidate,
+  } = useSWR<Team[]>('/api/teams', apiFetcher, { refreshInterval: 30_000 });
+
   const { pushActivity } = useActivity();
   const { userRole } = useAccess();
 
-  useEffect(() => {
-    // v2 cache key — pre-v2 entries used fictional EMP-XXX manager IDs
-    // and 'Lagos HQ' as the hub name. Wipe them on first load.
-    try { localStorage.removeItem('suler_teams'); } catch { /* private mode */ }
-    const savedTeams = localStorage.getItem('suler_teams_v2');
-    if (savedTeams) {
-      setTeams(JSON.parse(savedTeams));
-    } else {
-      setTeams(SEEDED_TEAMS);
-      localStorage.setItem('suler_teams_v2', JSON.stringify(SEEDED_TEAMS));
-    }
+  // Pre-v3 cleanup on first mount — old localStorage cache shouldn't shadow
+  // server data. Idempotent / safe to run on every reload.
+  React.useEffect(() => {
+    if (typeof window === 'undefined') return;
+    try {
+      ['suler_teams', 'suler_teams_v2'].forEach(k => localStorage.removeItem(k));
+    } catch { /* private mode */ }
   }, []);
 
-  const syncState = (nextTeams: Team[]) => {
-    setTeams(nextTeams);
-    localStorage.setItem('suler_teams_v2', JSON.stringify(nextTeams));
-  };
-
-  const addTeam = (teamData: Omit<Team, 'id' | 'status' | 'performanceScore' | 'activeTasks' | 'createdAt' | '_v'>) => {
-    const newTeam: Team = {
-      ...teamData,
-      id: `TEAM-${Math.floor(Math.random() * 1000).toString().padStart(3, '0')}`,
-      status: 'ACTIVE',
-      performanceScore: 0,
-      activeTasks: 0,
-      createdAt: new Date().toISOString(),
-      _v: 1
-    };
-    
-    syncState([...teams, newTeam]);
-
+  const addTeam = useCallback(async (input: NewTeamInput) => {
+    await apiMutate('/api/teams', 'POST', input);
+    await revalidate();
     pushActivity({
       type: 'GOVERNANCE',
       label: 'Operational Team Created',
-      message: `New execution unit [${newTeam.name}] established within ${newTeam.hub}.`,
+      message: `New execution unit [${input.name}] established.`,
       author: userRole,
-      status: 'SUCCESS'
+      status: 'SUCCESS',
     } as any);
-  };
+  }, [revalidate, pushActivity, userRole]);
 
-  const updateTeam = (id: string, updates: Partial<Team>) => {
-    const nextTeams = teams.map(t => t.id === id ? { ...t, ...updates, _v: t._v + 1 } : t);
-    syncState(nextTeams);
-
+  const updateTeam = useCallback(async (id: string, updates: UpdateTeamInput) => {
+    const target = teams.find(t => t.id === id);
+    await apiMutate(`/api/teams/${id}`, 'PATCH', updates);
+    await revalidate();
     pushActivity({
       type: 'GOVERNANCE',
-      label: 'Team Parameters Mutated',
-      message: `Operational configuration for [${teams.find(t => t.id === id)?.name}] updated.`,
+      label: 'Team Parameters Updated',
+      message: `Configuration for [${target?.name ?? id}] updated.`,
       author: userRole,
-      status: 'SUCCESS'
+      status: 'SUCCESS',
     } as any);
-  };
+  }, [teams, revalidate, pushActivity, userRole]);
 
-  const deleteTeam = (id: string) => {
-    const teamToDelete = teams.find(t => t.id === id);
-    if (!teamToDelete) return;
-
-    syncState(teams.filter(t => t.id !== id));
-
+  const deleteTeam = useCallback(async (id: string) => {
+    const target = teams.find(t => t.id === id);
+    await apiMutate(`/api/teams/${id}`, 'DELETE');
+    await revalidate();
     pushActivity({
       type: 'GOVERNANCE',
       label: 'Operational Team Dissolved',
-      message: `Execution unit [${teamToDelete.name}] has been decommissioned.`,
+      message: `Execution unit [${target?.name ?? id}] decommissioned.`,
       author: userRole,
-      status: 'SUCCESS'
+      status: 'SUCCESS',
     } as any);
-  };
+  }, [teams, revalidate, pushActivity, userRole]);
 
-  const addMemberToTeam = (teamId: string, employeeId: string) => {
-    const team = teams.find(t => t.id === teamId);
-    if (team && !team.members.includes(employeeId)) {
-      updateTeam(teamId, { members: [...team.members, employeeId] });
-    }
-  };
+  const addMemberToTeam = useCallback(async (teamId: string, employeeId: string, role?: string | null) => {
+    await apiMutate(`/api/teams/${teamId}/members`, 'POST', { employeeId, role: role ?? null });
+    await revalidate();
+  }, [revalidate]);
 
-  const removeMemberFromTeam = (teamId: string, employeeId: string) => {
-    const team = teams.find(t => t.id === teamId);
-    if (team) {
-      updateTeam(teamId, { members: team.members.filter(id => id !== employeeId) });
-    }
-  };
+  const removeMemberFromTeam = useCallback(async (teamId: string, employeeId: string) => {
+    await apiMutate(`/api/teams/${teamId}/members/${employeeId}`, 'DELETE');
+    await revalidate();
+  }, [revalidate]);
 
-  const assignTeamManager = (teamId: string, employeeId: string) => {
-    updateTeam(teamId, { managerId: employeeId });
-  };
+  const assignTeamManager = useCallback(async (teamId: string, employeeId: string | null) => {
+    await apiMutate(`/api/teams/${teamId}`, 'PATCH', { managerId: employeeId });
+    await revalidate();
+  }, [revalidate]);
 
-  return (
-    <TeamContext.Provider value={{ 
-      teams, 
-      addTeam, 
-      updateTeam, 
-      deleteTeam, 
-      addMemberToTeam, 
-      removeMemberFromTeam, 
-      assignTeamManager 
-    }}>
-      {children}
-    </TeamContext.Provider>
-  );
+  const value = useMemo<TeamContextType>(() => ({
+    teams,
+    teamsLoading,
+    teamsError: teamsError as Error | undefined,
+    addTeam,
+    updateTeam,
+    deleteTeam,
+    addMemberToTeam,
+    removeMemberFromTeam,
+    assignTeamManager,
+  }), [teams, teamsLoading, teamsError, addTeam, updateTeam, deleteTeam, addMemberToTeam, removeMemberFromTeam, assignTeamManager]);
+
+  return <TeamContext.Provider value={value}>{children}</TeamContext.Provider>;
 };
 
 export const useTeams = () => {

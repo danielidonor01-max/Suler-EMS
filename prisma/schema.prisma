@@ -116,8 +116,38 @@ model Hub {
   managerId   String?
   manager     Employee?    @relation("HubManager", fields: [managerId], references: [id])
   departments Department[]
+  teams       Team[]
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
+}
+
+model Team {
+  id           String           @id @default(uuid())
+  code         String           @unique // e.g. "TEAM-01"
+  name         String
+  description  String?
+  status       String           @default("ACTIVE") // ACTIVE, INACTIVE
+  hubId        String?
+  hub          Hub?             @relation(fields: [hubId], references: [id])
+  departmentId String?
+  department   Department?      @relation(fields: [departmentId], references: [id])
+  managerId    String?
+  manager      Employee?        @relation("TeamManager", fields: [managerId], references: [id])
+  members      TeamMembership[]
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+}
+
+model TeamMembership {
+  id         String   @id @default(uuid())
+  teamId     String
+  team       Team     @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  employeeId String
+  employee   Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  role       String?  // e.g. "Lead", "Contributor"
+  joinedAt   DateTime @default(now())
+
+  @@unique([teamId, employeeId])
 }
 
 model LeaveType {
@@ -147,6 +177,7 @@ model Department {
   hubId         String?
   hub           Hub?         @relation(fields: [hubId], references: [id])
   employees     Employee[]
+  teams         Team[]
   budgets       Budget[]
   payrollRuns   PayrollRun[]
   createdAt     DateTime     @default(now())
@@ -184,6 +215,8 @@ model Employee {
   // --- Organization back-relations ---
   hubsManaged     Hub[]                      @relation("HubManager")
   deptsManaged    Department[]               @relation("DeptManager")
+  teamsLed        Team[]                     @relation("TeamManager")
+  teamMemberships TeamMembership[]
 
   // --- Finance & Payroll relations ---
   salaryStructures   SalaryStructure[]

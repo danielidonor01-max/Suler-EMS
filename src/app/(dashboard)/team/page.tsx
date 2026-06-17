@@ -14,7 +14,6 @@ import {
 } from 'lucide-react';
 import { useTeams, Team } from '@/context/TeamContext';
 import { useOrganization } from '@/context/OrganizationContext';
-import { useWorkforce } from '@/context/WorkforceContext';
 import { DataTable } from '@/components/tables/DataTable';
 import { CreateTeamModal, AddMemberModal } from '@/components/modals/TeamModals';
 import { CapabilityIntelligence } from '@/components/dashboard/CapabilityIntelligence';
@@ -23,56 +22,61 @@ import { CapacityIntelligencePanel } from '@/components/team/CapacityIntelligenc
 export default function TeamsPage() {
   const { teams, deleteTeam } = useTeams();
   const { currentHub } = useOrganization();
-  const { employees } = useWorkforce();
   const router = useRouter();
   
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [selectedTeam, setSelectedTeam] = useState<Team | null>(null);
   const [isAddMemberOpen, setIsAddMemberOpen] = useState(false);
 
-  // Filter teams based on active context
-  const filteredTeams = teams.filter(t => 
-    currentHub === 'All Regions' || t.hub === currentHub
+  // Filter teams based on active context. The nested `hub` object means we
+  // read t.hub?.name instead of the old string field.
+  const filteredTeams = teams.filter(t =>
+    currentHub === 'All Regions' || t.hub?.name === currentHub
   );
 
   const teamColumns = [
     {
       header: "Team Identity",
       accessor: "name",
-      render: (val: string, team: Team) => (
+      render: (_val: string, team: Team) => (
         <div className="flex items-center gap-4">
           <div className="w-10 h-10 rounded-xl bg-slate-900 text-indigo-400 flex items-center justify-center border border-slate-800">
             <Users className="w-5 h-5" />
           </div>
           <div className="flex flex-col">
             <span className="text-[14px] font-bold text-slate-900 tracking-tight leading-none mb-1">{team.name}</span>
-            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">{team.hub}</span>
+            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+              {team.hub?.name ?? 'Unassigned'}{team.department ? ` · ${team.department.name}` : ''}
+            </span>
           </div>
         </div>
       )
     },
     {
       header: "Manager",
-      accessor: "managerId",
-      render: (val: string) => {
-        const mgr = employees.find(e => e.id === val);
+      accessor: "manager",
+      render: (_val: unknown, team: Team) => {
+        const name = team.manager?.name ?? 'Unassigned';
+        const initials = team.manager
+          ? name.split(' ').map(n => n[0]).join('').slice(0, 2)
+          : '??';
         return (
           <div className="flex items-center gap-2">
             <div className="w-7 h-7 rounded-full bg-indigo-50 border border-indigo-100 flex items-center justify-center text-[10px] font-black text-indigo-600 uppercase">
-              {mgr?.name.split(' ').map(n => n[0]).join('') || '??'}
+              {initials}
             </div>
-            <span className="text-slate-900 font-bold text-[13px]">{mgr?.name || 'Unassigned'}</span>
+            <span className="text-slate-900 font-bold text-[13px]">{name}</span>
           </div>
         );
       }
     },
     {
       header: "Registry Size",
-      accessor: "members",
-      render: (val: string[]) => (
+      accessor: "memberCount",
+      render: (_val: number, team: Team) => (
         <div className="flex items-center gap-2 text-slate-400">
           <ShieldCheck className="w-3.5 h-3.5" />
-          <span className="text-[12px] font-bold">{val.length} Members</span>
+          <span className="text-[12px] font-bold">{team.memberCount} Member{team.memberCount === 1 ? '' : 's'}</span>
         </div>
       )
     }
