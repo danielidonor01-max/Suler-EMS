@@ -1,8 +1,10 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import useSWR from 'swr';
+import { Eye } from 'lucide-react';
 import { apiFetcher } from '@/lib/api/fetcher';
+import { LeaveDetailsModal } from '@/components/leave/LeaveDetailsModal';
 
 interface LeaveRequestRow {
   id: string;
@@ -39,6 +41,7 @@ export default function RequestTrackerPage() {
   );
 
   const requests = data ?? [];
+  const [viewingId, setViewingId] = useState<string | null>(null);
 
   return (
     <div className="p-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -58,22 +61,23 @@ export default function RequestTrackerPage() {
                   <th className="px-6 py-4 text-[11px] font-bold text-slate-500 uppercase tracking-widest">Window</th>
                   <th className="px-6 py-4 text-[11px] font-bold text-slate-500 uppercase tracking-widest">Current Stage</th>
                   <th className="px-6 py-4 text-[11px] font-bold text-slate-500 uppercase tracking-widest">Status</th>
+                  <th className="px-6 py-4 text-[11px] font-bold text-slate-500 uppercase tracking-widest text-right">Action</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {isLoading && (
-                  <tr><td colSpan={5} className="px-6 py-12 text-center text-[13px] text-slate-500">Loading…</td></tr>
+                  <tr><td colSpan={6} className="px-6 py-12 text-center text-[13px] text-slate-500">Loading…</td></tr>
                 )}
                 {error && (
-                  <tr><td colSpan={5} className="px-6 py-12 text-center text-[13px] text-rose-700">Could not load requests: {error.message}</td></tr>
+                  <tr><td colSpan={6} className="px-6 py-12 text-center text-[13px] text-rose-700">Could not load requests: {error.message}</td></tr>
                 )}
                 {!isLoading && !error && requests.length === 0 && (
-                  <tr><td colSpan={5} className="px-6 py-12 text-center text-[13px] text-slate-500">No requests yet. Submit one from the Leave page.</td></tr>
+                  <tr><td colSpan={6} className="px-6 py-12 text-center text-[13px] text-slate-500">No requests yet. Submit one from the Leave page.</td></tr>
                 )}
                 {requests.map(r => {
                   const status = STATUS_LABELS[r.status] ?? { label: r.status, tone: 'bg-slate-100 text-slate-600' };
                   return (
-                    <tr key={r.id} className="hover:bg-slate-50/50 transition-colors cursor-pointer group">
+                    <tr key={r.id} className="hover:bg-slate-50/50 transition-colors group">
                       <td className="px-6 py-4">
                         <span className="text-[13px] font-bold text-slate-900 group-hover:text-indigo-600 transition-colors">{r.type} Leave</span>
                       </td>
@@ -87,6 +91,17 @@ export default function RequestTrackerPage() {
                           {status.label}
                         </span>
                       </td>
+                      <td className="px-6 py-4 text-right">
+                        <button
+                          type="button"
+                          aria-label="View request"
+                          onClick={() => setViewingId(r.id)}
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-slate-200 hover:border-indigo-300 hover:text-indigo-600 text-slate-600 rounded-lg text-[11px] font-bold uppercase tracking-widest transition-all"
+                        >
+                          <Eye className="w-3.5 h-3.5" />
+                          View
+                        </button>
+                      </td>
                     </tr>
                   );
                 })}
@@ -95,6 +110,11 @@ export default function RequestTrackerPage() {
           </div>
         </div>
       </div>
+
+      <LeaveDetailsModal
+        leaveRequestId={viewingId}
+        onClose={() => setViewingId(null)}
+      />
     </div>
   );
 }

@@ -1,19 +1,20 @@
 "use client";
 
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useRef, useState } from 'react';
 import {
-  Activity, Plus, ShieldCheck, Calendar, Clock, User,
+  Activity, Plus, ShieldCheck, Calendar, Clock,
   CheckCircle2, XCircle, Edit3, Trash2, Power, AlertTriangle,
-  ChevronLeft, ChevronRight,
+  ChevronLeft, ChevronRight, MoreVertical, Eye, LogOut,
 } from 'lucide-react';
 import { DataTable } from "@/components/tables/DataTable";
-import { Drawer } from "@/components/common/Drawer";
 import { Modal } from "@/components/common/Modal";
 import { WorkflowAction } from '@/modules/workflow/domain/workflow.types';
 import { WorkflowStatusBadge } from '@/components/workflow/WorkflowUI';
 import { MetricCard } from '@/components/dashboard/MetricCard';
-import { useApi, useApiMutation } from '@/lib/api/use-api';
+import { useApi } from '@/lib/api/use-api';
 import { apiMutate } from '@/lib/api/fetcher';
+import { LeaveDetailsModal } from '@/components/leave/LeaveDetailsModal';
+import { useDismiss } from '@/lib/hooks/use-dismiss';
 
 // ─── Tabs ─────────────────────────────────────────────────────────────────────
 const TABS = ['Approval Pipeline', 'Leave Calendar', 'Balance Tracker', 'Leave Types'];
@@ -83,36 +84,24 @@ function formatDates(start: string, end: string): { label: string; days: number 
   return { label: `${fmt(s)} – ${fmt(e)}`, days };
 }
 
-// ─── Workflow action UX ───────────────────────────────────────────────────────
-// Drives the explicit Approve / Reject / Cancel buttons in the drawer. Each
-// entry's `action` is the workflow action key the transition API expects.
-const ACTIONS_FOR_STATE: Record<string, Array<{
-  action: WorkflowAction;
-  label: string;
-  variant: 'approve' | 'reject' | 'neutral';
-  needsComment?: boolean;
-}>> = {
-  DRAFT:            [{ action: 'CANCEL', label: 'Withdraw', variant: 'neutral' }],
-  SUBMITTED:        [
-    { action: 'APPROVE_MANAGER', label: 'Approve as Manager',  variant: 'approve' },
-    { action: 'REJECT_MANAGER',  label: 'Reject',              variant: 'reject', needsComment: true },
-    { action: 'CANCEL',          label: 'Withdraw',            variant: 'neutral' },
-  ],
-  MANAGER_APPROVED: [
-    { action: 'APPROVE_HR', label: 'Final-approve as HR', variant: 'approve' },
-    { action: 'REJECT_HR',  label: 'Reject',              variant: 'reject', needsComment: true },
-  ],
-  HR_APPROVED:      [{ action: 'REVOKE', label: 'Revoke Approval', variant: 'reject', needsComment: true }],
-  REJECTED:         [],
-  CANCELLED:        [],
-};
-
 export default function LeaveRequestsPage() {
-  const [selectedRequest, setSelectedRequest] = useState<TableRow | null>(null);
   const [tab, setTab] = useState(0);
+
+  // Action affordances are now driven by the kebab on each row. The
+  // centred LeaveDetailsModal replaces the old side drawer for "View";
+  // ConfirmActionModal handles the Reject + Withdraw flows that need a
+  // comment / explicit confirmation. Approve fires directly.
+  const [viewingId, setViewingId] = useState<string | null>(null);
+  const [confirmAction, setConfirmAction] = useState<{
+    requestId: string;
+    action: WorkflowAction;
+    label: string;
+    employeeName: string;
+    needsComment: boolean;
+  } | null>(null);
+
   const [actionError, setActionError] = useState<string | null>(null);
   const [actionBusy, setActionBusy] = useState(false);
-  const [rejectComment, setRejectComment] = useState('');
 
   // Leave-type catalogue — drives the request-type label, type-tab cards,
   // and (when used elsewhere) the submission form's type dropdown.
@@ -125,13 +114,11 @@ export default function LeaveRequestsPage() {
   const { data: apiRequests, refresh } =
     useApi<ApiLeaveRequest[]>('/api/leave/requests?scope=all&limit=200', { pollMs: 30_000 });
 
-  const transitionMutation = useApiMutation<
-    { action: WorkflowAction; comment?: string },
-    unknown
-  >(
-    () => `/api/leave/requests/${selectedRequest?.id ?? ''}/transition`,
-    'PATCH',
-  );
+  // Transition mutator targets the id stashed in `confirmAction` (set when
+  // the kebab fires Reject/Withdraw) or the id passed directly to a
+  // quick-approve from the kebab. Either way we just pass the id when we
+  // build the URL — no need to keep a "selected" row in state anymore.
+  // Created per-call inside runAction below, so each call hits the right id.
 
   // Build a code→displayName map from the live catalogue so historical
   // requests render their human-readable type even if the catalogue evolves.
@@ -158,24 +145,37 @@ export default function LeaveRequestsPage() {
     });
   }, [apiRequests, typeLabel]);
 
-  const handleAction = async (action: WorkflowAction, comment?: string) => {
-    if (!selectedRequest) return;
+  // Run a workflow action against a specific request. Used by:
+  //   - Kebab "Approve" (fires immediately, no comment)
+  //   - ConfirmActionModal (Reject with comment, Withdraw without)
+  //   - LeaveDetailsModal action bar (when the View modal is open)
+  const runAction = async (requestId: string, action: WorkflowAction, comment?: string) => {
     setActionError(null);
     setActionBusy(true);
     try {
-      await transitionMutation.trigger({ action, comment });
+      await apiMutate(`/api/leave/requests/${requestId}/transition`, 'PATCH', { action, comment });
       await refresh();
-      setSelectedRequest(null);
-      setRejectComment('');
+      setConfirmAction(null);
+      setViewingId(null);
     } catch (err: any) {
       // Server-side guard surfaces 403 / 409 / 400 errors with descriptive
       // messages — show them inline so the actor knows whether it was an
       // authorization issue, state-machine violation, or validation failure.
-      const msg = err?.message ?? 'Transition failed';
-      setActionError(msg);
+      setActionError(err?.message ?? 'Transition failed');
     } finally {
       setActionBusy(false);
     }
+  };
+
+  const openConfirm = (row: TableRow, action: WorkflowAction, label: string, needsComment: boolean) => {
+    setActionError(null);
+    setConfirmAction({
+      requestId: row.id,
+      action,
+      label,
+      employeeName: row.employeeName,
+      needsComment,
+    });
   };
 
   const columns = [
@@ -212,6 +212,18 @@ export default function LeaveRequestsPage() {
         <span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">
           {new Intl.DateTimeFormat('en-NG', { day: '2-digit', month: 'short' }).format(new Date(val))}
         </span>
+      )
+    },
+    {
+      header: "Action", accessor: "id",
+      render: (_val: string, row: any) => (
+        <RowKebab
+          row={row as TableRow}
+          onView={() => setViewingId(row.id)}
+          onApprove={(a) => runAction(row.id, a)}
+          onReject={(a) => openConfirm(row as TableRow, a, 'Reject Request', true)}
+          onWithdraw={() => openConfirm(row as TableRow, 'CANCEL' as WorkflowAction, 'Withdraw Request', false)}
+        />
       )
     }
   ];
@@ -276,114 +288,39 @@ export default function LeaveRequestsPage() {
 
       {/* ── TAB 0: Approval Pipeline ─────────────────────────────────────── */}
       {tab === 0 && (
-        <>
-          <DataTable
-            title="Active Workflow Pipelines"
-            description="Real-time status of organization-wide leave requests and approval steps."
-            data={requests}
-            columns={columns}
-            onRowClick={(row) => setSelectedRequest(row)}
-          />
-
-          <Drawer
-            isOpen={!!selectedRequest}
-            onClose={() => setSelectedRequest(null)}
-            title={`Leave Request: ${selectedRequest?.employeeName}`}
-            subtitle={selectedRequest?.id as any}
-          >
-            <div className="space-y-10 animate-in">
-              <div className="p-7 bg-slate-50 border border-slate-100 rounded-[20px] space-y-6">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <User className="w-5 h-5 text-slate-400" />
-                    <span className="text-[13px] font-bold text-slate-900">{selectedRequest?.employeeName}</span>
-                  </div>
-                  <WorkflowStatusBadge state={selectedRequest?.currentState || ''} />
-                </div>
-                <div className="grid grid-cols-3 gap-6">
-                  <div className="space-y-1">
-                    <span className="text-[9px] font-bold text-slate-300 uppercase tracking-widest">Leave Type</span>
-                    <p className="text-[14px] font-bold text-slate-900">{selectedRequest?.type}</p>
-                  </div>
-                  <div className="space-y-1">
-                    <span className="text-[9px] font-bold text-slate-300 uppercase tracking-widest">Period</span>
-                    <p className="text-[14px] font-bold text-slate-900">{selectedRequest?.dates}</p>
-                  </div>
-                  <div className="space-y-1">
-                    <span className="text-[9px] font-bold text-slate-300 uppercase tracking-widest">Days</span>
-                    <p className="text-[14px] font-bold text-slate-900">{(selectedRequest as any)?.days}</p>
-                  </div>
-                </div>
-              </div>
-              <div className="space-y-4">
-                <div className="flex items-center gap-2">
-                  <ShieldCheck className="w-4 h-4 text-slate-400" />
-                  <h4 className="text-[11px] font-bold text-slate-400 uppercase tracking-[0.2em]">Governance Authorization</h4>
-                </div>
-                {(() => {
-                  const state = selectedRequest?.currentState ?? '';
-                  const available = ACTIONS_FOR_STATE[state] ?? [];
-                  if (available.length === 0) {
-                    return (
-                      <div className="flex items-center gap-3 p-5 bg-slate-50 border border-slate-100 rounded-xl">
-                        <ShieldCheck className="w-5 h-5 text-slate-300" />
-                        <span className="text-[11px] font-bold text-slate-500 uppercase tracking-widest leading-tight">
-                          Workflow is in a terminal state — no further actions available.
-                        </span>
-                      </div>
-                    );
-                  }
-                  const needsCommentForAny = available.some(a => a.needsComment);
-                  return (
-                    <div className="space-y-3">
-                      {needsCommentForAny && (
-                        <textarea
-                          value={rejectComment}
-                          onChange={(e) => setRejectComment(e.target.value)}
-                          placeholder="Optional comment (required for rejection / revocation)"
-                          rows={2}
-                          aria-label="Action comment"
-                          className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-[12px] text-slate-700 placeholder:text-slate-400 outline-none focus:border-indigo-400"
-                        />
-                      )}
-                      <div className="flex flex-wrap gap-2">
-                        {available.map(a => {
-                          const variantClass =
-                            a.variant === 'approve'
-                              ? 'bg-emerald-600 hover:bg-emerald-700 text-white border-emerald-600'
-                              : a.variant === 'reject'
-                              ? 'bg-rose-600 hover:bg-rose-700 text-white border-rose-600'
-                              : 'bg-white hover:bg-slate-50 text-slate-700 border-slate-200';
-                          const Icon =
-                            a.variant === 'approve' ? CheckCircle2 : a.variant === 'reject' ? XCircle : Activity;
-                          return (
-                            <button
-                              key={a.action}
-                              type="button"
-                              disabled={actionBusy}
-                              onClick={() => handleAction(a.action, a.needsComment ? rejectComment.trim() || undefined : undefined)}
-                              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-[11px] font-bold uppercase tracking-wider border transition-all disabled:opacity-60 ${variantClass}`}
-                            >
-                              <Icon className="w-3.5 h-3.5" />
-                              {a.label}
-                            </button>
-                          );
-                        })}
-                      </div>
-                      {actionError && (
-                        <div className="flex items-start gap-2 p-3 bg-rose-50 border border-rose-100 rounded-xl">
-                          <AlertTriangle className="w-4 h-4 text-rose-500 mt-0.5 shrink-0" />
-                          <span className="text-[12px] font-medium text-rose-700 leading-relaxed">{actionError}</span>
-                        </div>
-                      )}
-                    </div>
-                  );
-                })()}
-              </div>
-            </div>
-          </Drawer>
-        </>
+        <DataTable
+          title="Active Workflow Pipelines"
+          description="Real-time status of organization-wide leave requests. Use the kebab on each row to act."
+          data={requests}
+          columns={columns}
+        />
       )}
+
+      {/* Centred details modal — used by the Action kebab's View item.
+          Surfaces full info + audit timeline + inline Approve/Reject/
+          Withdraw buttons that act on the open request. */}
+      <LeaveDetailsModal
+        leaveRequestId={viewingId}
+        onClose={() => { setViewingId(null); setActionError(null); }}
+        onAction={async (action, comment) => {
+          if (!viewingId) return;
+          await runAction(viewingId, action as WorkflowAction, comment);
+        }}
+        actionBusy={actionBusy}
+        actionError={actionError}
+      />
+
+      {/* Confirm modal for Reject + Withdraw fired directly from the kebab. */}
+      <ConfirmActionModal
+        target={confirmAction}
+        busy={actionBusy}
+        error={actionError}
+        onClose={() => { setConfirmAction(null); setActionError(null); }}
+        onConfirm={async (comment) => {
+          if (!confirmAction) return;
+          await runAction(confirmAction.requestId, confirmAction.action, comment);
+        }}
+      />
 
       {/* ── TAB 1: Leave Calendar ─────────────────────────────────────────── */}
       {tab === 1 && <LeaveCalendarTab leaveTypes={leaveTypes} />}
@@ -1075,5 +1012,199 @@ function BalanceTrackerTab() {
         </div>
       )}
     </div>
+  );
+}
+
+// ─── Row kebab (Approval Pipeline action column) ──────────────────────────────
+
+interface RowKebabProps {
+  row: TableRow;
+  onView: () => void;
+  onApprove: (action: WorkflowAction) => void;
+  onReject: (action: WorkflowAction) => void;
+  onWithdraw: () => void;
+}
+
+function RowKebab({ row, onView, onApprove, onReject, onWithdraw }: RowKebabProps) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+  useDismiss(ref, () => setOpen(false), open);
+
+  // State-aware action availability mirrors the workflow definition. Items
+  // that don't apply at the current state are omitted (not just disabled)
+  // to keep the kebab short and focused.
+  const state = row.currentState;
+  const showApprove =
+    state === 'SUBMITTED' || state === 'MANAGER_APPROVED';
+  const showReject =
+    state === 'SUBMITTED' || state === 'MANAGER_APPROVED' || state === 'HR_APPROVED';
+  const showWithdraw =
+    state === 'DRAFT' || state === 'SUBMITTED';
+
+  const approveAction: WorkflowAction =
+    state === 'SUBMITTED' ? 'APPROVE_MANAGER' : 'APPROVE_HR';
+  const rejectAction: WorkflowAction =
+    state === 'SUBMITTED' ? 'REJECT_MANAGER'
+    : state === 'MANAGER_APPROVED' ? 'REJECT_HR'
+    : 'REVOKE';
+
+  return (
+    <div className="relative inline-block" ref={ref}>
+      <button
+        type="button"
+        aria-label="Row actions"
+        aria-haspopup="true"
+        aria-expanded={open ? 'true' : 'false'}
+        onClick={() => setOpen(v => !v)}
+        className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-slate-100 text-slate-500 transition-colors"
+      >
+        <MoreVertical className="w-4 h-4" />
+      </button>
+      {open && (
+        <div className="absolute right-0 top-full mt-1 w-[180px] bg-white border border-slate-200 rounded-xl shadow-overlay overflow-hidden z-30 animate-in fade-in slide-in-from-top-1 duration-150">
+          <KebabItem icon={Eye} label="View Details" onClick={() => { setOpen(false); onView(); }} />
+          {showApprove && (
+            <KebabItem
+              icon={CheckCircle2}
+              label="Approve"
+              tone="approve"
+              onClick={() => { setOpen(false); onApprove(approveAction); }}
+            />
+          )}
+          {showReject && (
+            <KebabItem
+              icon={XCircle}
+              label="Reject"
+              tone="reject"
+              onClick={() => { setOpen(false); onReject(rejectAction); }}
+            />
+          )}
+          {showWithdraw && (
+            <KebabItem
+              icon={LogOut}
+              label="Withdraw"
+              onClick={() => { setOpen(false); onWithdraw(); }}
+            />
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function KebabItem({
+  icon: Icon, label, onClick, tone,
+}: {
+  icon: React.ComponentType<{ className?: string }>;
+  label: string;
+  onClick: () => void;
+  tone?: 'approve' | 'reject';
+}) {
+  const toneClass =
+    tone === 'approve' ? 'text-emerald-600 hover:bg-emerald-50'
+    : tone === 'reject' ? 'text-rose-600 hover:bg-rose-50'
+    : 'text-slate-700 hover:bg-slate-50';
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`w-full flex items-center gap-2.5 px-3.5 py-2.5 text-[12px] font-bold transition-colors ${toneClass}`}
+    >
+      <Icon className="w-3.5 h-3.5" />
+      {label}
+    </button>
+  );
+}
+
+// ─── Confirm action modal (Reject / Withdraw from kebab) ──────────────────────
+
+interface ConfirmActionTarget {
+  requestId: string;
+  action: WorkflowAction;
+  label: string;
+  employeeName: string;
+  needsComment: boolean;
+}
+
+function ConfirmActionModal({
+  target, onConfirm, onClose, busy, error,
+}: {
+  target: ConfirmActionTarget | null;
+  onConfirm: (comment?: string) => Promise<void> | void;
+  onClose: () => void;
+  busy: boolean;
+  error: string | null;
+}) {
+  const [comment, setComment] = useState('');
+
+  React.useEffect(() => { if (target) setComment(''); }, [target]);
+
+  if (!target) return null;
+  const isReject = target.action.startsWith('REJECT') || target.action === 'REVOKE';
+  const isWithdraw = target.action === 'CANCEL';
+
+  return (
+    <Modal isOpen={!!target} onClose={onClose} title={target.label} size="sm">
+      <div className="space-y-5">
+        <div className="flex flex-col items-center text-center space-y-3">
+          <div className={`w-14 h-14 rounded-2xl flex items-center justify-center ${
+            isReject ? 'bg-rose-50 border border-rose-100' : 'bg-slate-50 border border-slate-100'
+          }`}>
+            {isReject ? <XCircle className="w-7 h-7 text-rose-500" /> : <LogOut className="w-7 h-7 text-slate-500" />}
+          </div>
+          <div>
+            <h3 className="text-[15px] font-bold text-slate-900">
+              {isReject && 'Reject this leave request?'}
+              {isWithdraw && 'Withdraw this leave request?'}
+            </h3>
+            <p className="text-[12px] text-slate-500 mt-1 max-w-[320px]">
+              For <strong>{target.employeeName}</strong>. This is recorded in the audit log and cannot be reversed without a new submission.
+            </p>
+          </div>
+        </div>
+
+        {target.needsComment && (
+          <div className="space-y-1.5">
+            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Reason</label>
+            <textarea
+              value={comment}
+              onChange={(e) => setComment(e.target.value)}
+              placeholder="Why this is being rejected — visible to the requester."
+              rows={3}
+              aria-label="Reason"
+              className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-[13px] text-slate-700 placeholder:text-slate-400 outline-none focus:border-rose-400"
+            />
+          </div>
+        )}
+
+        {error && (
+          <div className="flex items-start gap-2 p-3 bg-rose-50 border border-rose-100 rounded-xl">
+            <AlertTriangle className="w-4 h-4 text-rose-500 mt-0.5 shrink-0" />
+            <span className="text-[12px] font-medium text-rose-700 leading-relaxed">{error}</span>
+          </div>
+        )}
+
+        <div className="flex gap-2">
+          <button
+            type="button"
+            onClick={onClose}
+            disabled={busy}
+            className="flex-1 h-11 bg-white border border-slate-200 text-slate-700 rounded-xl text-[11px] font-bold uppercase tracking-widest disabled:opacity-60"
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            onClick={() => onConfirm(target.needsComment ? (comment.trim() || undefined) : undefined)}
+            disabled={busy}
+            className={`flex-1 h-11 text-white rounded-xl text-[11px] font-bold uppercase tracking-widest disabled:opacity-60 ${
+              isReject ? 'bg-rose-600 hover:bg-rose-700' : 'bg-slate-900 hover:bg-black'
+            }`}
+          >
+            {busy ? 'Working…' : target.label}
+          </button>
+        </div>
+      </div>
+    </Modal>
   );
 }
