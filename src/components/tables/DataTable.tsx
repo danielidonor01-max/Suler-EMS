@@ -35,6 +35,25 @@ export interface RowAction {
   permission?: PermissionType;
 }
 
+/**
+ * Per-table filter declaration. Each filter renders as a dropdown chip
+ * above the table.
+ *
+ *   key       — accessor on the row (supports dotted paths like
+ *               "employee.hub.name" for nested data)
+ *   label     — display label on the chip
+ *   options   — selectable values; the empty-string value clears the filter
+ *   accessor  — optional function for derived filter targets that aren't a
+ *               simple property path (e.g. computed status, joined fields).
+ *               Falls back to walking `key` when omitted.
+ */
+export interface FilterDef {
+  key: string;
+  label: string;
+  options: Array<{ label: string; value: string }>;
+  accessor?: (row: any) => string | null | undefined;
+}
+
 interface DataTableProps {
   title: string;
   description?: string;
@@ -45,6 +64,7 @@ interface DataTableProps {
   isLoading?: boolean;
   emptyMessage?: string;
   rowActions?: RowAction[];
+  filters?: FilterDef[];
   recoveryAction?: {
     label: string;
     onClick: () => void;
@@ -54,27 +74,45 @@ interface DataTableProps {
 
 import { Select } from '../forms/Select';
 
-export const DataTable: React.FC<DataTableProps> = ({ 
-  title, 
-  description, 
-  data, 
+export const DataTable: React.FC<DataTableProps> = ({
+  title,
+  description,
+  data,
   columns,
   onRowClick,
   totalItems,
   isLoading = false,
   emptyMessage = "No records found in this registry.",
   rowActions,
+  filters,
   recoveryAction
 }) => {
   const [activeActions, setActiveActions] = useState<{ id: string, rect: DOMRect, row: any } | null>(null);
   const [pageSize, setPageSize] = useState('10');
   const [currentPage, setCurrentPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState('');
+  const [filterValues, setFilterValues] = useState<Record<string, string>>({});
 
-  // Reset page to 1 if search query or data length changes
+  // Reset page to 1 if search query, filter selections, or data length changes.
   React.useEffect(() => {
     setCurrentPage(1);
-  }, [data.length, searchQuery]);
+  }, [data.length, searchQuery, filterValues]);
+
+  const setFilter = (key: string, value: string) => {
+    setFilterValues(prev => {
+      // Empty string clears the filter — drop the key entirely so the
+      // active-filter count stays accurate.
+      if (!value) {
+        const { [key]: _, ...rest } = prev;
+        return rest;
+      }
+      return { ...prev, [key]: value };
+    });
+  };
+
+  const clearAllFilters = () => setFilterValues({});
+
+  const activeFilterCount = Object.keys(filterValues).length;
 
   const handleActionClick = (e: React.MouseEvent, id: string, row: any) => {
     e.stopPropagation();
@@ -82,18 +120,41 @@ export const DataTable: React.FC<DataTableProps> = ({
     setActiveActions(activeActions?.id === id ? null : { id, rect, row });
   };
 
-  // Client-side search filtering
+  // Walks a dotted accessor path like "employee.hub.name" against a row.
+  // Used by FilterDef when no custom accessor is supplied.
+  const resolveAccessor = React.useCallback((row: any, path: string): unknown => {
+    return path.split('.').reduce((obj: any, k) => (obj == null ? obj : obj[k]), row);
+  }, []);
+
+  // Client-side filter + search pipeline. Filters run first because they
+  // typically slash the dataset more aggressively than free-text search.
   const filteredData = React.useMemo(() => {
-    if (!searchQuery) return data;
-    const query = searchQuery.toLowerCase();
-    return data.filter(row => {
-      return columns.some(col => {
-        const val = row[col.accessor];
-        if (val === null || val === undefined) return false;
-        return String(val).toLowerCase().includes(query);
-      });
-    });
-  }, [data, searchQuery, columns]);
+    let result = data;
+
+    if (filters && Object.keys(filterValues).length > 0) {
+      result = result.filter(row =>
+        filters.every(def => {
+          const selected = filterValues[def.key];
+          if (!selected) return true; // no filter on this key
+          const value = def.accessor ? def.accessor(row) : resolveAccessor(row, def.key);
+          return value != null && String(value) === selected;
+        }),
+      );
+    }
+
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      result = result.filter(row =>
+        columns.some(col => {
+          const val = row[col.accessor];
+          if (val === null || val === undefined) return false;
+          return String(val).toLowerCase().includes(query);
+        }),
+      );
+    }
+
+    return result;
+  }, [data, filterValues, filters, searchQuery, columns, resolveAccessor]);
 
   const finalTotalItems = totalItems !== undefined ? totalItems : filteredData.length;
   const limit = parseInt(pageSize);
@@ -153,12 +214,49 @@ export const DataTable: React.FC<DataTableProps> = ({
               className="bg-white border border-slate-200 rounded-xl py-2 pl-11 pr-4 text-[12px] font-bold text-slate-900 placeholder:text-slate-300 outline-none focus:border-slate-400 transition-all w-64 shadow-sm"
             />
           </div>
-          <button className="flex items-center gap-2 h-[40px] px-4 py-2 bg-white border border-slate-200 rounded-xl text-[11px] font-bold text-slate-500 uppercase tracking-widest hover:text-slate-900 hover:border-slate-300 transition-all shadow-sm">
-            <Filter className="w-3.5 h-3.5 stroke-[1.5px]" />
-            Filters
-          </button>
+          {(filters && filters.length > 0) ? (
+            <div className="flex items-center gap-1.5 h-[40px] px-3 bg-white border border-slate-200 rounded-xl text-[11px] font-bold text-slate-500 uppercase tracking-widest shadow-sm">
+              <Filter className="w-3.5 h-3.5 stroke-[1.5px]" />
+              {activeFilterCount > 0 ? (
+                <span className="text-slate-900">{activeFilterCount} Active</span>
+              ) : (
+                <span>Filters</span>
+              )}
+            </div>
+          ) : null}
         </div>
       </div>
+
+      {/* Filter chip row — only renders when consumer page declared filters */}
+      {filters && filters.length > 0 && (
+        <div className="flex flex-wrap items-center gap-2 px-1">
+          {filters.map(def => (
+            <label key={def.key} className="flex items-center gap-2 bg-white border border-slate-200 rounded-xl px-3 py-1.5 shadow-sm">
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{def.label}</span>
+              <select
+                aria-label={`Filter by ${def.label}`}
+                value={filterValues[def.key] ?? ''}
+                onChange={(e) => setFilter(def.key, e.target.value)}
+                className="bg-transparent text-[12px] font-bold text-slate-900 outline-none cursor-pointer pr-1"
+              >
+                <option value="">All</option>
+                {def.options.map(opt => (
+                  <option key={opt.value} value={opt.value}>{opt.label}</option>
+                ))}
+              </select>
+            </label>
+          ))}
+          {activeFilterCount > 0 && (
+            <button
+              type="button"
+              onClick={clearAllFilters}
+              className="flex items-center gap-1.5 px-3 py-1.5 text-[10px] font-bold text-slate-500 hover:text-slate-900 uppercase tracking-widest"
+            >
+              Clear all
+            </button>
+          )}
+        </div>
+      )}
 
       {/* Table Surface: Anchored Operational Registry */}
       <div className="bg-white border border-slate-200/60 rounded-[24px] shadow-premium overflow-hidden group">

@@ -293,6 +293,28 @@ export default function LeaveRequestsPage() {
           description="Real-time status of organization-wide leave requests. Use the kebab on each row to act."
           data={requests}
           columns={columns}
+          filters={[
+            {
+              key: 'currentState',
+              label: 'Status',
+              options: [
+                { label: 'Draft',              value: 'DRAFT' },
+                { label: 'Submitted',          value: 'SUBMITTED' },
+                { label: 'Manager Approved',   value: 'MANAGER_APPROVED' },
+                { label: 'HR Approved',        value: 'HR_APPROVED' },
+                { label: 'Rejected',           value: 'REJECTED' },
+                { label: 'Cancelled',          value: 'CANCELLED' },
+              ],
+            },
+            {
+              key: 'type',
+              label: 'Type',
+              // Driven by the live LeaveType catalogue so renames flow through.
+              options: leaveTypes
+                .filter(t => t.isActive)
+                .map(t => ({ label: t.name, value: t.name })),
+            },
+          ]}
         />
       )}
 
