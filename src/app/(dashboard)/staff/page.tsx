@@ -31,6 +31,7 @@ import { MetricCard } from '@/components/dashboard/MetricCard';
 import { Drawer } from '@/components/common/Drawer';
 import { useWorkforce, Employee } from '@/context/WorkforceContext';
 import { useOrganization } from '@/context/OrganizationContext';
+import { EmployeeChip } from '@/components/employees/EmployeeChip';
 import { 
   OnboardMemberModal, 
   SuspendAccessModal, 
@@ -151,15 +152,12 @@ export default function WorkforcePage() {
                 header: "Staff Member",
                 accessor: "name",
                 render: (val: string, row: Employee) => (
-                  <div className="flex items-center gap-4">
-                    <div className="w-10 h-10 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-400 font-bold text-[10px] uppercase">
-                      {val.split(' ').map(n => n[0]).join('')}
-                    </div>
-                    <div>
-                      <div className="text-[14px] font-bold text-slate-900 tracking-tight leading-none mb-1">{val}</div>
-                      <div className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">{row.id}</div>
-                    </div>
-                  </div>
+                  <EmployeeChip
+                    employeeId={row.id}
+                    name={val}
+                    sublabel={row.id}
+                    size="md"
+                  />
                 )
               },
               {

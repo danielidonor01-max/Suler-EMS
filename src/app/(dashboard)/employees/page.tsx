@@ -2,37 +2,25 @@
 
 import React, { useState } from 'react';
 import { MetricCard } from "@/components/dashboard/MetricCard";
-import { CapabilityIntelligence } from "@/components/dashboard/CapabilityIntelligence";
 import { DataTable } from "@/components/tables/DataTable";
-import { Drawer } from "@/components/common/Drawer";
-import { Modal } from "@/components/modals/Modal";
-import { 
-  Users, 
-  UserCheck, 
-  Briefcase, 
-  Mail, 
-  UserPlus, 
-  Sparkles, 
-  Search,
+import {
+  Users,
+  UserCheck,
+  Briefcase,
+  UserPlus,
   Activity,
   ShieldCheck,
-  Building2,
-  Calendar,
-  MoreVertical,
-  Clock,
   History,
   Layout,
-  Target,
-  AlertTriangle,
   Edit3,
-  UserCog,
   UserMinus,
-  Zap
+  Zap,
+  Eye
 } from 'lucide-react';
 
-import { 
-  EditEmployeeModal, 
-  SuspendAccessModal, 
+import {
+  EditEmployeeModal,
+  SuspendAccessModal,
   ModifyRoleModal,
   OnboardMemberModal,
   PromoteEmployeeModal
@@ -41,6 +29,8 @@ import { OrgChart } from "@/components/organization/OrgChart";
 import { ForensicTimelineDrawer } from "@/components/drawers/ForensicTimelineDrawer";
 import { useWorkforce, Employee } from "@/context/WorkforceContext";
 import { useOrganization } from "@/context/OrganizationContext";
+import { useEmployeeProfile } from "@/context/EmployeeProfileContext";
+import { EmployeeChip } from "@/components/employees/EmployeeChip";
 
 import { PermissionGate } from "@/components/common/PermissionGate";
 import { Permissions } from "@/modules/auth/domain/permission.model";
@@ -48,7 +38,7 @@ import { Permissions } from "@/modules/auth/domain/permission.model";
 export default function EmployeesPage() {
   const { employees, metrics } = useWorkforce();
   const { currentHub } = useOrganization();
-  const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
+  const { openProfile } = useEmployeeProfile();
   const [viewMode, setViewMode] = useState<'REGISTRY' | 'CHART'>('REGISTRY');
 
   const filteredEmployees = employees.filter(emp => 
@@ -67,32 +57,39 @@ export default function EmployeesPage() {
   const [hub, setHub] = useState('lagos');
   const [designation, setDesignation] = useState('engineer');
   
-  // Governance Row Actions
+  // Governance Row Actions. "View Profile" is first so it's the
+  // canonical entry to the centred EmployeeProfileModal — same modal
+  // every clickable name+avatar in the app opens.
   const rowActions = [
-    { 
-      label: 'Edit Identity', 
-      icon: Edit3, 
+    {
+      label: 'View Profile',
+      icon: Eye,
+      onClick: (emp: Employee) => openProfile(emp.id)
+    },
+    {
+      label: 'Edit Identity',
+      icon: Edit3,
       permission: Permissions.WORKFORCE_EDIT,
-      onClick: (emp: Employee) => setActiveGovernance({ type: 'EDIT', employee: emp }) 
+      onClick: (emp: Employee) => setActiveGovernance({ type: 'EDIT', employee: emp })
     },
-    { 
-      label: 'Audit Trail', 
-      icon: History, 
+    {
+      label: 'Audit Trail',
+      icon: History,
       permission: Permissions.WORKFORCE_VIEW,
-      onClick: (emp: Employee) => setActiveGovernance({ type: 'AUDIT', employee: emp }) 
+      onClick: (emp: Employee) => setActiveGovernance({ type: 'AUDIT', employee: emp })
     },
-    { 
-      label: 'Promote Member', 
-      icon: Zap, 
+    {
+      label: 'Promote Member',
+      icon: Zap,
       permission: Permissions.WORKFORCE_PROMOTE,
-      onClick: (emp: Employee) => setActiveGovernance({ type: 'PROMOTE', employee: emp }) 
+      onClick: (emp: Employee) => setActiveGovernance({ type: 'PROMOTE', employee: emp })
     },
-    { 
-      label: 'Suspend Access', 
-      icon: UserMinus, 
+    {
+      label: 'Suspend Access',
+      icon: UserMinus,
       permission: Permissions.WORKFORCE_DELETE,
-      onClick: (emp: Employee) => setActiveGovernance({ type: 'SUSPEND', employee: emp }), 
-      variant: 'danger' as const 
+      onClick: (emp: Employee) => setActiveGovernance({ type: 'SUSPEND', employee: emp }),
+      variant: 'danger' as const
     },
   ];
 
@@ -100,16 +97,13 @@ export default function EmployeesPage() {
     {
       header: "Staff Member",
       accessor: "name",
-      render: (val: string, emp: Employee) => (
-        <div className="flex items-center gap-4">
-          <div className="w-10 h-10 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-400 font-bold text-[10px] uppercase">
-            {emp.name.split(' ').map(n => n[0]).join('')}
-          </div>
-          <div className="flex flex-col">
-            <span className="text-[14px] font-bold text-slate-900 tracking-tight leading-none mb-1">{emp.name}</span>
-            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">{emp.id}</span>
-          </div>
-        </div>
+      render: (_val: string, emp: Employee) => (
+        <EmployeeChip
+          employeeId={emp.id}
+          name={emp.name}
+          sublabel={emp.id}
+          size="md"
+        />
       )
     },
     {
@@ -201,13 +195,12 @@ export default function EmployeesPage() {
       </div>
 
       {viewMode === 'REGISTRY' ? (
-        <DataTable 
+        <DataTable
           title="Principal Staff Registry"
           description="Comprehensive record of organizational entities, departmental hubs, and operational designations."
           data={filteredEmployees}
           columns={columns}
           rowActions={rowActions}
-          onRowClick={(row) => setSelectedEmployee(row)}
         />
       ) : (
         <OrgChart />
@@ -252,97 +245,12 @@ export default function EmployeesPage() {
       )}
 
       {activeGovernance.type === 'AUDIT' && activeGovernance.employee && (
-        <ForensicTimelineDrawer 
+        <ForensicTimelineDrawer
           isOpen={true}
           onClose={() => setActiveGovernance({ type: null, employee: null })}
           employee={activeGovernance.employee}
         />
       )}
-
-      {/* Contextual Intelligence Surface (Drawer) */}
-      <Drawer 
-        isOpen={!!selectedEmployee} 
-        onClose={() => setSelectedEmployee(null)}
-        title={selectedEmployee?.name || ''}
-        subtitle={selectedEmployee?.id || ''}
-      >
-        <div className="space-y-10 animate-in">
-           {/* Member Summary Block */}
-           <div className="flex items-center gap-6 p-7 rounded-[20px] bg-slate-50 border border-slate-100">
-              <div className="w-20 h-20 rounded-2xl bg-white border border-slate-200 flex items-center justify-center text-slate-900 text-2xl font-bold shadow-sm">
-                {selectedEmployee?.name.split(' ').map(n => n[0]).join('')}
-              </div>
-              <div className="space-y-2">
-                 <div className="flex items-center gap-2">
-                    <span className="px-2.5 py-0.5 rounded-lg bg-emerald-50 text-emerald-600 text-[9px] font-bold uppercase tracking-widest border border-emerald-100">Verified</span>
-                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Est. Jan 2024</span>
-                 </div>
-                 <h3 className="text-xl font-bold text-slate-900 tracking-tight leading-none">{selectedEmployee?.name}</h3>
-                 <p className="text-[13px] font-bold text-slate-500 uppercase tracking-widest opacity-70">{selectedEmployee?.role}</p>
-              </div>
-           </div>
-
-           {/* Core Hub Data */}
-           <div className="grid grid-cols-2 gap-8">
-              <div className="space-y-1.5">
-                 <span className="text-[9px] font-bold text-slate-300 uppercase tracking-widest">Email Identity</span>
-                 <p className="text-[14px] font-bold text-slate-900">{selectedEmployee?.email}</p>
-              </div>
-              <div className="space-y-1.5">
-                 <span className="text-[9px] font-bold text-slate-300 uppercase tracking-widest">Operational Hub</span>
-                 <p className="text-[14px] font-bold text-slate-900">{selectedEmployee?.hub}</p>
-              </div>
-           </div>
-
-           {/* Capability Intelligence - Strategic Visual */}
-           <CapabilityIntelligence 
-              title="Individual Capability Profile"
-              data={[
-                { category: 'Technical', value: 92 },
-                { category: 'Comm.', value: 78 },
-                { category: 'Lead.', value: 65 },
-                { category: 'Creativity', value: 88 },
-                { category: 'Problem Solving', value: 95 },
-              ]}
-              insight={`${selectedEmployee?.name} displays high technical proficiency and exceptional problem-solving capabilities. Recommended for senior technical leadership track in Q3.`}
-           />
-
-           {/* Intelligence Timeline */}
-           <div className="space-y-5">
-              <div className="flex items-center gap-2">
-                 <Target className="w-4 h-4 text-slate-400" />
-                 <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">Operational History</h4>
-              </div>
-              <div className="space-y-4 relative before:absolute before:left-3 before:top-2 before:bottom-2 before:w-px before:bg-slate-100">
-                 {[
-                   { label: 'Governance Review', desc: 'Protocol audit completed successfully.', time: '2d ago' },
-                   { label: 'Access Modification', desc: 'Enhanced authorization levels granted.', time: '5h ago' }
-                 ].map((log, i) => (
-                   <div key={i} className="relative pl-10">
-                      <div className="absolute left-2.5 top-1.5 w-1.5 h-1.5 rounded-full bg-slate-950 ring-4 ring-slate-50" />
-                      <div className="flex justify-between items-start">
-                         <p className="text-[12px] font-bold text-slate-900">{log.label}</p>
-                         <span className="text-[10px] font-bold text-slate-300">{log.time}</span>
-                      </div>
-                      <p className="text-[11px] font-medium text-slate-500 mt-0.5 leading-relaxed">{log.desc}</p>
-                   </div>
-                 ))}
-              </div>
-           </div>
-
-           {/* Actions Intelligence */}
-           <div className="grid grid-cols-2 gap-4">
-              <button className="flex items-center justify-center gap-3 h-[44px] rounded-xl border border-slate-200 hover:bg-slate-50 text-[10px] font-bold text-slate-600 uppercase tracking-widest transition-all shadow-sm">
-                 <ShieldCheck className="w-4 h-4 stroke-[1.5px]" />
-                 Security Audit
-              </button>
-              <button className="flex items-center justify-center gap-3 h-[44px] rounded-xl border border-slate-200 hover:bg-slate-50 text-[10px] font-bold text-slate-600 uppercase tracking-widest transition-all shadow-sm">
-                 <Calendar className="w-4 h-4 stroke-[1.5px]" />
-                 Shift Registry
-              </button>
-           </div>
-        </div>
-      </Drawer>
     </div>
   );
 }

@@ -171,7 +171,9 @@ export const DataTable: React.FC<DataTableProps> = ({
                     {col.header}
                   </th>
                 ))}
-                <th className="w-[96px] pr-8 py-4 text-[9px] font-bold text-slate-400 uppercase tracking-[0.2em] text-right">Actions</th>
+                {rowActions && (
+                  <th className="w-[96px] pr-8 py-4 text-[9px] font-bold text-slate-400 uppercase tracking-[0.2em] text-right">Actions</th>
+                )}
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-50">
@@ -184,9 +186,11 @@ export const DataTable: React.FC<DataTableProps> = ({
                          <div className="h-4 bg-slate-50 rounded-lg w-full" />
                       </td>
                     ))}
-                    <td className="w-[96px] pr-8 py-5">
-                       <div className="h-8 w-8 bg-slate-50 rounded-lg ml-auto" />
-                    </td>
+                    {rowActions && (
+                      <td className="w-[96px] pr-8 py-5">
+                         <div className="h-8 w-8 bg-slate-50 rounded-lg ml-auto" />
+                      </td>
+                    )}
                   </tr>
                 ))
               ) : paginatedData.length > 0 ? (
@@ -205,19 +209,22 @@ export const DataTable: React.FC<DataTableProps> = ({
                           )}
                         </td>
                       ))}
-                      <td className="w-[96px] pr-8 py-4 text-right align-middle">
-                         <div className="flex justify-end">
-                            <button 
-                              type="button"
-                              onClick={(e) => handleActionClick(e, uniqueId, row)}
-                              className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all ${
-                                activeActions?.id === uniqueId ? 'bg-slate-900 text-white shadow-md' : 'text-slate-300 hover:text-slate-900 hover:bg-white border border-transparent hover:border-slate-200'
-                              }`}
-                            >
-                               <MoreHorizontal className="w-4 h-4 stroke-[1.5px]" />
-                            </button>
-                         </div>
-                      </td>
+                      {rowActions && (
+                        <td className="w-[96px] pr-8 py-4 text-right align-middle">
+                           <div className="flex justify-end">
+                              <button
+                                type="button"
+                                aria-label="Row actions"
+                                onClick={(e) => handleActionClick(e, uniqueId, row)}
+                                className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all ${
+                                  activeActions?.id === uniqueId ? 'bg-slate-900 text-white shadow-md' : 'text-slate-300 hover:text-slate-900 hover:bg-white border border-transparent hover:border-slate-200'
+                                }`}
+                              >
+                                 <MoreHorizontal className="w-4 h-4 stroke-[1.5px]" />
+                              </button>
+                           </div>
+                        </td>
+                      )}
                     </tr>
                   );
                 })

@@ -16,6 +16,7 @@ import { FinanceProvider } from "@/context/FinanceContext";
 import { PayrollProvider } from "@/context/PayrollContext";
 import { CommunicationProvider } from "@/context/CommunicationContext";
 import { PreferencesProvider } from "@/context/PreferencesContext";
+import { EmployeeProfileProvider } from "@/context/EmployeeProfileContext";
 import { AuthPersistence } from "@/components/auth/AuthPersistence";
 
 export function Providers({ children }: { children: React.ReactNode }) {
@@ -36,9 +37,11 @@ export function Providers({ children }: { children: React.ReactNode }) {
                           <PayrollProvider>
                             <GuardianProvider>
                               <ForecastingProvider>
-                                <AuthPersistence>
-                                  {children}
-                                </AuthPersistence>
+                                <EmployeeProfileProvider>
+                                  <AuthPersistence>
+                                    {children}
+                                  </AuthPersistence>
+                                </EmployeeProfileProvider>
                               </ForecastingProvider>
                             </GuardianProvider>
                           </PayrollProvider>

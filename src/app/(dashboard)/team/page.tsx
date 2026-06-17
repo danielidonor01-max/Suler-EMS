@@ -15,6 +15,7 @@ import {
 import { useTeams, Team } from '@/context/TeamContext';
 import { useOrganization } from '@/context/OrganizationContext';
 import { DataTable } from '@/components/tables/DataTable';
+import { EmployeeChip } from '@/components/employees/EmployeeChip';
 import { CreateTeamModal, AddMemberModal } from '@/components/modals/TeamModals';
 import { CapabilityIntelligence } from '@/components/dashboard/CapabilityIntelligence';
 import { CapacityIntelligencePanel } from '@/components/team/CapacityIntelligencePanel';
@@ -55,20 +56,13 @@ export default function TeamsPage() {
     {
       header: "Manager",
       accessor: "manager",
-      render: (_val: unknown, team: Team) => {
-        const name = team.manager?.name ?? 'Unassigned';
-        const initials = team.manager
-          ? name.split(' ').map(n => n[0]).join('').slice(0, 2)
-          : '??';
-        return (
-          <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-full bg-indigo-50 border border-indigo-100 flex items-center justify-center text-[10px] font-black text-indigo-600 uppercase">
-              {initials}
-            </div>
-            <span className="text-slate-900 font-bold text-[13px]">{name}</span>
-          </div>
-        );
-      }
+      render: (_val: unknown, team: Team) => (
+        <EmployeeChip
+          employeeId={team.manager?.id ?? ''}
+          name={team.manager?.name ?? 'Unassigned'}
+          size="sm"
+        />
+      )
     },
     {
       header: "Registry Size",
