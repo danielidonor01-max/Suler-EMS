@@ -2,38 +2,53 @@
 
 import React, { useMemo, useState } from 'react';
 import {
-  Activity, Plus, ShieldCheck, History, Calendar,
-  Clock, User, Sun, Heart, Baby, Stethoscope
+  Activity, Plus, ShieldCheck, Calendar, Clock, User,
+  CheckCircle2, XCircle, Edit3, Trash2, Power, AlertTriangle,
 } from 'lucide-react';
 import { DataTable } from "@/components/tables/DataTable";
 import { Drawer } from "@/components/common/Drawer";
+import { Modal } from "@/components/common/Modal";
 import { WorkflowAction } from '@/modules/workflow/domain/workflow.types';
-import { LeaveWorkflow } from '@/modules/workflow/definitions/leave.workflow';
-import { WorkflowStatusBadge, ApprovalTimeline, WorkflowActionBar } from '@/components/workflow/WorkflowUI';
+import { WorkflowStatusBadge } from '@/components/workflow/WorkflowUI';
 import { MetricCard } from '@/components/dashboard/MetricCard';
 import { useApi, useApiMutation } from '@/lib/api/use-api';
+import { apiMutate } from '@/lib/api/fetcher';
 
-// ─── Types ────────────────────────────────────────────────────────────────────
-type LeaveType = 'Annual Leave' | 'Sick Leave' | 'Compassionate Leave' | 'Maternity Leave' | 'Paternity Leave';
-
-const LEAVE_TYPES: { type: LeaveType; icon: React.ElementType; color: string; bg: string; border: string; quota: number; desc: string }[] = [
-  { type: 'Annual Leave',       icon: Sun,          color: 'text-indigo-600',  bg: 'bg-indigo-50',  border: 'border-indigo-100', quota: 21, desc: 'Annual recreational leave entitlement per employee.' },
-  { type: 'Sick Leave',         icon: Stethoscope,  color: 'text-rose-600',    bg: 'bg-rose-50',    border: 'border-rose-100',   quota: 14, desc: 'Medical / illness-related absence days.' },
-  { type: 'Compassionate Leave',icon: Heart,        color: 'text-amber-600',   bg: 'bg-amber-50',   border: 'border-amber-100',  quota: 5,  desc: 'Granted for bereavement or family emergencies.' },
-  { type: 'Maternity Leave',    icon: Baby,         color: 'text-pink-600',    bg: 'bg-pink-50',    border: 'border-pink-100',   quota: 90, desc: '90-day maternity leave per Nigerian labour law.' },
-  { type: 'Paternity Leave',    icon: Baby,         color: 'text-sky-600',     bg: 'bg-sky-50',     border: 'border-sky-100',    quota: 14, desc: '14-day paternity leave entitlement.' },
-];
-
+// ─── Tabs ─────────────────────────────────────────────────────────────────────
 const TABS = ['Approval Pipeline', 'Leave Calendar', 'Balance Tracker', 'Leave Types'];
 
-const TYPE_LABEL: Record<string, string> = {
-  ANNUAL: 'Annual Leave',
-  SICK: 'Sick Leave',
-  CASUAL: 'Casual Leave',
-  COMPASSIONATE: 'Compassionate Leave',
-  MATERNITY: 'Maternity Leave',
-  PATERNITY: 'Paternity Leave',
+// ─── Leave-type colour palette ────────────────────────────────────────────────
+// The leave_types.color column holds a token (e.g. "indigo"); this map
+// resolves each token to the matching Tailwind utility classes. Adding a
+// new colour: append a row here and the picker in CreateLeaveTypeModal
+// will surface it automatically.
+const COLOR_TOKENS: Record<string, { text: string; bg: string; border: string; dot: string; label: string }> = {
+  indigo: { text: 'text-indigo-600', bg: 'bg-indigo-50', border: 'border-indigo-100', dot: 'bg-indigo-500', label: 'Indigo' },
+  rose:   { text: 'text-rose-600',   bg: 'bg-rose-50',   border: 'border-rose-100',   dot: 'bg-rose-500',   label: 'Rose'   },
+  amber:  { text: 'text-amber-600',  bg: 'bg-amber-50',  border: 'border-amber-100',  dot: 'bg-amber-500',  label: 'Amber'  },
+  pink:   { text: 'text-pink-600',   bg: 'bg-pink-50',   border: 'border-pink-100',   dot: 'bg-pink-500',   label: 'Pink'   },
+  sky:    { text: 'text-sky-600',    bg: 'bg-sky-50',    border: 'border-sky-100',    dot: 'bg-sky-500',    label: 'Sky'    },
+  emerald:{ text: 'text-emerald-600',bg: 'bg-emerald-50',border: 'border-emerald-100',dot: 'bg-emerald-500',label: 'Emerald'},
+  slate:  { text: 'text-slate-600',  bg: 'bg-slate-50',  border: 'border-slate-100',  dot: 'bg-slate-500',  label: 'Slate'  },
 };
+const NEUTRAL_PALETTE = COLOR_TOKENS.slate;
+
+function paletteFor(token: string | null | undefined) {
+  if (!token) return NEUTRAL_PALETTE;
+  return COLOR_TOKENS[token] ?? NEUTRAL_PALETTE;
+}
+
+// ─── API types ────────────────────────────────────────────────────────────────
+
+interface ApiLeaveType {
+  id: string;
+  code: string;
+  name: string;
+  quotaDays: number;
+  description: string | null;
+  color: string | null;
+  isActive: boolean;
+}
 
 interface ApiLeaveRequest {
   id: string;
@@ -67,12 +82,44 @@ function formatDates(start: string, end: string): { label: string; days: number 
   return { label: `${fmt(s)} – ${fmt(e)}`, days };
 }
 
+// ─── Workflow action UX ───────────────────────────────────────────────────────
+// Drives the explicit Approve / Reject / Cancel buttons in the drawer. Each
+// entry's `action` is the workflow action key the transition API expects.
+const ACTIONS_FOR_STATE: Record<string, Array<{
+  action: WorkflowAction;
+  label: string;
+  variant: 'approve' | 'reject' | 'neutral';
+  needsComment?: boolean;
+}>> = {
+  DRAFT:            [{ action: 'CANCEL', label: 'Withdraw', variant: 'neutral' }],
+  SUBMITTED:        [
+    { action: 'APPROVE_MANAGER', label: 'Approve as Manager',  variant: 'approve' },
+    { action: 'REJECT_MANAGER',  label: 'Reject',              variant: 'reject', needsComment: true },
+    { action: 'CANCEL',          label: 'Withdraw',            variant: 'neutral' },
+  ],
+  MANAGER_APPROVED: [
+    { action: 'APPROVE_HR', label: 'Final-approve as HR', variant: 'approve' },
+    { action: 'REJECT_HR',  label: 'Reject',              variant: 'reject', needsComment: true },
+  ],
+  HR_APPROVED:      [{ action: 'REVOKE', label: 'Revoke Approval', variant: 'reject', needsComment: true }],
+  REJECTED:         [],
+  CANCELLED:        [],
+};
+
 export default function LeaveRequestsPage() {
   const [selectedRequest, setSelectedRequest] = useState<TableRow | null>(null);
   const [tab, setTab] = useState(0);
+  const [actionError, setActionError] = useState<string | null>(null);
+  const [actionBusy, setActionBusy] = useState(false);
+  const [rejectComment, setRejectComment] = useState('');
 
-  // Fetch ALL active leave requests from the DB. SUPER_ADMIN / HR_ADMIN get
-  // every record via scope=all; managers should use the /leave/approvals page
+  // Leave-type catalogue — drives the request-type label, type-tab cards,
+  // and (when used elsewhere) the submission form's type dropdown.
+  const { data: leaveTypes = [], refresh: refreshLeaveTypes } =
+    useApi<ApiLeaveType[]>('/api/leave/types', { pollMs: 60_000 });
+
+  // ALL active leave requests from the DB. SUPER_ADMIN / HR_ADMIN get
+  // every record via scope=all; managers should use /leave/approvals
   // (different scope) — this page is the admin-wide registry.
   const { data: apiRequests, refresh } =
     useApi<ApiLeaveRequest[]>('/api/leave/requests?scope=all&limit=200', { pollMs: 30_000 });
@@ -81,9 +128,17 @@ export default function LeaveRequestsPage() {
     { action: WorkflowAction; comment?: string },
     unknown
   >(
-    (body) => `/api/leave/requests/${selectedRequest?.id ?? ''}/transition`,
+    () => `/api/leave/requests/${selectedRequest?.id ?? ''}/transition`,
     'PATCH',
   );
+
+  // Build a code→displayName map from the live catalogue so historical
+  // requests render their human-readable type even if the catalogue evolves.
+  const typeLabel = useMemo(() => {
+    const m: Record<string, string> = {};
+    leaveTypes.forEach(t => { m[t.code] = t.name; });
+    return m;
+  }, [leaveTypes]);
 
   const requests = useMemo<TableRow[]>(() => {
     if (!apiRequests) return [];
@@ -92,7 +147,7 @@ export default function LeaveRequestsPage() {
       return {
         id: r.id,
         employeeName: `${r.employee.firstName} ${r.employee.lastName}`,
-        type: TYPE_LABEL[r.type] ?? r.type,
+        type: typeLabel[r.type] ?? r.type,
         dates: label,
         days,
         currentState: r.status,
@@ -100,19 +155,25 @@ export default function LeaveRequestsPage() {
         raw: r,
       };
     });
-  }, [apiRequests]);
+  }, [apiRequests, typeLabel]);
 
   const handleAction = async (action: WorkflowAction, comment?: string) => {
     if (!selectedRequest) return;
+    setActionError(null);
+    setActionBusy(true);
     try {
       await transitionMutation.trigger({ action, comment });
       await refresh();
-      // Close drawer on success; the table reflects the new state.
       setSelectedRequest(null);
-    } catch (err) {
-      // Surface failure inline so the actor sees why a transition was blocked
-      // (RBAC / state guard / invalid action). Toast wiring is a polish item.
-      console.error('Leave transition failed', err);
+      setRejectComment('');
+    } catch (err: any) {
+      // Server-side guard surfaces 403 / 409 / 400 errors with descriptive
+      // messages — show them inline so the actor knows whether it was an
+      // authorization issue, state-machine violation, or validation failure.
+      const msg = err?.message ?? 'Transition failed';
+      setActionError(msg);
+    } finally {
+      setActionBusy(false);
     }
   };
 
@@ -258,16 +319,65 @@ export default function LeaveRequestsPage() {
                   <ShieldCheck className="w-4 h-4 text-slate-400" />
                   <h4 className="text-[11px] font-bold text-slate-400 uppercase tracking-[0.2em]">Governance Authorization</h4>
                 </div>
-                <WorkflowActionBar instance={selectedRequest as any} definition={LeaveWorkflow} onAction={handleAction} />
-              </div>
-              <div className="space-y-4">
-                <div className="flex items-center gap-2">
-                  <History className="w-4 h-4 text-slate-400" />
-                  <h4 className="text-[11px] font-bold text-slate-400 uppercase tracking-[0.2em]">Approval Timeline</h4>
-                </div>
-                <div className="p-2 border border-slate-100 rounded-[20px]">
-                  <ApprovalTimeline instance={selectedRequest as any} />
-                </div>
+                {(() => {
+                  const state = selectedRequest?.currentState ?? '';
+                  const available = ACTIONS_FOR_STATE[state] ?? [];
+                  if (available.length === 0) {
+                    return (
+                      <div className="flex items-center gap-3 p-5 bg-slate-50 border border-slate-100 rounded-xl">
+                        <ShieldCheck className="w-5 h-5 text-slate-300" />
+                        <span className="text-[11px] font-bold text-slate-500 uppercase tracking-widest leading-tight">
+                          Workflow is in a terminal state — no further actions available.
+                        </span>
+                      </div>
+                    );
+                  }
+                  const needsCommentForAny = available.some(a => a.needsComment);
+                  return (
+                    <div className="space-y-3">
+                      {needsCommentForAny && (
+                        <textarea
+                          value={rejectComment}
+                          onChange={(e) => setRejectComment(e.target.value)}
+                          placeholder="Optional comment (required for rejection / revocation)"
+                          rows={2}
+                          aria-label="Action comment"
+                          className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-[12px] text-slate-700 placeholder:text-slate-400 outline-none focus:border-indigo-400"
+                        />
+                      )}
+                      <div className="flex flex-wrap gap-2">
+                        {available.map(a => {
+                          const variantClass =
+                            a.variant === 'approve'
+                              ? 'bg-emerald-600 hover:bg-emerald-700 text-white border-emerald-600'
+                              : a.variant === 'reject'
+                              ? 'bg-rose-600 hover:bg-rose-700 text-white border-rose-600'
+                              : 'bg-white hover:bg-slate-50 text-slate-700 border-slate-200';
+                          const Icon =
+                            a.variant === 'approve' ? CheckCircle2 : a.variant === 'reject' ? XCircle : Activity;
+                          return (
+                            <button
+                              key={a.action}
+                              type="button"
+                              disabled={actionBusy}
+                              onClick={() => handleAction(a.action, a.needsComment ? rejectComment.trim() || undefined : undefined)}
+                              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-[11px] font-bold uppercase tracking-wider border transition-all disabled:opacity-60 ${variantClass}`}
+                            >
+                              <Icon className="w-3.5 h-3.5" />
+                              {a.label}
+                            </button>
+                          );
+                        })}
+                      </div>
+                      {actionError && (
+                        <div className="flex items-start gap-2 p-3 bg-rose-50 border border-rose-100 rounded-xl">
+                          <AlertTriangle className="w-4 h-4 text-rose-500 mt-0.5 shrink-0" />
+                          <span className="text-[12px] font-medium text-rose-700 leading-relaxed">{actionError}</span>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })()}
               </div>
             </div>
           </Drawer>
@@ -304,23 +414,99 @@ export default function LeaveRequestsPage() {
         </div>
       )}
 
-      {/* ── TAB 3: Leave Types ────────────────────────────────────────────── */}
+      {/* ── TAB 3: Leave Types (DB-backed CRUD) ───────────────────────────── */}
       {tab === 3 && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {LEAVE_TYPES.map(lt => {
-            const Icon = lt.icon;
+        <LeaveTypesTab leaveTypes={leaveTypes} onRefresh={refreshLeaveTypes} />
+      )}
+
+    </div>
+  );
+}
+
+// ─── Tab 3 component + modals ────────────────────────────────────────────────
+
+function LeaveTypesTab({
+  leaveTypes,
+  onRefresh,
+}: {
+  leaveTypes: ApiLeaveType[];
+  onRefresh: () => Promise<unknown>;
+}) {
+  const [createOpen, setCreateOpen] = useState(false);
+  const [editTarget, setEditTarget] = useState<ApiLeaveType | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<ApiLeaveType | null>(null);
+
+  return (
+    <>
+      <div className="flex items-center justify-between">
+        <div>
+          <h3 className="text-lg font-bold text-slate-900">Leave Type Catalogue</h3>
+          <p className="text-[12px] font-medium text-slate-500 mt-0.5">
+            HR-managed list of leave categories. Edits apply immediately to new submissions.
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={() => setCreateOpen(true)}
+          className="bg-slate-900 hover:bg-black text-white flex items-center gap-2.5 px-5 py-2.5 rounded-xl text-[11px] font-bold uppercase tracking-wider transition-all shadow-md"
+        >
+          <Plus className="w-4 h-4" />
+          New Leave Type
+        </button>
+      </div>
+
+      {leaveTypes.length === 0 ? (
+        <div className="bg-white rounded-[24px] border border-slate-200 p-12 text-center space-y-3 mt-6">
+          <span className="text-[13px] text-slate-500">No leave types yet. Add one to get started.</span>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
+          {leaveTypes.map(lt => {
+            const palette = paletteFor(lt.color);
             return (
-              <div key={lt.type} className={`${lt.bg} border ${lt.border} rounded-[24px] p-6 space-y-4`}>
-                <div className={`w-12 h-12 rounded-xl bg-white flex items-center justify-center ${lt.color} border ${lt.border}`}>
-                  <Icon className="w-6 h-6" />
+              <div
+                key={lt.id}
+                className={`${palette.bg} border ${palette.border} rounded-[24px] p-6 space-y-4 ${!lt.isActive ? 'opacity-60' : ''}`}
+              >
+                <div className="flex items-start justify-between">
+                  <div className={`w-12 h-12 rounded-xl bg-white flex items-center justify-center ${palette.text} border ${palette.border}`}>
+                    <Activity className="w-6 h-6" />
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <button
+                      type="button"
+                      aria-label={`Edit ${lt.name}`}
+                      onClick={() => setEditTarget(lt)}
+                      className="w-8 h-8 rounded-lg bg-white/70 hover:bg-white border border-white text-slate-500 hover:text-slate-900 flex items-center justify-center transition-all"
+                    >
+                      <Edit3 className="w-3.5 h-3.5" />
+                    </button>
+                    <button
+                      type="button"
+                      aria-label={`Delete ${lt.name}`}
+                      onClick={() => setDeleteTarget(lt)}
+                      className="w-8 h-8 rounded-lg bg-white/70 hover:bg-rose-50 border border-white text-slate-500 hover:text-rose-600 flex items-center justify-center transition-all"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
                 </div>
                 <div>
-                  <h3 className="text-[15px] font-bold text-slate-900 mb-1">{lt.type}</h3>
-                  <p className="text-[12px] font-medium text-slate-500 leading-relaxed">{lt.desc}</p>
+                  <div className="flex items-center gap-2 mb-1">
+                    <h3 className="text-[15px] font-bold text-slate-900">{lt.name}</h3>
+                    {!lt.isActive && (
+                      <span className="px-2 py-0.5 bg-slate-200 text-slate-600 text-[9px] font-bold uppercase tracking-widest rounded">Inactive</span>
+                    )}
+                  </div>
+                  <p className="text-[12px] font-medium text-slate-500 leading-relaxed min-h-[36px]">
+                    {lt.description ?? `${lt.code} — no description.`}
+                  </p>
                 </div>
                 <div className="flex items-center justify-between pt-2 border-t border-white/60">
                   <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Quota</span>
-                  <span className={`text-xl font-black ${lt.color}`}>{lt.quota} <span className="text-[12px] font-bold text-slate-400">days</span></span>
+                  <span className={`text-xl font-black ${palette.text}`}>
+                    {lt.quotaDays} <span className="text-[12px] font-bold text-slate-400">days</span>
+                  </span>
                 </div>
               </div>
             );
@@ -328,6 +514,258 @@ export default function LeaveRequestsPage() {
         </div>
       )}
 
-    </div>
+      <LeaveTypeFormModal
+        isOpen={createOpen}
+        onClose={() => setCreateOpen(false)}
+        onSaved={() => { setCreateOpen(false); onRefresh(); }}
+      />
+
+      <LeaveTypeFormModal
+        isOpen={!!editTarget}
+        onClose={() => setEditTarget(null)}
+        existing={editTarget ?? undefined}
+        onSaved={() => { setEditTarget(null); onRefresh(); }}
+      />
+
+      <DeleteLeaveTypeModal
+        target={deleteTarget}
+        onClose={() => setDeleteTarget(null)}
+        onDeleted={() => { setDeleteTarget(null); onRefresh(); }}
+      />
+    </>
+  );
+}
+
+// CreateLeaveTypeModal + EditLeaveTypeModal collapsed into one form modal —
+// the only behavioural difference is whether it POSTs or PATCHes, which is
+// decided by whether `existing` is passed.
+function LeaveTypeFormModal({
+  isOpen, onClose, onSaved, existing,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  onSaved: () => void;
+  existing?: ApiLeaveType;
+}) {
+  const editing = !!existing;
+  const [code, setCode] = useState(existing?.code ?? '');
+  const [name, setName] = useState(existing?.name ?? '');
+  const [quotaDays, setQuotaDays] = useState<number>(existing?.quotaDays ?? 14);
+  const [description, setDescription] = useState(existing?.description ?? '');
+  const [color, setColor] = useState(existing?.color ?? 'indigo');
+  const [isActive, setIsActive] = useState(existing?.isActive ?? true);
+  const [error, setError] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+
+  // Reset state when target changes (edit modal reused across rows).
+  React.useEffect(() => {
+    if (!isOpen) return;
+    setCode(existing?.code ?? '');
+    setName(existing?.name ?? '');
+    setQuotaDays(existing?.quotaDays ?? 14);
+    setDescription(existing?.description ?? '');
+    setColor(existing?.color ?? 'indigo');
+    setIsActive(existing?.isActive ?? true);
+    setError(null);
+  }, [isOpen, existing]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    setBusy(true);
+    try {
+      if (editing) {
+        await apiMutate(`/api/leave/types/${existing!.id}`, 'PATCH', {
+          name, quotaDays, description: description || null, color, isActive,
+        });
+      } else {
+        await apiMutate('/api/leave/types', 'POST', {
+          code: code.toUpperCase(), name, quotaDays,
+          description: description || null, color, isActive,
+        });
+      }
+      onSaved();
+    } catch (err: any) {
+      setError(err?.message ?? 'Could not save leave type');
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <Modal isOpen={isOpen} onClose={onClose} title={editing ? 'Edit Leave Type' : 'New Leave Type'} size="md">
+      <form onSubmit={handleSubmit} className="space-y-5">
+        <div className="space-y-1.5">
+          <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Code</label>
+          <input
+            aria-label="Code"
+            required
+            disabled={editing}
+            value={code}
+            onChange={(e) => setCode(e.target.value)}
+            placeholder="e.g. STUDY"
+            className="w-full h-[48px] bg-slate-50 border border-slate-200 rounded-xl px-4 text-[13px] font-bold outline-none focus:border-indigo-500 disabled:bg-slate-100 disabled:text-slate-500 uppercase"
+          />
+          {editing && <p className="text-[10px] text-slate-400 px-1">Code is immutable — historical requests reference it.</p>}
+        </div>
+
+        <div className="space-y-1.5">
+          <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Display Name</label>
+          <input
+            aria-label="Display Name"
+            required
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="e.g. Study Leave"
+            className="w-full h-[48px] bg-slate-50 border border-slate-200 rounded-xl px-4 text-[13px] font-bold outline-none focus:border-indigo-500"
+          />
+        </div>
+
+        <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-1.5">
+            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Quota (days/year)</label>
+            <input
+              aria-label="Quota days"
+              required
+              type="number"
+              min={0}
+              max={365}
+              value={quotaDays}
+              onChange={(e) => setQuotaDays(Number(e.target.value))}
+              className="w-full h-[48px] bg-slate-50 border border-slate-200 rounded-xl px-4 text-[13px] font-bold outline-none focus:border-indigo-500"
+            />
+          </div>
+          <div className="space-y-1.5">
+            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Colour</label>
+            <select
+              aria-label="Colour"
+              value={color}
+              onChange={(e) => setColor(e.target.value)}
+              className="w-full h-[48px] bg-slate-50 border border-slate-200 rounded-xl px-4 text-[13px] font-bold outline-none focus:border-indigo-500"
+            >
+              {Object.entries(COLOR_TOKENS).map(([token, p]) => (
+                <option key={token} value={token}>{p.label}</option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        <div className="space-y-1.5">
+          <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Description</label>
+          <textarea
+            aria-label="Description"
+            rows={2}
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            placeholder="What this leave type covers — shown on the type catalogue and submission form."
+            className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-[13px] outline-none focus:border-indigo-500"
+          />
+        </div>
+
+        {editing && (
+          <label className="flex items-center gap-3 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={isActive}
+              onChange={(e) => setIsActive(e.target.checked)}
+              className="w-4 h-4"
+            />
+            <span className="flex items-center gap-2 text-[12px] font-bold text-slate-700">
+              <Power className="w-3.5 h-3.5" />
+              Active (employees can request this leave type)
+            </span>
+          </label>
+        )}
+
+        {error && (
+          <div className="flex items-start gap-2 p-3 bg-rose-50 border border-rose-100 rounded-xl">
+            <AlertTriangle className="w-4 h-4 text-rose-500 mt-0.5 shrink-0" />
+            <span className="text-[12px] font-medium text-rose-700 leading-relaxed">{error}</span>
+          </div>
+        )}
+
+        <button
+          type="submit"
+          disabled={busy}
+          className="w-full h-12 bg-slate-900 text-white rounded-xl text-xs font-black uppercase tracking-widest hover:bg-slate-800 transition-all shadow-md disabled:opacity-60"
+        >
+          {busy ? 'Saving…' : editing ? 'Save Changes' : 'Create Leave Type'}
+        </button>
+      </form>
+    </Modal>
+  );
+}
+
+function DeleteLeaveTypeModal({
+  target, onClose, onDeleted,
+}: {
+  target: ApiLeaveType | null;
+  onClose: () => void;
+  onDeleted: () => void;
+}) {
+  const [error, setError] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+
+  React.useEffect(() => { if (target) setError(null); }, [target]);
+
+  const handleDelete = async () => {
+    if (!target) return;
+    setError(null);
+    setBusy(true);
+    try {
+      await apiMutate(`/api/leave/types/${target.id}`, 'DELETE');
+      onDeleted();
+    } catch (err: any) {
+      // 409 HAS_DEPENDENTS means historical requests reference this type —
+      // suggest disabling instead.
+      setError(err?.message ?? 'Could not delete leave type');
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <Modal isOpen={!!target} onClose={onClose} title="Delete Leave Type" size="sm">
+      <div className="space-y-5">
+        <div className="flex flex-col items-center text-center space-y-3">
+          <div className="w-14 h-14 rounded-2xl bg-rose-50 border border-rose-100 flex items-center justify-center">
+            <AlertTriangle className="w-7 h-7 text-rose-500" />
+          </div>
+          <div>
+            <h3 className="text-[15px] font-bold text-slate-900">Delete &ldquo;{target?.name}&rdquo;?</h3>
+            <p className="text-[12px] text-slate-500 mt-1 max-w-[300px]">
+              This removes the leave type from the catalogue. If any historical requests reference it,
+              the server will block deletion — disable it instead.
+            </p>
+          </div>
+        </div>
+
+        {error && (
+          <div className="flex items-start gap-2 p-3 bg-rose-50 border border-rose-100 rounded-xl">
+            <AlertTriangle className="w-4 h-4 text-rose-500 mt-0.5 shrink-0" />
+            <span className="text-[12px] font-medium text-rose-700 leading-relaxed">{error}</span>
+          </div>
+        )}
+
+        <div className="flex gap-2">
+          <button
+            type="button"
+            onClick={onClose}
+            disabled={busy}
+            className="flex-1 h-11 bg-white border border-slate-200 text-slate-700 rounded-xl text-[11px] font-bold uppercase tracking-widest disabled:opacity-60"
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            onClick={handleDelete}
+            disabled={busy}
+            className="flex-1 h-11 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-[11px] font-bold uppercase tracking-widest disabled:opacity-60"
+          >
+            {busy ? 'Deleting…' : 'Delete'}
+          </button>
+        </div>
+      </div>
+    </Modal>
   );
 }
