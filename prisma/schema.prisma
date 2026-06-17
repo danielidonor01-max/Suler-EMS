@@ -120,6 +120,18 @@ model Hub {
   updatedAt   DateTime     @updatedAt
 }
 
+model LeaveType {
+  id          String   @id @default(uuid())
+  code        String   @unique // e.g. "ANNUAL", "SICK"
+  name        String   @unique // display label e.g. "Annual Leave"
+  quotaDays   Int      @default(0) // entitlement per employee per year
+  description String?
+  color       String?  // tailwind palette token e.g. "indigo", "rose"
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
 model Department {
   id            String       @id @default(uuid())
   name          String       @unique

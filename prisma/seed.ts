@@ -246,6 +246,26 @@ async function main() {
   });
   console.log('✓ Statutory Rates: 6');
 
+  // ── Leave Types ──
+  // The five canonical Nigerian leave categories. Quotas match the
+  // labour-law minima except Annual which we set to 21 (common practice).
+  // HR can edit / add / disable via /api/leave/types after seed.
+  const leaveTypes = [
+    { code: 'ANNUAL',        name: 'Annual Leave',        quotaDays: 21, color: 'indigo', description: 'Annual recreational leave entitlement per employee.' },
+    { code: 'SICK',          name: 'Sick Leave',          quotaDays: 14, color: 'rose',   description: 'Medical / illness-related absence days.' },
+    { code: 'COMPASSIONATE', name: 'Compassionate Leave', quotaDays: 5,  color: 'amber',  description: 'Granted for bereavement or family emergencies.' },
+    { code: 'MATERNITY',     name: 'Maternity Leave',     quotaDays: 90, color: 'pink',   description: '90-day maternity leave per Nigerian labour law.' },
+    { code: 'PATERNITY',     name: 'Paternity Leave',     quotaDays: 14, color: 'sky',    description: '14-day paternity leave entitlement.' },
+  ];
+  for (const lt of leaveTypes) {
+    await prisma.leaveType.upsert({
+      where:  { code: lt.code },
+      update: { name: lt.name, quotaDays: lt.quotaDays, color: lt.color, description: lt.description, isActive: true },
+      create: { ...lt, isActive: true },
+    });
+  }
+  console.log(`✓ Leave Types: ${leaveTypes.length}`);
+
   // ── Employees + Users + Salary Structures ──
   const employeeIdByEmail: Record<string, string> = {};
   const userIdByEmail: Record<string, string> = {};
