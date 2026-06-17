@@ -608,7 +608,7 @@ export const OnboardMemberModal: React.FC<OnboardMemberModalProps> = ({ isOpen, 
                     value={formData.department}
                     onChange={val => setFormData({...formData, department: val})}
                     options={departments
-                      .filter(d => d.parentHub === formData.hub)
+                      .filter(d => d.hub?.name === formData.hub)
                       .map(d => ({ label: d.name, value: d.name }))
                     }
                   />
