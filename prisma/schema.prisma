@@ -65,6 +65,10 @@ model User {
   // --- Document uploads ---
   documentsUploaded EmployeeDocument[] @relation("UserDocsUploaded")
 
+  // --- Profile change requests ---
+  profileChangeRequestsRaised   ProfileChangeRequest[] @relation("UserProfileChangeRequests")
+  profileChangeRequestsReviewed ProfileChangeRequest[] @relation("UserProfileChangeReviews")
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -122,6 +126,30 @@ model Hub {
   teams       Team[]
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
+}
+
+model ProfileChangeRequest {
+  id             String   @id @default(uuid())
+  employeeId     String
+  employee       Employee @relation("EmployeeProfileChangeRequests", fields: [employeeId], references: [id], onDelete: Cascade)
+  requestedById  String
+  requestedBy    User     @relation("UserProfileChangeRequests", fields: [requestedById], references: [id])
+  field          String   // e.g. "firstName", "phone", "nin"
+  currentValue   String?  // snapshot at time of request
+  proposedValue  String?  // null means "please clear the field"
+  reason         String
+
+  status         String   @default("PENDING") // PENDING, APPROVED, REJECTED, CANCELLED
+  reviewedById   String?
+  reviewedBy     User?    @relation("UserProfileChangeReviews", fields: [reviewedById], references: [id])
+  reviewedAt     DateTime?
+  reviewComment  String?
+
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([employeeId, status])
+  @@index([status, createdAt])
 }
 
 model EmployeeDocument {
@@ -243,6 +271,7 @@ model Employee {
   teamsLed        Team[]                     @relation("TeamManager")
   teamMemberships TeamMembership[]
   documents       EmployeeDocument[]
+  profileChangeRequests ProfileChangeRequest[] @relation("EmployeeProfileChangeRequests")
 
   // --- Finance & Payroll relations ---
   salaryStructures   SalaryStructure[]
