@@ -266,76 +266,6 @@ async function main() {
   }
   console.log(`✓ Leave Types: ${leaveTypes.length}`);
 
-  // ── Starter Teams ──
-  // Three canonical teams matching the seed departments. Each team's
-  // manager is the same person who manages the parent hub / department.
-  // Members are wired in a second pass via TeamMembership so we can
-  // attach multiple employees per team without ordering issues.
-  const hubByCode = await prisma.hub.findMany({ select: { id: true, code: true } });
-  const hubIdByCode = Object.fromEntries(hubByCode.map(h => [h.code, h.id]));
-  const deptByCode = await prisma.department.findMany({ select: { id: true, code: true } });
-  const deptIdByCode = Object.fromEntries(deptByCode.map(d => [d.code, d.id]));
-
-  const starterTeams = [
-    {
-      code: 'TEAM-LAG-OPS',
-      name: 'Lagos Operations',
-      description: 'Core operational leadership and strategic execution from HQ.',
-      hubCode: 'HUB-01', deptCode: 'LAG-HQ',
-      managerEmail: 'manager@suler.com',
-      memberEmails: ['admin@suler.com', 'manager@suler.com', 'hr@suler.com'],
-    },
-    {
-      code: 'TEAM-ABJ-FIN',
-      name: 'Treasury & Disbursement',
-      description: 'Finance controls, payouts, and reconciliation across the org.',
-      hubCode: 'HUB-02', deptCode: 'ABJ-OPS',
-      managerEmail: 'finance@suler.com',
-      memberEmails: ['finance@suler.com', 'manager2@suler.com'],
-    },
-    {
-      code: 'TEAM-PHC-LOG',
-      name: 'Port Harcourt Logistics',
-      description: 'Warehousing, distribution, and field operations.',
-      hubCode: 'HUB-03', deptCode: 'PHC-LOG',
-      managerEmail: 'manager3@suler.com',
-      memberEmails: ['manager3@suler.com'],
-    },
-  ];
-
-  for (const t of starterTeams) {
-    const team = await prisma.team.upsert({
-      where:  { code: t.code },
-      update: {
-        name: t.name, description: t.description,
-        hubId: hubIdByCode[t.hubCode] ?? null,
-        departmentId: deptIdByCode[t.deptCode] ?? null,
-        managerId: employeeIdByEmail[t.managerEmail] ?? null,
-        status: 'ACTIVE',
-      },
-      create: {
-        code: t.code, name: t.name, description: t.description,
-        hubId: hubIdByCode[t.hubCode] ?? null,
-        departmentId: deptIdByCode[t.deptCode] ?? null,
-        managerId: employeeIdByEmail[t.managerEmail] ?? null,
-        status: 'ACTIVE',
-      },
-    });
-    // Sync membership: insert any missing memberships in this round, leave
-    // existing ones in place. Removing a member should be a deliberate
-    // admin action — not something the seed re-runs into.
-    for (const email of t.memberEmails) {
-      const employeeId = employeeIdByEmail[email];
-      if (!employeeId) continue;
-      await prisma.teamMembership.upsert({
-        where:  { teamId_employeeId: { teamId: team.id, employeeId } },
-        update: {},
-        create: { teamId: team.id, employeeId, role: email === t.managerEmail ? 'Lead' : 'Contributor' },
-      });
-    }
-  }
-  console.log(`✓ Teams: ${starterTeams.length} (with memberships)`);
-
   // ── Employees + Users + Salary Structures ──
   const employeeIdByEmail: Record<string, string> = {};
   const userIdByEmail: Record<string, string> = {};
@@ -426,6 +356,75 @@ async function main() {
     });
   }
   console.log('✓ Hubs: Lagos, Abuja, Port Harcourt (linked to departments)');
+
+  // ── Starter Teams ──
+  // Three canonical teams matching the seed departments. Each team's
+  // manager is the same person who manages the parent hub / department.
+  // Lives AFTER both employees and hubs so all FK targets exist.
+  const hubByCode = await prisma.hub.findMany({ select: { id: true, code: true } });
+  const hubIdByCode = Object.fromEntries(hubByCode.map(h => [h.code, h.id]));
+  const deptByCode = await prisma.department.findMany({ select: { id: true, code: true } });
+  const deptIdByCode = Object.fromEntries(deptByCode.map(d => [d.code, d.id]));
+
+  const starterTeams = [
+    {
+      code: 'TEAM-LAG-OPS',
+      name: 'Lagos Operations',
+      description: 'Core operational leadership and strategic execution from HQ.',
+      hubCode: 'HUB-01', deptCode: 'LAG-HQ',
+      managerEmail: 'manager@suler.com',
+      memberEmails: ['admin@suler.com', 'manager@suler.com', 'hr@suler.com'],
+    },
+    {
+      code: 'TEAM-ABJ-FIN',
+      name: 'Treasury & Disbursement',
+      description: 'Finance controls, payouts, and reconciliation across the org.',
+      hubCode: 'HUB-02', deptCode: 'ABJ-OPS',
+      managerEmail: 'finance@suler.com',
+      memberEmails: ['finance@suler.com', 'manager2@suler.com'],
+    },
+    {
+      code: 'TEAM-PHC-LOG',
+      name: 'Port Harcourt Logistics',
+      description: 'Warehousing, distribution, and field operations.',
+      hubCode: 'HUB-03', deptCode: 'PHC-LOG',
+      managerEmail: 'manager3@suler.com',
+      memberEmails: ['manager3@suler.com'],
+    },
+  ];
+
+  for (const t of starterTeams) {
+    const team = await prisma.team.upsert({
+      where:  { code: t.code },
+      update: {
+        name: t.name, description: t.description,
+        hubId: hubIdByCode[t.hubCode] ?? null,
+        departmentId: deptIdByCode[t.deptCode] ?? null,
+        managerId: employeeIdByEmail[t.managerEmail] ?? null,
+        status: 'ACTIVE',
+      },
+      create: {
+        code: t.code, name: t.name, description: t.description,
+        hubId: hubIdByCode[t.hubCode] ?? null,
+        departmentId: deptIdByCode[t.deptCode] ?? null,
+        managerId: employeeIdByEmail[t.managerEmail] ?? null,
+        status: 'ACTIVE',
+      },
+    });
+    // Sync membership: insert any missing memberships in this round, leave
+    // existing ones in place. Removing a member should be a deliberate
+    // admin action — not something the seed re-runs into.
+    for (const email of t.memberEmails) {
+      const employeeId = employeeIdByEmail[email];
+      if (!employeeId) continue;
+      await prisma.teamMembership.upsert({
+        where:  { teamId_employeeId: { teamId: team.id, employeeId } },
+        update: {},
+        create: { teamId: team.id, employeeId, role: email === t.managerEmail ? 'Lead' : 'Contributor' },
+      });
+    }
+  }
+  console.log(`✓ Teams: ${starterTeams.length} (with memberships)`);
 
   const adminId = userIdByEmail['admin@suler.com'];
   const financeId = userIdByEmail['finance@suler.com'];
