@@ -56,14 +56,17 @@ export const POST = withAuth(async (req, session, context) => {
     const cycle = await prisma.reviewCycle.findUniqueOrThrow({ where: { id } });
 
     let pairs: Array<{ employeeId: string; reviewerId: string | null }>;
-    if ('assignAll' in parsed.data) {
+    if ('assignAll' in parsed.data && parsed.data.assignAll === true) {
+      const defaultReviewerId = parsed.data.reviewerId ?? null;
       const employees = await prisma.employee.findMany({
         where:  { status: 'ACTIVE' },
         select: { id: true },
       });
-      pairs = employees.map(e => ({ employeeId: e.id, reviewerId: parsed.data.reviewerId ?? null }));
-    } else {
+      pairs = employees.map(e => ({ employeeId: e.id, reviewerId: defaultReviewerId }));
+    } else if ('pairs' in parsed.data) {
       pairs = parsed.data.pairs.map(p => ({ employeeId: p.employeeId, reviewerId: p.reviewerId ?? null }));
+    } else {
+      return errorResponse('VALIDATION_ERROR', 'Provide either assignAll or pairs', 400, correlationId);
     }
 
     // createMany with skipDuplicates: the (cycleId, employeeId) unique
