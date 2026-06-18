@@ -72,6 +72,9 @@ model User {
   // --- Performance goals ---
   goalsOwned PerformanceGoal[] @relation("UserGoalsOwned")
 
+  // --- Backups created ---
+  backupsCreated Backup[] @relation("UserBackupsCreated")
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -129,6 +132,32 @@ model Hub {
   teams       Team[]
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
+}
+
+model Backup {
+  id           String   @id @default(uuid())
+  createdById  String
+  createdBy    User     @relation("UserBackupsCreated", fields: [createdById], references: [id])
+
+  // Bytes of the gzipped JSON manifest produced by the backup service.
+  // Same BYTEA pattern as EmployeeDocument + ReportJob: avoids a
+  // separate storage backend, atomic with the row's lifecycle.
+  data         Bytes
+  sizeBytes    Int
+  rowCount     Int       // sum of rows across all included tables
+  tablesIncluded Json   // ["Employee", "User", "LeaveRequest", …]
+
+  // Snapshot integrity metadata so we know what produced it if we ever
+  // need to restore (which is an ops procedure, not an in-app one).
+  schemaVersion String  @default("1.0")
+  description   String?
+
+  status       String   @default("COMPLETED") // COMPLETED, FAILED
+  error        String?
+
+  createdAt    DateTime @default(now())
+
+  @@index([createdAt])
 }
 
 model PerformanceGoal {
