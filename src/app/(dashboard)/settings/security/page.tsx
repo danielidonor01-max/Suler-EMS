@@ -2,314 +2,308 @@
 
 import React, { useState } from 'react';
 import {
-  Lock, Shield, Eye, Smartphone, Monitor, Globe,
-  Plus, Trash2, CheckCircle2, XCircle, AlertTriangle, LogOut, Key
+  Shield, Lock, Clock, AlertTriangle, CheckCircle2, RefreshCw,
 } from 'lucide-react';
 import { RouteGuard } from '@/components/common/RouteGuard';
-import { useSettings } from '@/context/SettingsContext';
-import { Select } from '@/components/forms/Select';
+import { useApi } from '@/lib/api/use-api';
+import { apiMutate } from '@/lib/api/fetcher';
 
-const MOCK_AUDIT = [
-  { action: 'Successful Login', user: 'Olumide Adeyemi', ip: '197.210.66.12', time: '2026-05-11T14:00:00Z', status: 'SUCCESS' },
-  { action: 'Failed Login Attempt', user: 'unknown@test.com', ip: '45.22.101.88', time: '2026-05-11T13:45:00Z', status: 'FAILED' },
+interface Setting {
+  key:        string;
+  category:   string;
+  description: string;
+  value:      unknown;
+  isDefault:  boolean;
+  updatedAt:  string | null;
+  updatedBy:  { id: string; name: string; email: string } | null;
+}
+
+const PASSWORD_SECTION = [
+  'security.password.minLength',
+  'security.password.requireUppercase',
+  'security.password.requireLowercase',
+  'security.password.requireNumbers',
+  'security.password.requireSymbols',
 ];
 
+const SESSION_SECTION = [
+  'security.session.idleTimeoutMinutes',
+  'security.session.warnBeforeMinutes',
+];
+
+const LABELS: Record<string, string> = {
+  'security.password.minLength':           'Minimum length',
+  'security.password.requireUppercase':    'Require uppercase letter',
+  'security.password.requireLowercase':    'Require lowercase letter',
+  'security.password.requireNumbers':      'Require digit',
+  'security.password.requireSymbols':      'Require special character',
+  'security.session.idleTimeoutMinutes':   'Idle timeout',
+  'security.session.warnBeforeMinutes':    'Warn before timeout',
+};
+
+const UNITS: Record<string, string> = {
+  'security.password.minLength':         'characters',
+  'security.session.idleTimeoutMinutes': 'minutes',
+  'security.session.warnBeforeMinutes':  'minutes',
+};
+
 export default function SecurityPage() {
-  const { settings, updateSettings, pushGovernanceActivity } = useSettings();
-  const [newIp, setNewIp] = useState('');
+  return (
+    <RouteGuard allowedRoles={['SUPER_ADMIN']}>
+      <SecurityInner />
+    </RouteGuard>
+  );
+}
 
-  const revokeSession = (id: string) => {
-    updateSettings(prev => ({
-      ...prev,
-      security: {
-        ...prev.security,
-        sessions: prev.security.sessions.filter(s => s.id !== id)
-      }
-    }));
-    pushGovernanceActivity('Security Session Revoked', `Administrator manually terminated session [${id}].`);
-  };
+function SecurityInner() {
+  const { data: settings = [], refresh } = useApi<Setting[]>(
+    '/api/settings?category=SECURITY',
+    { pollMs: 60_000 },
+  );
 
-  const addIp = () => {
-    if (newIp.trim()) {
-      updateSettings(prev => ({
-        ...prev,
-        security: {
-          ...prev.security,
-          ipAllowlist: [...prev.security.ipAllowlist, newIp.trim()]
-        }
-      }));
-      pushGovernanceActivity('Network Policy Updated', `Added [${newIp}] to the enterprise IP allowlist.`);
-      setNewIp('');
+  const [busy, setBusy] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [flash, setFlash] = useState<string | null>(null);
+
+  const byKey: Record<string, Setting | undefined> = Object.fromEntries(
+    settings.map(s => [s.key, s]),
+  );
+
+  const updateSetting = async (key: string, value: unknown) => {
+    setBusy(key);
+    setError(null);
+    setFlash(null);
+    try {
+      await apiMutate(`/api/settings/${encodeURIComponent(key)}`, 'PATCH', { value });
+      await refresh();
+      setFlash(`${LABELS[key] ?? key} updated.`);
+    } catch (err: any) {
+      setError(err?.message ?? 'Update failed');
+    } finally {
+      setBusy(null);
     }
   };
 
-  const updatePasswordPolicy = (key: string, value: any) => {
-    updateSettings(prev => ({
-      ...prev,
-      security: {
-        ...prev.security,
-        passwordPolicy: {
-          ...prev.security.passwordPolicy,
-          [key]: value
-        }
-      }
-    }));
-    pushGovernanceActivity('Authentication Policy Mutated', `Global password standards updated: [${key}] set to [${value}].`);
-  };
+  return (
+    <div className="section-breathing max-w-[1200px] mx-auto animate-in space-y-10">
 
-  const ToggleSwitch = ({ checked, onChange, label }: { checked: boolean; onChange: () => void; label?: string }) => (
+      {/* ── Hero ────────────────────────────────────────────────────────── */}
+      <div className="bg-white rounded-[24px] p-8 border border-slate-200/60 shadow-sm">
+        <div className="flex items-center gap-2 mb-3">
+          <div className="px-2.5 py-1 bg-slate-900 text-white rounded-md text-[9px] font-bold uppercase tracking-[0.2em] flex items-center gap-1.5">
+            <Shield className="w-3 h-3" />
+            Security Policy
+          </div>
+        </div>
+        <h1 className="text-3xl font-bold text-slate-900 tracking-tighter leading-none mb-3">
+          Security &amp; Authentication
+        </h1>
+        <p className="text-[13px] font-medium text-slate-400 leading-relaxed max-w-[560px]">
+          Policies set here are enforced server-side. Password complexity applies at the next password change;
+          session timeout applies after a 30-second cache window on every server.
+        </p>
+      </div>
+
+      {flash && (
+        <div className="flex items-start gap-2 p-3 bg-emerald-50 border border-emerald-100 rounded-xl">
+          <CheckCircle2 className="w-4 h-4 text-emerald-500 mt-0.5 shrink-0" />
+          <span className="text-[12px] font-medium text-emerald-700">{flash}</span>
+        </div>
+      )}
+      {error && (
+        <div className="flex items-start gap-2 p-3 bg-rose-50 border border-rose-100 rounded-xl">
+          <AlertTriangle className="w-4 h-4 text-rose-500 mt-0.5 shrink-0" />
+          <span className="text-[12px] font-medium text-rose-700">{error}</span>
+        </div>
+      )}
+
+      {/* ── Password section ──────────────────────────────────────────────── */}
+      <PolicySection
+        icon={Lock}
+        title="Password Policy"
+        description="Applied the next time any user changes their password — current passwords aren't re-validated."
+        keys={PASSWORD_SECTION}
+        settings={byKey}
+        onChange={updateSetting}
+        busyKey={busy}
+      />
+
+      {/* ── Session section ───────────────────────────────────────────────── */}
+      <PolicySection
+        icon={Clock}
+        title="Session Management"
+        description="Idle users see a warning, then are signed out automatically. Lower the timeout for higher-trust environments."
+        keys={SESSION_SECTION}
+        settings={byKey}
+        onChange={updateSetting}
+        busyKey={busy}
+      />
+
+    </div>
+  );
+}
+
+// ─── Section + row components ───────────────────────────────────────────────
+
+function PolicySection({
+  icon: Icon, title, description, keys, settings, onChange, busyKey,
+}: {
+  icon: React.ComponentType<{ className?: string }>;
+  title: string;
+  description: string;
+  keys: string[];
+  settings: Record<string, Setting | undefined>;
+  onChange: (key: string, value: unknown) => Promise<void> | void;
+  busyKey: string | null;
+}) {
+  return (
+    <div className="bg-white rounded-[24px] border border-slate-200 overflow-hidden">
+      <div className="px-6 py-4 border-b border-slate-100 flex items-center gap-2">
+        <Icon className="w-4 h-4 text-slate-400" />
+        <div>
+          <h2 className="text-[14px] font-bold text-slate-900">{title}</h2>
+          <p className="text-[11px] text-slate-500 mt-0.5">{description}</p>
+        </div>
+      </div>
+      <div className="divide-y divide-slate-100">
+        {keys.map(key => {
+          const setting = settings[key];
+          if (!setting) {
+            return (
+              <div key={key} className="px-6 py-3 text-[12px] text-slate-400">
+                {LABELS[key] ?? key} — loading…
+              </div>
+            );
+          }
+          return (
+            <SettingRow
+              key={key}
+              setting={setting}
+              onChange={(value) => onChange(setting.key, value)}
+              busy={busyKey === setting.key}
+            />
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function SettingRow({
+  setting, onChange, busy,
+}: {
+  setting: Setting;
+  onChange: (value: unknown) => void;
+  busy: boolean;
+}) {
+  const label = LABELS[setting.key] ?? setting.key;
+  const unit  = UNITS[setting.key];
+  const lastTouched =
+    setting.isDefault ? 'Default'
+    : setting.updatedBy ? `by ${setting.updatedBy.name}` : 'Modified';
+
+  if (typeof setting.value === 'boolean') {
+    return (
+      <div className="px-6 py-4 flex items-center gap-4">
+        <div className="flex-1 min-w-0">
+          <div className="text-[13px] font-bold text-slate-900">{label}</div>
+          <div className="text-[11px] text-slate-500 mt-0.5">{setting.description}</div>
+        </div>
+        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mr-2">
+          {lastTouched}
+        </span>
+        <Toggle
+          checked={setting.value}
+          onChange={(next) => onChange(next)}
+          busy={busy}
+        />
+      </div>
+    );
+  }
+
+  // Numeric (clamped server-side).
+  return (
+    <div className="px-6 py-4 flex items-center gap-4">
+      <div className="flex-1 min-w-0">
+        <div className="text-[13px] font-bold text-slate-900">{label}</div>
+        <div className="text-[11px] text-slate-500 mt-0.5">{setting.description}</div>
+      </div>
+      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mr-2">
+        {lastTouched}
+      </span>
+      <NumberStepper
+        value={setting.value as number}
+        onChange={(next) => onChange(next)}
+        unit={unit}
+        busy={busy}
+      />
+    </div>
+  );
+}
+
+function Toggle({
+  checked, onChange, busy,
+}: {
+  checked: boolean;
+  onChange: (next: boolean) => void;
+  busy: boolean;
+}) {
+  return (
     <button
       type="button"
       role="switch"
-      aria-checked={Boolean(checked)}
-      aria-label={label ?? 'Toggle'}
-      onClick={onChange}
-      className={`relative w-12 h-6 rounded-full transition-all ${checked ? 'bg-indigo-600' : 'bg-slate-200'}`}
+      aria-checked={checked}
+      aria-label="Toggle"
+      onClick={() => onChange(!checked)}
+      disabled={busy}
+      className={`relative w-12 h-6 rounded-full transition-all disabled:opacity-60 ${
+        checked ? 'bg-indigo-600' : 'bg-slate-200'
+      }`}
     >
-      <div className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-all ${checked ? 'left-6' : 'left-0.5'}`} />
+      <div
+        className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-all ${
+          checked ? 'left-6' : 'left-0.5'
+        }`}
+      />
+      {busy && (
+        <RefreshCw className="absolute right-1 top-1 w-4 h-4 text-white animate-spin" />
+      )}
     </button>
   );
+}
 
+function NumberStepper({
+  value, onChange, unit, busy,
+}: {
+  value: number;
+  onChange: (next: number) => void;
+  unit?: string;
+  busy: boolean;
+}) {
   return (
-    <RouteGuard allowedRoles={['SUPER_ADMIN']}>
-      <div className="section-breathing max-w-[1200px] mx-auto animate-in space-y-8">
-        {/* Hero */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-        <div className="space-y-3">
-          <div className="flex items-center gap-2">
-            <div className="px-2.5 py-1 bg-slate-900 text-white rounded-md text-[9px] font-bold uppercase tracking-[0.2em] flex items-center gap-1.5">
-              <Shield className="w-3 h-3" />Zero Trust Architecture
-            </div>
-            <div className="flex items-center gap-1.5">
-              <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">All Systems Secure</span>
-            </div>
-          </div>
-          <h1 className="text-3xl font-bold text-slate-900 tracking-tighter">Security & Authentication</h1>
-          <p className="text-[13px] font-medium text-slate-400 max-w-[500px] leading-relaxed">
-            Manage access controls, authentication protocols, and session governance.
-          </p>
-        </div>
-        <button className="bg-slate-900 hover:bg-black text-white flex items-center gap-2 px-6 h-[44px] rounded-xl text-[11px] font-bold uppercase tracking-wider transition-all shadow-md">
-          <Lock className="w-4 h-4" />Save Security Policy
-        </button>
-      </div>
-
-      {/* KPIs */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        {[
-          { label: 'Security Score', value: '94/100', color: 'text-emerald-600', bg: 'bg-emerald-50', border: 'border-emerald-100', icon: Shield },
-          { label: 'Active Sessions', value: `${settings.security.sessions.length}`, color: 'text-indigo-600', bg: 'bg-indigo-50', border: 'border-indigo-100', icon: Monitor },
-          { label: 'Failed Logins (24h)', value: '1', color: 'text-amber-600', bg: 'bg-amber-50', border: 'border-amber-100', icon: AlertTriangle },
-          { label: '2FA Coverage', value: '87%', color: 'text-slate-900', bg: 'bg-slate-50', border: 'border-slate-100', icon: Smartphone },
-        ].map(card => (
-          <div key={card.label} className={`${card.bg} border ${card.border} rounded-[20px] p-5 flex items-center gap-3`}>
-            <div className={`w-10 h-10 rounded-xl bg-white flex items-center justify-center ${card.color} shadow-sm border ${card.border}`}>
-              <card.icon className="w-4 h-4" />
-            </div>
-            <div>
-              <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">{card.label}</p>
-              <p className={`text-xl font-black tracking-tighter ${card.color}`}>{card.value}</p>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* Password Policy */}
-        <div className="bg-white rounded-[24px] border border-slate-200 p-8 space-y-5 shadow-sm">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="w-10 h-10 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center"><Key className="w-5 h-5 text-slate-400" /></div>
-            <div>
-              <h2 className="text-base font-bold text-slate-900">Password Policy</h2>
-              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">Authentication Standards</p>
-            </div>
-          </div>
-          <div className="flex items-center justify-between p-4 bg-slate-50 rounded-xl border border-slate-100">
-            <div>
-              <p className="text-[13px] font-bold text-slate-900">Minimum Length</p>
-              <p className="text-[11px] text-slate-400">Characters required</p>
-            </div>
-            <div className="flex items-center gap-2">
-              <button onClick={() => updatePasswordPolicy('minLength', Math.max(8, settings.security.passwordPolicy.minLength - 1))} className="w-8 h-8 rounded-lg bg-white border border-slate-200 text-slate-600 font-bold text-lg flex items-center justify-center hover:bg-slate-100">−</button>
-              <span className="text-lg font-black text-slate-900 w-8 text-center">{settings.security.passwordPolicy.minLength}</span>
-              <button onClick={() => updatePasswordPolicy('minLength', Math.min(32, settings.security.passwordPolicy.minLength + 1))} className="w-8 h-8 rounded-lg bg-white border border-slate-200 text-slate-600 font-bold text-lg flex items-center justify-center hover:bg-slate-100">+</button>
-            </div>
-          </div>
-          {[
-            { key: 'requireUppercase', label: 'Require Uppercase Letters', desc: 'At least one A–Z' },
-            { key: 'requireNumbers', label: 'Require Numbers', desc: 'At least one 0–9' },
-            { key: 'requireSymbols', label: 'Require Special Symbols', desc: 'At least one !@#$%' },
-          ].map(rule => (
-            <div key={rule.key} className="flex items-center justify-between p-4 bg-slate-50 rounded-xl border border-slate-100">
-              <div>
-                <p className="text-[13px] font-bold text-slate-900">{rule.label}</p>
-                <p className="text-[11px] text-slate-400">{rule.desc}</p>
-              </div>
-              <ToggleSwitch checked={!!settings.security.passwordPolicy[rule.key as keyof typeof settings.security.passwordPolicy]} onChange={() => updatePasswordPolicy(rule.key, !settings.security.passwordPolicy[rule.key as keyof typeof settings.security.passwordPolicy])} />
-            </div>
-          ))}
-          <div className="flex items-center justify-between p-4 bg-slate-50 rounded-xl border border-slate-100">
-            <div>
-              <p className="text-[13px] font-bold text-slate-900">Password Expiry</p>
-              <p className="text-[11px] text-slate-400">Days until mandatory reset</p>
-            </div>
-            <Select
-              value={String(settings.security.passwordPolicy.expiryDays)}
-              onChange={(v) => updatePasswordPolicy('expiryDays', parseInt(v))}
-              options={[
-                { label: '30 days', value: '30' },
-                { label: '60 days', value: '60' },
-                { label: '90 days', value: '90' },
-                { label: '180 days', value: '180' },
-              ]}
-            />
-          </div>
-        </div>
-
-        <div className="space-y-6">
-          {/* 2FA */}
-          <div className="bg-white rounded-[24px] border border-slate-200 p-8 shadow-sm space-y-5">
-            <div className="flex items-center gap-3 mb-2">
-              <div className="w-10 h-10 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center"><Smartphone className="w-5 h-5 text-slate-400" /></div>
-              <div>
-                <h2 className="text-base font-bold text-slate-900">Two-Factor Authentication</h2>
-                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">MFA Protocol</p>
-              </div>
-            </div>
-            <div className="p-4 bg-slate-50 rounded-xl border border-slate-100 flex items-center justify-between">
-              <div>
-                <p className="text-[13px] font-bold text-slate-900">Enforce 2FA Organization-Wide</p>
-                <p className="text-[11px] text-slate-400 mt-0.5">All users must complete MFA on login</p>
-              </div>
-              <ToggleSwitch checked={settings.security.enforceMFA} onChange={() => {
-                updateSettings(prev => ({ ...prev, security: { ...prev.security, enforceMFA: !prev.security.enforceMFA } }));
-                pushGovernanceActivity('MFA Policy Updated', `Enterprise-wide Multi-Factor Authentication was ${!settings.security.enforceMFA ? 'enforced' : 'relaxed'}.`);
-              }} />
-            </div>
-            {settings.security.enforceMFA && (
-              <div className="flex items-center gap-3 p-3 bg-emerald-50 border border-emerald-100 rounded-xl">
-                <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-                <p className="text-[12px] font-bold text-emerald-700">2FA enforced. All logins require MFA.</p>
-              </div>
-            )}
-          </div>
-
-          {/* IP Allowlist */}
-          <div className="bg-white rounded-[24px] border border-slate-200 p-8 shadow-sm space-y-5">
-            <div className="flex items-center gap-3 mb-2">
-              <div className="w-10 h-10 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center"><Globe className="w-5 h-5 text-slate-400" /></div>
-              <div>
-                <h2 className="text-base font-bold text-slate-900">IP Access Control</h2>
-                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">Network Allowlist</p>
-              </div>
-            </div>
-            {settings.security.ipAllowlist.map((ip, i) => (
-              <div key={i} className="flex items-center justify-between p-3 bg-slate-50 rounded-xl border border-slate-100">
-                <span className="text-[13px] font-bold text-slate-700 font-mono">{ip}</span>
-                <button onClick={() => {
-                  updateSettings(prev => ({ ...prev, security: { ...prev.security, ipAllowlist: prev.security.ipAllowlist.filter((_, idx) => idx !== i) } }));
-                  pushGovernanceActivity('Network Policy Updated', `Removed [${ip}] from the enterprise IP allowlist.`);
-                }} className="text-slate-300 hover:text-rose-400 transition-colors"><Trash2 className="w-4 h-4" /></button>
-              </div>
-            ))}
-            <div className="flex gap-2">
-              <input aria-label="IP address or CIDR range" type="text" value={newIp} onChange={(e) => setNewIp(e.target.value)} placeholder="e.g. 197.210.0.0/16" className="flex-1 h-11 bg-slate-50 border border-slate-100 rounded-xl px-4 text-[13px] font-bold font-mono outline-none" onKeyDown={(e) => e.key === 'Enter' && addIp()} />
-              <button type="button" aria-label="Add IP to allowlist" onClick={addIp} className="w-11 h-11 bg-slate-900 text-white rounded-xl flex items-center justify-center hover:bg-black"><Plus className="w-4 h-4" /></button>
-            </div>
-          </div>
-          {/* User Recovery & Reset */}
-          <div className="bg-white rounded-[24px] border border-slate-200 p-8 shadow-sm space-y-5">
-            <div className="flex items-center gap-3 mb-2">
-              <div className="w-10 h-10 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center"><AlertTriangle className="w-5 h-5 text-slate-400" /></div>
-              <div>
-                <h2 className="text-base font-bold text-slate-900">User Recovery & Reset</h2>
-                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">Emergency Operations</p>
-              </div>
-            </div>
-            <div className="flex items-center justify-between p-4 bg-slate-50 rounded-xl border border-slate-100">
-              <div>
-                <p className="text-[13px] font-bold text-slate-900">Force Global Password Reset</p>
-                <p className="text-[11px] text-slate-400 mt-0.5">Requires all users to reset passwords on next login</p>
-              </div>
-              <button className="px-4 h-9 bg-rose-50 border border-rose-100 text-rose-600 hover:bg-rose-100 rounded-xl text-[11px] font-bold uppercase tracking-wide transition-all">
-                Force Reset
-              </button>
-            </div>
-            <div className="flex items-center justify-between p-4 bg-slate-50 rounded-xl border border-slate-100">
-              <div>
-                <p className="text-[13px] font-bold text-slate-900">Generate MFA Recovery Codes</p>
-                <p className="text-[11px] text-slate-400 mt-0.5">Generate one-time emergency bypass codes for locked users</p>
-              </div>
-              <button className="px-4 h-9 bg-slate-900 text-white hover:bg-black rounded-xl text-[11px] font-bold uppercase tracking-wide transition-all shadow-sm">
-                Generate
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Active Sessions */}
-      <div className="bg-white rounded-[24px] border border-slate-200 p-8 shadow-sm space-y-5">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center"><Monitor className="w-5 h-5 text-slate-400" /></div>
-            <div>
-              <h2 className="text-base font-bold text-slate-900">Active Sessions</h2>
-              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">Live Auth Tokens</p>
-            </div>
-          </div>
-          <button className="flex items-center gap-2 text-[11px] font-bold text-rose-500 hover:text-rose-600 uppercase tracking-widest">
-            <LogOut className="w-4 h-4" />Revoke All Others
-          </button>
-        </div>
-        {settings.security.sessions.map(session => (
-          <div key={session.id} className={`flex items-center justify-between p-4 rounded-[20px] border ${session.current ? 'bg-indigo-50 border-indigo-100' : 'bg-slate-50 border-slate-100'}`}>
-            <div className="flex items-center gap-4">
-              <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${session.current ? 'bg-indigo-100 text-indigo-600' : 'bg-white border border-slate-200 text-slate-400'}`}>
-                <Monitor className="w-5 h-5" />
-              </div>
-              <div>
-                <div className="flex items-center gap-2">
-                  <span className="text-[13px] font-bold text-slate-900">{session.device}</span>
-                  {session.current && <span className="px-2 py-0.5 bg-indigo-600 text-white text-[9px] font-bold rounded-full uppercase">Current</span>}
-                </div>
-                <p className="text-[11px] text-slate-400 font-medium">{session.location} · {session.ip}</p>
-              </div>
-            </div>
-            {!session.current && (
-              <button onClick={() => revokeSession(session.id)} className="px-4 h-9 bg-white border border-slate-200 text-rose-500 hover:bg-rose-50 rounded-xl text-[11px] font-bold uppercase tracking-wide flex items-center gap-2">
-                <XCircle className="w-3.5 h-3.5" />Revoke
-              </button>
-            )}
-          </div>
-        ))}
-      </div>
-
-      {/* Login Audit */}
-      <div className="bg-white rounded-[24px] border border-slate-200 p-8 shadow-sm space-y-5">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center"><Eye className="w-5 h-5 text-slate-400" /></div>
-          <div>
-            <h2 className="text-base font-bold text-slate-900">Login Audit Trail</h2>
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">Authentication Events (Last 24h)</p>
-          </div>
-        </div>
-        {MOCK_AUDIT.map((entry, i) => (
-          <div key={i} className="flex items-center justify-between p-4 bg-slate-50 rounded-xl border border-slate-100">
-            <div className="flex items-center gap-3">
-              <div className={`w-2 h-2 rounded-full ${entry.status === 'SUCCESS' ? 'bg-emerald-400' : 'bg-rose-400'}`} />
-              <span className="text-[13px] font-bold text-slate-900">{entry.action}</span>
-              <span className="text-[11px] text-slate-400">— {entry.user}</span>
-            </div>
-            <div className="flex items-center gap-4">
-              <span className="text-[11px] font-bold text-slate-400 font-mono">{entry.ip}</span>
-              <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold uppercase ${entry.status === 'SUCCESS' ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'}`}>{entry.status}</span>
-            </div>
-          </div>
-        ))}
-      </div>
+    <div className="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-xl px-2 py-1 shrink-0">
+      <button
+        type="button"
+        onClick={() => onChange(value - 1)}
+        disabled={busy}
+        aria-label="Decrease"
+        className="w-7 h-7 rounded-lg hover:bg-white text-slate-600 font-bold text-lg flex items-center justify-center disabled:opacity-50"
+      >
+        −
+      </button>
+      <span className="text-[13px] font-bold text-slate-900 min-w-[40px] text-center">
+        {value}
+      </span>
+      <button
+        type="button"
+        onClick={() => onChange(value + 1)}
+        disabled={busy}
+        aria-label="Increase"
+        className="w-7 h-7 rounded-lg hover:bg-white text-slate-600 font-bold text-lg flex items-center justify-center disabled:opacity-50"
+      >
+        +
+      </button>
+      {unit && <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest pr-2">{unit}</span>}
     </div>
-  </RouteGuard>
   );
 }

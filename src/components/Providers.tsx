@@ -18,6 +18,7 @@ import { CommunicationProvider } from "@/context/CommunicationContext";
 import { PreferencesProvider } from "@/context/PreferencesContext";
 import { EmployeeProfileProvider } from "@/context/EmployeeProfileContext";
 import { AuthPersistence } from "@/components/auth/AuthPersistence";
+import { IdleSessionMonitor } from "@/components/auth/IdleSessionMonitor";
 
 export function Providers({ children }: { children: React.ReactNode }) {
   return (
@@ -40,6 +41,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
                                 <EmployeeProfileProvider>
                                   <AuthPersistence>
                                     {children}
+                                    <IdleSessionMonitor />
                                   </AuthPersistence>
                                 </EmployeeProfileProvider>
                               </ForecastingProvider>
