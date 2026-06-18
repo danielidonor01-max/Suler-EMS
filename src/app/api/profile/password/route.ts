@@ -3,13 +3,17 @@ import prisma from '@/lib/prisma';
 import { withAuth } from '@/lib/api/with-auth';
 import { successResponse, errorResponse } from '@/lib/api-utils';
 import { PasswordService } from '@/lib/auth/password.service';
+import { checkPassword } from '@/lib/settings/service';
 
 /**
  * PATCH /api/profile/password
  *
  * Lets a signed-in user change their own password.
  *   - Verifies the current password before any write.
- *   - Enforces a minimum strength (length + char-class diversity).
+ *   - Enforces complexity per the live SystemSetting policy. Admins
+ *     can re-tune via /settings/security and the change takes effect
+ *     on the next request (30s cache TTL upper-bound, invalidated
+ *     immediately by the PATCH endpoint).
  *   - Bumps User.version so the session-version watcher invalidates other
  *     active sessions on this account (re-auth required).
  *   - Writes a SecurityEvent so the action shows up in /governance.
@@ -19,10 +23,7 @@ import { PasswordService } from '@/lib/auth/password.service';
  */
 const Schema = z.object({
   currentPassword: z.string().min(1, 'current password required'),
-  newPassword: z.string().min(10, 'new password must be at least 10 characters'),
-}).refine(d => /[A-Z]/.test(d.newPassword) && /[a-z]/.test(d.newPassword) && /[0-9]/.test(d.newPassword), {
-  message: 'new password must include upper, lower, and digit characters',
-  path: ['newPassword'],
+  newPassword:     z.string().min(1, 'new password required'),
 }).refine(d => d.currentPassword !== d.newPassword, {
   message: 'new password must differ from the current one',
   path: ['newPassword'],
@@ -34,6 +35,18 @@ export const PATCH = withAuth(async (req, session) => {
   const parsed = Schema.safeParse(body);
   if (!parsed.success) {
     return errorResponse('VALIDATION_ERROR', parsed.error.message, 400, correlationId);
+  }
+
+  // Policy-driven complexity check — the rules live in SystemSetting
+  // so HR can re-tune without a deploy.
+  const policyCheck = await checkPassword(parsed.data.newPassword);
+  if (!policyCheck.ok) {
+    return errorResponse(
+      'WEAK_PASSWORD',
+      policyCheck.errors.join(' '),
+      400,
+      correlationId,
+    );
   }
 
   const user = await prisma.user.findUnique({
