@@ -69,6 +69,9 @@ model User {
   profileChangeRequestsRaised   ProfileChangeRequest[] @relation("UserProfileChangeRequests")
   profileChangeRequestsReviewed ProfileChangeRequest[] @relation("UserProfileChangeReviews")
 
+  // --- Performance goals ---
+  goalsOwned PerformanceGoal[] @relation("UserGoalsOwned")
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -126,6 +129,32 @@ model Hub {
   teams       Team[]
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
+}
+
+model PerformanceGoal {
+  id           String   @id @default(uuid())
+  employeeId   String
+  employee     Employee @relation("EmployeeGoals", fields: [employeeId], references: [id], onDelete: Cascade)
+  ownerId      String   // user who created the goal (usually employee themselves)
+  owner        User     @relation("UserGoalsOwned", fields: [ownerId], references: [id])
+
+  title        String
+  description  String?
+  category     String   @default("INDIVIDUAL") // INDIVIDUAL, TEAM, ORGANIZATIONAL
+
+  startDate    DateTime @default(now())
+  dueDate      DateTime?
+
+  status       String   @default("ACTIVE") // DRAFT, ACTIVE, COMPLETED, OVERDUE, CANCELLED
+  progressPercent Int   @default(0) // 0-100
+
+  notes        String?  // running notes / updates
+
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([employeeId, status])
+  @@index([dueDate])
 }
 
 model ProfileChangeRequest {
@@ -272,6 +301,7 @@ model Employee {
   teamMemberships TeamMembership[]
   documents       EmployeeDocument[]
   profileChangeRequests ProfileChangeRequest[] @relation("EmployeeProfileChangeRequests")
+  goals           PerformanceGoal[]          @relation("EmployeeGoals")
 
   // --- Finance & Payroll relations ---
   salaryStructures   SalaryStructure[]
