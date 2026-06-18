@@ -4,7 +4,7 @@ import React, { useMemo, useState } from 'react';
 import Link from 'next/link';
 import {
   Target, Plus, Edit3, Trash2, CheckCircle2, AlertTriangle,
-  TrendingUp, Calendar, Users, FileText, ArrowRight,
+  TrendingUp, Calendar, Users, FileText, ArrowRight, MessageSquare,
 } from 'lucide-react';
 import { useApi } from '@/lib/api/use-api';
 import { apiMutate } from '@/lib/api/fetcher';
@@ -119,6 +119,14 @@ export default function PerformancePage() {
             >
               <TrendingUp className="w-4 h-4" />
               KPIs
+              <ArrowRight className="w-3 h-3" />
+            </Link>
+            <Link
+              href="/performance/feedback"
+              className="bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 flex items-center gap-2 px-5 py-3 rounded-xl text-[11px] font-bold uppercase tracking-wider transition-all"
+            >
+              <MessageSquare className="w-4 h-4" />
+              Peer Feedback
               <ArrowRight className="w-3 h-3" />
             </Link>
             {isHR && (

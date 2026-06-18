@@ -80,6 +80,10 @@ model User {
   kpisOwned        PerformanceKPI[]   @relation("UserKPIsOwned")
   kpiMeasurements  KPIMeasurement[]   @relation("UserKPIMeasurements")
 
+  // --- 360° / peer feedback ---
+  feedbackRequestsCreated  PeerFeedbackRequest[] @relation("UserPeerFeedbackRequester")
+  feedbackRequestsToReview PeerFeedbackRequest[] @relation("UserPeerFeedbackReviewer")
+
   // --- Backups created ---
   backupsCreated Backup[] @relation("UserBackupsCreated")
 
@@ -235,6 +239,46 @@ model KPIMeasurement {
   @@index([kpiId])
 }
 
+// 360° / peer feedback. Subject (the employee being given feedback
+// about) and reviewer (the peer asked to give it) are distinct;
+// requestedBy is whoever created the row (subject self-requesting,
+// HR fanning out, or a manager). Status walks PENDING → SUBMITTED
+// or PENDING → DECLINED. (subjectId, reviewerId, cycleId) is unique
+// so we can't accidentally fan out two identical asks in one cycle.
+model PeerFeedbackRequest {
+  id            String   @id @default(uuid())
+  subjectId     String
+  subject       Employee @relation("EmployeePeerFeedback", fields: [subjectId], references: [id], onDelete: Cascade)
+
+  reviewerId    String
+  reviewer      User     @relation("UserPeerFeedbackReviewer", fields: [reviewerId], references: [id])
+
+  requestedById String
+  requestedBy   User     @relation("UserPeerFeedbackRequester", fields: [requestedById], references: [id])
+
+  cycleId       String?
+  cycle         ReviewCycle? @relation("CyclePeerFeedback", fields: [cycleId], references: [id], onDelete: SetNull)
+
+  prompt        String?  // optional context the requester wants the reviewer to address
+  status        String   @default("PENDING") // PENDING, SUBMITTED, DECLINED
+
+  // Response payload — populated on SUBMITTED.
+  strengths     String?
+  improvements  String?
+  comments      String?
+  rating        Int?     // optional 1-5 numeric
+
+  submittedAt   DateTime?
+  declinedReason String?
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@unique([subjectId, reviewerId, cycleId])
+  @@index([subjectId, status])
+  @@index([reviewerId, status])
+}
+
 model ReviewCycle {
   id          String   @id @default(uuid())
   name        String   // "Q3 2026 Annual Review"
@@ -249,6 +293,7 @@ model ReviewCycle {
   createdBy   User     @relation("UserReviewCyclesCreated", fields: [createdById], references: [id])
 
   reviews     PerformanceReview[]
+  peerFeedback PeerFeedbackRequest[] @relation("CyclePeerFeedback")
 
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -462,6 +507,7 @@ model Employee {
   goals           PerformanceGoal[]          @relation("EmployeeGoals")
   reviews         PerformanceReview[]        @relation("EmployeeReviews")
   kpis            PerformanceKPI[]           @relation("EmployeeKPIs")
+  peerFeedback    PeerFeedbackRequest[]      @relation("EmployeePeerFeedback")
 
   // --- Finance & Payroll relations ---
   salaryStructures   SalaryStructure[]
