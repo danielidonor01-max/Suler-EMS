@@ -1,9 +1,10 @@
 "use client";
 
 import React, { useMemo, useState } from 'react';
+import Link from 'next/link';
 import {
   Target, Plus, Edit3, Trash2, CheckCircle2, AlertTriangle,
-  TrendingUp, Calendar, Users,
+  TrendingUp, Calendar, Users, FileText, ArrowRight,
 } from 'lucide-react';
 import { useApi } from '@/lib/api/use-api';
 import { apiMutate } from '@/lib/api/fetcher';
@@ -100,17 +101,37 @@ export default function PerformancePage() {
               Goals &amp; Outcomes
             </h1>
             <p className="text-[13px] font-medium text-slate-400 leading-relaxed max-w-[520px]">
-              Define what you&apos;re working toward, track progress, and close the loop with HR. Review cycles and KPIs land in a follow-up.
+              Define what you&apos;re working toward and track progress.
             </p>
           </div>
-          <button
-            type="button"
-            onClick={() => setCreateOpen(true)}
-            className="bg-slate-900 hover:bg-black text-white flex items-center gap-2 px-6 py-3 rounded-xl text-[11px] font-bold uppercase tracking-wider transition-all shadow-md"
-          >
-            <Plus className="w-4 h-4" />
-            New Goal
-          </button>
+          <div className="flex items-center gap-3 flex-wrap">
+            <Link
+              href="/performance/reviews"
+              className="bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 flex items-center gap-2 px-5 py-3 rounded-xl text-[11px] font-bold uppercase tracking-wider transition-all"
+            >
+              <FileText className="w-4 h-4" />
+              Reviews
+              <ArrowRight className="w-3 h-3" />
+            </Link>
+            {isHR && (
+              <Link
+                href="/performance/cycles"
+                className="bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 flex items-center gap-2 px-5 py-3 rounded-xl text-[11px] font-bold uppercase tracking-wider transition-all"
+              >
+                <Calendar className="w-4 h-4" />
+                Cycles
+                <ArrowRight className="w-3 h-3" />
+              </Link>
+            )}
+            <button
+              type="button"
+              onClick={() => setCreateOpen(true)}
+              className="bg-slate-900 hover:bg-black text-white flex items-center gap-2 px-6 py-3 rounded-xl text-[11px] font-bold uppercase tracking-wider transition-all shadow-md"
+            >
+              <Plus className="w-4 h-4" />
+              New Goal
+            </button>
+          </div>
         </div>
       </div>
 
