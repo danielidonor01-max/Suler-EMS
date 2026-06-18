@@ -76,6 +76,10 @@ model User {
   reviewCyclesCreated ReviewCycle[]        @relation("UserReviewCyclesCreated")
   reviewsConducted    PerformanceReview[]  @relation("UserReviewsConducted")
 
+  // --- KPIs ---
+  kpisOwned        PerformanceKPI[]   @relation("UserKPIsOwned")
+  kpiMeasurements  KPIMeasurement[]   @relation("UserKPIMeasurements")
+
   // --- Backups created ---
   backupsCreated Backup[] @relation("UserBackupsCreated")
 
@@ -180,6 +184,55 @@ model Backup {
   createdAt    DateTime @default(now())
 
   @@index([createdAt])
+}
+
+model PerformanceKPI {
+  id          String   @id @default(uuid())
+  employeeId  String
+  employee    Employee @relation("EmployeeKPIs", fields: [employeeId], references: [id], onDelete: Cascade)
+
+  ownerId     String   // user who created it (manager or HR)
+  owner       User     @relation("UserKPIsOwned", fields: [ownerId], references: [id])
+
+  title       String
+  description String?
+  // Target shape: numerical metric the employee is graded against.
+  target      Float    // e.g. 50 (sales calls), 0.95 (uptime %), 4.5 (CSAT)
+  unit        String?  // "calls", "%", "hrs", "₦", etc. — display-only
+  frequency   String   @default("MONTHLY") // WEEKLY, MONTHLY, QUARTERLY, ANNUAL
+  startDate   DateTime
+  endDate     DateTime?
+  status      String   @default("ACTIVE") // ACTIVE, PAUSED, ARCHIVED
+
+  measurements KPIMeasurement[]
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([employeeId, status])
+}
+
+model KPIMeasurement {
+  id           String         @id @default(uuid())
+  kpiId        String
+  kpi          PerformanceKPI @relation(fields: [kpiId], references: [id], onDelete: Cascade)
+
+  // The reporting period this measurement covers. Stored as the period
+  // start (UTC midnight) so we can group/sort consistently regardless
+  // of where the recorder is.
+  periodStart  DateTime
+  periodEnd    DateTime
+
+  actualValue  Float
+  notes        String?
+
+  recordedById String
+  recordedBy   User           @relation("UserKPIMeasurements", fields: [recordedById], references: [id])
+
+  createdAt    DateTime       @default(now())
+
+  @@unique([kpiId, periodStart])
+  @@index([kpiId])
 }
 
 model ReviewCycle {
@@ -408,6 +461,7 @@ model Employee {
   profileChangeRequests ProfileChangeRequest[] @relation("EmployeeProfileChangeRequests")
   goals           PerformanceGoal[]          @relation("EmployeeGoals")
   reviews         PerformanceReview[]        @relation("EmployeeReviews")
+  kpis            PerformanceKPI[]           @relation("EmployeeKPIs")
 
   // --- Finance & Payroll relations ---
   salaryStructures   SalaryStructure[]

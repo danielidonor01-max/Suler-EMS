@@ -97,7 +97,9 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle }) => {
     { name: 'Attendance', icon: Calendar, href: '/attendance' },
     { name: 'Leave Requests', icon: Activity, href: '/leave' },
     { name: 'My Payroll', icon: Wallet, href: '/my-payroll' },
-    { name: 'Request Tracker', icon: TrendingUp, href: '/tracker' },
+    { name: 'Performance', icon: Target, href: '/performance' },
+    { name: 'KPIs', icon: TrendingUp, href: '/performance/kpis' },
+    { name: 'Request Tracker', icon: BarChart3, href: '/tracker' },
   ];
 
   // Administrative Workspace (Permission-based)

@@ -113,6 +113,14 @@ export default function PerformancePage() {
               Reviews
               <ArrowRight className="w-3 h-3" />
             </Link>
+            <Link
+              href="/performance/kpis"
+              className="bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 flex items-center gap-2 px-5 py-3 rounded-xl text-[11px] font-bold uppercase tracking-wider transition-all"
+            >
+              <TrendingUp className="w-4 h-4" />
+              KPIs
+              <ArrowRight className="w-3 h-3" />
+            </Link>
             {isHR && (
               <Link
                 href="/performance/cycles"
