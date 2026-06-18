@@ -1,394 +1,544 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
-  Award, Target, TrendingUp, Star, ChevronRight, Plus,
-  UserCheck, BarChart3, Zap, CheckCircle2, Clock, ArrowUpRight,
-  Medal, Brain, Users, Filter
+  Target, Plus, Edit3, Trash2, CheckCircle2, AlertTriangle,
+  TrendingUp, Calendar, Users,
 } from 'lucide-react';
+import { useApi } from '@/lib/api/use-api';
+import { apiMutate } from '@/lib/api/fetcher';
+import { useAccess } from '@/context/AccessContext';
+import { Modal } from '@/components/common/Modal';
 import { MetricCard } from '@/components/dashboard/MetricCard';
-import { Select } from '@/components/forms/Select';
+import { EmployeeChip } from '@/components/employees/EmployeeChip';
 
-// ─── Mock Data ─────────────────────────────────────────────────────────────────
-const EMPLOYEES = [
-  {
-    id: 'e001', name: 'Bola Akinwale', role: 'Senior Engineer', hub: 'Lagos',
-    department: 'Engineering', kpiScore: 94, reviewScore: 4.7, selfScore: 4.5,
-    competency: 92, promotionReady: true, status: 'EXCEEDS',
-    kpis: [
-      { label: 'Delivery Rate', score: 97, target: 90 },
-      { label: 'Code Quality', score: 95, target: 85 },
-      { label: 'Team Collaboration', score: 90, target: 80 },
-      { label: 'Innovation Index', score: 94, target: 75 },
-    ]
-  },
-  {
-    id: 'e002', name: 'Chiamaka Obi', role: 'Product Manager', hub: 'Lagos',
-    department: 'Product', kpiScore: 88, reviewScore: 4.3, selfScore: 4.1,
-    competency: 85, promotionReady: false, status: 'MEETS',
-    kpis: [
-      { label: 'Feature Launch Rate', score: 90, target: 85 },
-      { label: 'Stakeholder Satisfaction', score: 88, target: 80 },
-      { label: 'Backlog Health', score: 82, target: 75 },
-      { label: 'Cross-Team Alignment', score: 92, target: 80 },
-    ]
-  },
-  {
-    id: 'e003', name: 'Emeka Okafor', role: 'Finance Analyst', hub: 'Abuja',
-    department: 'Finance', kpiScore: 76, reviewScore: 3.8, selfScore: 3.9,
-    competency: 74, promotionReady: false, status: 'DEVELOPING',
-    kpis: [
-      { label: 'Report Accuracy', score: 82, target: 90 },
-      { label: 'Audit Compliance', score: 79, target: 85 },
-      { label: 'Deadline Adherence', score: 68, target: 80 },
-      { label: 'Process Efficiency', score: 75, target: 70 },
-    ]
-  },
-  {
-    id: 'e004', name: 'Tunde Bakare', role: 'HR Specialist', hub: 'Port Harcourt',
-    department: 'Human Resources', kpiScore: 91, reviewScore: 4.5, selfScore: 4.6,
-    competency: 89, promotionReady: true, status: 'EXCEEDS',
-    kpis: [
-      { label: 'Onboarding Rate', score: 95, target: 88 },
-      { label: 'Retention Score', score: 90, target: 85 },
-      { label: 'Policy Compliance', score: 93, target: 90 },
-      { label: 'Employee Satisfaction', score: 87, target: 80 },
-    ]
-  },
-];
+// ─── API types ───────────────────────────────────────────────────────────────
 
-const STATUS_CONFIG: Record<string, { bg: string; text: string; label: string }> = {
-  EXCEEDS:    { bg: 'bg-emerald-50', text: 'text-emerald-700', label: 'Exceeds' },
-  MEETS:      { bg: 'bg-indigo-50',  text: 'text-indigo-700',  label: 'Meets' },
-  DEVELOPING: { bg: 'bg-amber-50',   text: 'text-amber-700',   label: 'Developing' },
-  BELOW:      { bg: 'bg-rose-50',    text: 'text-rose-700',    label: 'Below Target' },
+interface Goal {
+  id: string;
+  title: string;
+  description: string | null;
+  category: 'INDIVIDUAL' | 'TEAM' | 'ORGANIZATIONAL';
+  startDate: string;
+  dueDate: string | null;
+  status: 'DRAFT' | 'ACTIVE' | 'COMPLETED' | 'OVERDUE' | 'CANCELLED';
+  progressPercent: number;
+  notes: string | null;
+  isOverdue: boolean;
+  createdAt: string;
+  updatedAt: string;
+  employee: { id: string; staffId: string; firstName: string; lastName: string; jobTitle: string };
+  owner: { id: string; name: string; email: string };
+}
+
+const STATUS_TONE: Record<string, { text: string; bg: string; border: string }> = {
+  DRAFT:     { text: 'text-slate-600',   bg: 'bg-slate-100',   border: 'border-slate-200' },
+  ACTIVE:    { text: 'text-indigo-700',  bg: 'bg-indigo-50',   border: 'border-indigo-100' },
+  COMPLETED: { text: 'text-emerald-700', bg: 'bg-emerald-50',  border: 'border-emerald-100' },
+  OVERDUE:   { text: 'text-rose-700',    bg: 'bg-rose-50',     border: 'border-rose-100' },
+  CANCELLED: { text: 'text-slate-500',   bg: 'bg-slate-50',    border: 'border-slate-100' },
 };
 
-const TABS = ['KPI Scorecards', 'Manager Reviews', 'Competency Matrix', 'Promotion Pipeline'];
-
-// ─── Sub-Components ────────────────────────────────────────────────────────────
-const KpiBar = ({ label, score, target }: { label: string; score: number; target: number }) => (
-  <div className="space-y-1.5">
-    <div className="flex justify-between text-[11px] font-bold">
-      <span className="text-slate-500 uppercase tracking-widest">{label}</span>
-      <span className={score >= target ? 'text-emerald-600' : 'text-amber-600'}>{score}%</span>
-    </div>
-    <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden relative">
-      {/* Target line */}
-      <div className="absolute top-0 bottom-0 w-0.5 bg-slate-300 z-10" style={{ left: `${target}%` }} />
-      <div
-        className={`h-full rounded-full transition-all duration-700 ${score >= target ? 'bg-emerald-500' : 'bg-amber-400'}`}
-        style={{ width: `${score}%` }}
-      />
-    </div>
-    <div className="flex justify-between text-[9px] font-medium text-slate-300 uppercase tracking-widest">
-      <span>0</span>
-      <span>Target: {target}%</span>
-      <span>100</span>
-    </div>
-  </div>
-);
-
-const ScoreRing = ({ score, max = 5, size = 64 }: { score: number; max?: number; size?: number }) => {
-  const pct = (score / max) * 100;
-  const r = (size / 2) - 8;
-  const circ = 2 * Math.PI * r;
-  const dash = (pct / 100) * circ;
-
-  return (
-    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
-      <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="#f1f5f9" strokeWidth="6" />
-      <circle
-        cx={size / 2} cy={size / 2} r={r} fill="none"
-        stroke="#4f46e5" strokeWidth="6"
-        strokeDasharray={`${dash} ${circ}`}
-        strokeLinecap="round"
-        transform={`rotate(-90 ${size / 2} ${size / 2})`}
-      />
-      <text
-        x={size / 2} y={size / 2 + 1} textAnchor="middle" dominantBaseline="middle"
-        className="fill-slate-900" style={{ fontSize: 12, fontWeight: 800 }}
-      >
-        {score.toFixed(1)}
-      </text>
-    </svg>
-  );
+const CATEGORY_LABEL: Record<string, string> = {
+  INDIVIDUAL:     'Individual',
+  TEAM:           'Team',
+  ORGANIZATIONAL: 'Organizational',
 };
 
-// ─── Main Page ─────────────────────────────────────────────────────────────────
+function fmtDate(iso: string | null): string {
+  if (!iso) return 'No due date';
+  return new Intl.DateTimeFormat('en-NG', { day: '2-digit', month: 'short', year: 'numeric' }).format(new Date(iso));
+}
+
 export default function PerformancePage() {
-  const [tab, setTab] = useState(0);
-  const [selected, setSelected] = useState<typeof EMPLOYEES[0] | null>(null);
-  const [filterHub, setFilterHub] = useState('All');
+  const { userRole } = useAccess();
+  const isHR = userRole === 'SUPER_ADMIN' || userRole === 'HR_ADMIN';
 
-  const filtered = filterHub === 'All' ? EMPLOYEES : EMPLOYEES.filter(e => e.hub === filterHub);
-  const avgKpi = Math.round(EMPLOYEES.reduce((s, e) => s + e.kpiScore, 0) / EMPLOYEES.length);
-  const promotionReady = EMPLOYEES.filter(e => e.promotionReady).length;
-  const exceeds = EMPLOYEES.filter(e => e.status === 'EXCEEDS').length;
+  const [tab, setTab] = useState<'mine' | 'all'>('mine');
+  const [createOpen, setCreateOpen] = useState(false);
+  const [editing, setEditing] = useState<Goal | null>(null);
+
+  const { data: goals = [], refresh } = useApi<Goal[]>(
+    `/api/performance/goals?scope=${tab}`,
+    { pollMs: 30_000 },
+  );
+
+  const stats = useMemo(() => {
+    let active = 0, completed = 0, overdue = 0;
+    let progressSum = 0, activeCount = 0;
+    for (const g of goals) {
+      if (g.status === 'ACTIVE') {
+        active++; activeCount++;
+        progressSum += g.progressPercent;
+      } else if (g.status === 'COMPLETED') {
+        completed++;
+      }
+      if (g.isOverdue) overdue++;
+    }
+    return {
+      active,
+      completed,
+      overdue,
+      avgProgress: activeCount > 0 ? Math.round(progressSum / activeCount) : 0,
+    };
+  }, [goals]);
 
   return (
     <div className="section-breathing max-w-[1600px] mx-auto animate-in space-y-10">
 
-      {/* ── Hero ─────────────────────────────────────────────────────────── */}
-      <div className="bg-white rounded-[24px] p-8 border border-slate-200/60 shadow-sm relative overflow-hidden">
-        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-8">
+      {/* Hero */}
+      <div className="bg-white rounded-[24px] p-8 border border-slate-200/60 shadow-sm">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div>
             <div className="flex items-center gap-2 mb-3">
               <div className="px-2.5 py-1 bg-slate-900 text-white rounded-md text-[9px] font-bold uppercase tracking-[0.2em] flex items-center gap-1.5">
-                <Award className="w-3 h-3" />
-                Performance Intelligence
+                <Target className="w-3 h-3" />
+                Performance
               </div>
             </div>
             <h1 className="text-3xl font-bold text-slate-900 tracking-tighter leading-none mb-3">
-              Performance Management
+              Goals &amp; Outcomes
             </h1>
-            <p className="text-[13px] font-medium text-slate-400 leading-relaxed max-w-[500px]">
-              KPI scorecards, competency ratings, manager reviews, and promotion pipeline intelligence.
+            <p className="text-[13px] font-medium text-slate-400 leading-relaxed max-w-[520px]">
+              Define what you&apos;re working toward, track progress, and close the loop with HR. Review cycles and KPIs land in a follow-up.
             </p>
           </div>
-          <div className="flex items-center gap-3">
-            <Select
-              value={filterHub}
-              onChange={setFilterHub}
-              options={[
-                { label: 'All Hubs', value: 'All' },
-                { label: 'Lagos', value: 'Lagos' },
-                { label: 'Abuja', value: 'Abuja' },
-                { label: 'Port Harcourt', value: 'Port Harcourt' },
-              ]}
-              className="w-48"
-            />
-            <button className="bg-slate-900 hover:bg-black text-white flex items-center gap-2.5 px-6 py-3 rounded-xl text-[11px] font-bold uppercase tracking-wider transition-all shadow-md">
-              <Plus className="w-4 h-4" />
-              New Review Cycle
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* ── KPI Cards ────────────────────────────────────────────────────── */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-        <MetricCard label="Org KPI Average" value={`${avgKpi}%`} trend={{ direction: 'up', value: '3.2%' }} variant="tonal-success" icon={TrendingUp} />
-        <MetricCard label="Exceeds Expectations" value={`${exceeds}`} variant="tonal-success" icon={Star} />
-        <MetricCard label="Promotion Ready" value={`${promotionReady}`} variant="tonal-info" icon={Medal} />
-        <MetricCard label="Review Cycles Open" value="2" variant="tonal-warning" icon={Clock} />
-      </div>
-
-      {/* ── Tab Bar ──────────────────────────────────────────────────────── */}
-      <div className="flex items-center gap-2 bg-slate-50 border border-slate-100 rounded-2xl p-1.5 w-fit">
-        {TABS.map((t, i) => (
           <button
-            key={t}
-            onClick={() => setTab(i)}
-            className={`px-5 py-2.5 rounded-xl text-[11px] font-bold uppercase tracking-wider transition-all ${
-              tab === i ? 'bg-white text-slate-900 shadow-sm border border-slate-200' : 'text-slate-400 hover:text-slate-600'
-            }`}
+            type="button"
+            onClick={() => setCreateOpen(true)}
+            className="bg-slate-900 hover:bg-black text-white flex items-center gap-2 px-6 py-3 rounded-xl text-[11px] font-bold uppercase tracking-wider transition-all shadow-md"
           >
-            {t}
+            <Plus className="w-4 h-4" />
+            New Goal
           </button>
-        ))}
+        </div>
       </div>
 
-      {/* ── Tab Content ──────────────────────────────────────────────────── */}
+      {/* KPIs */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+        <MetricCard label="Active Goals"   value={`${stats.active}`}    variant="tonal-info"    icon={Target} />
+        <MetricCard label="Completed"      value={`${stats.completed}`} variant="tonal-success" icon={CheckCircle2} />
+        <MetricCard label="Overdue"        value={`${stats.overdue}`}   variant={stats.overdue > 0 ? 'tonal-warning' : 'tonal-success'} icon={AlertTriangle} />
+        <MetricCard label="Avg Progress"   value={`${stats.avgProgress}%`} variant="tonal-info" icon={TrendingUp} />
+      </div>
 
-      {/* TAB 0: KPI Scorecards */}
-      {tab === 0 && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {filtered.map(emp => {
-            const cfg = STATUS_CONFIG[emp.status];
-            return (
-              <div
-                key={emp.id}
-                className="bg-white rounded-[24px] border border-slate-200 p-6 space-y-5 hover:shadow-lg transition-all cursor-pointer group"
-                onClick={() => setSelected(emp)}
-              >
-                {/* Header */}
-                <div className="flex items-start justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="w-11 h-11 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center text-[11px] font-black text-slate-400">
-                      {emp.name.split(' ').map(n => n[0]).join('')}
-                    </div>
-                    <div>
-                      <div className="text-[14px] font-bold text-slate-900">{emp.name}</div>
-                      <div className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">{emp.role}</div>
-                    </div>
-                  </div>
-                  <div className="flex flex-col items-end gap-1.5">
-                    <span className={`px-2.5 py-1 rounded-full text-[9px] font-bold uppercase tracking-widest ${cfg.bg} ${cfg.text}`}>
-                      {cfg.label}
-                    </span>
-                    {emp.promotionReady && (
-                      <span className="px-2 py-0.5 bg-amber-50 text-amber-600 rounded-full text-[9px] font-bold uppercase">
-                        Promotion Ready
-                      </span>
-                    )}
-                  </div>
-                </div>
-
-                {/* Score */}
-                <div className="flex items-center gap-4 p-4 bg-slate-50 rounded-2xl border border-slate-100">
-                  <div className="text-center">
-                    <div className="text-3xl font-black text-slate-900 tracking-tighter">{emp.kpiScore}</div>
-                    <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">KPI Score</div>
-                  </div>
-                  <div className="flex-1 h-px bg-slate-200" />
-                  <div className="text-center">
-                    <div className="text-xl font-black text-indigo-600">{emp.reviewScore}</div>
-                    <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">Manager</div>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-xl font-black text-slate-700">{emp.selfScore}</div>
-                    <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">Self</div>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-xl font-black text-emerald-600">{emp.competency}%</div>
-                    <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">Competency</div>
-                  </div>
-                </div>
-
-                {/* KPI bars */}
-                <div className="space-y-3">
-                  {emp.kpis.map(k => <KpiBar key={k.label} {...k} />)}
-                </div>
-
-                <div className="flex items-center gap-2 text-[10px] font-bold text-indigo-600 uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity">
-                  View Full Review <ChevronRight className="w-3.5 h-3.5" />
-                </div>
-              </div>
-            );
-          })}
+      {/* Tabs */}
+      {isHR && (
+        <div className="flex items-center gap-2 bg-slate-50 border border-slate-100 rounded-2xl p-1.5 w-fit">
+          <TabBtn active={tab === 'mine'} onClick={() => setTab('mine')} icon={Target} label="My Goals" />
+          <TabBtn active={tab === 'all'}  onClick={() => setTab('all')}  icon={Users}  label="All Employees" />
         </div>
       )}
 
-      {/* TAB 1: Manager Reviews */}
-      {tab === 1 && (
-        <div className="space-y-4">
-          {filtered.map(emp => {
-            const cfg = STATUS_CONFIG[emp.status];
-            return (
-              <div key={emp.id} className="bg-white rounded-[20px] border border-slate-200 p-6 flex items-center gap-6">
-                <div className="w-12 h-12 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center text-[11px] font-black text-slate-400 shrink-0">
-                  {emp.name.split(' ').map(n => n[0]).join('')}
-                </div>
-                <div className="flex-1">
-                  <div className="text-[14px] font-bold text-slate-900 mb-0.5">{emp.name}</div>
-                  <div className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">{emp.role} · {emp.hub}</div>
-                </div>
-                <div className="text-center px-6">
-                  <ScoreRing score={emp.reviewScore} />
-                  <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-1">Manager</div>
-                </div>
-                <div className="text-center px-6">
-                  <ScoreRing score={emp.selfScore} />
-                  <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-1">Self</div>
-                </div>
-                <span className={`px-3 py-1.5 rounded-full text-[9px] font-bold uppercase tracking-widest ${cfg.bg} ${cfg.text}`}>
-                  {cfg.label}
-                </span>
-                <button className="px-5 h-10 bg-slate-50 border border-slate-200 rounded-xl text-[11px] font-bold text-slate-600 hover:bg-slate-100 transition-all uppercase tracking-wide">
-                  Review
-                </button>
-              </div>
-            );
-          })}
-        </div>
-      )}
-
-      {/* TAB 2: Competency Matrix */}
-      {tab === 2 && (
-        <div className="bg-white rounded-[24px] border border-slate-200 p-8 overflow-x-auto">
-          <table className="w-full">
-            <thead>
-              <tr className="border-b border-slate-100">
-                <th className="text-left pb-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest pr-6">Employee</th>
-                <th className="text-center pb-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest px-3">Technical</th>
-                <th className="text-center pb-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest px-3">Leadership</th>
-                <th className="text-center pb-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest px-3">Communication</th>
-                <th className="text-center pb-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest px-3">Innovation</th>
-                <th className="text-center pb-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest px-3">Overall</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-50">
-              {filtered.map(emp => {
-                const scores = [
-                  Math.round(emp.competency * 1.02),
-                  Math.round(emp.competency * 0.92),
-                  Math.round(emp.competency * 0.98),
-                  Math.round(emp.competency * 0.95),
-                ];
-                const getColor = (v: number) =>
-                  v >= 90 ? 'text-emerald-600 bg-emerald-50' :
-                  v >= 75 ? 'text-indigo-600 bg-indigo-50' :
-                  'text-amber-600 bg-amber-50';
-                return (
-                  <tr key={emp.id}>
-                    <td className="py-4 pr-6">
-                      <div className="text-[13px] font-bold text-slate-900">{emp.name}</div>
-                      <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{emp.department}</div>
-                    </td>
-                    {scores.map((s, i) => (
-                      <td key={i} className="py-4 px-3 text-center">
-                        <span className={`px-3 py-1.5 rounded-xl text-[12px] font-black ${getColor(Math.min(s, 100))}`}>
-                          {Math.min(s, 100)}%
-                        </span>
-                      </td>
-                    ))}
-                    <td className="py-4 px-3 text-center">
-                      <span className={`px-3 py-1.5 rounded-xl text-[13px] font-black ${getColor(emp.competency)}`}>
-                        {emp.competency}%
-                      </span>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-      )}
-
-      {/* TAB 3: Promotion Pipeline */}
-      {tab === 3 && (
-        <div className="space-y-4">
-          <div className="grid grid-cols-3 gap-6 mb-6">
-            {[
-              { label: 'Nominated', count: 4, color: 'border-l-indigo-500' },
-              { label: 'Under Review', count: 2, color: 'border-l-amber-400' },
-              { label: 'Approved', count: 1, color: 'border-l-emerald-500' },
-            ].map(col => (
-              <div key={col.label} className={`bg-white rounded-[20px] border border-slate-200 border-l-4 ${col.color} p-6`}>
-                <div className="text-4xl font-black text-slate-900 tracking-tighter">{col.count}</div>
-                <div className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mt-1">{col.label}</div>
-              </div>
-            ))}
+      {/* Goal grid */}
+      {goals.length === 0 ? (
+        <div className="bg-white rounded-[20px] border border-slate-200 p-12 text-center space-y-3">
+          <div className="w-14 h-14 mx-auto rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-center">
+            <Target className="w-6 h-6 text-slate-400" />
           </div>
-
-          {filtered.filter(e => e.promotionReady).map(emp => (
-            <div key={emp.id} className="bg-white rounded-[20px] border border-slate-200 p-6 flex items-center gap-6">
-              <div className="w-12 h-12 rounded-xl bg-amber-50 border border-amber-100 flex items-center justify-center">
-                <Medal className="w-6 h-6 text-amber-500" />
-              </div>
-              <div className="flex-1">
-                <div className="text-[14px] font-bold text-slate-900">{emp.name}</div>
-                <div className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">{emp.role} → Senior {emp.role}</div>
-              </div>
-              <div className="flex items-center gap-4">
-                <div className="text-center">
-                  <div className="text-xl font-black text-slate-900">{emp.kpiScore}%</div>
-                  <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">KPI</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-xl font-black text-indigo-600">{emp.reviewScore}</div>
-                  <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Rating</div>
-                </div>
-              </div>
-              <button className="px-5 h-10 bg-amber-500 text-white rounded-xl text-[11px] font-bold uppercase tracking-wide hover:bg-amber-600 transition-all">
-                Approve
-              </button>
-            </div>
+          <h3 className="text-lg font-bold text-slate-900">No goals yet</h3>
+          <p className="text-[13px] text-slate-500 max-w-[400px] mx-auto">
+            Set a measurable outcome you&apos;re working toward. Goals show in HR&apos;s view too, so they can support you.
+          </p>
+          <button
+            type="button"
+            onClick={() => setCreateOpen(true)}
+            className="inline-flex items-center gap-2 px-5 py-2 bg-slate-900 hover:bg-black text-white rounded-xl text-[11px] font-bold uppercase tracking-widest"
+          >
+            <Plus className="w-3.5 h-3.5" />
+            Create First Goal
+          </button>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          {goals.map(g => (
+            <GoalCard
+              key={g.id}
+              goal={g}
+              showEmployee={tab === 'all'}
+              onEdit={() => setEditing(g)}
+              onChanged={refresh}
+            />
           ))}
         </div>
       )}
 
+      {/* Modals */}
+      <GoalFormModal
+        isOpen={createOpen}
+        onClose={() => setCreateOpen(false)}
+        onSaved={() => { setCreateOpen(false); refresh(); }}
+      />
+      <GoalFormModal
+        isOpen={!!editing}
+        onClose={() => setEditing(null)}
+        onSaved={() => { setEditing(null); refresh(); }}
+        existing={editing ?? undefined}
+      />
     </div>
+  );
+}
+
+// ─── Goal card ───────────────────────────────────────────────────────────────
+
+function GoalCard({
+  goal, showEmployee, onEdit, onChanged,
+}: {
+  goal: Goal;
+  showEmployee: boolean;
+  onEdit: () => void;
+  onChanged: () => void;
+}) {
+  const tone = STATUS_TONE[goal.isOverdue && goal.status === 'ACTIVE' ? 'OVERDUE' : goal.status] ?? STATUS_TONE.ACTIVE;
+  const [updating, setUpdating] = useState(false);
+
+  const adjustProgress = async (delta: number) => {
+    const next = Math.max(0, Math.min(100, goal.progressPercent + delta));
+    setUpdating(true);
+    try {
+      await apiMutate(`/api/performance/goals/${goal.id}`, 'PATCH', { progressPercent: next });
+      onChanged();
+    } finally {
+      setUpdating(false);
+    }
+  };
+
+  const markComplete = async () => {
+    setUpdating(true);
+    try {
+      await apiMutate(`/api/performance/goals/${goal.id}`, 'PATCH', { status: 'COMPLETED' });
+      onChanged();
+    } finally {
+      setUpdating(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!confirm(`Delete goal "${goal.title}"? This cannot be undone.`)) return;
+    setUpdating(true);
+    try {
+      await apiMutate(`/api/performance/goals/${goal.id}`, 'DELETE');
+      onChanged();
+    } finally {
+      setUpdating(false);
+    }
+  };
+
+  return (
+    <div className="bg-white rounded-[20px] border border-slate-200 p-6 space-y-4">
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex-1 min-w-0">
+          <h3 className="text-[14px] font-bold text-slate-900 leading-snug">{goal.title}</h3>
+          <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+            <span className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-widest border ${tone.text} ${tone.bg} ${tone.border}`}>
+              {goal.isOverdue && goal.status === 'ACTIVE' ? 'OVERDUE' : goal.status}
+            </span>
+            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+              {CATEGORY_LABEL[goal.category]}
+            </span>
+            <span className="text-[10px] font-bold text-slate-400 flex items-center gap-1">
+              <Calendar className="w-3 h-3" />
+              {fmtDate(goal.dueDate)}
+            </span>
+          </div>
+        </div>
+        <div className="flex items-center gap-1">
+          <button
+            type="button"
+            onClick={onEdit}
+            aria-label="Edit goal"
+            className="w-8 h-8 flex items-center justify-center rounded-lg text-slate-500 hover:text-slate-900 hover:bg-slate-100"
+          >
+            <Edit3 className="w-3.5 h-3.5" />
+          </button>
+          <button
+            type="button"
+            onClick={handleDelete}
+            disabled={updating}
+            aria-label="Delete goal"
+            className="w-8 h-8 flex items-center justify-center rounded-lg text-slate-500 hover:text-rose-600 hover:bg-rose-50"
+          >
+            <Trash2 className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      </div>
+
+      {showEmployee && (
+        <EmployeeChip
+          employeeId={goal.employee.id}
+          name={`${goal.employee.firstName} ${goal.employee.lastName}`}
+          sublabel={goal.employee.jobTitle}
+          size="sm"
+        />
+      )}
+
+      {goal.description && (
+        <p className="text-[12px] text-slate-500 leading-relaxed">{goal.description}</p>
+      )}
+
+      {/* Progress bar */}
+      <div className="space-y-1.5">
+        <div className="flex items-center justify-between">
+          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Progress</span>
+          <span className="text-[13px] font-bold text-slate-900">{goal.progressPercent}%</span>
+        </div>
+        <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
+          <div
+            className={`h-full rounded-full ${
+              goal.status === 'COMPLETED' ? 'bg-emerald-500'
+              : goal.isOverdue ? 'bg-rose-500'
+              : 'bg-indigo-500'
+            }`}
+            ref={(el) => { if (el) el.style.width = `${goal.progressPercent}%`; }}
+          />
+        </div>
+      </div>
+
+      {/* Quick-adjust */}
+      {goal.status === 'ACTIVE' && (
+        <div className="flex items-center gap-2 pt-2 border-t border-slate-100">
+          <button
+            type="button"
+            onClick={() => adjustProgress(-10)}
+            disabled={updating || goal.progressPercent === 0}
+            className="px-3 py-1.5 bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-700 rounded-lg text-[10px] font-bold uppercase tracking-widest disabled:opacity-40"
+          >
+            −10%
+          </button>
+          <button
+            type="button"
+            onClick={() => adjustProgress(10)}
+            disabled={updating || goal.progressPercent === 100}
+            className="px-3 py-1.5 bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-700 rounded-lg text-[10px] font-bold uppercase tracking-widest disabled:opacity-40"
+          >
+            +10%
+          </button>
+          <button
+            type="button"
+            onClick={markComplete}
+            disabled={updating}
+            className="ml-auto flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-[10px] font-bold uppercase tracking-widest disabled:opacity-60"
+          >
+            <CheckCircle2 className="w-3 h-3" />
+            Mark Complete
+          </button>
+        </div>
+      )}
+
+      {goal.notes && (
+        <div className="p-3 bg-slate-50 border border-slate-100 rounded-lg">
+          <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Notes</div>
+          <p className="text-[12px] text-slate-600 leading-relaxed whitespace-pre-wrap">{goal.notes}</p>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function TabBtn({
+  active, onClick, icon: Icon, label,
+}: {
+  active: boolean;
+  onClick: () => void;
+  icon: React.ComponentType<{ className?: string }>;
+  label: string;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`flex items-center gap-2 px-4 py-2 rounded-xl text-[11px] font-bold uppercase tracking-wider transition-all ${
+        active ? 'bg-white text-slate-900 shadow-sm border border-slate-200' : 'text-slate-400 hover:text-slate-600'
+      }`}
+    >
+      <Icon className="w-3.5 h-3.5" />
+      {label}
+    </button>
+  );
+}
+
+// ─── Goal form modal (create + edit) ─────────────────────────────────────────
+
+function GoalFormModal({
+  isOpen, onClose, onSaved, existing,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  onSaved: () => void;
+  existing?: Goal;
+}) {
+  const editing = !!existing;
+  const [title, setTitle] = useState('');
+  const [description, setDescription] = useState('');
+  const [category, setCategory] = useState<'INDIVIDUAL' | 'TEAM' | 'ORGANIZATIONAL'>('INDIVIDUAL');
+  const [dueDate, setDueDate] = useState('');
+  const [status, setStatus] = useState<'DRAFT' | 'ACTIVE' | 'COMPLETED' | 'CANCELLED'>('ACTIVE');
+  const [progress, setProgress] = useState(0);
+  const [notes, setNotes] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  React.useEffect(() => {
+    if (!isOpen) return;
+    setTitle(existing?.title ?? '');
+    setDescription(existing?.description ?? '');
+    setCategory(existing?.category ?? 'INDIVIDUAL');
+    setDueDate(existing?.dueDate ? existing.dueDate.slice(0, 10) : '');
+    setStatus((existing?.status as any) ?? 'ACTIVE');
+    setProgress(existing?.progressPercent ?? 0);
+    setNotes(existing?.notes ?? '');
+    setError(null);
+  }, [isOpen, existing]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setBusy(true);
+    setError(null);
+    try {
+      const payload = {
+        title,
+        description: description || null,
+        category,
+        dueDate: dueDate || null,
+        status,
+        progressPercent: progress,
+        notes: notes || null,
+      };
+      if (editing) {
+        await apiMutate(`/api/performance/goals/${existing!.id}`, 'PATCH', payload);
+      } else {
+        await apiMutate('/api/performance/goals', 'POST', payload);
+      }
+      onSaved();
+    } catch (err: any) {
+      setError(err?.message ?? 'Could not save goal');
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <Modal isOpen={isOpen} onClose={onClose} title={editing ? 'Edit Goal' : 'New Goal'} size="md">
+      <form onSubmit={handleSubmit} className="space-y-5">
+        <div className="space-y-1.5">
+          <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Title</label>
+          <input
+            required
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            placeholder="e.g. Ship the leave admin redesign by Q3"
+            aria-label="Title"
+            className="w-full h-[44px] bg-slate-50 border border-slate-200 rounded-xl px-3 text-[13px] font-bold outline-none focus:border-indigo-500"
+          />
+        </div>
+
+        <div className="space-y-1.5">
+          <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Description (optional)</label>
+          <textarea
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            rows={3}
+            placeholder="What does success look like? Be specific so HR can support you."
+            aria-label="Description"
+            className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-[13px] outline-none focus:border-indigo-500"
+          />
+        </div>
+
+        <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-1.5">
+            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Category</label>
+            <select
+              value={category}
+              onChange={(e) => setCategory(e.target.value as any)}
+              aria-label="Category"
+              className="w-full h-[44px] bg-slate-50 border border-slate-200 rounded-xl px-3 text-[13px] font-bold outline-none focus:border-indigo-500"
+            >
+              <option value="INDIVIDUAL">Individual</option>
+              <option value="TEAM">Team</option>
+              <option value="ORGANIZATIONAL">Organizational</option>
+            </select>
+          </div>
+          <div className="space-y-1.5">
+            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Due Date</label>
+            <input
+              type="date"
+              value={dueDate}
+              onChange={(e) => setDueDate(e.target.value)}
+              aria-label="Due date"
+              className="w-full h-[44px] bg-slate-50 border border-slate-200 rounded-xl px-3 text-[13px] font-medium outline-none focus:border-indigo-500"
+            />
+          </div>
+        </div>
+
+        {editing && (
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-1.5">
+              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Status</label>
+              <select
+                value={status}
+                onChange={(e) => setStatus(e.target.value as any)}
+                aria-label="Status"
+                className="w-full h-[44px] bg-slate-50 border border-slate-200 rounded-xl px-3 text-[13px] font-bold outline-none focus:border-indigo-500"
+              >
+                <option value="DRAFT">Draft</option>
+                <option value="ACTIVE">Active</option>
+                <option value="COMPLETED">Completed</option>
+                <option value="CANCELLED">Cancelled</option>
+              </select>
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Progress: {progress}%</label>
+              <input
+                type="range"
+                min={0}
+                max={100}
+                step={5}
+                value={progress}
+                onChange={(e) => setProgress(Number(e.target.value))}
+                aria-label="Progress"
+                className="w-full h-[44px]"
+              />
+            </div>
+          </div>
+        )}
+
+        <div className="space-y-1.5">
+          <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Notes (optional)</label>
+          <textarea
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+            rows={3}
+            placeholder="Running notes / updates / blockers"
+            aria-label="Notes"
+            className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-[13px] outline-none focus:border-indigo-500"
+          />
+        </div>
+
+        {error && (
+          <div className="flex items-start gap-2 p-3 bg-rose-50 border border-rose-100 rounded-xl">
+            <AlertTriangle className="w-4 h-4 text-rose-500 mt-0.5 shrink-0" />
+            <span className="text-[12px] font-medium text-rose-700">{error}</span>
+          </div>
+        )}
+
+        <div className="flex gap-2 pt-2">
+          <button
+            type="button"
+            onClick={onClose}
+            disabled={busy}
+            className="flex-1 h-11 bg-white border border-slate-200 text-slate-700 rounded-xl text-[11px] font-bold uppercase tracking-widest disabled:opacity-60"
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            disabled={busy || !title.trim()}
+            className="flex-1 h-11 bg-slate-900 hover:bg-black text-white rounded-xl text-[11px] font-bold uppercase tracking-widest disabled:opacity-60"
+          >
+            {busy ? 'Saving…' : editing ? 'Save Changes' : 'Create Goal'}
+          </button>
+        </div>
+      </form>
+    </Modal>
   );
 }
