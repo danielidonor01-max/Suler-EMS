@@ -125,17 +125,25 @@ export const GET = withAuth(async (_req, session, context) => {
             team: { select: { id: true, code: true, name: true } },
           },
         },
+        // Salary structures: pull the current active one PLUS the trailing
+        // history (most-recent first). The active one feeds the
+        // Compensation summary; the history feeds an expandable list. Cap
+        // at 6 so a long-tenure employee with many adjustments doesn't
+        // bloat the payload — older rows can be reached via the dedicated
+        // salary-structures admin page if needed.
         salaryStructures: {
-          where: { isActive: true },
-          take: 1,
+          orderBy: [{ isActive: 'desc' }, { effectiveDate: 'desc' }],
+          take:    6,
           select: {
             id: true,
+            isActive: true,
             effectiveDate: true,
             basicSalary: true,
             housingAllowance: true,
             transportAllowance: true,
             otherAllowances: true,
             currency: true,
+            reason: true,
           },
         },
       },
@@ -150,7 +158,7 @@ export const GET = withAuth(async (_req, session, context) => {
     // batched in parallel after the employee fetch so the profile load
     // stays a single round-trip from the client's perspective. The
     // queries are scoped to this employee (cheap) — not the whole org.
-    const [leaveTypes, approvedLeaves, attendanceCounts, lastPunch, goals, kpis] = await Promise.all([
+    const [leaveTypes, approvedLeaves, attendanceCounts, lastPunch, goals, kpis, pendingChangeRequests] = await Promise.all([
       prisma.leaveType.findMany({
         where:  { isActive: true },
         orderBy: { code: 'asc' },
@@ -198,6 +206,21 @@ export const GET = withAuth(async (_req, session, context) => {
             take:    1,
             select:  { actualValue: true },
           },
+        },
+      }),
+      // Pending profile-change requests for this employee. HR sees these
+      // inline so they don't have to navigate to the Change Requests
+      // admin page to know what's in flight for the person they're
+      // looking at. Self-view also surfaces a "your pending requests"
+      // hint when the owner opens their own profile.
+      prisma.profileChangeRequest.findMany({
+        where:   { employeeId: id, status: 'PENDING' },
+        orderBy: { createdAt: 'desc' },
+        take:    10,
+        select: {
+          id: true, field: true, currentValue: true, proposedValue: true,
+          reason: true, createdAt: true,
+          requestedBy: { select: { id: true, name: true } },
         },
       }),
     ]);
@@ -376,29 +399,41 @@ export const GET = withAuth(async (_req, session, context) => {
             bankAccountNumber: maskField(employee.bankAccountNumber),
           },
 
-      compensation: showCompensation && employee.salaryStructures[0]
-        ? (() => {
-            const s = employee.salaryStructures[0];
-            const others = ((s.otherAllowances as Array<{ amount: number }> | null) ?? [])
-              .reduce((sum, a) => sum + Number(a.amount), 0);
-            const basic     = Number(s.basicSalary);
-            const housing   = Number(s.housingAllowance);
-            const transport = Number(s.transportAllowance);
-            return {
-              effectiveDate:      s.effectiveDate,
-              basicSalary:        basic,
-              housingAllowance:   housing,
-              transportAllowance: transport,
-              otherAllowances:    others,
-              grossMonthly:       basic + housing + transport + others,
-              currency:           s.currency,
-            };
-          })()
-        : null,
+      compensation: (() => {
+        if (!showCompensation) return null;
+        const active = employee.salaryStructures.find(s => s.isActive);
+        if (!active) return null;
+        const summarise = (s: typeof employee.salaryStructures[number]) => {
+          const others = ((s.otherAllowances as Array<{ amount: number }> | null) ?? [])
+            .reduce((sum, a) => sum + Number(a.amount), 0);
+          const basic     = Number(s.basicSalary);
+          const housing   = Number(s.housingAllowance);
+          const transport = Number(s.transportAllowance);
+          return {
+            id:                 s.id,
+            isActive:           s.isActive,
+            effectiveDate:      s.effectiveDate,
+            basicSalary:        basic,
+            housingAllowance:   housing,
+            transportAllowance: transport,
+            otherAllowances:    others,
+            grossMonthly:       basic + housing + transport + others,
+            currency:           s.currency,
+            reason:             s.reason,
+          };
+        };
+        return {
+          ...summarise(active),
+          // History: every structure other than the active one. Already
+          // limited to 6 by the include clause, so this is at most 5.
+          history: employee.salaryStructures.filter(s => !s.isActive).map(summarise),
+        };
+      })(),
 
       leaveBalances,
       attendanceSummary,
       performanceSummary,
+      pendingChangeRequests,
 
       // Tells the client which UI to render (Edit form vs Request-Update form).
       capabilities: {
