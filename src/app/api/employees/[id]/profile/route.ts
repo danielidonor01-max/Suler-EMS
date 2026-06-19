@@ -84,11 +84,26 @@ function maskField(value: string | null | undefined): string | null {
   return `${value.slice(0, 2)}••••${value.slice(-2)}`;
 }
 
+/** Inclusive days of `req` that fall inside [windowStart, windowEnd]. */
+function clippedDays(reqStart: Date, reqEnd: Date, windowStart: Date, windowEnd: Date): number {
+  const s = reqStart > windowStart ? reqStart : windowStart;
+  const e = reqEnd   < windowEnd   ? reqEnd   : windowEnd;
+  if (e < s) return 0;
+  return Math.round((e.getTime() - s.getTime()) / 86_400_000) + 1;
+}
+
 export const GET = withAuth(async (_req, session, context) => {
   const correlationId = crypto.randomUUID();
   const { id } = (await context.params) as { id: string };
 
   try {
+    // Window helpers reused below for leave balances + attendance summary.
+    const now = new Date();
+    const yearStart = new Date(Date.UTC(now.getUTCFullYear(), 0, 1));
+    const yearEnd   = new Date(Date.UTC(now.getUTCFullYear(), 11, 31, 23, 59, 59));
+    const thirtyDaysAgo = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() - 30));
+    const todayUtc      = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 23, 59, 59));
+
     const employee = await prisma.employee.findUniqueOrThrow({
       where: { id },
       include: {
@@ -130,6 +145,85 @@ export const GET = withAuth(async (_req, session, context) => {
     const showBanking      = canViewBanking(session as any, employee.id);
     const showCompensation = canViewCompensation(session as any, employee.id);
     const canEditBank      = canEditBanking(session as any);
+
+    // Leave balances + attendance summary are batched in parallel after
+    // the employee fetch so the profile load stays a single round-trip
+    // from the client's perspective. The two queries are scoped to this
+    // employee (cheap) — not the whole org like /api/leave/balances.
+    const [leaveTypes, approvedLeaves, attendanceCounts, lastPunch] = await Promise.all([
+      prisma.leaveType.findMany({
+        where:  { isActive: true },
+        orderBy: { code: 'asc' },
+        select: { code: true, name: true, color: true, quotaDays: true },
+      }),
+      prisma.leaveRequest.findMany({
+        where: {
+          employeeId: id,
+          status:     'HR_APPROVED',
+          startDate:  { lte: yearEnd },
+          endDate:    { gte: yearStart },
+        },
+        select: { type: true, startDate: true, endDate: true },
+      }),
+      prisma.attendanceRecord.groupBy({
+        by: ['status'],
+        where: {
+          employeeId: id,
+          date:       { gte: thirtyDaysAgo, lte: todayUtc },
+        },
+        _count: { _all: true },
+      }),
+      prisma.attendanceRecord.findFirst({
+        where:   { employeeId: id, checkIn: { not: null } },
+        orderBy: { date: 'desc' },
+        select:  { date: true, checkIn: true, checkOut: true, status: true },
+      }),
+    ]);
+
+    // Bucket approved days per leave-type code, clipped to the current
+    // calendar year (same convention as /api/leave/balances).
+    const usedByType = new Map<string, number>();
+    for (const lr of approvedLeaves) {
+      const days = clippedDays(lr.startDate, lr.endDate, yearStart, yearEnd);
+      if (days <= 0) continue;
+      usedByType.set(lr.type, (usedByType.get(lr.type) ?? 0) + days);
+    }
+
+    const leaveBalances = leaveTypes.map(lt => {
+      const used = usedByType.get(lt.code) ?? 0;
+      return {
+        typeCode:  lt.code,
+        typeName:  lt.name,
+        color:     lt.color,
+        quota:     lt.quotaDays,
+        used,
+        remaining: Math.max(0, lt.quotaDays - used),
+      };
+    });
+
+    const attendanceCountsMap = new Map<string, number>();
+    for (const row of attendanceCounts) {
+      attendanceCountsMap.set(row.status, row._count._all);
+    }
+    const present = attendanceCountsMap.get('PRESENT') ?? 0;
+    const late    = attendanceCountsMap.get('LATE')    ?? 0;
+    const absent  = attendanceCountsMap.get('ABSENT')  ?? 0;
+    const totalLogged = present + late + absent;
+    const punctualityPct = totalLogged > 0
+      ? parseFloat(((present / totalLogged) * 100).toFixed(1))
+      : 0;
+
+    const attendanceSummary = {
+      windowDays:    30,
+      present,
+      late,
+      absent,
+      totalLogged,
+      punctualityPct,
+      lastCheckIn:   lastPunch?.checkIn ?? null,
+      lastCheckOut:  lastPunch?.checkOut ?? null,
+      lastStatus:    lastPunch?.status ?? null,
+    };
     const compliance = showCompliance
       ? {
           nin:           employee.nin,
@@ -224,6 +318,9 @@ export const GET = withAuth(async (_req, session, context) => {
             };
           })()
         : null,
+
+      leaveBalances,
+      attendanceSummary,
 
       // Tells the client which UI to render (Edit form vs Request-Update form).
       capabilities: {

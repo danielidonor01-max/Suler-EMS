@@ -26,6 +26,7 @@ import {
   CheckCircle2, Edit3, Lock, ChevronDown, ChevronUp, Send,
   FileText, Download, Upload, Trash2, Paperclip,
   CreditCard, Banknote, Save,
+  Calendar, Clock, Activity,
 } from 'lucide-react';
 import { Modal } from '../common/Modal';
 import { useApi } from '@/lib/api/use-api';
@@ -76,6 +77,27 @@ interface ProfilePayload {
     grossMonthly:       number;
     currency:           string;
   } | null;
+
+  leaveBalances: Array<{
+    typeCode:  string;
+    typeName:  string;
+    color:     string | null;
+    quota:     number;
+    used:      number;
+    remaining: number;
+  }>;
+
+  attendanceSummary: {
+    windowDays:     number;
+    present:        number;
+    late:           number;
+    absent:         number;
+    totalLogged:    number;
+    punctualityPct: number;
+    lastCheckIn:    string | null;
+    lastCheckOut:   string | null;
+    lastStatus:     string | null;
+  };
 
   capabilities: {
     canEdit: boolean;
@@ -278,6 +300,11 @@ function ViewBlock({
       {profile.capabilities.canViewCompensation && (
         <CompensationSection compensation={profile.compensation} />
       )}
+
+      {/* Leave balances + attendance summary — paired since they're both
+          year-to-date / trailing-window snapshots of the same person. */}
+      <LeaveBalanceSection balances={profile.leaveBalances} />
+      <AttendanceSummarySection summary={profile.attendanceSummary} />
 
       {/* Documents */}
       <DocumentsSection
@@ -793,6 +820,160 @@ function KV({ label, value }: { label: string; value: string }) {
     <div>
       <div className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">{label}</div>
       <div className="text-[12px] font-bold text-slate-900 mt-0.5">{value}</div>
+    </div>
+  );
+}
+
+// ─── Leave-balance palette ──────────────────────────────────────────────────
+// Same token convention as /leave/admin uses: API returns a colour name,
+// we resolve to tailwind classes here. Unknown tokens fall back to slate.
+const BALANCE_PALETTE: Record<string, { text: string; bar: string; bg: string; border: string }> = {
+  indigo:  { text: 'text-indigo-700',  bar: 'bg-indigo-500',  bg: 'bg-indigo-50',  border: 'border-indigo-100' },
+  rose:    { text: 'text-rose-700',    bar: 'bg-rose-500',    bg: 'bg-rose-50',    border: 'border-rose-100' },
+  amber:   { text: 'text-amber-700',   bar: 'bg-amber-500',   bg: 'bg-amber-50',   border: 'border-amber-100' },
+  pink:    { text: 'text-pink-700',    bar: 'bg-pink-500',    bg: 'bg-pink-50',    border: 'border-pink-100' },
+  sky:     { text: 'text-sky-700',     bar: 'bg-sky-500',     bg: 'bg-sky-50',     border: 'border-sky-100' },
+  emerald: { text: 'text-emerald-700', bar: 'bg-emerald-500', bg: 'bg-emerald-50', border: 'border-emerald-100' },
+  slate:   { text: 'text-slate-700',   bar: 'bg-slate-500',   bg: 'bg-slate-50',   border: 'border-slate-200' },
+};
+function balancePalette(token: string | null | undefined) {
+  return BALANCE_PALETTE[token ?? 'slate'] ?? BALANCE_PALETTE.slate;
+}
+
+// ─── Leave balance section ──────────────────────────────────────────────────
+
+function LeaveBalanceSection({
+  balances,
+}: {
+  balances: ProfilePayload['leaveBalances'];
+}) {
+  if (balances.length === 0) {
+    return (
+      <div className="space-y-3">
+        <div className="flex items-center gap-2">
+          <Calendar className="w-4 h-4 text-slate-400" />
+          <h4 className="text-[11px] font-bold text-slate-400 uppercase tracking-[0.2em]">Leave Balance — Year to Date</h4>
+        </div>
+        <div className="text-[12px] text-slate-400 italic">No leave types configured yet.</div>
+      </div>
+    );
+  }
+
+  const year = new Date().getFullYear();
+
+  return (
+    <div className="space-y-3">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Calendar className="w-4 h-4 text-slate-400" />
+          <h4 className="text-[11px] font-bold text-slate-400 uppercase tracking-[0.2em]">Leave Balance — {year}</h4>
+        </div>
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+        {balances.map(b => {
+          const palette = balancePalette(b.color);
+          const pct = b.quota > 0 ? Math.min(100, (b.used / b.quota) * 100) : 0;
+          return (
+            <div key={b.typeCode} className={`p-3 rounded-xl border ${palette.bg} ${palette.border}`}>
+              <div className="flex items-center justify-between mb-2">
+                <span className={`text-[11px] font-bold uppercase tracking-widest ${palette.text}`}>{b.typeName}</span>
+                <span className="text-[11px] font-bold text-slate-600">{b.used} / {b.quota}</span>
+              </div>
+              <div className="h-2 bg-white rounded-full overflow-hidden border border-white">
+                <div
+                  className={`h-full rounded-full ${palette.bar} transition-all duration-700`}
+                  ref={(el) => { if (el) el.style.width = `${pct}%`; }}
+                />
+              </div>
+              <div className="text-[10px] font-bold text-slate-500 mt-2">{b.remaining} day{b.remaining === 1 ? '' : 's'} remaining</div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// ─── Attendance summary section ─────────────────────────────────────────────
+
+function AttendanceSummarySection({
+  summary,
+}: {
+  summary: ProfilePayload['attendanceSummary'];
+}) {
+  const punctualityTone =
+    summary.totalLogged === 0    ? 'text-slate-400'
+    : summary.punctualityPct >= 90 ? 'text-emerald-700'
+    : summary.punctualityPct >= 75 ? 'text-amber-700'
+    : 'text-rose-700';
+
+  const punctualityBg =
+    summary.totalLogged === 0    ? 'bg-slate-50 border-slate-200'
+    : summary.punctualityPct >= 90 ? 'bg-emerald-50 border-emerald-100'
+    : summary.punctualityPct >= 75 ? 'bg-amber-50 border-amber-100'
+    : 'bg-rose-50 border-rose-100';
+
+  return (
+    <div className="space-y-3">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Activity className="w-4 h-4 text-slate-400" />
+          <h4 className="text-[11px] font-bold text-slate-400 uppercase tracking-[0.2em]">Attendance — Last {summary.windowDays} Days</h4>
+        </div>
+      </div>
+
+      {summary.totalLogged === 0 ? (
+        <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl text-[12px] text-slate-500 italic">
+          No clock-ins in the last {summary.windowDays} days.
+        </div>
+      ) : (
+        <>
+          <div className="grid grid-cols-3 gap-3">
+            <AttendanceTile label="Present" value={summary.present} tone="emerald" icon={CheckCircle2} />
+            <AttendanceTile label="Late"    value={summary.late}    tone={summary.late > 0 ? 'amber' : 'slate'} icon={Clock} />
+            <AttendanceTile label="Absent"  value={summary.absent}  tone={summary.absent > 0 ? 'rose' : 'slate'} icon={AlertTriangle} />
+          </div>
+
+          <div className={`p-3 rounded-xl border flex items-center justify-between ${punctualityBg}`}>
+            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Punctuality</span>
+            <span className={`text-[15px] font-black ${punctualityTone}`}>{summary.punctualityPct}%</span>
+          </div>
+
+          {summary.lastCheckIn && (
+            <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+              Last clock-in: {formatDate(summary.lastCheckIn)}
+              {summary.lastCheckOut && ' · clocked out'}
+              {summary.lastStatus && ` · ${summary.lastStatus}`}
+            </div>
+          )}
+        </>
+      )}
+    </div>
+  );
+}
+
+function AttendanceTile({
+  label, value, tone, icon: Icon,
+}: {
+  label: string;
+  value: number;
+  tone:  'emerald' | 'amber' | 'rose' | 'slate';
+  icon:  React.ComponentType<{ className?: string }>;
+}) {
+  const map: Record<string, { bg: string; border: string; text: string; icon: string }> = {
+    emerald: { bg: 'bg-emerald-50', border: 'border-emerald-100', text: 'text-emerald-700', icon: 'text-emerald-500' },
+    amber:   { bg: 'bg-amber-50',   border: 'border-amber-100',   text: 'text-amber-700',   icon: 'text-amber-500' },
+    rose:    { bg: 'bg-rose-50',    border: 'border-rose-100',    text: 'text-rose-700',    icon: 'text-rose-500' },
+    slate:   { bg: 'bg-slate-50',   border: 'border-slate-200',   text: 'text-slate-700',   icon: 'text-slate-400' },
+  };
+  const palette = map[tone];
+  return (
+    <div className={`p-3 rounded-xl border ${palette.bg} ${palette.border} flex items-center justify-between`}>
+      <div>
+        <div className={`text-[10px] font-bold uppercase tracking-widest ${palette.text}`}>{label}</div>
+        <div className={`text-xl font-black ${palette.text} leading-none mt-1`}>{value}</div>
+      </div>
+      <Icon className={`w-4 h-4 ${palette.icon}`} />
     </div>
   );
 }
