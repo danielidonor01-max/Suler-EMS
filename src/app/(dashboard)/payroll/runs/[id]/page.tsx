@@ -82,6 +82,9 @@ export default function PayrollRunDetailPage() {
   const canCancel = ['DRAFT', 'APPROVED'].includes(data.status);
   // Register CSV is gated on the API side by run.status ∈ {APPROVED, PROCESSED}.
   const canDownloadRegister = ['APPROVED', 'PROCESSED'].includes(data.status);
+  // Disbursement CSV (NIBSS-style) only after PROCESS — exporting earlier
+  // risks Finance accidentally paying off a preview.
+  const canDisburse = data.status === 'PROCESSED';
 
   return (
     <div className="p-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -113,6 +116,16 @@ export default function PayrollRunDetailPage() {
               >
                 <Download className="w-3.5 h-3.5" />
                 Register CSV
+              </a>
+            )}
+            {canDisburse && (
+              <a
+                href={`/api/payroll/runs/${id}/disbursement`}
+                aria-label="Download bank disbursement CSV"
+                className="h-[40px] px-4 rounded-[12px] bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-bold uppercase tracking-widest flex items-center gap-1.5"
+              >
+                <Banknote className="w-3.5 h-3.5" />
+                Disbursement CSV
               </a>
             )}
             {canSubmit && (

@@ -492,6 +492,14 @@ model Employee {
   nsitfNumber   String? @unique
   itfNumber     String? @unique
 
+  // --- Bank disbursement ---
+  // Captured per-employee so payroll runs can export a NIBSS-style CSV for
+  // direct salary credit. NIBSS uses 3-digit sort/bank codes; we store the
+  // full bank name for display and the code as the canonical identifier.
+  bankName          String? // e.g. "GTBank", "Access Bank"
+  bankCode          String? // 3-digit NIBSS sort code, e.g. "058" for GTBank
+  bankAccountNumber String? // 10-digit NUBAN
+
   status          String                     @default("ACTIVE") // ACTIVE, INACTIVE, SUSPENDED
   user            User?
   leaveRequests   LeaveRequest[]
