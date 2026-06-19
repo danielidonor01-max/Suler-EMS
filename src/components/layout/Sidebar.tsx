@@ -133,10 +133,10 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle }) => {
 
   // System Control modules — flat list (no parent "Global Settings"
   // entry; that was a redundant hub that just linked to the same four
-  // pages). Icons match the visual rhythm of governance / operations /
-  // accounts so this section reads consistently.
+  // pages). Compliance & Tax intentionally lives under Accounts &
+  // Finance as Statutory Rates — the HR-side page is the richer surface
+  // and the source of truth, so we don't duplicate it here.
   const systemControlModules = [
-    { name: 'Compliance & Tax',  icon: ShieldCheck, href: '/settings/compliance',   permission: Permissions.SETTINGS_MANAGE },
     { name: 'Security',          icon: Lock,        href: '/settings/security',     permission: Permissions.SECURITY_MANAGE },
     { name: 'Integrations',      icon: Plug,        href: '/settings/integrations', permission: Permissions.SETTINGS_MANAGE },
     { name: 'Data Management',   icon: Database,    href: '/settings/data',         permission: Permissions.DATA_MANAGE },

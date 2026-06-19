@@ -79,7 +79,7 @@ const MODULES = [
   { name: 'Roles & Permissions', href: '/admin/roles',            icon: ShieldCheck,     keywords: 'rbac access iam' },
   { name: 'Users',               href: '/admin/users',            icon: UserCircle,      keywords: 'accounts admin' },
   { name: 'Audit Registry',      href: '/governance',             icon: History,         keywords: 'logs audit activity' },
-  { name: 'Compliance & Tax',    href: '/settings/compliance',    icon: ShieldCheck,     keywords: 'paye nhf nsitf tin' },
+  { name: 'Statutory Rates',     href: '/payroll/statutory-rates',icon: ShieldCheck,     keywords: 'paye nhf nsitf tin compliance tax cra pension' },
   { name: 'Security',            href: '/settings/security',      icon: Lock,            keywords: '2fa sessions password' },
   { name: 'Integrations',        href: '/settings/integrations',  icon: Plug,            keywords: 'webhooks api connect' },
   { name: 'Data Management',     href: '/settings/data',          icon: Database,        keywords: 'export backup csv' },
