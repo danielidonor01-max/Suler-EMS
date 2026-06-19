@@ -137,6 +137,20 @@ interface ProfilePayload {
     netPay:          number;
   }>;
 
+  activityTimeline: Array<{
+    id:           string;
+    kind:         'CHANGE_REQUEST_CREATED' | 'CHANGE_REQUEST_REVIEWED'
+                | 'SALARY_STRUCTURE_CREATED'
+                | 'DOCUMENT_UPLOADED'
+                | 'LEAVE_REQUEST_CREATED';
+    title:        string;
+    description:  string;
+    actorName:    string | null;
+    timestamp:    string;
+    resourceId:   string;
+    resourceType: string;
+  }>;
+
   performanceSummary: {
     goals: {
       active:    number;
@@ -436,6 +450,13 @@ function ViewBlock({
           </div>
         )}
       </div>
+
+      {/* Activity timeline — last 20 events that touched this profile.
+          Empty array when caller isn't HR/owner, so the section
+          collapses without a permissions check here. */}
+      {profile.activityTimeline.length > 0 && (
+        <ActivityTimelineSection events={profile.activityTimeline} />
+      )}
     </div>
   );
 }
@@ -1175,6 +1196,99 @@ function RecentPayslipsSection({
             </div>
           </div>
         ))}
+      </div>
+    </div>
+  );
+}
+
+// ─── Activity timeline ──────────────────────────────────────────────────────
+//
+// Last 20 events that touched this profile, merged from five sources:
+// profile change requests (created + reviewed), salary structure
+// creates, document uploads, and leave submissions. Collapsible —
+// closed by default so the timeline doesn't dominate first-paint for
+// long-tenure employees.
+
+const KIND_META: Record<
+  ProfilePayload['activityTimeline'][number]['kind'],
+  { label: string; tone: string; iconBg: string; icon: React.ComponentType<{ className?: string }> }
+> = {
+  CHANGE_REQUEST_CREATED:   { label: 'Change Request',   tone: 'text-amber-700',   iconBg: 'bg-amber-50 border-amber-100',     icon: Send       },
+  CHANGE_REQUEST_REVIEWED:  { label: 'Change Reviewed',  tone: 'text-indigo-700',  iconBg: 'bg-indigo-50 border-indigo-100',   icon: CheckCircle2 },
+  SALARY_STRUCTURE_CREATED: { label: 'Salary Updated',   tone: 'text-emerald-700', iconBg: 'bg-emerald-50 border-emerald-100', icon: Banknote   },
+  DOCUMENT_UPLOADED:        { label: 'Document Added',   tone: 'text-sky-700',     iconBg: 'bg-sky-50 border-sky-100',         icon: Paperclip  },
+  LEAVE_REQUEST_CREATED:    { label: 'Leave Requested',  tone: 'text-rose-700',    iconBg: 'bg-rose-50 border-rose-100',       icon: Calendar   },
+};
+
+function formatRelativeShort(iso: string): string {
+  const ms = Date.now() - new Date(iso).getTime();
+  const mins = Math.floor(ms / 60_000);
+  if (mins < 1)      return 'just now';
+  if (mins < 60)     return `${mins}m ago`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24)      return `${hrs}h ago`;
+  const days = Math.floor(hrs / 24);
+  if (days < 7)      return `${days}d ago`;
+  return new Intl.DateTimeFormat('en-NG', { day: '2-digit', month: 'short', year: 'numeric' }).format(new Date(iso));
+}
+
+function ActivityTimelineSection({
+  events,
+}: {
+  events: ProfilePayload['activityTimeline'];
+}) {
+  const [expanded, setExpanded] = useState(false);
+  const visible = expanded ? events : events.slice(0, 5);
+
+  return (
+    <div className="border border-slate-100 rounded-2xl overflow-hidden">
+      <div className="px-5 py-4 bg-slate-50 flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Clock className="w-4 h-4 text-slate-500" />
+          <span className="text-[11px] font-bold text-slate-600 uppercase tracking-[0.2em]">
+            Activity Timeline
+          </span>
+          <span className="ml-2 px-2 py-0.5 bg-slate-100 text-slate-600 text-[9px] font-bold uppercase tracking-widest rounded border border-slate-200">
+            {events.length}
+          </span>
+        </div>
+        {events.length > 5 && (
+          <button
+            type="button"
+            onClick={() => setExpanded(v => !v)}
+            className="text-[10px] font-bold text-indigo-600 hover:text-indigo-700 uppercase tracking-widest"
+          >
+            {expanded ? 'Show fewer' : `Show all ${events.length}`}
+          </button>
+        )}
+      </div>
+
+      <div className="bg-white">
+        <ul className="divide-y divide-slate-50">
+          {visible.map(ev => {
+            const meta = KIND_META[ev.kind];
+            const Icon = meta.icon;
+            return (
+              <li key={ev.id} className="flex items-start gap-3 p-4">
+                <div className={`w-8 h-8 rounded-xl border flex items-center justify-center shrink-0 ${meta.iconBg}`}>
+                  <Icon className={`w-3.5 h-3.5 ${meta.tone}`} />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center justify-between gap-3">
+                    <div className={`text-[10px] font-bold uppercase tracking-widest ${meta.tone}`}>
+                      {meta.label}
+                    </div>
+                    <div className="text-[10px] font-bold text-slate-400 whitespace-nowrap">
+                      {formatRelativeShort(ev.timestamp)}
+                    </div>
+                  </div>
+                  <div className="text-[12px] font-bold text-slate-900 mt-0.5 truncate">{ev.title}</div>
+                  <div className="text-[11px] text-slate-500 leading-snug mt-0.5">{ev.description}</div>
+                </div>
+              </li>
+            );
+          })}
+        </ul>
       </div>
     </div>
   );
