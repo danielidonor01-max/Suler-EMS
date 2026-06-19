@@ -29,13 +29,20 @@ const PatchSchema = z.object({
   pensionPFA:    z.string().max(60).nullable().optional(),
   pensionNumber: z.string().max(40).nullable().optional(),
   nhfNumber:     z.string().max(40).nullable().optional(),
+  // Banking — payroll disbursement (gated)
+  bankName:          z.string().max(80).nullable().optional(),
+  bankCode:          z.string().max(10).nullable().optional(),
+  bankAccountNumber: z.string().max(20).nullable().optional(),
   // Self-serviceable
   phone:    z.string().max(40).nullable().optional(),
   status:   z.enum(['ACTIVE', 'INACTIVE', 'SUSPENDED']).optional(),
 });
 
 // Which fields a non-privileged owner is allowed to set on themselves.
-const SELF_SERVICEABLE = new Set(['phone']);
+// Bank details are intentionally included — payroll disbursement skips
+// employees with no account on file, so making this self-service avoids
+// HR being a bottleneck for every new hire's first payday.
+const SELF_SERVICEABLE = new Set(['phone', 'bankName', 'bankCode', 'bankAccountNumber']);
 
 function canEditOthers(session: { user: { role: string; permissions?: string[] } }): boolean {
   if (session.user.role === 'SUPER_ADMIN' || session.user.role === 'HR_ADMIN') return true;
@@ -45,6 +52,29 @@ function canEditOthers(session: { user: { role: string; permissions?: string[] }
 
 function canViewCompliance(session: { user: { role: string; permissions?: string[]; employeeId?: string | null } }, employeeId: string): boolean {
   if (canEditOthers(session)) return true;
+  return session.user.employeeId === employeeId;
+}
+
+// Banking visibility: HR + owner. Account numbers are sensitive enough
+// that a generic permission like `payroll:view` shouldn't unlock them —
+// Finance reads them via the disbursement export endpoint instead.
+function canViewBanking(session: { user: { role: string; permissions?: string[]; employeeId?: string | null } }, employeeId: string): boolean {
+  if (canEditOthers(session)) return true;
+  return session.user.employeeId === employeeId;
+}
+
+function canEditBanking(session: { user: { role: string; permissions?: string[]; employeeId?: string | null } }): boolean {
+  if (canEditOthers(session)) return true;
+  return (session.user.permissions ?? []).includes('payroll:edit');
+}
+
+// Compensation visibility: HR + owner + anyone with payroll:view. Salary
+// figures are routinely needed by Finance and managers in performance
+// review prep, so the threshold is lower than for bank details.
+function canViewCompensation(session: { user: { role: string; permissions?: string[]; employeeId?: string | null } }, employeeId: string): boolean {
+  if (canEditOthers(session)) return true;
+  if ((session.user.permissions ?? []).includes('payroll:view')) return true;
+  if ((session.user.permissions ?? []).includes('payroll:edit')) return true;
   return session.user.employeeId === employeeId;
 }
 
@@ -80,10 +110,26 @@ export const GET = withAuth(async (_req, session, context) => {
             team: { select: { id: true, code: true, name: true } },
           },
         },
+        salaryStructures: {
+          where: { isActive: true },
+          take: 1,
+          select: {
+            id: true,
+            effectiveDate: true,
+            basicSalary: true,
+            housingAllowance: true,
+            transportAllowance: true,
+            otherAllowances: true,
+            currency: true,
+          },
+        },
       },
     });
 
-    const showCompliance = canViewCompliance(session as any, employee.id);
+    const showCompliance   = canViewCompliance(session as any, employee.id);
+    const showBanking      = canViewBanking(session as any, employee.id);
+    const showCompensation = canViewCompensation(session as any, employee.id);
+    const canEditBank      = canEditBanking(session as any);
     const compliance = showCompliance
       ? {
           nin:           employee.nin,
@@ -143,11 +189,50 @@ export const GET = withAuth(async (_req, session, context) => {
       })),
 
       compliance,
+
+      banking: showBanking
+        ? {
+            bankName:          employee.bankName,
+            bankCode:          employee.bankCode,
+            bankAccountNumber: employee.bankAccountNumber,
+          }
+        : {
+            bankName:          employee.bankName,
+            bankCode:          null,
+            // Show only the last 4 digits so the owner / a manager can
+            // confirm the account on file without exposing the full number
+            // to anyone with a profile-view link.
+            bankAccountNumber: maskField(employee.bankAccountNumber),
+          },
+
+      compensation: showCompensation && employee.salaryStructures[0]
+        ? (() => {
+            const s = employee.salaryStructures[0];
+            const others = ((s.otherAllowances as Array<{ amount: number }> | null) ?? [])
+              .reduce((sum, a) => sum + Number(a.amount), 0);
+            const basic     = Number(s.basicSalary);
+            const housing   = Number(s.housingAllowance);
+            const transport = Number(s.transportAllowance);
+            return {
+              effectiveDate:      s.effectiveDate,
+              basicSalary:        basic,
+              housingAllowance:   housing,
+              transportAllowance: transport,
+              otherAllowances:    others,
+              grossMonthly:       basic + housing + transport + others,
+              currency:           s.currency,
+            };
+          })()
+        : null,
+
       // Tells the client which UI to render (Edit form vs Request-Update form).
       capabilities: {
-        canEdit:         canEditOthers(session as any),
-        canEditSelf:     session.user.employeeId === employee.id,
-        canViewCompliance: showCompliance,
+        canEdit:             canEditOthers(session as any),
+        canEditSelf:         session.user.employeeId === employee.id,
+        canViewCompliance:   showCompliance,
+        canViewBanking:      showBanking,
+        canEditBanking:      canEditBank,
+        canViewCompensation: showCompensation,
       },
     };
 
