@@ -42,7 +42,27 @@ function LoginContent() {
         } else if (code === 'Configuration') {
           setErrorMessage('Sign-in is temporarily unavailable. Please try again shortly.');
         } else {
-          setErrorMessage("Couldn't sign you in. Double-check your email and password.");
+          // Lockout check on the back of a failed credential attempt:
+          // when the threshold trips, the next attempt will be rejected
+          // pre-bcrypt. Surface that as a specific message so the user
+          // doesn't keep hammering credentials and extending the lockout.
+          try {
+            const res = await fetch('/api/auth/lockout-check', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ email }),
+            });
+            const data = await res.json();
+            if (data?.locked && data?.message) {
+              setErrorMessage(data.message);
+            } else if (data?.remainingAttempts != null && data.remainingAttempts <= 2) {
+              setErrorMessage(`Wrong email or password. ${data.remainingAttempts} attempt${data.remainingAttempts === 1 ? '' : 's'} remaining before the account is temporarily locked.`);
+            } else {
+              setErrorMessage("Couldn't sign you in. Double-check your email and password.");
+            }
+          } catch {
+            setErrorMessage("Couldn't sign you in. Double-check your email and password.");
+          }
         }
         setIsLoading(false);
       } else {

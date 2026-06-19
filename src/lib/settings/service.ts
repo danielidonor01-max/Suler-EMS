@@ -29,6 +29,12 @@ export interface SessionPolicy {
   warnBeforeMinutes:  number; // show "you'll be signed out in…" modal
 }
 
+export interface LockoutPolicy {
+  maxAttempts:      number; // failed attempts within window that triggers lockout
+  windowMinutes:    number; // count window
+  durationMinutes:  number; // how long the lockout lasts
+}
+
 export interface SettingDescriptor {
   key:        string;
   category:   'SECURITY' | 'COMPLIANCE' | 'WORKSPACE';
@@ -82,6 +88,24 @@ export const DEFAULTS: SettingDescriptor[] = [
     category:     'SECURITY',
     description:  'Show the about-to-sign-out modal this many minutes before timeout.',
     defaultValue: 2,
+  },
+  {
+    key:          'security.lockout.maxAttempts',
+    category:     'SECURITY',
+    description:  'Failed sign-in attempts within the window that triggers a lockout (3–20).',
+    defaultValue: 5,
+  },
+  {
+    key:          'security.lockout.windowMinutes',
+    category:     'SECURITY',
+    description:  'Time window over which failed attempts are counted (1–60 min).',
+    defaultValue: 15,
+  },
+  {
+    key:          'security.lockout.durationMinutes',
+    category:     'SECURITY',
+    description:  'How long an account stays locked after threshold is hit (5–1440 min).',
+    defaultValue: 30,
   },
 ];
 
@@ -160,6 +184,15 @@ export async function getSessionPolicy(): Promise<SessionPolicy> {
     get<number>('security.session.warnBeforeMinutes'),
   ]);
   return { idleTimeoutMinutes, warnBeforeMinutes };
+}
+
+export async function getLockoutPolicy(): Promise<LockoutPolicy> {
+  const [maxAttempts, windowMinutes, durationMinutes] = await Promise.all([
+    get<number>('security.lockout.maxAttempts'),
+    get<number>('security.lockout.windowMinutes'),
+    get<number>('security.lockout.durationMinutes'),
+  ]);
+  return { maxAttempts, windowMinutes, durationMinutes };
 }
 
 // ─── Validation ─────────────────────────────────────────────────────────────
