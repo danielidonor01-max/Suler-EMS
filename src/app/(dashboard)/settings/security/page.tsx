@@ -31,6 +31,12 @@ const SESSION_SECTION = [
   'security.session.warnBeforeMinutes',
 ];
 
+const LOCKOUT_SECTION = [
+  'security.lockout.maxAttempts',
+  'security.lockout.windowMinutes',
+  'security.lockout.durationMinutes',
+];
+
 const LABELS: Record<string, string> = {
   'security.password.minLength':           'Minimum length',
   'security.password.requireUppercase':    'Require uppercase letter',
@@ -39,12 +45,18 @@ const LABELS: Record<string, string> = {
   'security.password.requireSymbols':      'Require special character',
   'security.session.idleTimeoutMinutes':   'Idle timeout',
   'security.session.warnBeforeMinutes':    'Warn before timeout',
+  'security.lockout.maxAttempts':          'Failed attempts to lockout',
+  'security.lockout.windowMinutes':        'Counting window',
+  'security.lockout.durationMinutes':      'Lockout duration',
 };
 
 const UNITS: Record<string, string> = {
   'security.password.minLength':         'characters',
   'security.session.idleTimeoutMinutes': 'minutes',
   'security.session.warnBeforeMinutes':  'minutes',
+  'security.lockout.maxAttempts':        'attempts',
+  'security.lockout.windowMinutes':      'minutes',
+  'security.lockout.durationMinutes':    'minutes',
 };
 
 export default function SecurityPage() {
@@ -134,6 +146,17 @@ function SecurityInner() {
         title="Session Management"
         description="Idle users see a warning, then are signed out automatically. Lower the timeout for higher-trust environments."
         keys={SESSION_SECTION}
+        settings={byKey}
+        onChange={updateSetting}
+        busyKey={busy}
+      />
+
+      {/* ── Lockout section ───────────────────────────────────────────────── */}
+      <PolicySection
+        icon={Shield}
+        title="Failed Sign-In Lockout"
+        description="Repeated failed sign-ins within the counting window lock the account for the lockout duration. Lockout state is derived from LoginAttempt history — no manual unlock action; the timer clears it."
+        keys={LOCKOUT_SECTION}
         settings={byKey}
         onChange={updateSetting}
         busyKey={busy}

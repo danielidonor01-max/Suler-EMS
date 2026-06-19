@@ -4,6 +4,7 @@ import Google from 'next-auth/providers/google';
 import prisma from '@/lib/prisma';
 import { PasswordService } from './password.service';
 import { AuthService } from './auth.service';
+import { evaluateLockout } from './lockout.service';
 
 /**
  * Google OAuth is enabled only when both env vars are set. This lets
@@ -46,11 +47,26 @@ export const {
         const email = credentials.email as string;
 
         try {
+          // Lockout guard runs BEFORE we touch the user lookup. This both
+          // protects against credential-stuffing (no bcrypt CPU spend on
+          // locked accounts) and avoids leaking timing information about
+          // whether the email exists.
+          const lockout = await evaluateLockout(email);
+          if (lockout.locked) {
+            await AuthService.recordSecurityEvent({
+              type: 'LOGIN_FAILURE',
+              description: `Login rejected — account locked, ${lockout.retryAfterSeconds}s remaining`,
+              metadata: { email, retryAfterSeconds: lockout.retryAfterSeconds },
+              correlationId,
+            }).catch(() => {});
+            return null;
+          }
+
           const user = await prisma.user.findUnique({
             where: { email },
-            include: { 
+            include: {
               role: { include: { permissions: true } },
-              employee: true 
+              employee: true
             }
           });
 
