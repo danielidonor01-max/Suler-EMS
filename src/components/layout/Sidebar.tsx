@@ -28,6 +28,7 @@ import {
   History,
   Lock,
   BarChart3,
+  Scale,
   Sparkles,
   Database,
   Plug,
@@ -113,6 +114,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle }) => {
 
   const accountsFinanceModules = [
     { name: 'Payroll Admin', icon: Wallet, href: '/payroll', permission: Permissions.PAYROLL_VIEW },
+    { name: 'Statutory Rates', icon: Scale, href: '/payroll/statutory-rates', permission: Permissions.PAYROLL_EDIT },
     { name: 'Finance', icon: DollarSign, href: '/finance', permission: Permissions.FINANCE_VIEW },
   ].filter(m => !m.permission || checkPermission(m.permission as any).allowed);
 

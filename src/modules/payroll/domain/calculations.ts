@@ -10,25 +10,23 @@ import {
   ComplianceRates,
   DEFAULT_NG_RATES,
   OtherDeduction,
+  PAYEBand,
   PayrollComputation,
   SalaryComponents,
 } from './types';
 
-/** Nigerian PAYE bands (cumulative on monthly taxable income). */
-const PAYE_BANDS: Array<{ width: number; rate: number }> = [
-  { width: 25_000, rate: 0.07 },
-  { width: 25_000, rate: 0.11 },
-  { width: 41_666, rate: 0.15 },
-  { width: 41_666, rate: 0.19 },
-  { width: 133_333, rate: 0.21 },
-  { width: Infinity, rate: 0.24 },
-];
-
-export function calculatePAYE(taxableIncome: number): number {
+/**
+ * Apply progressive PAYE bands to a monthly taxable income figure. Bands
+ * are now passed in (sourced from the StatutoryRate table by the caller)
+ * rather than hardcoded — when omitted, falls back to legacy defaults
+ * so old call sites keep working during the rate-service rollout.
+ */
+export function calculatePAYE(taxableIncome: number, bands?: PAYEBand[]): number {
   if (taxableIncome <= 0) return 0;
+  const effective = bands ?? DEFAULT_NG_RATES.payeBands!;
   let tax = 0;
   let remaining = taxableIncome;
-  for (const band of PAYE_BANDS) {
+  for (const band of effective) {
     const inBand = Math.min(remaining, band.width);
     tax += inBand * band.rate;
     remaining -= inBand;
@@ -81,7 +79,7 @@ export function computePayroll(input: ComputePayrollInput): PayrollComputation {
   const craMonthly = Math.round(craAnnual / 12);
 
   const taxableIncome = Math.max(0, grossPay - craMonthly - pensionEmployee - nhf);
-  const paye = calculatePAYE(taxableIncome);
+  const paye = calculatePAYE(taxableIncome, rates.payeBands);
 
   const otherDeductionsTotal = otherDeductions.reduce((s, d) => s + d.amount, 0);
   const totalDeductions = paye + pensionEmployee + nhf + nhis + otherDeductionsTotal;

@@ -19,10 +19,10 @@
 import prisma from '@/lib/prisma';
 import { PayrollRunWorkflow } from '@/modules/workflow/definitions/payroll.workflow';
 import { WorkflowEngine } from '@/modules/workflow/engine/workflow.engine';
+import { getActiveRates } from '@/lib/payroll/rates';
 import { computePayroll } from './calculations';
 import {
   ComplianceRates,
-  DEFAULT_NG_RATES,
   PayrollRunStatus,
 } from './types';
 
@@ -71,7 +71,11 @@ export async function createDraftRun(input: CreateRunInput) {
     throw new PayrollError('FORBIDDEN', 'payroll:edit required', 403);
   }
 
-  const rates = input.rates ?? DEFAULT_NG_RATES;
+  // Rates: explicit input wins (callers can override for back-dated runs);
+  // otherwise pull from the StatutoryRate table. The DB-loaded rates also
+  // include the active PAYE bands, so calculations.ts no longer depends on
+  // the hardcoded array.
+  const rates: ComplianceRates = input.rates ?? await getActiveRates();
 
   // Pre-flight: enforce one run per (period, department).
   const existing = await prisma.payrollRun.findFirst({
