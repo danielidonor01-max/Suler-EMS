@@ -7,8 +7,9 @@ import { successResponse, errorResponse } from "@/lib/api-utils";
  * GET /api/analytics/dashboard
  */
 export const GET = withAuth(async (req, session) => {
-  const result = await AnalyticsService.getDashboardSnapshot(session.user.id);
-  
+  const forceRefresh = new URL(req.url).searchParams.get('refresh') === 'true';
+  const result = await AnalyticsService.getDashboardSnapshot(session.user.id, { forceRefresh });
+
   if (!result.success) {
     return errorResponse('ANALYTICS_ERROR', result.error.message, 500);
   }
