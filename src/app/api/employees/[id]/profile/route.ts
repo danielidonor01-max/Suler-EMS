@@ -158,7 +158,11 @@ export const GET = withAuth(async (_req, session, context) => {
     // batched in parallel after the employee fetch so the profile load
     // stays a single round-trip from the client's perspective. The
     // queries are scoped to this employee (cheap) — not the whole org.
-    const [leaveTypes, approvedLeaves, attendanceCounts, lastPunch, goals, kpis, pendingChangeRequests, recentPayslipsRaw] = await Promise.all([
+    const [
+      leaveTypes, approvedLeaves, attendanceCounts, lastPunch,
+      goals, kpis, pendingChangeRequests, recentPayslipsRaw,
+      changeRequestsAll, salaryStructureCreates, documentUploads, recentLeaveRequests,
+    ] = await Promise.all([
       prisma.leaveType.findMany({
         where:  { isActive: true },
         orderBy: { code: 'asc' },
@@ -239,6 +243,41 @@ export const GET = withAuth(async (_req, session, context) => {
           totalDeductions: true,
           run: { select: { id: true, period: true, name: true, processedAt: true } },
         },
+      }),
+      // Activity feed sources. Each capped at 10 — we merge + sort +
+      // slice 20 below. Pulling more would just be wasted bandwidth
+      // since the timeline only renders the head of the sorted list.
+      prisma.profileChangeRequest.findMany({
+        where:   { employeeId: id },
+        orderBy: { createdAt: 'desc' },
+        take:    10,
+        select: {
+          id: true, field: true, status: true,
+          createdAt: true, reviewedAt: true,
+          requestedBy: { select: { id: true, name: true } },
+          reviewedBy:  { select: { id: true, name: true } },
+        },
+      }),
+      prisma.salaryStructure.findMany({
+        where:   { employeeId: id },
+        orderBy: { createdAt: 'desc' },
+        take:    10,
+        select: { id: true, createdAt: true, effectiveDate: true, reason: true, changedById: true },
+      }),
+      prisma.employeeDocument.findMany({
+        where:   { employeeId: id },
+        orderBy: { createdAt: 'desc' },
+        take:    10,
+        select: {
+          id: true, kind: true, fileName: true, createdAt: true,
+          uploadedBy: { select: { id: true, name: true } },
+        },
+      }),
+      prisma.leaveRequest.findMany({
+        where:   { employeeId: id },
+        orderBy: { createdAt: 'desc' },
+        take:    10,
+        select: { id: true, type: true, status: true, createdAt: true, updatedAt: true },
       }),
     ]);
 
@@ -341,6 +380,108 @@ export const GET = withAuth(async (_req, session, context) => {
         atRisk:   kpisAtRisk,
       },
     };
+
+    // ── Activity timeline ─────────────────────────────────────────
+    // Five source feeds merged into one chronological list. Cap at 20
+    // events so the modal renders an executive summary, not a forensic
+    // dump. HR/owner only — the section is gated client-side via
+    // capabilities.canEdit / canEditSelf.
+    interface ActivityEvent {
+      id:           string;
+      kind:         'CHANGE_REQUEST_CREATED' | 'CHANGE_REQUEST_REVIEWED'
+                  | 'SALARY_STRUCTURE_CREATED'
+                  | 'DOCUMENT_UPLOADED'
+                  | 'LEAVE_REQUEST_CREATED';
+      title:        string;
+      description:  string;
+      actorName:    string | null;
+      timestamp:    Date;
+      resourceId:   string;
+      resourceType: 'ProfileChangeRequest' | 'SalaryStructure' | 'EmployeeDocument' | 'LeaveRequest';
+    }
+    const events: ActivityEvent[] = [];
+
+    // Profile change requests: each row produces one creation event,
+    // plus a review event if reviewedAt is set.
+    for (const c of changeRequestsAll) {
+      events.push({
+        id:           `${c.id}-created`,
+        kind:         'CHANGE_REQUEST_CREATED',
+        title:        `Change request submitted: ${c.field}`,
+        description:  c.requestedBy?.name
+                        ? `Requested by ${c.requestedBy.name}.`
+                        : 'Requested.',
+        actorName:    c.requestedBy?.name ?? null,
+        timestamp:    c.createdAt,
+        resourceId:   c.id,
+        resourceType: 'ProfileChangeRequest',
+      });
+      if (c.reviewedAt) {
+        events.push({
+          id:           `${c.id}-reviewed`,
+          kind:         'CHANGE_REQUEST_REVIEWED',
+          title:        `Change request ${c.status.toLowerCase()}: ${c.field}`,
+          description:  c.reviewedBy?.name
+                          ? `Reviewed by ${c.reviewedBy.name}.`
+                          : 'Reviewed.',
+          actorName:    c.reviewedBy?.name ?? null,
+          timestamp:    c.reviewedAt,
+          resourceId:   c.id,
+          resourceType: 'ProfileChangeRequest',
+        });
+      }
+    }
+
+    for (const s of salaryStructureCreates) {
+      events.push({
+        id:           s.id,
+        kind:         'SALARY_STRUCTURE_CREATED',
+        title:        'New salary structure created',
+        description:  s.reason
+                        ? `Effective ${s.effectiveDate.toISOString().slice(0, 10)} — ${s.reason}`
+                        : `Effective ${s.effectiveDate.toISOString().slice(0, 10)}.`,
+        actorName:    null, // changedById isn't joined; resolved name would need a separate lookup
+        timestamp:    s.createdAt,
+        resourceId:   s.id,
+        resourceType: 'SalaryStructure',
+      });
+    }
+
+    for (const d of documentUploads) {
+      events.push({
+        id:           d.id,
+        kind:         'DOCUMENT_UPLOADED',
+        title:        `Document uploaded: ${d.fileName}`,
+        description:  d.uploadedBy?.name
+                        ? `${d.kind} · uploaded by ${d.uploadedBy.name}.`
+                        : `${d.kind}.`,
+        actorName:    d.uploadedBy?.name ?? null,
+        timestamp:    d.createdAt,
+        resourceId:   d.id,
+        resourceType: 'EmployeeDocument',
+      });
+    }
+
+    for (const lr of recentLeaveRequests) {
+      events.push({
+        id:           lr.id,
+        kind:         'LEAVE_REQUEST_CREATED',
+        title:        `Leave request submitted: ${lr.type}`,
+        description:  `Currently ${lr.status.replace(/_/g, ' ').toLowerCase()}.`,
+        actorName:    null,
+        timestamp:    lr.createdAt,
+        resourceId:   lr.id,
+        resourceType: 'LeaveRequest',
+      });
+    }
+
+    const activityTimeline = events
+      .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())
+      .slice(0, 20)
+      .map(e => ({
+        ...e,
+        timestamp: e.timestamp.toISOString(),
+      }));
     const compliance = showCompliance
       ? {
           nin:           employee.nin,
@@ -451,6 +592,14 @@ export const GET = withAuth(async (_req, session, context) => {
       attendanceSummary,
       performanceSummary,
       pendingChangeRequests,
+
+      // Activity timeline: HR sees everything; owners see their own
+      // profile's events. Anyone else gets an empty array — we still
+      // ship the field so the client doesn't have to special-case
+      // its absence.
+      activityTimeline: (canEditOthers(session as any) || session.user.employeeId === employee.id)
+        ? activityTimeline
+        : [],
 
       // Recent payslips: same gating as compensation since this is
       // earnings detail. Decimal -> number conversion happens here so
