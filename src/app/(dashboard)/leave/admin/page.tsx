@@ -148,6 +148,56 @@ export default function LeaveRequestsPage() {
     });
   }, [apiRequests, typeLabel]);
 
+  // ── Live metrics (replace the previously hardcoded values) ────────────────
+  // Days Out This Month: count days from non-rejected rows that intersect
+  // the current calendar month. The naive previous code summed every
+  // request including DRAFT/REJECTED, which inflated the number by
+  // everything anyone had ever asked for.
+  const liveMetrics = useMemo(() => {
+    if (!apiRequests) return { pending: 0, daysOut: 0, escalations: 0, total: 0 };
+    const now      = new Date();
+    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+    const monthEnd   = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+    const escalationCutoffMs = 3 * 24 * 60 * 60 * 1000; // 3 days idle
+
+    let pending = 0;
+    let daysOut = 0;
+    let escalations = 0;
+
+    for (const r of apiRequests) {
+      if (r.status === 'SUBMITTED' || r.status === 'MANAGER_APPROVED') {
+        pending++;
+        // Escalation = pending row whose last activity is older than the
+        // cutoff. updatedAt moves on every workflow event, so this stays
+        // accurate without a separate "stuck since" column.
+        if (Date.now() - new Date(r.updatedAt).getTime() > escalationCutoffMs) {
+          escalations++;
+        }
+      }
+      if (r.status !== 'REJECTED' && r.status !== 'CANCELLED' && r.status !== 'DRAFT') {
+        const s = new Date(r.startDate);
+        const e = new Date(r.endDate);
+        // Clamp the leave window to the current month before counting days.
+        const overlapStart = s < monthStart ? monthStart : s;
+        const overlapEnd   = e > monthEnd   ? monthEnd   : e;
+        if (overlapStart <= overlapEnd) {
+          daysOut += Math.round((overlapEnd.getTime() - overlapStart.getTime()) / 86_400_000) + 1;
+        }
+      }
+    }
+    return { pending, daysOut, escalations, total: apiRequests.length };
+  }, [apiRequests]);
+
+  const exportRegistry = () => {
+    // Trailing 12 months — same default the report endpoint applies
+    // server-side, but stamping it explicitly keeps the filename honest
+    // about what's inside the CSV.
+    const today = new Date();
+    const to    = today.toISOString().slice(0, 10);
+    const from  = new Date(today.getFullYear() - 1, today.getMonth(), today.getDate()).toISOString().slice(0, 10);
+    window.location.href = `/api/leave/report?from=${from}&to=${to}`;
+  };
+
   // Run a workflow action against a specific request. Used by:
   //   - Kebab "Approve" (fires immediately, no comment)
   //   - ConfirmActionModal (Reject with comment, Withdraw without)
@@ -228,9 +278,6 @@ export default function LeaveRequestsPage() {
     }
   ];
 
-  const pending = requests.filter(r => r.currentState === 'SUBMITTED').length;
-  const totalDaysOut = requests.reduce((s, r) => s + r.days, 0);
-
   return (
     <div className="section-breathing max-w-[1600px] mx-auto animate-in space-y-10">
 
@@ -252,29 +299,39 @@ export default function LeaveRequestsPage() {
             </p>
           </div>
           <div className="flex items-center gap-3">
-            <button className="bg-white border border-slate-200 text-slate-600 hover:border-slate-300 px-6 py-3 rounded-xl text-[11px] font-bold uppercase tracking-wider transition-all">
+            <button
+              type="button"
+              onClick={exportRegistry}
+              className="bg-white border border-slate-200 text-slate-600 hover:border-slate-300 px-6 py-3 rounded-xl text-[11px] font-bold uppercase tracking-wider transition-all"
+            >
               Export Registry
-            </button>
-            <button className="bg-slate-900 hover:bg-black text-white flex items-center gap-2.5 px-6 py-3 rounded-xl text-[11px] font-bold uppercase tracking-wider transition-all shadow-md">
-              <Plus className="w-4 h-4" />
-              New Request
             </button>
           </div>
         </div>
       </div>
 
       {/* ── KPI Cards ────────────────────────────────────────────────────── */}
+      {/* Metrics are now derived from the live request list — no fake trend
+          arrows, no hardcoded zeros. Escalations = pending rows whose last
+          workflow event is more than 3 days old (idle threshold) so HR can
+          spot stuck approvals at a glance. */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-        <MetricCard label="Pending Approvals" value={`${pending}`} trend={{ direction: 'up', value: '2' }} variant="tonal-warning" icon={Clock} />
-        <MetricCard label="Active Workflows" value={`${requests.length}`} variant="tonal-info" icon={Activity} />
-        <MetricCard label="Days Out This Month" value={`${totalDaysOut}`} variant="tonal-info" icon={Calendar} />
-        <MetricCard label="Escalations" value="0" variant="tonal-success" icon={ShieldCheck} />
+        <MetricCard label="Pending Approvals"   value={`${liveMetrics.pending}`}     variant="tonal-warning" icon={Clock} />
+        <MetricCard label="Active Workflows"    value={`${liveMetrics.total}`}       variant="tonal-info"    icon={Activity} />
+        <MetricCard label="Days Out This Month" value={`${liveMetrics.daysOut}`}     variant="tonal-info"    icon={Calendar} />
+        <MetricCard
+          label="Escalations (≥ 3d idle)"
+          value={`${liveMetrics.escalations}`}
+          variant={liveMetrics.escalations > 0 ? 'tonal-warning' : 'tonal-success'}
+          icon={ShieldCheck}
+        />
       </div>
 
       {/* ── Tab Bar ──────────────────────────────────────────────────────── */}
       <div className="flex items-center gap-2 bg-slate-50 border border-slate-100 rounded-2xl p-1.5 w-fit">
         {TABS.map((t, i) => (
           <button
+            type="button"
             key={t}
             onClick={() => setTab(i)}
             className={`px-5 py-2.5 rounded-xl text-[11px] font-bold uppercase tracking-wider transition-all ${
@@ -1076,7 +1133,7 @@ function RowKebab({ row, onView, onApprove, onReject, onWithdraw }: RowKebabProp
         type="button"
         aria-label="Row actions"
         aria-haspopup="true"
-        aria-expanded={open ? 'true' : 'false'}
+        aria-expanded={open}
         onClick={() => setOpen(v => !v)}
         className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-slate-100 text-slate-500 transition-colors"
       >
