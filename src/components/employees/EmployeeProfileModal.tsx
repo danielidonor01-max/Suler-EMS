@@ -126,6 +126,17 @@ interface ProfilePayload {
     requestedBy:   { id: string; name: string };
   }>;
 
+  recentPayslips: Array<{
+    id:              string;
+    period:          string;
+    runName:         string;
+    processedAt:     string | null;
+    grossPay:        number;
+    paye:            number;
+    totalDeductions: number;
+    netPay:          number;
+  }>;
+
   performanceSummary: {
     goals: {
       active:    number;
@@ -365,6 +376,13 @@ function ViewBlock({
       {/* Compensation */}
       {profile.capabilities.canViewCompensation && (
         <CompensationSection compensation={profile.compensation} />
+      )}
+
+      {/* Recent payslips — only when there are any. Same gating as
+          Compensation; the API returns an empty array for non-privileged
+          viewers, so the section just collapses for them. */}
+      {profile.capabilities.canViewCompensation && profile.recentPayslips.length > 0 && (
+        <RecentPayslipsSection payslips={profile.recentPayslips} />
       )}
 
       {/* Leave balances + attendance summary — paired since they're both
@@ -1089,6 +1107,75 @@ function AttendanceTile({
         <div className={`text-xl font-black ${palette.text} leading-none mt-1`}>{value}</div>
       </div>
       <Icon className={`w-4 h-4 ${palette.icon}`} />
+    </div>
+  );
+}
+
+// ─── Recent payslips ────────────────────────────────────────────────────────
+//
+// Last 6 PROCESSED payslips for the subject employee. Tone-coded chip on
+// the period, link to download the PDF (existing /api/payroll/me/payslip
+// route handles authorization — same rules as the API gating for this
+// section). Pay-trend indicator on the most recent row shows whether
+// net moved up or down vs the prior month.
+
+function RecentPayslipsSection({
+  payslips,
+}: {
+  payslips: ProfilePayload['recentPayslips'];
+}) {
+  // Trend = current netPay vs the next-most-recent. Array is sorted
+  // newest-first by the API, so [0] is current and [1] is prior.
+  const prevNet = payslips[1]?.netPay ?? null;
+  const delta   = prevNet != null ? payslips[0].netPay - prevNet : null;
+
+  return (
+    <div className="space-y-3">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <FileText className="w-4 h-4 text-slate-400" />
+          <h4 className="text-[11px] font-bold text-slate-400 uppercase tracking-[0.2em]">Recent Payslips</h4>
+        </div>
+        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+          {payslips.length} processed
+        </span>
+      </div>
+
+      <div className="bg-white border border-slate-200 rounded-xl divide-y divide-slate-100 overflow-hidden">
+        {payslips.map((p, i) => (
+          <div key={p.id} className="flex items-center justify-between gap-3 p-3 hover:bg-slate-50">
+            <div className="min-w-0">
+              <div className="text-[11px] font-bold text-slate-900">{p.period}</div>
+              <div className="text-[10px] text-slate-500 truncate">
+                Gross {formatNGN(p.grossPay)} · Deductions {formatNGN(p.totalDeductions)}
+              </div>
+            </div>
+            <div className="flex items-center gap-3 whitespace-nowrap">
+              <div className="text-right">
+                <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Net</div>
+                <div className="text-[13px] font-bold text-slate-900">{formatNGN(p.netPay)}</div>
+              </div>
+              {i === 0 && delta != null && delta !== 0 && (
+                <span className={`text-[10px] font-bold px-2 py-0.5 rounded ${
+                  delta > 0
+                    ? 'bg-emerald-100 text-emerald-700'
+                    : 'bg-rose-100 text-rose-700'
+                }`}>
+                  {delta > 0 ? '+' : '−'}{formatNGN(Math.abs(delta))}
+                </span>
+              )}
+              <a
+                href={`/api/payroll/me/payslip/${p.id}`}
+                aria-label={`Download payslip for ${p.period}`}
+                title="Download PDF"
+                className="w-8 h-8 flex items-center justify-center rounded-lg text-slate-500 hover:text-slate-900 hover:bg-slate-100"
+              >
+                <Download className="w-3.5 h-3.5" />
+              </a>
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
