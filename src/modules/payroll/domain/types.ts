@@ -28,6 +28,13 @@ export interface SalaryComponents {
   otherAllowances?: OtherAllowance[];
 }
 
+export interface PAYEBand {
+  /** Width of this band in NGN (monthly). Last band uses a sentinel large number for "and above". */
+  width: number;
+  /** Marginal rate as a decimal (e.g. 0.07 for 7%). */
+  rate:  number;
+}
+
 export interface ComplianceRates {
   /** Employee pension contribution rate, e.g. 0.08 (8%) */
   pensionEmployeeRate: number;
@@ -41,8 +48,23 @@ export interface ComplianceRates {
   craFixed: Money;
   /** CRA percentage of gross, e.g. 0.20 (20%) */
   craPercentage: number;
+  /**
+   * PAYE bands, monthly. Each entry's `width` is the *additional* NGN over the
+   * prior band (cumulative widths apply progressively). Last band's width
+   * absorbs the rest with the highest marginal rate.
+   *
+   * Optional for backwards compatibility — when omitted, callers fall back
+   * to the legacy hardcoded constants. New flows should always supply this.
+   */
+  payeBands?: PAYEBand[];
 }
 
+/**
+ * Legacy default constants (Finance Act 2020 bands). Preserved so any
+ * stale call site that doesn't yet pass rates still computes deterministically.
+ * Production code paths now flow through `getActiveRates()` in
+ * `src/lib/payroll/rates.ts`, which reads from the StatutoryRate DB table.
+ */
 export const DEFAULT_NG_RATES: ComplianceRates = {
   pensionEmployeeRate: 0.08,
   pensionEmployerRate: 0.10,
@@ -50,6 +72,14 @@ export const DEFAULT_NG_RATES: ComplianceRates = {
   nhisRate: 0.05,
   craFixed: 200_000,
   craPercentage: 0.20,
+  payeBands: [
+    { width: 25_000,                rate: 0.07 },
+    { width: 25_000,                rate: 0.11 },
+    { width: 41_666,                rate: 0.15 },
+    { width: 41_666,                rate: 0.19 },
+    { width: 133_333,               rate: 0.21 },
+    { width: Number.MAX_SAFE_INTEGER, rate: 0.24 },
+  ],
 };
 
 export interface PayrollComputation {
