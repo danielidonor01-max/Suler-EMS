@@ -158,7 +158,7 @@ export const GET = withAuth(async (_req, session, context) => {
     // batched in parallel after the employee fetch so the profile load
     // stays a single round-trip from the client's perspective. The
     // queries are scoped to this employee (cheap) — not the whole org.
-    const [leaveTypes, approvedLeaves, attendanceCounts, lastPunch, goals, kpis, pendingChangeRequests] = await Promise.all([
+    const [leaveTypes, approvedLeaves, attendanceCounts, lastPunch, goals, kpis, pendingChangeRequests, recentPayslipsRaw] = await Promise.all([
       prisma.leaveType.findMany({
         where:  { isActive: true },
         orderBy: { code: 'asc' },
@@ -221,6 +221,23 @@ export const GET = withAuth(async (_req, session, context) => {
           id: true, field: true, currentValue: true, proposedValue: true,
           reason: true, createdAt: true,
           requestedBy: { select: { id: true, name: true } },
+        },
+      }),
+      // Recent payslips for this employee. Filtered to PROCESSED runs
+      // only — preview entries aren't authoritative and shouldn't be
+      // confused with real pay. Cap at 6 to keep the payload small;
+      // /my-payroll is the full archive.
+      prisma.payrollEntry.findMany({
+        where:   { employeeId: id, run: { status: 'PROCESSED' } },
+        orderBy: { run: { processedAt: 'desc' } },
+        take:    6,
+        select: {
+          id: true,
+          netPay: true,
+          grossPay: true,
+          paye: true,
+          totalDeductions: true,
+          run: { select: { id: true, period: true, name: true, processedAt: true } },
         },
       }),
     ]);
@@ -434,6 +451,22 @@ export const GET = withAuth(async (_req, session, context) => {
       attendanceSummary,
       performanceSummary,
       pendingChangeRequests,
+
+      // Recent payslips: same gating as compensation since this is
+      // earnings detail. Decimal -> number conversion happens here so
+      // the client doesn't have to know about Prisma's Decimal shape.
+      recentPayslips: showCompensation
+        ? recentPayslipsRaw.map(p => ({
+            id:              p.id,
+            period:          p.run.period,
+            runName:         p.run.name,
+            processedAt:     p.run.processedAt,
+            grossPay:        Number(p.grossPay),
+            paye:            Number(p.paye),
+            totalDeductions: Number(p.totalDeductions),
+            netPay:          Number(p.netPay),
+          }))
+        : [],
 
       // Tells the client which UI to render (Edit form vs Request-Update form).
       capabilities: {
