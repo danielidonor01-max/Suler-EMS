@@ -25,6 +25,7 @@ import {
   Mail, Phone, Briefcase, Building2, ShieldCheck, AlertTriangle,
   CheckCircle2, Edit3, Lock, ChevronDown, ChevronUp, Send,
   FileText, Download, Upload, Trash2, Paperclip,
+  CreditCard, Banknote, Save,
 } from 'lucide-react';
 import { Modal } from '../common/Modal';
 import { useApi } from '@/lib/api/use-api';
@@ -60,10 +61,29 @@ interface ProfilePayload {
     itfNumber: string | null;
   };
 
+  banking: {
+    bankName:          string | null;
+    bankCode:          string | null;
+    bankAccountNumber: string | null;
+  };
+
+  compensation: {
+    effectiveDate:      string;
+    basicSalary:        number;
+    housingAllowance:   number;
+    transportAllowance: number;
+    otherAllowances:    number;
+    grossMonthly:       number;
+    currency:           string;
+  } | null;
+
   capabilities: {
     canEdit: boolean;
     canEditSelf: boolean;
     canViewCompliance: boolean;
+    canViewBanking: boolean;
+    canEditBanking: boolean;
+    canViewCompensation: boolean;
   };
 }
 
@@ -249,6 +269,14 @@ function ViewBlock({
             ))}
           </div>
         </Section>
+      )}
+
+      {/* Banking */}
+      <BankingSection profile={profile} />
+
+      {/* Compensation */}
+      {profile.capabilities.canViewCompensation && (
+        <CompensationSection compensation={profile.compensation} />
       )}
 
       {/* Documents */}
@@ -564,6 +592,209 @@ function Alert({ tone, message }: { tone: 'rose' | 'emerald'; message: string })
 
 function formatDate(iso: string): string {
   return new Intl.DateTimeFormat('en-NG', { day: '2-digit', month: 'short', year: 'numeric' }).format(new Date(iso));
+}
+
+function formatNGN(n: number): string {
+  return `₦${n.toLocaleString('en-NG', { minimumFractionDigits: 0 })}`;
+}
+
+// ─── Banking section ─────────────────────────────────────────────────────────
+//
+// Bank details feed the NIBSS-style disbursement CSV at PROCESS time —
+// employees with no account on file are silently skipped by payroll.
+// Self-service is enabled (SELF_SERVICEABLE on the API side) so a new
+// hire can set their own bank info without HR being a bottleneck. HR
+// and anyone with payroll:edit can also write here.
+
+function BankingSection({ profile }: { profile: ProfilePayload }) {
+  const editable = profile.capabilities.canEditBanking || profile.capabilities.canEditSelf;
+  const [editing, setEditing] = useState(false);
+  const [bankName,   setBankName]   = useState(profile.banking.bankName ?? '');
+  const [bankCode,   setBankCode]   = useState(profile.banking.bankCode ?? '');
+  const [account,    setAccount]    = useState(profile.banking.bankAccountNumber ?? '');
+  const [busy,       setBusy]       = useState(false);
+  const [error,      setError]      = useState<string | null>(null);
+  const [savedFlash, setSavedFlash] = useState(false);
+
+  useEffect(() => {
+    if (editing) return;
+    setBankName(profile.banking.bankName ?? '');
+    setBankCode(profile.banking.bankCode ?? '');
+    setAccount(profile.banking.bankAccountNumber ?? '');
+  }, [editing, profile.banking.bankName, profile.banking.bankCode, profile.banking.bankAccountNumber]);
+
+  const handleSave = async () => {
+    setBusy(true);
+    setError(null);
+    try {
+      await apiMutate(`/api/employees/${profile.id}/profile`, 'PATCH', {
+        bankName:          bankName  || null,
+        bankCode:          bankCode  || null,
+        bankAccountNumber: account   || null,
+      });
+      setEditing(false);
+      setSavedFlash(true);
+      setTimeout(() => setSavedFlash(false), 2000);
+    } catch (err: any) {
+      setError(err?.message ?? 'Could not save bank details');
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const hasAccount = !!profile.banking.bankAccountNumber;
+
+  return (
+    <div className="space-y-3">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <CreditCard className="w-4 h-4 text-slate-400" />
+          <h4 className="text-[11px] font-bold text-slate-400 uppercase tracking-[0.2em]">Bank Account</h4>
+          {!profile.capabilities.canViewBanking && (
+            <span className="ml-2 px-2 py-0.5 bg-amber-50 text-amber-700 text-[9px] font-bold uppercase tracking-widest rounded border border-amber-100">
+              Masked
+            </span>
+          )}
+        </div>
+        {editable && !editing && (
+          <button
+            type="button"
+            onClick={() => setEditing(true)}
+            className="flex items-center gap-1.5 px-2.5 py-1 bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-600 rounded-lg text-[10px] font-bold uppercase tracking-widest"
+          >
+            <Edit3 className="w-3 h-3" />
+            {hasAccount ? 'Edit' : 'Add'}
+          </button>
+        )}
+      </div>
+
+      {!editing ? (
+        hasAccount ? (
+          <div className="p-4 bg-emerald-50 border border-emerald-100 rounded-xl flex items-center justify-between gap-4">
+            <div>
+              <div className="text-[10px] font-bold text-emerald-600 uppercase tracking-widest">On file</div>
+              <div className="text-[13px] font-bold text-slate-900 mt-1">
+                {profile.banking.bankName ?? '—'} · {profile.banking.bankAccountNumber}
+              </div>
+              {profile.banking.bankCode && (
+                <div className="text-[10px] text-slate-500 mt-0.5">NIBSS code {profile.banking.bankCode}</div>
+              )}
+            </div>
+            <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+          </div>
+        ) : (
+          <div className="p-4 bg-rose-50 border border-rose-100 rounded-xl flex items-center justify-between gap-4">
+            <div>
+              <div className="text-[10px] font-bold text-rose-700 uppercase tracking-widest">Missing</div>
+              <div className="text-[12px] text-rose-700 mt-1 leading-snug">
+                No bank account on file — payroll disbursement will skip this employee.
+              </div>
+            </div>
+            <AlertTriangle className="w-4 h-4 text-rose-500 shrink-0" />
+          </div>
+        )
+      ) : (
+        <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-3">
+          <div className="grid grid-cols-2 gap-3">
+            <TextField label="Bank Name" value={bankName} onChange={setBankName} />
+            <TextField label="NIBSS Code" value={bankCode} onChange={setBankCode} />
+          </div>
+          <TextField label="Account Number (10 digits)" value={account} onChange={setAccount} />
+          {error && <Alert tone="rose" message={error} />}
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={() => { setEditing(false); setError(null); }}
+              disabled={busy}
+              className="flex-1 h-10 bg-white border border-slate-200 text-slate-700 rounded-xl text-[10px] font-bold uppercase tracking-widest disabled:opacity-60"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              onClick={handleSave}
+              disabled={busy}
+              className="flex-1 h-10 bg-slate-900 hover:bg-black text-white rounded-xl text-[10px] font-bold uppercase tracking-widest disabled:opacity-60 flex items-center justify-center gap-1.5"
+            >
+              <Save className="w-3 h-3" />
+              {busy ? 'Saving…' : 'Save'}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {savedFlash && <Alert tone="emerald" message="Bank details saved." />}
+    </div>
+  );
+}
+
+// ─── Compensation section ────────────────────────────────────────────────────
+//
+// Read-only summary of the active SalaryStructure. Salary structure CRUD
+// lives at /payroll/salary-structures — this is just the at-a-glance
+// view so HR / managers don't have to navigate away to see comp.
+
+function CompensationSection({
+  compensation,
+}: {
+  compensation: ProfilePayload['compensation'];
+}) {
+  if (!compensation) {
+    return (
+      <div className="space-y-3">
+        <div className="flex items-center gap-2">
+          <Banknote className="w-4 h-4 text-slate-400" />
+          <h4 className="text-[11px] font-bold text-slate-400 uppercase tracking-[0.2em]">Compensation</h4>
+        </div>
+        <div className="p-4 bg-amber-50 border border-amber-100 rounded-xl flex items-center gap-3">
+          <AlertTriangle className="w-4 h-4 text-amber-500 shrink-0" />
+          <p className="text-[12px] text-amber-700">
+            No active salary structure. Payroll runs will skip this employee until one is created.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-3">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Banknote className="w-4 h-4 text-slate-400" />
+          <h4 className="text-[11px] font-bold text-slate-400 uppercase tracking-[0.2em]">Compensation</h4>
+        </div>
+        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+          Effective {formatDate(compensation.effectiveDate)}
+        </span>
+      </div>
+
+      <div className="p-4 bg-indigo-50 border border-indigo-100 rounded-xl space-y-3">
+        <div className="grid grid-cols-3 gap-3">
+          <KV label="Basic"     value={formatNGN(compensation.basicSalary)} />
+          <KV label="Housing"   value={formatNGN(compensation.housingAllowance)} />
+          <KV label="Transport" value={formatNGN(compensation.transportAllowance)} />
+        </div>
+        {compensation.otherAllowances > 0 && (
+          <div className="pt-3 border-t border-indigo-100">
+            <KV label="Other Allowances" value={formatNGN(compensation.otherAllowances)} />
+          </div>
+        )}
+        <div className="flex items-center justify-between pt-3 border-t border-indigo-100">
+          <span className="text-[10px] font-bold text-indigo-600 uppercase tracking-widest">Gross Monthly</span>
+          <span className="text-xl font-black text-indigo-700">{formatNGN(compensation.grossMonthly)}</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function KV({ label, value }: { label: string; value: string }) {
+  return (
+    <div>
+      <div className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">{label}</div>
+      <div className="text-[12px] font-bold text-slate-900 mt-0.5">{value}</div>
+    </div>
+  );
 }
 
 // ─── Documents section ───────────────────────────────────────────────────────
