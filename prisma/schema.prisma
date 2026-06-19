@@ -145,6 +145,7 @@ model Hub {
   manager     Employee?    @relation("HubManager", fields: [managerId], references: [id])
   departments Department[]
   teams       Team[]
+  workSites   WorkSite[]
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
 }
@@ -591,10 +592,62 @@ model AttendanceRecord {
   checkIn    DateTime?
   checkOut   DateTime?
   status     String // PRESENT, ABSENT, LATE
-  createdAt  DateTime  @default(now())
-  updatedAt  DateTime  @updatedAt
+
+  // --- Geolocation ---
+  // Captured per side of the punch so we can show where someone clocked
+  // in vs out independently (a delivery driver legitimately starts at
+  // a hub and ends elsewhere).
+  checkInLat       Float?
+  checkInLng       Float?
+  checkInSiteId    String?
+  checkInSite      WorkSite? @relation("AttendanceCheckInSite", fields: [checkInSiteId], references: [id])
+  checkInDistance  Float?  // metres from the matched site (rounded). Null when no site matched.
+  checkInNote      String? // operator-supplied reason when no site matched ("Field visit at customer X")
+
+  checkOutLat      Float?
+  checkOutLng      Float?
+  checkOutSiteId   String?
+  checkOutSite     WorkSite? @relation("AttendanceCheckOutSite", fields: [checkOutSiteId], references: [id])
+  checkOutDistance Float?
+  checkOutNote     String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@unique([employeeId, date])
+  @@index([checkInSiteId])
+  @@index([checkOutSiteId])
+}
+
+// Geo-fenced office / hub / branch location. Latitude + longitude in
+// WGS-84 decimal degrees; radius in metres. A clock-in is in-bounds if
+// the device's coordinates fall within `radiusMeters` of (lat, lng).
+//
+// Out-of-bounds clock-ins are still accepted when the user provides a
+// note (field staff, customer visits) — recorded with checkInNote and
+// surfaced in HR's view for review. Hard-blocking out-of-bounds would
+// break legitimate flows; the audit trail does the real work.
+model WorkSite {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  address     String?
+  lat         Float
+  lng         Float
+  radiusMeters Int     @default(150)
+  isActive    Boolean  @default(true)
+
+  // Optional hub link so HR can filter sites by region without
+  // duplicating the hub taxonomy.
+  hubId       String?
+  hub         Hub?     @relation(fields: [hubId], references: [id])
+
+  attendanceCheckIns  AttendanceRecord[] @relation("AttendanceCheckInSite")
+  attendanceCheckOuts AttendanceRecord[] @relation("AttendanceCheckOutSite")
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([isActive])
 }
 
 model Notification {

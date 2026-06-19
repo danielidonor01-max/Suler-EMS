@@ -29,6 +29,7 @@ import {
   Lock,
   BarChart3,
   Scale,
+  MapPin,
   Sparkles,
   Database,
   Plug,
@@ -109,6 +110,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle }) => {
     { name: 'Workforce Registry', icon: Building2, href: '/employees', permission: Permissions.WORKFORCE_VIEW },
     { name: 'Team Management', icon: Users, href: '/team', permission: Permissions.WORKFORCE_VIEW },
     { name: 'Attendance Admin', icon: Calendar, href: '/attendance/admin', permission: Permissions.ATTENDANCE_VIEW },
+    { name: 'Work Sites', icon: MapPin, href: '/attendance/sites', permission: Permissions.SETTINGS_MANAGE },
     { name: 'Leave Admin', icon: Activity, href: '/leave/admin', permission: Permissions.LEAVE_VIEW },
   ].filter(m => !m.permission || checkPermission(m.permission as any).allowed);
 

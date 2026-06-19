@@ -3,7 +3,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import {
   Calendar, Clock, CheckCircle2, AlertTriangle, ChevronLeft, ChevronRight,
-  LogIn, LogOut, Activity,
+  LogIn, LogOut, Activity, MapPin,
 } from 'lucide-react';
 import { useApi } from '@/lib/api/use-api';
 import { apiMutate } from '@/lib/api/fetcher';
@@ -86,20 +86,81 @@ export default function MyAttendancePage() {
   const [error, setError] = useState<string | null>(null);
   const [tick, setTick] = useState(Date.now());
 
+  // Geo-fence override flow: when the server returns OUT_OF_BOUNDS, we
+  // surface an inline form asking for a reason and retry the punch with
+  // that note attached.
+  const [overridePrompt, setOverridePrompt] = useState<{
+    action: 'in' | 'out';
+    lat: number;
+    lng: number;
+    message: string;
+  } | null>(null);
+  const [overrideNote, setOverrideNote] = useState('');
+
   // Live clock so the header time updates without manual refresh.
   useEffect(() => {
     const t = setInterval(() => setTick(Date.now()), 30_000);
     return () => clearInterval(t);
   }, []);
 
-  const handleClock = async (action: 'in' | 'out') => {
+  // Wraps getCurrentPosition in a promise with a sensible timeout. We
+  // request high-accuracy because office radii are often 100-200 m and
+  // wifi-fallback positioning regularly misses by that much.
+  const requestPosition = (): Promise<GeolocationPosition> =>
+    new Promise((resolve, reject) => {
+      if (!navigator.geolocation) {
+        reject(new Error('Geolocation is not available in this browser'));
+        return;
+      }
+      navigator.geolocation.getCurrentPosition(resolve, reject, {
+        enableHighAccuracy: true,
+        timeout: 15_000,
+        maximumAge: 30_000,
+      });
+    });
+
+  const handleClock = async (
+    action: 'in' | 'out',
+    overrides?: { lat: number; lng: number; note: string },
+  ) => {
     setBusy(action);
     setError(null);
     try {
-      await apiMutate(`/api/attendance/clock-${action}`, 'POST');
-      await refresh();
+      let lat: number, lng: number, note: string | null;
+      if (overrides) {
+        lat = overrides.lat;
+        lng = overrides.lng;
+        note = overrides.note;
+      } else {
+        const pos = await requestPosition();
+        lat = pos.coords.latitude;
+        lng = pos.coords.longitude;
+        note = null;
+      }
+
+      try {
+        await apiMutate(`/api/attendance/clock-${action}`, 'POST', { lat, lng, note });
+        await refresh();
+        setOverridePrompt(null);
+        setOverrideNote('');
+      } catch (err: any) {
+        // OUT_OF_BOUNDS: the server is asking for a justification. Show
+        // the inline override form rather than just surfacing an error.
+        const msg = err?.message ?? '';
+        if (msg.includes('You are') && msg.includes('m from')) {
+          setOverridePrompt({ action, lat, lng, message: msg });
+          return;
+        }
+        throw err;
+      }
     } catch (err: any) {
-      setError(err?.message ?? 'Action failed');
+      const msg = err?.message ?? 'Action failed';
+      // Friendlier text for the common case of denied browser permission.
+      if (msg.includes('User denied') || msg.includes('denied geolocation')) {
+        setError('Location permission denied. Allow location in your browser to clock in.');
+      } else {
+        setError(msg);
+      }
     } finally {
       setBusy(null);
     }
@@ -201,6 +262,49 @@ export default function MyAttendancePage() {
               <div className="flex items-start gap-2 p-3 bg-rose-50 border border-rose-100 rounded-xl">
                 <AlertTriangle className="w-4 h-4 text-rose-500 mt-0.5 shrink-0" />
                 <span className="text-[12px] font-medium text-rose-700">{error}</span>
+              </div>
+            )}
+
+            {overridePrompt && (
+              <div className="p-4 bg-amber-50 border border-amber-200 rounded-xl space-y-3">
+                <div className="flex items-start gap-2">
+                  <MapPin className="w-4 h-4 text-amber-600 mt-0.5 shrink-0" />
+                  <div className="flex-1">
+                    <p className="text-[12px] font-bold text-amber-800">{overridePrompt.message}</p>
+                    <p className="text-[11px] text-amber-700 mt-1">
+                      Add a brief reason — your manager will see this on the attendance audit.
+                    </p>
+                  </div>
+                </div>
+                <input
+                  value={overrideNote}
+                  onChange={(e) => setOverrideNote(e.target.value)}
+                  placeholder="e.g. Field visit at customer site, working from home"
+                  aria-label="Override reason"
+                  className="w-full h-10 bg-white border border-amber-200 rounded-lg px-3 text-[12px] outline-none focus:border-amber-500"
+                />
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    onClick={() => { setOverridePrompt(null); setOverrideNote(''); }}
+                    disabled={busy !== null}
+                    className="flex-1 h-9 bg-white border border-amber-200 text-amber-800 rounded-lg text-[10px] font-bold uppercase tracking-widest disabled:opacity-60"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleClock(overridePrompt.action, {
+                      lat:  overridePrompt.lat,
+                      lng:  overridePrompt.lng,
+                      note: overrideNote.trim(),
+                    })}
+                    disabled={!overrideNote.trim() || busy !== null}
+                    className="flex-1 h-9 bg-slate-900 hover:bg-black text-white rounded-lg text-[10px] font-bold uppercase tracking-widest disabled:opacity-60"
+                  >
+                    {busy ? 'Submitting…' : `Confirm Clock ${overridePrompt.action}`}
+                  </button>
+                </div>
               </div>
             )}
           </div>
