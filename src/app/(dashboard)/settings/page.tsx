@@ -5,14 +5,18 @@
  *
  * The previous version rendered four placeholder tabs ("General",
  * "Governance & Roles", "Security & Auth", "Alert Protocols") whose
- * content was unimplemented. The actual settings work lives in the four
+ * content was unimplemented. The actual settings work lives in the
  * dedicated sub-pages already wired in the sidebar:
- *   /settings/compliance  (compliance & tax)
  *   /settings/security    (security policies)
  *   /settings/integrations (third-party + webhooks)
  *   /settings/data         (export, backup, restore)
  *
- * This page is now a navigation grid that surfaces those four entry
+ * Compliance & Tax intentionally lives at /payroll/statutory-rates
+ * under Accounts & Finance — there used to be a duplicate stub here
+ * but the HR-side page is the richer surface and the single source
+ * of truth, so it's been consolidated.
+ *
+ * This page is now a navigation grid that surfaces those three entry
  * points with a one-line description each. No duplicate tabs.
  *
  * Governance / Roles is intentionally not listed here — it lives under
@@ -23,7 +27,6 @@
 import React from 'react';
 import Link from 'next/link';
 import {
-  ShieldCheck,
   Lock,
   Plug,
   Database,
@@ -42,14 +45,6 @@ interface SettingsModule {
 }
 
 const MODULES: SettingsModule[] = [
-  {
-    id: 'compliance',
-    title: 'Compliance & Tax',
-    description: 'PAYE bands, pension rates, NHF / NHIS, CRA. Updates take effect on the next payroll run.',
-    icon: ShieldCheck,
-    href: '/settings/compliance',
-    permission: Permissions.SETTINGS_MANAGE,
-  },
   {
     id: 'security',
     title: 'Security',

@@ -54,6 +54,7 @@ export default function StatutoryRatesPage() {
   const [busy,  setBusy]  = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
+  const [broadcast, setBroadcast] = useState<number | null>(null);
 
   // Hydrate local state from server values whenever rows refresh.
   useEffect(() => {
@@ -118,10 +119,14 @@ export default function StatutoryRatesPage() {
         updates.push({ code: 'PAYE_BANDS_MONTHLY', value: sealed });
       }
 
-      await apiMutate('/api/payroll/statutory-rates', 'PATCH', { updates });
+      const result = await apiMutate<{ broadcastCount?: number } | unknown>(
+        '/api/payroll/statutory-rates', 'PATCH', { updates },
+      );
+      const count = (result as { broadcastCount?: number } | null)?.broadcastCount ?? 0;
+      setBroadcast(count);
       setSaved(true);
       await refresh();
-      setTimeout(() => setSaved(false), 2500);
+      setTimeout(() => { setSaved(false); setBroadcast(null); }, 5000);
     } catch (err: any) {
       setError(err?.message ?? 'Could not save rates');
     } finally {
@@ -159,14 +164,25 @@ export default function StatutoryRatesPage() {
             className="bg-slate-900 hover:bg-black text-white flex items-center gap-2 px-6 py-3 rounded-xl text-[11px] font-bold uppercase tracking-wider transition-all shadow-md disabled:opacity-60"
           >
             <Save className="w-4 h-4" />
-            {busy ? 'Saving…' : 'Save All Changes'}
+            {busy ? 'Committing…' : 'Global Commit'}
           </button>
         </div>
 
+        <p className="mt-3 text-[11px] text-slate-400">
+          A Global Commit fans out a notification to every active user announcing the new statutory policy and what changed.
+        </p>
+
         {saved && (
-          <div className="mt-4 flex items-center gap-2 p-3 bg-emerald-50 border border-emerald-100 rounded-xl">
-            <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-            <span className="text-[12px] font-bold text-emerald-700">Rates saved — they apply to new payroll runs.</span>
+          <div className="mt-4 flex items-start gap-2 p-3 bg-emerald-50 border border-emerald-100 rounded-xl">
+            <CheckCircle2 className="w-4 h-4 text-emerald-600 mt-0.5 shrink-0" />
+            <div className="text-[12px] font-bold text-emerald-700 leading-relaxed">
+              Policy committed. Applies to all payroll runs from now on.
+              {broadcast != null && broadcast > 0 && (
+                <span className="font-medium block mt-0.5 text-emerald-600">
+                  Notification broadcast to {broadcast} active user{broadcast === 1 ? '' : 's'}.
+                </span>
+              )}
+            </div>
           </div>
         )}
         {error && (

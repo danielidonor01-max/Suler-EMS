@@ -27,6 +27,7 @@ import {
   FileText, Download, Upload, Trash2, Paperclip,
   CreditCard, Banknote, Save,
   Calendar, Clock, Activity,
+  Target, TrendingUp,
 } from 'lucide-react';
 import { Modal } from '../common/Modal';
 import { useApi } from '@/lib/api/use-api';
@@ -97,6 +98,34 @@ interface ProfilePayload {
     lastCheckIn:    string | null;
     lastCheckOut:   string | null;
     lastStatus:     string | null;
+  };
+
+  performanceSummary: {
+    goals: {
+      active:    number;
+      completed: number;
+      overdue:   number;
+      topOpen:   Array<{
+        id:              string;
+        title:           string;
+        progressPercent: number;
+        category:        string;
+        dueDate:         string | null;
+        isOverdue:       boolean;
+      }>;
+    };
+    kpis: {
+      total:  number;
+      atRisk: Array<{
+        id:             string;
+        title:          string;
+        target:         number;
+        unit:           string | null;
+        frequency:      string;
+        latestValue:    number | null;
+        achievementPct: number;
+      }>;
+    };
   };
 
   capabilities: {
@@ -305,6 +334,9 @@ function ViewBlock({
           year-to-date / trailing-window snapshots of the same person. */}
       <LeaveBalanceSection balances={profile.leaveBalances} />
       <AttendanceSummarySection summary={profile.attendanceSummary} />
+
+      {/* Performance + KPI strip */}
+      <PerformanceStripSection summary={profile.performanceSummary} />
 
       {/* Documents */}
       <DocumentsSection
@@ -974,6 +1006,136 @@ function AttendanceTile({
         <div className={`text-xl font-black ${palette.text} leading-none mt-1`}>{value}</div>
       </div>
       <Icon className={`w-4 h-4 ${palette.icon}`} />
+    </div>
+  );
+}
+
+// ─── Performance + KPI strip ─────────────────────────────────────────────────
+//
+// Pulls the active goal headline + KPI achievement at a glance. We're not
+// trying to replace the dedicated /performance pages — this is the
+// "where's this person?" answer when a manager opens a profile during
+// review prep.
+
+function PerformanceStripSection({
+  summary,
+}: {
+  summary: ProfilePayload['performanceSummary'];
+}) {
+  const { goals, kpis } = summary;
+  const hasAny = goals.active + goals.completed + kpis.total > 0;
+
+  if (!hasAny) {
+    return (
+      <div className="space-y-3">
+        <div className="flex items-center gap-2">
+          <Target className="w-4 h-4 text-slate-400" />
+          <h4 className="text-[11px] font-bold text-slate-400 uppercase tracking-[0.2em]">Performance</h4>
+        </div>
+        <div className="text-[12px] text-slate-400 italic">No active goals or KPIs yet.</div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center gap-2">
+        <Target className="w-4 h-4 text-slate-400" />
+        <h4 className="text-[11px] font-bold text-slate-400 uppercase tracking-[0.2em]">Performance</h4>
+      </div>
+
+      {/* Goal counters */}
+      <div className="grid grid-cols-3 gap-3">
+        <div className="p-3 bg-indigo-50 border border-indigo-100 rounded-xl">
+          <div className="text-[9px] font-bold text-indigo-600 uppercase tracking-widest">Active Goals</div>
+          <div className="text-xl font-black text-indigo-700 leading-none mt-1">{goals.active}</div>
+        </div>
+        <div className="p-3 bg-emerald-50 border border-emerald-100 rounded-xl">
+          <div className="text-[9px] font-bold text-emerald-600 uppercase tracking-widest">Completed</div>
+          <div className="text-xl font-black text-emerald-700 leading-none mt-1">{goals.completed}</div>
+        </div>
+        <div className={`p-3 rounded-xl border ${
+          goals.overdue > 0 ? 'bg-rose-50 border-rose-100' : 'bg-slate-50 border-slate-200'
+        }`}>
+          <div className={`text-[9px] font-bold uppercase tracking-widest ${
+            goals.overdue > 0 ? 'text-rose-600' : 'text-slate-500'
+          }`}>Overdue</div>
+          <div className={`text-xl font-black leading-none mt-1 ${
+            goals.overdue > 0 ? 'text-rose-700' : 'text-slate-700'
+          }`}>{goals.overdue}</div>
+        </div>
+      </div>
+
+      {/* Top open goals */}
+      {goals.topOpen.length > 0 && (
+        <div className="space-y-2">
+          <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Active</div>
+          {goals.topOpen.map(g => (
+            <div key={g.id} className={`p-3 rounded-xl border ${
+              g.isOverdue ? 'bg-rose-50 border-rose-100' : 'bg-slate-50 border-slate-200'
+            }`}>
+              <div className="flex items-center justify-between gap-3 mb-2">
+                <div className="text-[12px] font-bold text-slate-900 truncate">{g.title}</div>
+                <div className="text-[10px] font-bold text-slate-500 whitespace-nowrap">
+                  {g.progressPercent}%{g.isOverdue && <span className="text-rose-600 ml-1">· overdue</span>}
+                </div>
+              </div>
+              <div className="h-1.5 bg-white rounded-full overflow-hidden border border-white">
+                <div
+                  className={`h-full rounded-full transition-all ${
+                    g.isOverdue ? 'bg-rose-500' : g.progressPercent >= 80 ? 'bg-emerald-500' : 'bg-indigo-500'
+                  }`}
+                  ref={(el) => { if (el) el.style.width = `${g.progressPercent}%`; }}
+                />
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* KPI at-risk */}
+      {kpis.total > 0 && (
+        <div className="space-y-2">
+          <div className="flex items-center justify-between">
+            <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
+              <TrendingUp className="w-3 h-3" />
+              KPIs ({kpis.total})
+            </div>
+            {kpis.atRisk.length > 0 && (
+              <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Lowest first</span>
+            )}
+          </div>
+          <div className="space-y-2">
+            {kpis.atRisk.map(k => {
+              const onTrack = k.achievementPct >= 100;
+              const atRisk  = k.achievementPct < 70;
+              return (
+                <div key={k.id} className="p-3 bg-slate-50 border border-slate-200 rounded-xl">
+                  <div className="flex items-center justify-between mb-2 gap-3">
+                    <div className="text-[12px] font-bold text-slate-900 truncate">{k.title}</div>
+                    <div className={`text-[10px] font-bold whitespace-nowrap ${
+                      onTrack ? 'text-emerald-700' : atRisk ? 'text-rose-700' : 'text-amber-700'
+                    }`}>
+                      {k.latestValue == null
+                        ? '— / ' + k.target + (k.unit ? ` ${k.unit}` : '')
+                        : `${k.latestValue}${k.unit ? ` ${k.unit}` : ''} / ${k.target}${k.unit ? ` ${k.unit}` : ''}`}
+                      <span className="ml-1">· {k.achievementPct}%</span>
+                    </div>
+                  </div>
+                  <div className="h-1.5 bg-white rounded-full overflow-hidden border border-white">
+                    <div
+                      className={`h-full rounded-full transition-all ${
+                        onTrack ? 'bg-emerald-500' : atRisk ? 'bg-rose-500' : 'bg-indigo-500'
+                      }`}
+                      ref={(el) => { if (el) el.style.width = `${Math.min(100, k.achievementPct)}%`; }}
+                    />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

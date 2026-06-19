@@ -146,11 +146,11 @@ export const GET = withAuth(async (_req, session, context) => {
     const showCompensation = canViewCompensation(session as any, employee.id);
     const canEditBank      = canEditBanking(session as any);
 
-    // Leave balances + attendance summary are batched in parallel after
-    // the employee fetch so the profile load stays a single round-trip
-    // from the client's perspective. The two queries are scoped to this
-    // employee (cheap) — not the whole org like /api/leave/balances.
-    const [leaveTypes, approvedLeaves, attendanceCounts, lastPunch] = await Promise.all([
+    // Leave balances + attendance summary + performance signals are
+    // batched in parallel after the employee fetch so the profile load
+    // stays a single round-trip from the client's perspective. The
+    // queries are scoped to this employee (cheap) — not the whole org.
+    const [leaveTypes, approvedLeaves, attendanceCounts, lastPunch, goals, kpis] = await Promise.all([
       prisma.leaveType.findMany({
         where:  { isActive: true },
         orderBy: { code: 'asc' },
@@ -177,6 +177,28 @@ export const GET = withAuth(async (_req, session, context) => {
         where:   { employeeId: id, checkIn: { not: null } },
         orderBy: { date: 'desc' },
         select:  { date: true, checkIn: true, checkOut: true, status: true },
+      }),
+      prisma.performanceGoal.findMany({
+        where:   { employeeId: id, status: { in: ['ACTIVE', 'COMPLETED'] } },
+        orderBy: { updatedAt: 'desc' },
+        take:    50,
+        select: {
+          id: true, title: true, status: true, category: true,
+          progressPercent: true, dueDate: true,
+        },
+      }),
+      prisma.performanceKPI.findMany({
+        where:   { employeeId: id, status: 'ACTIVE' },
+        orderBy: { createdAt: 'desc' },
+        take:    20,
+        select: {
+          id: true, title: true, target: true, unit: true, frequency: true,
+          measurements: {
+            orderBy: { periodStart: 'desc' },
+            take:    1,
+            select:  { actualValue: true },
+          },
+        },
       }),
     ]);
 
@@ -223,6 +245,61 @@ export const GET = withAuth(async (_req, session, context) => {
       lastCheckIn:   lastPunch?.checkIn ?? null,
       lastCheckOut:  lastPunch?.checkOut ?? null,
       lastStatus:    lastPunch?.status ?? null,
+    };
+
+    // Goals: derive overdue from dueDate vs now (cheaper than caching a
+    // status column for it). Counts let the strip show "3 active, 1
+    // overdue" without the client re-walking the list.
+    const goalsActive    = goals.filter(g => g.status === 'ACTIVE').length;
+    const goalsCompleted = goals.filter(g => g.status === 'COMPLETED').length;
+    const goalsOverdue   = goals.filter(g =>
+      g.status === 'ACTIVE' && g.dueDate && new Date(g.dueDate) < now
+    ).length;
+    const goalsTopOpen = goals
+      .filter(g => g.status === 'ACTIVE')
+      .slice(0, 3)
+      .map(g => ({
+        id:              g.id,
+        title:           g.title,
+        progressPercent: g.progressPercent,
+        category:        g.category,
+        dueDate:         g.dueDate,
+        isOverdue:       Boolean(g.dueDate && new Date(g.dueDate) < now),
+      }));
+
+    // KPIs: surface the most recent value's achievement % per KPI (capped
+    // 150% so an overachiever doesn't blow out the bar). Pick the three
+    // furthest from target as the at-risk list.
+    const kpiRows = kpis.map(k => {
+      const latest = k.measurements[0]?.actualValue ?? null;
+      const achievementPct = (latest != null && k.target > 0)
+        ? Math.max(0, Math.min(150, parseFloat(((latest / k.target) * 100).toFixed(1))))
+        : 0;
+      return {
+        id:             k.id,
+        title:          k.title,
+        target:         k.target,
+        unit:           k.unit,
+        frequency:      k.frequency,
+        latestValue:    latest,
+        achievementPct,
+      };
+    });
+    const kpisAtRisk = [...kpiRows]
+      .sort((a, b) => a.achievementPct - b.achievementPct)
+      .slice(0, 3);
+
+    const performanceSummary = {
+      goals: {
+        active:    goalsActive,
+        completed: goalsCompleted,
+        overdue:   goalsOverdue,
+        topOpen:   goalsTopOpen,
+      },
+      kpis: {
+        total:    kpiRows.length,
+        atRisk:   kpisAtRisk,
+      },
     };
     const compliance = showCompliance
       ? {
@@ -321,6 +398,7 @@ export const GET = withAuth(async (_req, session, context) => {
 
       leaveBalances,
       attendanceSummary,
+      performanceSummary,
 
       // Tells the client which UI to render (Edit form vs Request-Update form).
       capabilities: {
