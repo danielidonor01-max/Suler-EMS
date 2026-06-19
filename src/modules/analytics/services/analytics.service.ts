@@ -9,7 +9,14 @@ import { Result } from "@/types/api";
  * Orchestrates snapshots, read-models, and event-driven intelligence.
  */
 export class AnalyticsService {
-  private static CALCULATION_VERSION = "1.0";
+  // Bump when the snapshot shape changes — older snapshots are skipped so
+  // the cache can't serve a payload the consumer can't render. 2.0 adds
+  // `trends` + `kpiAchievement` and removes Math.random() inputs.
+  private static CALCULATION_VERSION = "2.0";
+  // How long a cached snapshot is reused before we recompute. One hour
+  // matches the daily-snapshot model — fresh enough for an exec view,
+  // long enough to avoid hammering the DB on every page hit.
+  private static SNAPSHOT_TTL_MS = 60 * 60 * 1000;
 
   static init() {
     // Subscribe to events that should trigger a metric refresh
@@ -20,21 +27,27 @@ export class AnalyticsService {
   /**
    * Get Dashboard Analytics (Read-Optimized)
    */
-  static async getDashboardSnapshot(userId: string): Promise<Result<any>> {
+  static async getDashboardSnapshot(_userId: string, opts: { forceRefresh?: boolean } = {}): Promise<Result<any>> {
     const { default: prisma } = await import("@/lib/prisma");
     try {
-      // 1. Try to get the latest Daily snapshot
-      const latestSnapshot = await prisma.analyticsSnapshot.findFirst({
-        where: { granularity: 'DAILY' },
-        orderBy: { timestamp: 'desc' }
+      // 1. Latest DAILY snapshot, *of the current calculation version*. A
+      //    snapshot produced before a shape change is intentionally
+      //    skipped — the consumer would otherwise see undefined fields
+      //    and render dead UI.
+      const latestSnapshot = opts.forceRefresh ? null : await prisma.analyticsSnapshot.findFirst({
+        where:   { granularity: 'DAILY', calculationVersion: this.CALCULATION_VERSION },
+        orderBy: { timestamp: 'desc' },
       });
 
-      // 2. If no snapshot or it's old (> 1 hour), compute on the fly (or return stale + trigger refresh)
+      // 2. If we have a fresh snapshot (< TTL), serve it.
       if (latestSnapshot) {
-        return { success: true, data: latestSnapshot.data };
+        const age = Date.now() - latestSnapshot.timestamp.getTime();
+        if (age < this.SNAPSHOT_TTL_MS) {
+          return { success: true, data: latestSnapshot.data };
+        }
       }
 
-      // 3. Fallback: Compute and return (initial setup)
+      // 3. Otherwise regenerate + persist + return.
       const data = await this.generateFullSnapshot('DAILY');
       return { success: true, data };
     } catch (err: any) {
@@ -47,15 +60,21 @@ export class AnalyticsService {
    */
   static async generateFullSnapshot(granularity: AnalyticsGranularity = 'DAILY'): Promise<any> {
     const { default: prisma } = await import("@/lib/prisma");
-    const workforce = await AggregationService.computeWorkforceKPIs();
-    const compliance = await AggregationService.computeAttendanceCompliance(new Date());
-    const bottlenecks = await AggregationService.getWorkflowBottlenecks();
-    const insights = await AggregationService.generateInsights();
+    const [workforce, compliance, bottlenecks, trends, kpiAchievement, insights] = await Promise.all([
+      AggregationService.computeWorkforceKPIs(),
+      AggregationService.computeAttendanceCompliance(new Date()),
+      AggregationService.getWorkflowBottlenecks(),
+      AggregationService.getOperationalTrends(7),
+      AggregationService.getKPIAchievement(),
+      AggregationService.generateInsights(),
+    ]);
 
     const snapshotData = {
       workforce,
       attendance: { compliance },
       bottlenecks,
+      trends,
+      kpiAchievement,
       insights,
       computedAt: new Date().toISOString()
     };
