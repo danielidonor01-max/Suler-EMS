@@ -32,6 +32,7 @@ import {
 import { Modal } from '../common/Modal';
 import { useApi } from '@/lib/api/use-api';
 import { apiMutate } from '@/lib/api/fetcher';
+import { Select } from '@/components/forms/Select';
 
 interface ProfilePayload {
   id: string;
@@ -70,6 +71,8 @@ interface ProfilePayload {
   };
 
   compensation: {
+    id:                 string;
+    isActive:           boolean;
     effectiveDate:      string;
     basicSalary:        number;
     housingAllowance:   number;
@@ -77,6 +80,19 @@ interface ProfilePayload {
     otherAllowances:    number;
     grossMonthly:       number;
     currency:           string;
+    reason:             string | null;
+    history: Array<{
+      id:                 string;
+      isActive:           boolean;
+      effectiveDate:      string;
+      basicSalary:        number;
+      housingAllowance:   number;
+      transportAllowance: number;
+      otherAllowances:    number;
+      grossMonthly:       number;
+      currency:           string;
+      reason:             string | null;
+    }>;
   } | null;
 
   leaveBalances: Array<{
@@ -99,6 +115,16 @@ interface ProfilePayload {
     lastCheckOut:   string | null;
     lastStatus:     string | null;
   };
+
+  pendingChangeRequests: Array<{
+    id:            string;
+    field:         string;
+    currentValue:  string | null;
+    proposedValue: string | null;
+    reason:        string;
+    createdAt:     string;
+    requestedBy:   { id: string; name: string };
+  }>;
 
   performanceSummary: {
     goals: {
@@ -296,6 +322,17 @@ function ViewBlock({
         </div>
       )}
 
+      {/* Pending change requests — shown up top because they describe the
+          actual *state* of this profile (what's about to change). HR
+          should see them before reading the current values. */}
+      {profile.pendingChangeRequests.length > 0 && (
+        <PendingChangeRequestsSection
+          requests={profile.pendingChangeRequests}
+          isOwner={profile.capabilities.canEditSelf}
+          isHR={profile.capabilities.canEdit}
+        />
+      )}
+
       {/* Employment */}
       <Section icon={Briefcase} title="Employment">
         <Field label="Job Title" value={profile.jobTitle} />
@@ -444,19 +481,16 @@ function EditForm({
         <TextField label="Grade" value={grade} onChange={setGrade} />
         <TextField label="Phone" value={phone} onChange={setPhone} />
         <TextField label="Branch / Hub" value={branch} onChange={setBranch} />
-        <div className="space-y-1.5">
-          <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Status</label>
-          <select
-            aria-label="Status"
-            value={status}
-            onChange={(e) => setStatus(e.target.value as any)}
-            className="w-full h-[44px] bg-slate-50 border border-slate-200 rounded-xl px-3 text-[13px] font-bold outline-none focus:border-indigo-500"
-          >
-            <option value="ACTIVE">Active</option>
-            <option value="INACTIVE">Inactive</option>
-            <option value="SUSPENDED">Suspended</option>
-          </select>
-        </div>
+        <Select
+          label="Status"
+          value={status}
+          onChange={(val) => setStatus(val as any)}
+          options={[
+            { label: 'Active', value: 'ACTIVE' },
+            { label: 'Inactive', value: 'INACTIVE' },
+            { label: 'Suspended', value: 'SUSPENDED' }
+          ]}
+        />
       </Section>
 
       <Section icon={ShieldCheck} title="Compliance">
@@ -523,27 +557,24 @@ function RequestForm({
         </p>
       </div>
 
-      <div className="space-y-1.5">
-        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Field to Change</label>
-        <select
-          aria-label="Field to change"
-          value={field}
-          onChange={(e) => setField(e.target.value)}
-          className="w-full h-[44px] bg-slate-50 border border-slate-200 rounded-xl px-3 text-[13px] font-bold outline-none focus:border-indigo-500"
-        >
-          <option value="firstName">First Name</option>
-          <option value="lastName">Last Name</option>
-          <option value="jobTitle">Job Title</option>
-          <option value="grade">Grade</option>
-          <option value="branch">Branch / Hub</option>
-          <option value="nin">NIN</option>
-          <option value="bvn">BVN</option>
-          <option value="tin">TIN</option>
-          <option value="pensionPFA">Pension PFA</option>
-          <option value="pensionNumber">Pension Number</option>
-          <option value="nhfNumber">NHF Number</option>
-        </select>
-      </div>
+      <Select
+        label="Field to Change"
+        value={field}
+        onChange={setField}
+        options={[
+          { label: 'First Name', value: 'firstName' },
+          { label: 'Last Name', value: 'lastName' },
+          { label: 'Job Title', value: 'jobTitle' },
+          { label: 'Grade', value: 'grade' },
+          { label: 'Branch / Hub', value: 'branch' },
+          { label: 'NIN', value: 'nin' },
+          { label: 'BVN', value: 'bvn' },
+          { label: 'TIN', value: 'tin' },
+          { label: 'Pension PFA', value: 'pensionPFA' },
+          { label: 'Pension Number', value: 'pensionNumber' },
+          { label: 'NHF Number', value: 'nhfNumber' }
+        ]}
+      />
 
       <TextField label="Proposed Value (optional)" value={proposedValue} onChange={setProposedValue} />
 
@@ -815,6 +846,15 @@ function CompensationSection({
     );
   }
 
+  const [showHistory, setShowHistory] = useState(false);
+  const hasHistory = compensation.history.length > 0;
+
+  // Previous active gross for the change indicator. History is sorted
+  // most-recent first, so [0] is the structure right before the current
+  // one.
+  const previousGross = hasHistory ? compensation.history[0].grossMonthly : null;
+  const delta = previousGross != null ? compensation.grossMonthly - previousGross : null;
+
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
@@ -840,9 +880,52 @@ function CompensationSection({
         )}
         <div className="flex items-center justify-between pt-3 border-t border-indigo-100">
           <span className="text-[10px] font-bold text-indigo-600 uppercase tracking-widest">Gross Monthly</span>
-          <span className="text-xl font-black text-indigo-700">{formatNGN(compensation.grossMonthly)}</span>
+          <div className="flex items-center gap-2">
+            <span className="text-xl font-black text-indigo-700">{formatNGN(compensation.grossMonthly)}</span>
+            {delta != null && delta !== 0 && (
+              <span className={`text-[10px] font-bold px-2 py-0.5 rounded ${
+                delta > 0
+                  ? 'bg-emerald-100 text-emerald-700'
+                  : 'bg-rose-100 text-rose-700'
+              }`}>
+                {delta > 0 ? '+' : ''}{formatNGN(Math.abs(delta))}
+              </span>
+            )}
+          </div>
         </div>
       </div>
+
+      {hasHistory && (
+        <div className="border border-slate-100 rounded-xl overflow-hidden">
+          <button
+            type="button"
+            onClick={() => setShowHistory(v => !v)}
+            className="w-full flex items-center justify-between px-4 py-2.5 bg-slate-50 hover:bg-slate-100 transition-colors"
+          >
+            <span className="text-[10px] font-bold text-slate-600 uppercase tracking-[0.2em]">
+              Compensation history ({compensation.history.length})
+            </span>
+            {showHistory ? <ChevronUp className="w-3.5 h-3.5 text-slate-400" /> : <ChevronDown className="w-3.5 h-3.5 text-slate-400" />}
+          </button>
+          {showHistory && (
+            <div className="bg-white divide-y divide-slate-100">
+              {compensation.history.map(h => (
+                <div key={h.id} className="p-3 flex items-center justify-between gap-3">
+                  <div className="min-w-0">
+                    <div className="text-[11px] font-bold text-slate-700">{formatDate(h.effectiveDate)}</div>
+                    {h.reason && (
+                      <div className="text-[10px] text-slate-500 italic truncate mt-0.5">{h.reason}</div>
+                    )}
+                  </div>
+                  <div className="text-[12px] font-bold text-slate-900 whitespace-nowrap">
+                    {formatNGN(h.grossMonthly)}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
@@ -1006,6 +1089,96 @@ function AttendanceTile({
         <div className={`text-xl font-black ${palette.text} leading-none mt-1`}>{value}</div>
       </div>
       <Icon className={`w-4 h-4 ${palette.icon}`} />
+    </div>
+  );
+}
+
+// ─── Pending profile change requests ────────────────────────────────────────
+//
+// Surfaces in-flight ProfileChangeRequest rows for this employee. HR sees
+// the actionable list at the top so a manager opening a profile during
+// review prep knows what's about to change (a name correction, an NIN
+// update). For the owner, this is a "your pending requests" reminder.
+//
+// The full HR action surface (approve/reject) lives at
+// /admin/profile-requests — this strip just announces and links.
+
+const FIELD_LABEL: Record<string, string> = {
+  firstName:     'First Name',
+  lastName:      'Last Name',
+  phone:         'Phone',
+  jobTitle:      'Job Title',
+  grade:         'Grade',
+  branch:        'Branch',
+  nin:           'NIN',
+  bvn:           'BVN',
+  tin:           'TIN',
+  pensionPFA:    'Pension PFA',
+  pensionNumber: 'Pension #',
+  nhfNumber:     'NHF #',
+};
+
+function PendingChangeRequestsSection({
+  requests,
+  isOwner,
+  isHR,
+}: {
+  requests: ProfilePayload['pendingChangeRequests'];
+  isOwner: boolean;
+  isHR:    boolean;
+}) {
+  if (requests.length === 0) return null;
+  const headline = isHR
+    ? `${requests.length} pending change request${requests.length === 1 ? '' : 's'} — awaiting HR review.`
+    : isOwner
+      ? `You have ${requests.length} pending change request${requests.length === 1 ? '' : 's'} awaiting HR.`
+      : `${requests.length} pending change request${requests.length === 1 ? '' : 's'} on this profile.`;
+
+  return (
+    <div className="space-y-3">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Send className="w-4 h-4 text-amber-500" />
+          <h4 className="text-[11px] font-bold text-amber-700 uppercase tracking-[0.2em]">Pending Changes</h4>
+        </div>
+        {isHR && (
+          <a
+            href="/admin/profile-requests"
+            className="text-[10px] font-bold text-indigo-600 hover:text-indigo-700 uppercase tracking-widest"
+          >
+            Review all →
+          </a>
+        )}
+      </div>
+
+      <div className="p-3 bg-amber-50 border border-amber-100 rounded-xl text-[12px] font-bold text-amber-700">
+        {headline}
+      </div>
+
+      <div className="space-y-2">
+        {requests.map(r => (
+          <div key={r.id} className="p-3 bg-white border border-slate-200 rounded-xl space-y-2">
+            <div className="flex items-center justify-between gap-3">
+              <div className="text-[11px] font-bold text-slate-900">
+                {FIELD_LABEL[r.field] ?? r.field}
+              </div>
+              <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest whitespace-nowrap">
+                {formatDate(r.createdAt)} · {r.requestedBy.name}
+              </div>
+            </div>
+            <div className="flex items-center gap-2 text-[11px]">
+              <span className="px-2 py-0.5 bg-slate-100 text-slate-600 rounded font-mono truncate max-w-[40%]">
+                {r.currentValue ?? '—'}
+              </span>
+              <span className="text-slate-400">→</span>
+              <span className="px-2 py-0.5 bg-amber-50 text-amber-700 border border-amber-200 rounded font-mono font-bold truncate max-w-[40%]">
+                {r.proposedValue ?? '(clear)'}
+              </span>
+            </div>
+            <div className="text-[10px] text-slate-500 italic leading-snug">{r.reason}</div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
@@ -1336,19 +1509,12 @@ function UploadForm({
   return (
     <form onSubmit={handleSubmit} className="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-3">
       <div className="grid grid-cols-2 gap-3">
-        <div className="space-y-1.5">
-          <label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Type</label>
-          <select
-            aria-label="Document type"
-            value={kind}
-            onChange={(e) => setKind(e.target.value)}
-            className="w-full h-[40px] bg-white border border-slate-200 rounded-lg px-3 text-[12px] font-bold outline-none focus:border-indigo-500"
-          >
-            {Object.entries(KIND_LABEL).map(([code, label]) => (
-              <option key={code} value={code}>{label}</option>
-            ))}
-          </select>
-        </div>
+        <Select
+          label="Type"
+          value={kind}
+          onChange={setKind}
+          options={Object.entries(KIND_LABEL).map(([code, label]) => ({ label, value: code }))}
+        />
         <div className="space-y-1.5">
           <label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">File (max 4 MB)</label>
           <input
