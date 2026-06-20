@@ -110,7 +110,23 @@ export const GET = withAuth(async (_req, session, context) => {
         department: {
           select: {
             id: true, code: true, name: true,
-            hub: { select: { id: true, code: true, name: true } },
+            // Department manager → reports-to candidate. Same select shape
+            // as employee-summary so the client can reuse the chip atom.
+            manager: {
+              select: {
+                id: true, staffId: true, firstName: true, lastName: true, jobTitle: true,
+              },
+            },
+            hub: {
+              select: {
+                id: true, code: true, name: true,
+                manager: {
+                  select: {
+                    id: true, staffId: true, firstName: true, lastName: true, jobTitle: true,
+                  },
+                },
+              },
+            },
           },
         },
         user: {
@@ -122,7 +138,58 @@ export const GET = withAuth(async (_req, session, context) => {
         teamMemberships: {
           select: {
             id: true, role: true, joinedAt: true,
-            team: { select: { id: true, code: true, name: true } },
+            team: {
+              select: {
+                id: true, code: true, name: true,
+                // Team manager → another reports-to candidate. Often the
+                // same person as department manager, deduped client-side.
+                manager: {
+                  select: {
+                    id: true, staffId: true, firstName: true, lastName: true, jobTitle: true,
+                  },
+                },
+              },
+            },
+          },
+        },
+        // Things THIS employee manages — used to compute the direct
+        // reports list. Caps on each to avoid pulling the whole org
+        // if someone manages a 200-person department.
+        hubsManaged: {
+          select: {
+            id: true,
+            departments: {
+              select: {
+                id: true,
+                employees: {
+                  where:   { status: 'ACTIVE', id: { not: id } },
+                  take:    20,
+                  select:  { id: true, staffId: true, firstName: true, lastName: true, jobTitle: true },
+                },
+              },
+            },
+          },
+        },
+        deptsManaged: {
+          select: {
+            id: true,
+            employees: {
+              where:   { status: 'ACTIVE', id: { not: id } },
+              take:    20,
+              select:  { id: true, staffId: true, firstName: true, lastName: true, jobTitle: true },
+            },
+          },
+        },
+        teamsLed: {
+          select: {
+            id: true,
+            members: {
+              where:   { employee: { status: 'ACTIVE', id: { not: id } } },
+              take:    20,
+              select: {
+                employee: { select: { id: true, staffId: true, firstName: true, lastName: true, jobTitle: true } },
+              },
+            },
           },
         },
         // Salary structures: pull the current active one PLUS the trailing
@@ -482,6 +549,75 @@ export const GET = withAuth(async (_req, session, context) => {
         ...e,
         timestamp: e.timestamp.toISOString(),
       }));
+
+    // ── Org chart (reports-to + direct reports) ──────────────────
+    // Reports-to is the union of department manager + every team
+    // manager for teams this employee is in. Same person often shows
+    // up multiple times across axes — dedupe by id and tag each chip
+    // with the relationship label so the modal can show "Department
+    // manager" vs "Team lead — Engineering".
+    interface OrgChip {
+      id:           string;
+      staffId:      string;
+      firstName:    string;
+      lastName:     string;
+      jobTitle:     string;
+      relationship: string;
+    }
+    const reportsToMap = new Map<string, OrgChip>();
+    const deptManager = employee.department?.manager;
+    if (deptManager && deptManager.id !== id) {
+      reportsToMap.set(deptManager.id, {
+        ...deptManager,
+        relationship: `Department · ${employee.department!.name}`,
+      });
+    }
+    for (const tm of employee.teamMemberships) {
+      const teamMgr = tm.team.manager;
+      if (teamMgr && teamMgr.id !== id && !reportsToMap.has(teamMgr.id)) {
+        reportsToMap.set(teamMgr.id, {
+          ...teamMgr,
+          relationship: `Team · ${tm.team.name}`,
+        });
+      }
+    }
+    // Hub manager is the catch-all — only surface when no other
+    // reports-to was identified, since most people don't think of
+    // their hub head as their direct manager.
+    const hubMgr = employee.department?.hub?.manager;
+    if (reportsToMap.size === 0 && hubMgr && hubMgr.id !== id) {
+      reportsToMap.set(hubMgr.id, {
+        ...hubMgr,
+        relationship: `Hub · ${employee.department!.hub!.name}`,
+      });
+    }
+
+    // Direct reports: employees in any dept this person manages, plus
+    // members of any team they lead, plus employees in any hub's
+    // departments they manage (transitively). Dedupe by id — anyone
+    // who's in multiple groups appears once.
+    const directReportsMap = new Map<string, OrgChip>();
+    const addReport = (emp: { id: string; staffId: string; firstName: string; lastName: string; jobTitle: string }, relationship: string) => {
+      if (directReportsMap.has(emp.id)) return;
+      directReportsMap.set(emp.id, { ...emp, relationship });
+    };
+    for (const d of employee.deptsManaged) {
+      for (const e of d.employees) addReport(e, 'Department report');
+    }
+    for (const t of employee.teamsLed) {
+      for (const m of t.members) addReport(m.employee, 'Team member');
+    }
+    for (const h of employee.hubsManaged) {
+      for (const d of h.departments) {
+        for (const e of d.employees) addReport(e, 'Hub report');
+      }
+    }
+
+    const orgChart = {
+      reportsTo:     Array.from(reportsToMap.values()).slice(0, 6),
+      directReports: Array.from(directReportsMap.values()).slice(0, 12),
+      directReportsTotal: directReportsMap.size,
+    };
     const compliance = showCompliance
       ? {
           nin:           employee.nin,
@@ -592,6 +728,7 @@ export const GET = withAuth(async (_req, session, context) => {
       attendanceSummary,
       performanceSummary,
       pendingChangeRequests,
+      orgChart,
 
       // Activity timeline: HR sees everything; owners see their own
       // profile's events. Anyone else gets an empty array — we still

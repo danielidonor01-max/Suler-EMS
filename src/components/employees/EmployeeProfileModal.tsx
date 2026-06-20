@@ -33,6 +33,7 @@ import { Modal } from '../common/Modal';
 import { useApi } from '@/lib/api/use-api';
 import { apiMutate } from '@/lib/api/fetcher';
 import { Select } from '@/components/forms/Select';
+import { useEmployeeProfile } from '@/context/EmployeeProfileContext';
 
 interface ProfilePayload {
   id: string;
@@ -125,6 +126,26 @@ interface ProfilePayload {
     createdAt:     string;
     requestedBy:   { id: string; name: string };
   }>;
+
+  orgChart: {
+    reportsTo: Array<{
+      id:           string;
+      staffId:      string;
+      firstName:    string;
+      lastName:     string;
+      jobTitle:     string;
+      relationship: string;
+    }>;
+    directReports: Array<{
+      id:           string;
+      staffId:      string;
+      firstName:    string;
+      lastName:     string;
+      jobTitle:     string;
+      relationship: string;
+    }>;
+    directReportsTotal: number;
+  };
 
   recentPayslips: Array<{
     id:              string;
@@ -356,6 +377,13 @@ function ViewBlock({
           isOwner={profile.capabilities.canEditSelf}
           isHR={profile.capabilities.canEdit}
         />
+      )}
+
+      {/* Org chart — reports-to + direct reports. Renders only when at
+          least one relationship is known. Chips call into the global
+          EmployeeProfileContext directly, same as EmployeeChip. */}
+      {(profile.orgChart.reportsTo.length > 0 || profile.orgChart.directReports.length > 0) && (
+        <OrgChartSection orgChart={profile.orgChart} />
       )}
 
       {/* Employment */}
@@ -1198,6 +1226,100 @@ function RecentPayslipsSection({
         ))}
       </div>
     </div>
+  );
+}
+
+// ─── Org chart ───────────────────────────────────────────────────────────────
+//
+// Reports-to (managers above this person) + direct reports (people they
+// manage). Each chip is clickable when the parent passes
+// onEmployeeClick, which re-targets the modal at the clicked person.
+// Without that callback, chips render as plain non-interactive avatars
+// — same surface, no navigation.
+
+function OrgChartSection({
+  orgChart,
+}: {
+  orgChart: ProfilePayload['orgChart'];
+}) {
+  const { reportsTo, directReports, directReportsTotal } = orgChart;
+  const hidden = Math.max(0, directReportsTotal - directReports.length);
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center gap-2">
+        <Building2 className="w-4 h-4 text-slate-400" />
+        <h4 className="text-[11px] font-bold text-slate-400 uppercase tracking-[0.2em]">Org Chart</h4>
+      </div>
+
+      {reportsTo.length > 0 && (
+        <div className="space-y-2">
+          <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+            Reports to ({reportsTo.length})
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+            {reportsTo.map(p => (
+              <OrgChip key={p.id} person={p} />
+            ))}
+          </div>
+        </div>
+      )}
+
+      {directReports.length > 0 && (
+        <div className="space-y-2">
+          <div className="flex items-center justify-between">
+            <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+              Direct reports ({directReportsTotal})
+            </div>
+            {hidden > 0 && (
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                +{hidden} more not shown
+              </span>
+            )}
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+            {directReports.map(p => (
+              <OrgChip key={p.id} person={p} />
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function OrgChip({
+  person,
+}: {
+  person: ProfilePayload['orgChart']['directReports'][number];
+}) {
+  // Re-targets this very modal via the global profile context — same
+  // navigation surface EmployeeChip uses, so the experience is
+  // consistent across the app.
+  const { openProfile } = useEmployeeProfile();
+  const initials = `${person.firstName[0] ?? ''}${person.lastName[0] ?? ''}`.toUpperCase();
+  const fullName = `${person.firstName} ${person.lastName}`;
+
+  return (
+    <button
+      type="button"
+      onClick={() => openProfile(person.id)}
+      aria-label={`Open ${fullName}'s profile`}
+      className="text-left transition-transform hover:-translate-y-px hover:shadow-sm rounded-xl outline-none focus-visible:ring-2 focus-visible:ring-indigo-300"
+    >
+      <div className="flex items-center gap-3 p-2.5 bg-slate-50 border border-slate-200 rounded-xl">
+        <div className="w-9 h-9 rounded-lg bg-white border border-slate-200 flex items-center justify-center text-[10px] font-black text-slate-500 shrink-0">
+          {initials}
+        </div>
+        <div className="min-w-0 flex-1">
+          <div className="text-[12px] font-bold text-slate-900 truncate">{fullName}</div>
+          <div className="text-[10px] text-slate-500 truncate">{person.jobTitle}</div>
+          <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-0.5 truncate">
+            {person.relationship}
+          </div>
+        </div>
+      </div>
+    </button>
   );
 }
 
