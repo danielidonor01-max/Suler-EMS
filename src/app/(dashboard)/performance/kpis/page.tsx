@@ -11,6 +11,10 @@ import { useAccess } from '@/context/AccessContext';
 import { MetricCard } from '@/components/dashboard/MetricCard';
 import { EmployeeChip } from '@/components/employees/EmployeeChip';
 import { Modal } from '@/components/common/Modal';
+import { useConfirm } from '@/components/common/ConfirmDialog';
+import { useToast } from '@/components/common/ToastContext';
+import { Select } from '@/components/forms/Select';
+import { DatePicker } from '@/components/forms/DatePicker';
 
 interface Measurement {
   id: string;
@@ -215,6 +219,8 @@ function KPICard({
   onChanged: () => void;
 }) {
   const tone = STATUS_TONE[kpi.status] ?? STATUS_TONE.ACTIVE;
+  const confirm = useConfirm();
+  const { addToast } = useToast();
   const latest = kpi.measurements[0]?.actualValue ?? null;
   const pct = progressPct(latest, kpi.target);
 
@@ -224,13 +230,18 @@ function KPICard({
   const sparkMax = Math.max(kpi.target, ...sparkData.map(m => m.actualValue), 1);
 
   const handleDelete = async () => {
-    if (!confirm(`Delete KPI "${kpi.title}"? All measurements will also be removed.`)) return;
+    const ok = await confirm({
+      title:        `Delete KPI "${kpi.title}"?`,
+      message:      'All measurements will also be removed. This cannot be undone.',
+      confirmLabel: 'Delete',
+      tone:         'danger',
+    });
+    if (!ok) return;
     try {
       await apiMutate(`/api/performance/kpis/${kpi.id}`, 'DELETE');
       onChanged();
     } catch (err) {
-      // eslint-disable-next-line no-alert
-      alert(err instanceof Error ? err.message : 'Delete failed');
+      addToast(err instanceof Error ? err.message : 'Delete failed', 'ERROR');
     }
   };
 
@@ -440,35 +451,29 @@ function KPIFormModal({
               className="w-full h-[44px] bg-slate-50 border border-slate-200 rounded-xl px-3 text-[13px] outline-none focus:border-indigo-500"
             />
           </div>
-          <div className="space-y-1.5">
-            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Frequency</label>
-            <select
-              value={frequency}
-              onChange={(e) => setFrequency(e.target.value as any)}
-              aria-label="Frequency"
-              className="w-full h-[44px] bg-slate-50 border border-slate-200 rounded-xl px-3 text-[13px] font-bold outline-none focus:border-indigo-500"
-            >
-              <option value="WEEKLY">Weekly</option>
-              <option value="MONTHLY">Monthly</option>
-              <option value="QUARTERLY">Quarterly</option>
-              <option value="ANNUAL">Annual</option>
-            </select>
-          </div>
+          <Select
+            label="Frequency"
+            value={frequency}
+            onChange={(val) => setFrequency(val as any)}
+            options={[
+              { label: 'Weekly', value: 'WEEKLY' },
+              { label: 'Monthly', value: 'MONTHLY' },
+              { label: 'Quarterly', value: 'QUARTERLY' },
+              { label: 'Annual', value: 'ANNUAL' }
+            ]}
+          />
         </div>
         {editing && (
-          <div className="space-y-1.5">
-            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Status</label>
-            <select
-              value={status}
-              onChange={(e) => setStatus(e.target.value as any)}
-              aria-label="Status"
-              className="w-full h-[44px] bg-slate-50 border border-slate-200 rounded-xl px-3 text-[13px] font-bold outline-none focus:border-indigo-500"
-            >
-              <option value="ACTIVE">Active</option>
-              <option value="PAUSED">Paused</option>
-              <option value="ARCHIVED">Archived</option>
-            </select>
-          </div>
+          <Select
+            label="Status"
+            value={status}
+            onChange={(val) => setStatus(val as any)}
+            options={[
+              { label: 'Active', value: 'ACTIVE' },
+              { label: 'Paused', value: 'PAUSED' },
+              { label: 'Archived', value: 'ARCHIVED' }
+            ]}
+          />
         )}
         {error && (
           <div className="flex items-start gap-2 p-3 bg-rose-50 border border-rose-100 rounded-xl">
@@ -553,26 +558,16 @@ function RecordMeasurementModal({
         </div>
 
         <div className="grid grid-cols-2 gap-4">
-          <div className="space-y-1.5">
-            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Period Start</label>
-            <input
-              type="date" required
-              value={periodStart}
-              onChange={(e) => setPeriodStart(e.target.value)}
-              aria-label="Period start"
-              className="w-full h-[44px] bg-slate-50 border border-slate-200 rounded-xl px-3 text-[13px] font-medium outline-none focus:border-indigo-500"
-            />
-          </div>
-          <div className="space-y-1.5">
-            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Period End</label>
-            <input
-              type="date" required
-              value={periodEnd}
-              onChange={(e) => setPeriodEnd(e.target.value)}
-              aria-label="Period end"
-              className="w-full h-[44px] bg-slate-50 border border-slate-200 rounded-xl px-3 text-[13px] font-medium outline-none focus:border-indigo-500"
-            />
-          </div>
+          <DatePicker
+            label="Period Start"
+            value={periodStart}
+            onChange={setPeriodStart}
+          />
+          <DatePicker
+            label="Period End"
+            value={periodEnd}
+            onChange={setPeriodEnd}
+          />
         </div>
 
         <div className="space-y-1.5">

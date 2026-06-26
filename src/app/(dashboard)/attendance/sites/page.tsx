@@ -9,6 +9,8 @@ import { useApi } from '@/lib/api/use-api';
 import { apiMutate } from '@/lib/api/fetcher';
 import { useAccess } from '@/context/AccessContext';
 import { Modal } from '@/components/common/Modal';
+import { Select } from '@/components/forms/Select';
+import { useToast } from '@/components/common/ToastContext';
 
 interface Hub {
   id: string;
@@ -37,6 +39,7 @@ export default function WorkSitesPage() {
   const [createOpen, setCreateOpen]   = useState(false);
   const [editing,    setEditing]      = useState<WorkSite | null>(null);
   const [showAll,    setShowAll]      = useState(false);
+  const { addToast } = useToast();
 
   const { data: sites = [], refresh } = useApi<WorkSite[]>(
     `/api/work-sites${showAll ? '?includeInactive=true' : ''}`,
@@ -62,8 +65,7 @@ export default function WorkSitesPage() {
       await apiMutate(`/api/work-sites/${site.id}`, 'PATCH', { isActive: !site.isActive });
       await refresh();
     } catch (err) {
-      // eslint-disable-next-line no-alert
-      alert(err instanceof Error ? err.message : 'Update failed');
+      addToast(err instanceof Error ? err.message : 'Update failed', 'ERROR');
     }
   };
 
@@ -376,19 +378,15 @@ function SiteFormModal({
           </p>
         </Field>
 
-        <Field label="Hub (optional)">
-          <select
-            value={hubId}
-            onChange={(e) => setHubId(e.target.value)}
-            aria-label="Hub"
-            className="w-full h-[44px] bg-slate-50 border border-slate-200 rounded-xl px-3 text-[13px] outline-none focus:border-indigo-500"
-          >
-            <option value="">— None —</option>
-            {hubs.map(h => (
-              <option key={h.id} value={h.id}>{h.name} ({h.code})</option>
-            ))}
-          </select>
-        </Field>
+        <Select
+          label="Hub (optional)"
+          value={hubId}
+          onChange={setHubId}
+          options={[
+            { label: '— None —', value: '' },
+            ...hubs.map(h => ({ label: `${h.name} (${h.code})`, value: h.id }))
+          ]}
+        />
 
         {error && (
           <div className="flex items-start gap-2 p-3 bg-rose-50 border border-rose-100 rounded-xl">

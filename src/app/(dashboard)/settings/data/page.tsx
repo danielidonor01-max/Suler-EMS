@@ -12,6 +12,8 @@ import { apiMutate } from '@/lib/api/fetcher';
 import { useWorkforce } from '@/context/WorkforceContext';
 import { usePayroll } from '@/context/PayrollContext';
 import { useFinance } from '@/context/FinanceContext';
+import { useConfirm } from '@/components/common/ConfirmDialog';
+import { useToast } from '@/components/common/ToastContext';
 
 interface Backup {
   id: string;
@@ -59,6 +61,8 @@ function DataManagementInner() {
   const { employees } = useWorkforce();
   const { payrollRuns } = usePayroll();
   const { expenditures } = useFinance();
+  const confirm = useConfirm();
+  const { addToast } = useToast();
 
   const totalSize = backups.reduce((sum, b) => sum + b.sizeBytes, 0);
   const lastBackup = backups[0];
@@ -82,7 +86,13 @@ function DataManagementInner() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Delete this backup? Download it first if you want a copy.')) return;
+    const ok = await confirm({
+      title:        'Delete this backup?',
+      message:      'Download it first if you want a copy — this cannot be undone.',
+      confirmLabel: 'Delete',
+      tone:         'danger',
+    });
+    if (!ok) return;
     try {
       await apiMutate(`/api/backups/${id}`, 'DELETE');
       await refresh();
@@ -96,7 +106,7 @@ function DataManagementInner() {
   // per-module export. These remain useful for analysts who want a
   // single module as a spreadsheet.
   const exportCsv = (rows: any[], filename: string) => {
-    if (!rows.length) { alert('Nothing to export.'); return; }
+    if (!rows.length) { addToast('Nothing to export.', 'INFO'); return; }
     const headers = Object.keys(rows[0]);
     const escape = (v: unknown) => {
       if (v == null) return '';

@@ -16,6 +16,24 @@ export function useRealtime() {
   const [lastAttendance, setLastAttendance] = useState<any>(null);
   const [connectionStatus, setConnectionStatus] = useState<'connecting' | 'connected' | 'disconnected'>('disconnected');
 
+  // Hydrate initial notification list on mount so the unread badge is
+  // correct on first render — SSE only delivers new pushes, not the
+  // history. We deliberately don't poll this; SSE keeps the list in
+  // sync after the first read.
+  useEffect(() => {
+    if (!session?.user) return;
+    let cancelled = false;
+    fetch('/api/notifications', { credentials: 'include' })
+      .then(r => r.json())
+      .then(body => {
+        if (cancelled) return;
+        const initial = (body?.data ?? body) as NotificationModel[];
+        if (Array.isArray(initial)) setNotifications(initial);
+      })
+      .catch(() => { /* badge stays at zero until SSE delivers */ });
+    return () => { cancelled = true; };
+  }, [session]);
+
   useEffect(() => {
     if (!session?.user) return;
 
@@ -85,12 +103,15 @@ export function useRealtime() {
     };
   }, [session]);
 
+  const unreadCount = notifications.filter(n => n.status !== 'READ').length;
+
   return {
     notifications,
+    unreadCount,
     lastNotification,
     lastCommunication,
     lastAttendance,
     setNotifications,
-    connectionStatus
+    connectionStatus,
   };
 }

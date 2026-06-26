@@ -1,6 +1,6 @@
 "use client";
 
-import React from 'react';
+import React, { useState } from 'react';
 import { CheckCircle2, Clock, AlertCircle, Ban, History, ShieldCheck } from 'lucide-react';
 import { WorkflowInstance, WorkflowDefinition, WorkflowAction } from '@/modules/workflow/domain/workflow.types';
 import { useAccess } from '@/context/AccessContext';
@@ -83,23 +83,78 @@ export function WorkflowActionBar({
     );
   }
 
+  // When the user clicks a reject action we replace the button row with
+  // an inline reason form. Inline is preferable to a separate modal here
+  // because this component already lives inside detail surfaces (leave
+  // detail, payroll run detail, etc.) where stacking another centred
+  // modal on top would feel heavy.
+  const [rejectingAction, setRejectingAction] = useState<WorkflowAction | null>(null);
+  const [rejectReason, setRejectReason] = useState('');
+
+  if (rejectingAction) {
+    const trans = definition.transitions[rejectingAction];
+    return (
+      <div className="p-4 bg-rose-50/50 border border-rose-100 rounded-xl space-y-3">
+        <div className="flex items-center gap-2">
+          <Ban className="w-3.5 h-3.5 text-rose-500" />
+          <span className="text-[10px] font-bold text-rose-700 uppercase tracking-widest">
+            {trans.label} — reason
+          </span>
+        </div>
+        <textarea
+          autoFocus
+          value={rejectReason}
+          onChange={(e) => setRejectReason(e.target.value)}
+          rows={2}
+          placeholder="Briefly explain why this is being rejected. The requester will see this."
+          aria-label="Rejection reason"
+          className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-[12px] outline-none focus:border-rose-500 resize-none"
+        />
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => { setRejectingAction(null); setRejectReason(''); }}
+            className="flex-1 h-9 bg-white border border-slate-200 text-slate-700 rounded-lg text-[10px] font-bold uppercase tracking-widest hover:bg-slate-50"
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            disabled={!rejectReason.trim()}
+            onClick={() => {
+              onAction(rejectingAction, rejectReason.trim());
+              setRejectingAction(null);
+              setRejectReason('');
+            }}
+            className="flex-1 h-9 bg-rose-600 hover:bg-rose-700 text-white rounded-lg text-[10px] font-bold uppercase tracking-widest disabled:opacity-60"
+          >
+            Confirm Rejection
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-wrap gap-3">
       {availableActions.map(action => {
         const trans = definition.transitions[action];
         const isReject = action.toLowerCase().includes('reject');
-        
+
         return (
           <button
             key={action}
+            type="button"
             onClick={() => {
-              const comment = isReject ? prompt(`Enter reason for rejection:`) : undefined;
-              if (isReject && !comment) return;
-              onAction(action, comment || undefined);
+              if (isReject) {
+                setRejectingAction(action);
+              } else {
+                onAction(action);
+              }
             }}
             className={`flex items-center gap-2.5 px-6 py-3 rounded-xl text-[11px] font-black uppercase tracking-wider transition-all shadow-md active:scale-[0.98] border ${
-              isReject 
-                ? 'bg-white text-rose-600 border-rose-100 hover:bg-rose-50' 
+              isReject
+                ? 'bg-white text-rose-600 border-rose-100 hover:bg-rose-50'
                 : 'bg-slate-900 text-white border-transparent hover:bg-black'
             }`}
           >

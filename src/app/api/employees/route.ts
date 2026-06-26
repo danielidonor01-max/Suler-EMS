@@ -41,7 +41,10 @@ export const POST = withAuth(async (req, session) => {
 
   try {
     const body = await req.json();
-    const { name, email, phone, role: roleName, hub, department, designation, startDate } = body;
+    const {
+      name, email, phone, role: roleName, hub, department, designation, startDate,
+      basicSalary, housingAllowance, transportAllowance,
+    } = body;
 
     // ── Validation ────────────────────────────────────────────────────────────
     if (!name || !email || !roleName || !hub || !department || !designation) {
@@ -120,6 +123,34 @@ export const POST = withAuth(async (req, session) => {
         roleId: roleRecord.id,
         employeeId: employee.id,
         isActive: true,
+      },
+    });
+
+    // ── Seed a baseline SalaryStructure ───────────────────────────────────────
+    // Without this, the employee is silently skipped by every payroll run
+    // (createDraftRun does `if (!salary) continue`). HR can — and should —
+    // edit the structure at /payroll/salary-structures before the next run,
+    // but providing zero defaults means a freshly-hired employee won't
+    // disappear from payroll just because nobody remembered to set their
+    // comp first. When the caller supplies real numbers in the POST body
+    // we use them; otherwise we land a flagged "PENDING_COMP" structure
+    // with zero everywhere so the gap is visible (Compensation section
+    // surfaces the zero amounts, salary-structures page shows it inline).
+    const basic     = Number(basicSalary)        || 0;
+    const housing   = Number(housingAllowance)   || 0;
+    const transport = Number(transportAllowance) || 0;
+    await prisma.salaryStructure.create({
+      data: {
+        employeeId:         employee.id,
+        effectiveDate:      startDate ? new Date(startDate) : new Date(),
+        isActive:           true,
+        basicSalary:        basic,
+        housingAllowance:   housing,
+        transportAllowance: transport,
+        changedById:        session.user?.id ?? user.id,
+        reason: (basic + housing + transport) > 0
+          ? 'Initial structure at onboarding.'
+          : 'Initial placeholder — HR to set amounts.',
       },
     });
 

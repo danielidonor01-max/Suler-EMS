@@ -10,6 +10,8 @@ import { useApi } from '@/lib/api/use-api';
 import { apiMutate } from '@/lib/api/fetcher';
 import { EmployeeChip } from '@/components/employees/EmployeeChip';
 import { RouteGuard } from '@/components/common/RouteGuard';
+import { Select } from '@/components/forms/Select';
+import { useToast } from '@/components/common/ToastContext';
 
 interface CycleDetail {
   id: string;
@@ -72,6 +74,7 @@ function CycleDetailInner() {
   const [bulkBusy, setBulkBusy] = useState(false);
   const [bulkError, setBulkError] = useState<string | null>(null);
   const [updating, setUpdating] = useState<string | null>(null);
+  const { addToast } = useToast();
 
   const reviewerOptions = useMemo(
     () => reviewers.map(r => ({
@@ -93,8 +96,7 @@ function CycleDetailInner() {
       });
       await refresh();
     } catch (err) {
-      // eslint-disable-next-line no-alert
-      alert(err instanceof Error ? err.message : 'Could not update reviewer');
+      addToast(err instanceof Error ? err.message : 'Could not update reviewer', 'ERROR');
     } finally {
       setUpdating(null);
     }
@@ -189,17 +191,13 @@ function CycleDetailInner() {
                 <span className="text-[12px] font-bold text-indigo-900">
                   {selectedIds.size} selected
                 </span>
-                <select
+                <Select
+                  variant="minimal"
                   value={bulkReviewerId}
-                  onChange={(e) => setBulkReviewerId(e.target.value)}
-                  aria-label="Bulk reviewer"
-                  className="h-9 bg-white border border-indigo-200 rounded-lg px-3 text-[12px] font-medium outline-none focus:border-indigo-500 flex-1 max-w-[300px]"
-                >
-                  <option value="">— Pick a reviewer —</option>
-                  {reviewerOptions.map(opt => (
-                    <option key={opt.value} value={opt.value}>{opt.label}</option>
-                  ))}
-                </select>
+                  onChange={setBulkReviewerId}
+                  options={[{ label: '— Pick a reviewer —', value: '' }, ...reviewerOptions]}
+                  className="w-[220px] bg-white border border-indigo-200 rounded-[12px]"
+                />
                 <button
                   type="button"
                   onClick={bulkAssign}
@@ -276,20 +274,16 @@ function CycleDetailInner() {
                               {r.reviewer?.name ?? <span className="text-slate-400 italic">none</span>}
                             </span>
                           ) : (
-                            <select
+                            <Select
+                              variant="minimal"
                               value={r.reviewer?.id ?? ''}
-                              onChange={(e) => assignReviewer(r.id, e.target.value)}
+                              onChange={(val) => assignReviewer(r.id, val)}
                               disabled={updating === r.id}
-                              aria-label={`Reviewer for ${r.employee.firstName} ${r.employee.lastName}`}
-                              className={`h-8 bg-white border rounded-lg px-2 text-[12px] font-medium outline-none focus:border-indigo-500 max-w-[220px] ${
+                              options={[{ label: '— Pick a reviewer —', value: '' }, ...reviewerOptions]}
+                              className={`w-[180px] bg-white border rounded-[12px] ${
                                 r.reviewer ? 'border-slate-200' : 'border-amber-300 bg-amber-50'
                               }`}
-                            >
-                              <option value="">— Unassigned —</option>
-                              {reviewerOptions.map(opt => (
-                                <option key={opt.value} value={opt.value}>{opt.label}</option>
-                              ))}
-                            </select>
+                            />
                           )}
                         </td>
                         <td className="py-3">

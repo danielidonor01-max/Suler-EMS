@@ -10,6 +10,7 @@ import { useAccess } from '@/context/AccessContext';
 import { MetricCard } from '@/components/dashboard/MetricCard';
 import { EmployeeChip } from '@/components/employees/EmployeeChip';
 import { Modal } from '@/components/common/Modal';
+import { useConfirm } from '@/components/common/ConfirmDialog';
 
 interface ReviewRow {
   id: string;
@@ -232,6 +233,8 @@ function ReviewModal({
     setError(null);
   }, [review]);
 
+  const confirm = useConfirm();
+
   if (!review) return null;
 
   const isReviewerView = tab === 'toConduct' || tab === 'all';
@@ -259,7 +262,13 @@ function ReviewModal({
 
   const submit = async () => {
     if (!rating) { setError('Set an overall rating before submitting.'); return; }
-    if (!confirm('Submit this review? The subject employee will be notified and able to read it.')) return;
+    const ok = await confirm({
+      title:        'Submit this review?',
+      message:      'The subject employee will be notified and able to read it.',
+      confirmLabel: 'Submit',
+      tone:         'warning',
+    });
+    if (!ok) return;
     setBusy('submit'); setError(null);
     try {
       // Save current edits first (so they don't get lost if the user

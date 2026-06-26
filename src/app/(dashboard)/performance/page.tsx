@@ -10,8 +10,11 @@ import { useApi } from '@/lib/api/use-api';
 import { apiMutate } from '@/lib/api/fetcher';
 import { useAccess } from '@/context/AccessContext';
 import { Modal } from '@/components/common/Modal';
+import { useConfirm } from '@/components/common/ConfirmDialog';
 import { MetricCard } from '@/components/dashboard/MetricCard';
 import { EmployeeChip } from '@/components/employees/EmployeeChip';
+import { Select } from '@/components/forms/Select';
+import { DatePicker } from '@/components/forms/DatePicker';
 
 // ─── API types ───────────────────────────────────────────────────────────────
 
@@ -228,6 +231,7 @@ function GoalCard({
 }) {
   const tone = STATUS_TONE[goal.isOverdue && goal.status === 'ACTIVE' ? 'OVERDUE' : goal.status] ?? STATUS_TONE.ACTIVE;
   const [updating, setUpdating] = useState(false);
+  const confirm = useConfirm();
 
   const adjustProgress = async (delta: number) => {
     const next = Math.max(0, Math.min(100, goal.progressPercent + delta));
@@ -251,7 +255,13 @@ function GoalCard({
   };
 
   const handleDelete = async () => {
-    if (!confirm(`Delete goal "${goal.title}"? This cannot be undone.`)) return;
+    const ok = await confirm({
+      title:        `Delete goal "${goal.title}"?`,
+      message:      'This cannot be undone.',
+      confirmLabel: 'Delete',
+      tone:         'danger',
+    });
+    if (!ok) return;
     setUpdating(true);
     try {
       await apiMutate(`/api/performance/goals/${goal.id}`, 'DELETE');
@@ -482,47 +492,36 @@ function GoalFormModal({
         </div>
 
         <div className="grid grid-cols-2 gap-4">
-          <div className="space-y-1.5">
-            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Category</label>
-            <select
-              value={category}
-              onChange={(e) => setCategory(e.target.value as any)}
-              aria-label="Category"
-              className="w-full h-[44px] bg-slate-50 border border-slate-200 rounded-xl px-3 text-[13px] font-bold outline-none focus:border-indigo-500"
-            >
-              <option value="INDIVIDUAL">Individual</option>
-              <option value="TEAM">Team</option>
-              <option value="ORGANIZATIONAL">Organizational</option>
-            </select>
-          </div>
-          <div className="space-y-1.5">
-            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Due Date</label>
-            <input
-              type="date"
-              value={dueDate}
-              onChange={(e) => setDueDate(e.target.value)}
-              aria-label="Due date"
-              className="w-full h-[44px] bg-slate-50 border border-slate-200 rounded-xl px-3 text-[13px] font-medium outline-none focus:border-indigo-500"
-            />
-          </div>
+          <Select
+            label="Category"
+            value={category}
+            onChange={(val) => setCategory(val as any)}
+            options={[
+              { label: 'Individual', value: 'INDIVIDUAL' },
+              { label: 'Team', value: 'TEAM' },
+              { label: 'Organizational', value: 'ORGANIZATIONAL' }
+            ]}
+          />
+          <DatePicker
+            label="Due Date"
+            value={dueDate}
+            onChange={setDueDate}
+          />
         </div>
 
         {editing && (
           <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-1.5">
-              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Status</label>
-              <select
-                value={status}
-                onChange={(e) => setStatus(e.target.value as any)}
-                aria-label="Status"
-                className="w-full h-[44px] bg-slate-50 border border-slate-200 rounded-xl px-3 text-[13px] font-bold outline-none focus:border-indigo-500"
-              >
-                <option value="DRAFT">Draft</option>
-                <option value="ACTIVE">Active</option>
-                <option value="COMPLETED">Completed</option>
-                <option value="CANCELLED">Cancelled</option>
-              </select>
-            </div>
+            <Select
+              label="Status"
+              value={status}
+              onChange={(val) => setStatus(val as any)}
+              options={[
+                { label: 'Draft', value: 'DRAFT' },
+                { label: 'Active', value: 'ACTIVE' },
+                { label: 'Completed', value: 'COMPLETED' },
+                { label: 'Cancelled', value: 'CANCELLED' }
+              ]}
+            />
             <div className="space-y-1.5">
               <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Progress: {progress}%</label>
               <input

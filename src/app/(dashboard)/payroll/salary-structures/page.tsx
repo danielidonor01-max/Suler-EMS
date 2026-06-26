@@ -9,7 +9,10 @@ import { useApi } from '@/lib/api/use-api';
 import { apiMutate } from '@/lib/api/fetcher';
 import { useAccess } from '@/context/AccessContext';
 import { Modal } from '@/components/common/Modal';
+import { DatePicker } from '@/components/forms/DatePicker';
 import { EmployeeChip } from '@/components/employees/EmployeeChip';
+import { useConfirm } from '@/components/common/ConfirmDialog';
+import { useToast } from '@/components/common/ToastContext';
 
 interface Employee {
   id: string;
@@ -168,6 +171,8 @@ function EmployeeDetailModal({
   const { data: structures = [], refresh } = useApi<SalaryStructure[]>(
     employee ? `/api/payroll/salary-structures?employeeId=${employee.id}` : null,
   );
+  const confirm = useConfirm();
+  const { addToast } = useToast();
 
   if (!employee) return null;
 
@@ -175,13 +180,18 @@ function EmployeeDetailModal({
   const history = structures.filter(s => !s.isActive);
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Delete this salary structure? Active structures cannot be deleted.')) return;
+    const ok = await confirm({
+      title:        'Delete this salary structure?',
+      message:      'Active structures cannot be deleted. Use the form to create a new one if you need to revise comp.',
+      confirmLabel: 'Delete',
+      tone:         'danger',
+    });
+    if (!ok) return;
     try {
       await apiMutate(`/api/payroll/salary-structures/${id}`, 'DELETE');
       await refresh();
     } catch (err) {
-      // eslint-disable-next-line no-alert
-      alert(err instanceof Error ? err.message : 'Delete failed');
+      addToast(err instanceof Error ? err.message : 'Delete failed', 'ERROR');
     }
   };
 
@@ -388,15 +398,11 @@ function CreateStructureModal({
     <Modal isOpen={isOpen} onClose={onClose} title="New Salary Structure" subtitle={`${employee.firstName} ${employee.lastName}`} size="md">
       <form onSubmit={handleSubmit} className="space-y-5">
         <div className="grid grid-cols-2 gap-3">
-          <Field label="Effective From">
-            <input
-              type="date" required
-              value={effectiveDate}
-              onChange={(e) => setEffectiveDate(e.target.value)}
-              aria-label="Effective date"
-              className="w-full h-[44px] bg-slate-50 border border-slate-200 rounded-xl px-3 text-[13px] font-medium outline-none focus:border-indigo-500"
-            />
-          </Field>
+          <DatePicker
+            label="Effective From"
+            value={effectiveDate}
+            onChange={setEffectiveDate}
+          />
           <Field label="Basic Salary">
             <MoneyInput value={basicSalary} onChange={setBasicSalary} />
           </Field>

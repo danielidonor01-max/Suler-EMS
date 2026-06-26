@@ -9,6 +9,7 @@ import {
 import { useApi } from '@/lib/api/use-api';
 import { apiMutate } from '@/lib/api/fetcher';
 import { useAccess } from '@/context/AccessContext';
+import { useConfirm } from '@/components/common/ConfirmDialog';
 import { MetricCard } from '@/components/dashboard/MetricCard';
 import { RouteGuard } from '@/components/common/RouteGuard';
 import { PermissionGate } from '@/components/common/PermissionGate';
@@ -78,6 +79,7 @@ export default function FinanceDashboard() {
   const { userRole, checkPermission } = useAccess();
   const isFinance = userRole === 'FINANCE_MANAGER' || userRole === 'SUPER_ADMIN';
   const canAllocate = checkPermission(Permissions.FINANCE_ALLOCATE as any).allowed;
+  const confirm = useConfirm();
 
   const [submitOpen, setSubmitOpen] = useState(false);
   const [newBudgetOpen, setNewBudgetOpen] = useState(false);
@@ -317,9 +319,14 @@ export default function FinanceDashboard() {
                           )}
                           {b.status === 'ACTIVE' && (
                             <button type="button"
-                              onClick={() => {
-                                if (!confirm(`Close "${b.name}"? No new expenditures can be submitted against it.`)) return;
-                                transitionBudget(b.id, 'CLOSE');
+                              onClick={async () => {
+                                const ok = await confirm({
+                                  title:        `Close "${b.name}"?`,
+                                  message:      'No new expenditures can be submitted against this budget after closing. Existing entries are preserved.',
+                                  confirmLabel: 'Close Period',
+                                  tone:         'warning',
+                                });
+                                if (ok) transitionBudget(b.id, 'CLOSE');
                               }}
                               disabled={busyId === b.id}
                               className="px-4 h-9 bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 rounded-lg text-[10px] font-bold uppercase tracking-widest disabled:opacity-60">
