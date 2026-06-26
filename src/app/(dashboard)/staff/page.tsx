@@ -17,7 +17,6 @@ import {
   History,
   ShieldAlert,
   UserCog,
-  ArrowRightLeft,
   XCircle,
   FileText,
   Zap,
@@ -58,11 +57,11 @@ export default function WorkforcePage() {
   const [targetEmployee, setTargetEmployee] = useState<Employee | null>(null);
   const { addToast } = useToast();
 
+  // Real CSV export — gated server-side on workforce:view. Compliance
+  // fields and bank account numbers are intentionally omitted from this
+  // operational export; payroll has a separate disbursement file.
   const handleExport = () => {
-    addToast('Generating Workforce Registry Export...', 'INFO');
-    setTimeout(() => {
-      addToast('Workforce data exported to Excel successfully.', 'SUCCESS');
-    }, 1500);
+    window.location.href = '/api/employees/export';
   };
 
   const filteredEmployees = employees.filter(emp => 
@@ -215,7 +214,8 @@ export default function WorkforcePage() {
                             </div>
                             <KebabItem icon={ExternalLink} label="View Full Dossier" onClick={() => router.push(`/staff/${row.id}`)} />
                             <KebabItem icon={UserCog} label="Edit Identity" onClick={() => handleKebabAction('EDIT', row)} />
-                            <KebabItem icon={ArrowRightLeft} label="Transfer Placement" onClick={() => addToast(`Initializing transfer protocol for [${row.name}]`, 'INFO')} />
+                            {/* Transfer Placement removed — no transfer endpoint exists; reassignments
+                                go through /admin/profile-requests where HR reviews the change. */}
                             <KebabItem icon={Zap} label="Promote Member" onClick={() => handleKebabAction('PROMOTE', row)} />
                             <KebabItem icon={ShieldAlert} label="Suspend Access" variant="danger" onClick={() => handleKebabAction('SUSPEND', row)} />
                             
