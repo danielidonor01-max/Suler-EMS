@@ -317,6 +317,28 @@ function ViewBlock({
     [profile],
   );
 
+  // Tenure: years + months since createdAt. We deliberately use the
+  // employee.createdAt, not user.createdAt — the employee record is the
+  // hire date; the user row may have been created later (or not at all
+  // for non-system staff).
+  const tenure = useMemo(() => {
+    const start = new Date(profile.createdAt);
+    const now = new Date();
+    let years = now.getFullYear() - start.getFullYear();
+    let months = now.getMonth() - start.getMonth();
+    if (months < 0) { years -= 1; months += 12; }
+    if (years < 0) return 'just hired';
+    if (years === 0 && months === 0) return 'this month';
+    if (years === 0) return `${months}mo`;
+    if (months === 0) return `${years}yr`;
+    return `${years}yr ${months}mo`;
+  }, [profile.createdAt]);
+
+  const lastLogin = profile.user?.lastLoginAt;
+  const lastLoginLabel = lastLogin
+    ? formatRelativeShort(lastLogin)
+    : null;
+
   return (
     <div className="space-y-6 animate-in">
       {/* Identity header */}
@@ -326,16 +348,33 @@ function ViewBlock({
         </div>
         <div className="flex-1 min-w-0">
           <h3 className="text-[18px] font-bold text-slate-900 tracking-tight">{profile.name}</h3>
-          <div className="flex items-center gap-2 mt-1">
+          <div className="flex items-center gap-2 mt-1 flex-wrap">
             <span className="text-[12px] font-bold text-slate-500">{profile.jobTitle}</span>
             <StatusPill status={profile.status} />
+            {profile.department && (
+              <span className="text-[10px] font-bold text-slate-500 px-2 py-0.5 bg-slate-50 border border-slate-100 rounded">
+                {profile.department.name}{profile.hub ? ` · ${profile.hub.name}` : ''}
+              </span>
+            )}
           </div>
-          <div className="flex flex-wrap items-center gap-3 mt-2 text-[11px] text-slate-500">
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-2 text-[11px] text-slate-500">
             <span className="flex items-center gap-1.5"><Mail className="w-3 h-3" />{profile.email}</span>
             {profile.phone && <span className="flex items-center gap-1.5"><Phone className="w-3 h-3" />{profile.phone}</span>}
             <span className="px-2 py-0.5 bg-slate-100 rounded text-[10px] font-bold text-slate-600 uppercase tracking-widest">
               {profile.staffId}
             </span>
+            <span className="flex items-center gap-1.5 text-slate-400">
+              <Briefcase className="w-3 h-3" />
+              {tenure}
+            </span>
+            {/* Last login is HR-only — too noisy to surface on every
+                profile view, and self-view doesn't need it either. */}
+            {profile.capabilities.canEdit && lastLoginLabel && (
+              <span className="flex items-center gap-1.5 text-slate-400">
+                <Clock className="w-3 h-3" />
+                Last seen {lastLoginLabel}
+              </span>
+            )}
           </div>
         </div>
         <div className="flex flex-col gap-2 shrink-0">
@@ -1702,18 +1741,71 @@ function DocumentsSection({ employeeId, canManage }: { employeeId: string; canMa
           {canManage && ' Click Upload to add a resume, certificate, contract, etc.'}
         </div>
       ) : (
-        <div className="space-y-2">
-          {docs.map(d => (
-            <DocumentRow
-              key={d.id}
-              employeeId={employeeId}
-              doc={d}
-              canManage={canManage}
-              onDeleted={refresh}
-            />
-          ))}
-        </div>
+        <DocumentsGrouped
+          docs={docs}
+          employeeId={employeeId}
+          canManage={canManage}
+          onChanged={refresh}
+        />
       )}
+    </div>
+  );
+}
+
+/**
+ * Group documents by kind so HR scanning for "the contract" doesn't
+ * scroll past every CV. Order is intentional — most-asked-for kinds
+ * first; anything outside the catalogue lands in OTHER.
+ */
+const DOC_KIND_ORDER: string[] = ['CONTRACT', 'ID_CARD', 'TAX_DOC', 'CERTIFICATE', 'RESUME', 'OTHER'];
+
+function DocumentsGrouped({
+  docs, employeeId, canManage, onChanged,
+}: {
+  docs: DocRow[];
+  employeeId: string;
+  canManage: boolean;
+  onChanged: () => void;
+}) {
+  const grouped = useMemo(() => {
+    const buckets = new Map<string, DocRow[]>();
+    for (const d of docs) {
+      const k = DOC_KIND_ORDER.includes(d.kind) ? d.kind : 'OTHER';
+      const arr = buckets.get(k) ?? [];
+      arr.push(d);
+      buckets.set(k, arr);
+    }
+    // Stable order: catalogue order first, then any unrecognized kinds.
+    return DOC_KIND_ORDER
+      .filter(k => buckets.has(k))
+      .map(k => ({ kind: k, items: buckets.get(k)! }));
+  }, [docs]);
+
+  return (
+    <div className="space-y-4">
+      {grouped.map(group => (
+        <div key={group.kind} className="space-y-2">
+          <div className="flex items-center gap-2">
+            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">
+              {KIND_LABEL[group.kind] ?? group.kind}
+            </span>
+            <span className="px-1.5 py-0.5 bg-slate-100 text-slate-600 text-[9px] font-bold rounded">
+              {group.items.length}
+            </span>
+          </div>
+          <div className="space-y-2">
+            {group.items.map(d => (
+              <DocumentRow
+                key={d.id}
+                employeeId={employeeId}
+                doc={d}
+                canManage={canManage}
+                onDeleted={onChanged}
+              />
+            ))}
+          </div>
+        </div>
+      ))}
     </div>
   );
 }
