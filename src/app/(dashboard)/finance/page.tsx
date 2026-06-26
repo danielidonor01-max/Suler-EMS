@@ -15,6 +15,7 @@ import { PermissionGate } from '@/components/common/PermissionGate';
 import { Permissions } from '@/modules/auth/domain/permission.model';
 import { EmployeeChip } from '@/components/employees/EmployeeChip';
 import { ExpenditureSubmitModal } from '@/components/finance/ExpenditureSubmitModal';
+import { BudgetFormModal } from '@/components/finance/BudgetFormModal';
 
 // ─── API shapes ──────────────────────────────────────────────────────────────
 
@@ -79,17 +80,27 @@ export default function FinanceDashboard() {
   const canAllocate = checkPermission(Permissions.FINANCE_ALLOCATE as any).allowed;
 
   const [submitOpen, setSubmitOpen] = useState(false);
+  const [newBudgetOpen, setNewBudgetOpen] = useState(false);
   const [rejectingId, setRejectingId] = useState<string | null>(null);
   const [rejectReason, setRejectReason] = useState('');
   const [busyId, setBusyId] = useState<string | null>(null);
   const [bannerError, setBannerError] = useState<string | null>(null);
 
-  // Two SWR feeds. Budgets are unbounded; expenditures are scoped to
-  // either the team queue (for finance) or the requester's own
-  // (everyone else).
-  const { data: budgets = [], refresh: refreshBudgets } = useApi<BudgetRow[]>(
-    '/api/finance/budgets?status=ACTIVE&includeUtilization=true',
+  // Two SWR feeds. Finance roles see DRAFT + ACTIVE budgets so they
+  // can activate fresh ones from this view; everyone else just sees
+  // ACTIVE (the ones they can actually spend against).
+  const budgetsUrl = isFinance
+    ? '/api/finance/budgets?includeUtilization=true'
+    : '/api/finance/budgets?status=ACTIVE&includeUtilization=true';
+  const { data: budgetsAll = [], refresh: refreshBudgets } = useApi<BudgetRow[]>(
+    budgetsUrl,
     { pollMs: 30_000 },
+  );
+  // Hide CLOSED + ARCHIVED from the dashboard view — the dedicated
+  // budget detail page (future) is the place for archived history.
+  const budgets = useMemo(
+    () => budgetsAll.filter(b => b.status === 'ACTIVE' || b.status === 'DRAFT'),
+    [budgetsAll],
   );
   const expScope = isFinance ? 'team' : 'mine';
   const { data: expenditures = [], refresh: refreshExp } = useApi<ExpenditureRow[]>(
@@ -135,6 +146,22 @@ export default function FinanceDashboard() {
     }
   }
 
+  // Budget-level state transition. ACTIVATE moves DRAFT → ACTIVE so it
+  // can accept expenditures; CLOSE seals an ACTIVE budget against new
+  // requests. Both gated server-side on finance:allocate.
+  async function transitionBudget(id: string, action: 'ACTIVATE' | 'CLOSE') {
+    setBusyId(id);
+    setBannerError(null);
+    try {
+      await apiMutate(`/api/finance/budgets/${id}`, 'PATCH', { action });
+      await refreshBudgets();
+    } catch (err) {
+      setBannerError(err instanceof Error ? err.message : 'Budget transition failed');
+    } finally {
+      setBusyId(null);
+    }
+  }
+
   return (
     <RouteGuard allowedRoles={['SUPER_ADMIN', 'HR_ADMIN', 'FINANCE_MANAGER', 'MANAGER', 'EMPLOYEE']}>
       <div className="section-breathing max-w-[1500px] mx-auto animate-in space-y-8">
@@ -167,6 +194,16 @@ export default function FinanceDashboard() {
                   Request Funds
                 </button>
               </PermissionGate>
+              {canAllocate && (
+                <button
+                  type="button"
+                  onClick={() => setNewBudgetOpen(true)}
+                  className="bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 flex items-center gap-2 px-5 h-11 rounded-xl text-[11px] font-bold uppercase tracking-wider transition-all"
+                >
+                  <Plus className="w-4 h-4" />
+                  New Budget
+                </button>
+              )}
               {isFinance && (
                 <Link
                   href="/finance/approvals"
@@ -263,6 +300,34 @@ export default function FinanceDashboard() {
                           />
                         </div>
                       </div>
+
+                      {/* Allocate-gated lifecycle controls. DRAFT → Activate
+                          (visually emphasized; without this the budget can't
+                          accept expenditures). ACTIVE → Close (lower-key;
+                          locks the period). */}
+                      {canAllocate && (b.status === 'DRAFT' || b.status === 'ACTIVE') && (
+                        <div className="flex gap-2 pt-2 border-t border-slate-100">
+                          {b.status === 'DRAFT' && (
+                            <button type="button"
+                              onClick={() => transitionBudget(b.id, 'ACTIVATE')}
+                              disabled={busyId === b.id}
+                              className="flex-1 h-9 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-[10px] font-bold uppercase tracking-widest disabled:opacity-60">
+                              {busyId === b.id ? 'Activating…' : 'Activate'}
+                            </button>
+                          )}
+                          {b.status === 'ACTIVE' && (
+                            <button type="button"
+                              onClick={() => {
+                                if (!confirm(`Close "${b.name}"? No new expenditures can be submitted against it.`)) return;
+                                transitionBudget(b.id, 'CLOSE');
+                              }}
+                              disabled={busyId === b.id}
+                              className="px-4 h-9 bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 rounded-lg text-[10px] font-bold uppercase tracking-widest disabled:opacity-60">
+                              {busyId === b.id ? 'Closing…' : 'Close Period'}
+                            </button>
+                          )}
+                        </div>
+                      )}
                     </div>
                   );
                 })}
@@ -379,6 +444,11 @@ export default function FinanceDashboard() {
           isOpen={submitOpen}
           onClose={() => setSubmitOpen(false)}
           onSubmitted={() => { refreshExp(); refreshBudgets(); }}
+        />
+        <BudgetFormModal
+          isOpen={newBudgetOpen}
+          onClose={() => setNewBudgetOpen(false)}
+          onSaved={() => { setNewBudgetOpen(false); refreshBudgets(); }}
         />
       </div>
     </RouteGuard>
