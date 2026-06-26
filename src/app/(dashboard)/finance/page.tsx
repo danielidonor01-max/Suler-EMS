@@ -1,336 +1,385 @@
 "use client";
 
-import React, { useState } from 'react';
-import { 
-  DollarSign, 
-  Target, 
-  Activity, 
-  ShieldCheck, 
-  TrendingUp, 
-  ArrowRight,
-  Plus,
-  Trash2,
-  Edit3,
-  Building2,
-  Briefcase,
-  PieChart,
-  CreditCard,
-  Zap,
-  History,
-  FileBarChart2
+import React, { useMemo, useState } from 'react';
+import Link from 'next/link';
+import {
+  DollarSign, Target, Activity, ShieldCheck, TrendingUp, ArrowRight,
+  Plus, Zap, PieChart, CreditCard, AlertTriangle, History, FileText,
 } from 'lucide-react';
-import { useToast } from '@/components/common/ToastContext';
-import { useFinance, Expenditure, Budget, ProjectFunding } from '@/context/FinanceContext';
-import { useOrganization } from '@/context/OrganizationContext';
-import { useWorkforce } from '@/context/WorkforceContext';
+import { useApi } from '@/lib/api/use-api';
+import { apiMutate } from '@/lib/api/fetcher';
 import { useAccess } from '@/context/AccessContext';
 import { MetricCard } from '@/components/dashboard/MetricCard';
-import { DataTable } from '@/components/tables/DataTable';
-import { CreateExpenditureModal, AllocateProjectFundingModal } from '@/components/modals/FinanceModals';
-import { ExpenditureSubmitModal } from '@/components/finance/ExpenditureSubmitModal';
 import { RouteGuard } from '@/components/common/RouteGuard';
 import { PermissionGate } from '@/components/common/PermissionGate';
 import { Permissions } from '@/modules/auth/domain/permission.model';
-import { formatCurrency } from '@/lib/utils/formatCurrency';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { EmployeeChip } from '@/components/employees/EmployeeChip';
+import { ExpenditureSubmitModal } from '@/components/finance/ExpenditureSubmitModal';
+
+// ─── API shapes ──────────────────────────────────────────────────────────────
+
+interface BudgetRow {
+  id:            string;
+  name:          string;
+  fiscalYear:    string;
+  period:        string;
+  status:        'DRAFT' | 'ACTIVE' | 'CLOSED' | 'ARCHIVED';
+  totalAmount:   string | number;
+  allocatedAmount: string | number;
+  spentAmount:   string | number;
+  currency:      string;
+  department:    { id: string; name: string } | null;
+  utilization?:  { remainingAmount: number; utilizationPercent: number };
+}
+
+interface ExpenditureRow {
+  id:          string;
+  description: string;
+  amount:      string | number;
+  status:      'DRAFT' | 'SUBMITTED' | 'APPROVED' | 'REJECTED' | 'DISBURSED' | 'CANCELLED';
+  vendor:      string | null;
+  reference:   string | null;
+  createdAt:   string;
+  budget:      { id: string; name: string; currency?: string };
+  category:    { id: string; name: string; code: string | null } | null;
+  requestedBy: { id: string; staffId: string; firstName: string; lastName: string; jobTitle?: string };
+}
+
+function num(v: string | number | null | undefined): number {
+  if (v == null) return 0;
+  return typeof v === 'number' ? v : Number(v);
+}
+function fmtNGN(v: string | number | null | undefined): string {
+  return `₦${num(v).toLocaleString('en-NG', { minimumFractionDigits: 0 })}`;
+}
+function fmtDate(iso: string): string {
+  return new Intl.DateTimeFormat('en-NG', { day: '2-digit', month: 'short', year: 'numeric' }).format(new Date(iso));
+}
+
+// Status badges share tone vocabulary with /finance/approvals.
+const EXPENDITURE_TONE: Record<string, string> = {
+  DRAFT:     'bg-slate-100 text-slate-600 border-slate-200',
+  SUBMITTED: 'bg-amber-50 text-amber-700 border-amber-100',
+  APPROVED:  'bg-sky-50 text-sky-700 border-sky-100',
+  REJECTED:  'bg-rose-50 text-rose-700 border-rose-100',
+  DISBURSED: 'bg-emerald-50 text-emerald-700 border-emerald-100',
+  CANCELLED: 'bg-slate-100 text-slate-500 border-slate-200',
+};
+
+const BUDGET_TONE: Record<string, string> = {
+  DRAFT:    'bg-slate-100 text-slate-600 border-slate-200',
+  ACTIVE:   'bg-emerald-50 text-emerald-700 border-emerald-100',
+  CLOSED:   'bg-slate-100 text-slate-500 border-slate-200',
+  ARCHIVED: 'bg-slate-50 text-slate-400 border-slate-100',
+};
 
 export default function FinanceDashboard() {
-  const { budgets, expenditures, projects, approveExpenditure, payExpenditure, rejectExpenditure } = useFinance();
-  const { currentHub } = useOrganization();
-  const { employees } = useWorkforce();
-  const { userRole, user } = useAccess();
-  
-  const [isExpOpen, setIsExpOpen] = useState(false);
-  const [isProjOpen, setIsProjOpen] = useState(false);
-  const { addToast } = useToast();
+  const { userRole, checkPermission } = useAccess();
+  const isFinance = userRole === 'FINANCE_MANAGER' || userRole === 'SUPER_ADMIN';
+  const canAllocate = checkPermission(Permissions.FINANCE_ALLOCATE as any).allowed;
 
-  const handleExport = () => {
-    addToast('Generating Financial Statement...', 'INFO');
-    setTimeout(() => {
-      addToast('Enterprise financial report exported to CSV successfully.', 'SUCCESS');
-    }, 1500);
-  };
+  const [submitOpen, setSubmitOpen] = useState(false);
+  const [rejectingId, setRejectingId] = useState<string | null>(null);
+  const [rejectReason, setRejectReason] = useState('');
+  const [busyId, setBusyId] = useState<string | null>(null);
+  const [bannerError, setBannerError] = useState<string | null>(null);
 
-  // Access Control: Hub Managers can only see data for their hub.
-  const isHubManager = userRole === 'HUB_MANAGER';
-  const userEmployee = employees.find(e => e.id === user?.employeeId);
-  const effectiveHub = isHubManager ? userEmployee?.hub || 'All Regions' : currentHub;
+  // Two SWR feeds. Budgets are unbounded; expenditures are scoped to
+  // either the team queue (for finance) or the requester's own
+  // (everyone else).
+  const { data: budgets = [], refresh: refreshBudgets } = useApi<BudgetRow[]>(
+    '/api/finance/budgets?status=ACTIVE&includeUtilization=true',
+    { pollMs: 30_000 },
+  );
+  const expScope = isFinance ? 'team' : 'mine';
+  const { data: expenditures = [], refresh: refreshExp } = useApi<ExpenditureRow[]>(
+    `/api/finance/expenditures?scope=${expScope}`,
+    { pollMs: 15_000 },
+  );
 
-  // Hub Filtering
-  const filteredBudgets = budgets.filter(b => effectiveHub === 'All Regions' || b.hub === effectiveHub);
-  const filteredExp = expenditures.filter(e => effectiveHub === 'All Regions' || e.hub === effectiveHub);
-  const filteredProjects = projects.filter(p => effectiveHub === 'All Regions' || p.hub === effectiveHub);
-
-  // Financial Aggregates
-  const totalAllocated = filteredBudgets.reduce((sum, b) => sum + b.allocated, 0);
-  const totalSpent = filteredBudgets.reduce((sum, b) => sum + b.spent, 0);
-  const burnRate = totalAllocated > 0 ? (totalSpent / totalAllocated) * 100 : 0;
-
-  const budgetColumns = [
-    {
-      header: "Cost Center",
-      accessor: "name",
-      render: (val: string, b: Budget) => (
-        <div className="flex items-center gap-4">
-          <div className="w-10 h-10 rounded-xl bg-slate-900 text-emerald-400 flex items-center justify-center border border-slate-800 shadow-sm">
-            <PieChart className="w-5 h-5" />
-          </div>
-          <div className="flex flex-col">
-            <span className="text-[14px] font-bold text-slate-900 tracking-tight leading-none mb-1">{b.name}</span>
-            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">{b.department}</span>
-          </div>
-        </div>
-      )
-    },
-    {
-      header: "Allocation",
-      accessor: "allocated",
-      render: (val: number) => (
-        <span className="text-[14px] font-black text-slate-900">{formatCurrency(val)}</span>
-      )
-    },
-    {
-      header: "Utilization",
-      accessor: "spent",
-      render: (val: number, b: Budget) => {
-        const pct = (val / b.allocated) * 100;
-        return (
-          <div className="flex items-center gap-3">
-             <div className="flex-1 h-1.5 min-w-[80px] bg-slate-100 rounded-full overflow-hidden">
-                <div 
-                  className={`h-full rounded-full ${pct > 90 ? 'bg-rose-500' : pct > 70 ? 'bg-amber-500' : 'bg-emerald-500'}`} 
-                  style={{ width: `${pct}%` }} 
-                />
-             </div>
-             <span className="text-[11px] font-black text-slate-900">{pct.toFixed(1)}%</span>
-          </div>
-        );
-      }
-    },
-    {
-      header: "Report",
-      accessor: "id",
-      render: (_val: string, b: Budget) => (
-        <a
-          href={`/api/finance/budgets/${b.id}/report`}
-          aria-label={`Download budget report for ${b.name}`}
-          className="inline-flex items-center gap-1.5 h-[30px] px-2.5 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-[10px] font-bold uppercase tracking-widest"
-        >
-          PDF
-        </a>
-      )
+  // ── Real metrics ──────────────────────────────────────────────────
+  // Allocated/spent come straight off the budget rows; burn rate is
+  // their ratio. Pending approvals counts queue items the user can
+  // act on — for non-finance viewers this is the count of their own
+  // outstanding requests, which is the more useful number for them.
+  const totals = useMemo(() => {
+    let totalAllocated = 0, totalSpent = 0;
+    for (const b of budgets) {
+      totalAllocated += num(b.totalAmount);
+      totalSpent     += num(b.spentAmount);
     }
-  ];
+    const pendingApproval = expenditures.filter(e => e.status === 'SUBMITTED').length;
+    const pendingDisbursement = expenditures.filter(e => e.status === 'APPROVED').length;
+    return {
+      totalAllocated,
+      totalSpent,
+      burnRate: totalAllocated > 0 ? (totalSpent / totalAllocated) * 100 : 0,
+      pendingApproval,
+      pendingDisbursement,
+    };
+  }, [budgets, expenditures]);
 
-  const expColumns = [
-    {
-      header: "Expenditure",
-      accessor: "description",
-      render: (val: string, e: Expenditure) => (
-        <div className="flex flex-col">
-          <span className="text-[14px] font-bold text-slate-900 tracking-tight mb-1">{e.description}</span>
-          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{e.category}</span>
-        </div>
-      )
-    },
-    {
-      header: "Amount",
-      accessor: "amount",
-      render: (val: number) => (
-        <span className="text-[14px] font-black text-slate-900">{formatCurrency(val)}</span>
-      )
-    },
-    {
-      header: "Status",
-      accessor: "status",
-      render: (val: string) => (
-        <div className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border inline-block ${
-          val === 'PAID' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' :
-          val === 'APPROVED' ? 'bg-indigo-50 text-indigo-600 border-indigo-100' :
-          val === 'PENDING' ? 'bg-amber-50 text-amber-600 border-amber-100' :
-          'bg-rose-50 text-rose-600 border-rose-100'
-        }`}>
-          {val}
-        </div>
-      )
+  // Status-aware action runner; same transition endpoint /finance/approvals uses.
+  async function transition(id: string, action: 'APPROVE_FINANCE' | 'REJECT_FINANCE' | 'DISBURSE', comment?: string) {
+    setBusyId(id);
+    setBannerError(null);
+    try {
+      await apiMutate(`/api/finance/expenditures/${id}/transition`, 'PATCH', { action, comment });
+      await Promise.all([refreshExp(), refreshBudgets()]);
+    } catch (err) {
+      setBannerError(err instanceof Error ? err.message : 'Action failed');
+    } finally {
+      setBusyId(null);
+      setRejectingId(null);
+      setRejectReason('');
     }
-  ];
+  }
 
   return (
     <RouteGuard allowedRoles={['SUPER_ADMIN', 'HR_ADMIN', 'FINANCE_MANAGER', 'MANAGER', 'EMPLOYEE']}>
-      <div className="section-breathing max-w-[1400px] mx-auto animate-in space-y-6">
-      
-      {/* Financial Command Surface */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-8 px-2">
-        <div className="space-y-4">
-          <div className="flex items-center gap-2 mb-3">
-            <div className="px-2.5 py-1 bg-slate-950 text-white rounded-md text-[9px] font-bold uppercase tracking-[0.2em] flex items-center gap-1.5">
-              <DollarSign className="w-3 h-3" />
-              Financial Governance Layer
+      <div className="section-breathing max-w-[1500px] mx-auto animate-in space-y-8">
+
+        {/* Hero */}
+        <div className="bg-white rounded-[24px] p-8 border border-slate-200/60 shadow-sm">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+            <div>
+              <div className="flex items-center gap-2 mb-3">
+                <div className="px-2.5 py-1 bg-slate-900 text-white rounded-md text-[9px] font-bold uppercase tracking-[0.2em] flex items-center gap-1.5">
+                  <DollarSign className="w-3 h-3" />
+                  Finance
+                </div>
+              </div>
+              <h1 className="text-3xl font-bold text-slate-900 tracking-tighter leading-none mb-3">
+                Budgets &amp; Expenditure
+              </h1>
+              <p className="text-[13px] font-medium text-slate-400 leading-relaxed max-w-[600px]">
+                Active budgets with live utilization. Submit a request against an active budget; Finance reviews and disburses through the approvals queue.
+              </p>
+            </div>
+            <div className="flex items-center gap-3">
+              <PermissionGate permission={Permissions.FINANCE_VIEW} showLocked>
+                <button
+                  type="button"
+                  onClick={() => setSubmitOpen(true)}
+                  className="bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 flex items-center gap-2 px-5 h-11 rounded-xl text-[11px] font-bold uppercase tracking-wider transition-all"
+                >
+                  <Zap className="w-4 h-4" />
+                  Request Funds
+                </button>
+              </PermissionGate>
+              {isFinance && (
+                <Link
+                  href="/finance/approvals"
+                  className="bg-slate-900 hover:bg-black text-white flex items-center gap-2 px-5 h-11 rounded-xl text-[11px] font-bold uppercase tracking-wider shadow-md"
+                >
+                  Approvals Queue
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </Link>
+              )}
             </div>
           </div>
-          <h1 className="text-3xl font-bold text-slate-900 tracking-tighter leading-none mb-3">
-            Financial Intelligence
-          </h1>
-          <p className="text-[13px] font-medium text-slate-400 leading-relaxed max-w-[480px]">
-            Enterprise-scale oversight of budgeting, operational expenditure, and capital funding across all regional cost centers.
-          </p>
         </div>
 
-        {!isHubManager && (
-          <div className="flex items-center gap-3">
-           <PermissionGate permission={Permissions.FINANCE_VIEW} showLocked>
-             <button 
-               onClick={() => setIsExpOpen(true)}
-               className="bg-white border border-slate-200 hover:border-slate-300 text-slate-600 flex items-center gap-2 px-6 h-[44px] rounded-2xl text-[11px] font-bold uppercase tracking-wider transition-all shadow-sm"
-             >
-                <Zap className="w-[18px] h-[18px] stroke-[1.5px]" />
-                Request Funds
-             </button>
-           </PermissionGate>
-
-           <PermissionGate permission={Permissions.FINANCE_ALLOCATE} showLocked>
-             <button 
-               onClick={() => setIsProjOpen(true)}
-               className="bg-slate-950 hover:bg-black text-white flex items-center gap-2 px-8 h-[44px] rounded-2xl text-[11px] font-bold uppercase tracking-wider transition-all shadow-md"
-             >
-                <Plus className="w-[18px] h-[18px] stroke-[1.5px]" />
-                New Budget Allocation
-             </button>
-           </PermissionGate>
-
-           <button 
-             onClick={handleExport}
-             className="w-11 h-[44px] flex items-center justify-center bg-white border border-slate-200 hover:bg-slate-50 rounded-2xl text-slate-600 transition-all shadow-sm"
-             title="Export Financial Data"
-           >
-              <FileBarChart2 className="w-[18px] h-[18px]" />
-           </button>
-        </div>
+        {bannerError && (
+          <div className="flex items-start gap-2 p-3 bg-rose-50 border border-rose-100 rounded-xl">
+            <AlertTriangle className="w-4 h-4 text-rose-500 mt-0.5 shrink-0" />
+            <span className="text-[12px] font-medium text-rose-700">{bannerError}</span>
+          </div>
         )}
-      </div>
 
-      {/* Financial KPIs */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <MetricCard label="Total Allocation" value={formatCurrency(totalAllocated)} icon={PieChart} variant="tonal-info" />
-        <MetricCard label="Global Spent" value={formatCurrency(totalSpent)} trend={{ direction: 'up', value: '4.2%' }} variant="tonal-info" icon={TrendingUp} />
-        <MetricCard label="Burn Rate" value={`${burnRate.toFixed(1)}%`} trend={{ direction: 'neutral', value: 'OPTIMIZED' }} variant="tonal-success" icon={Activity} />
-        <MetricCard label="Financial Integrity" value="Verified" variant="tonal-success" icon={ShieldCheck} />
-      </div>
+        {/* KPIs — all derived from the live feeds; no hardcoded trends. */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+          <MetricCard label="Allocated"        value={fmtNGN(totals.totalAllocated)}   icon={PieChart}    variant="tonal-info" />
+          <MetricCard label="Spent"            value={fmtNGN(totals.totalSpent)}       icon={TrendingUp}  variant="tonal-info" />
+          <MetricCard
+            label="Burn Rate"
+            value={`${totals.burnRate.toFixed(1)}%`}
+            icon={Activity}
+            variant={totals.burnRate >= 90 ? 'tonal-warning' : 'tonal-success'}
+          />
+          <MetricCard
+            label={isFinance ? 'Pending Approvals' : 'My Pending Requests'}
+            value={`${totals.pendingApproval}`}
+            icon={ShieldCheck}
+            variant={totals.pendingApproval > 0 ? 'tonal-warning' : 'tonal-success'}
+          />
+        </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
-         {/* Budget Overview */}
-         <div className="space-y-6">
-            <div className="flex items-center justify-between px-2">
-               <div className="flex items-center gap-2">
-                  <Target className="w-4 h-4 text-slate-400" />
-                  <h2 className="text-[12px] font-bold text-slate-400 uppercase tracking-widest">Active Budgets</h2>
-               </div>
-               <div className="px-3 py-1 bg-indigo-50 text-indigo-600 rounded-full text-[10px] font-bold uppercase tracking-widest border border-indigo-100">
-                  Context: {effectiveHub}
-               </div>
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
+          {/* Active budgets */}
+          <div className="lg:col-span-3 space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Target className="w-4 h-4 text-slate-400" />
+                <h2 className="text-[12px] font-bold text-slate-500 uppercase tracking-widest">Active Budgets</h2>
+              </div>
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{budgets.length}</span>
             </div>
-            <DataTable 
-              title="Budget Performance"
-              description="Strategic resource allocation and utilization monitoring across departments."
-              data={filteredBudgets}
-              columns={budgetColumns}
-              rowActions={!isHubManager ? [
-                { label: 'Edit Budget', icon: Edit3, permission: Permissions.FINANCE_ALLOCATE, onClick: (b: Budget) => addToast(`Initializing cost-center adjustments for [${b.name}]`, 'INFO') },
-                { label: 'View Audit', icon: History, permission: Permissions.AUDIT_VIEW, onClick: (b: Budget) => window.location.href = `/governance?q=${b.name}` }
-              ] : []}
-            />
-         </div>
 
-         {/* Expenditure Requests */}
-         <div className="space-y-6">
-            <div className="flex items-center justify-between px-2">
-               <div className="flex items-center gap-2">
-                  <CreditCard className="w-4 h-4 text-slate-400" />
-                  <h2 className="text-[12px] font-bold text-slate-400 uppercase tracking-widest">Expenditure Control</h2>
-               </div>
+            {budgets.length === 0 ? (
+              <div className="p-8 bg-white border border-slate-200 rounded-[20px] text-center text-[13px] text-slate-500">
+                No active budgets. {canAllocate && 'Create one to enable expenditure requests.'}
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {budgets.map(b => {
+                  const total = num(b.totalAmount);
+                  const spent = num(b.spentAmount);
+                  const pct = total > 0 ? (spent / total) * 100 : 0;
+                  return (
+                    <div key={b.id} className="bg-white border border-slate-200 rounded-[20px] p-5 space-y-3">
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <h3 className="text-[14px] font-bold text-slate-900 truncate">{b.name}</h3>
+                            <span className={`inline-flex px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-widest border ${BUDGET_TONE[b.status] ?? BUDGET_TONE.DRAFT}`}>
+                              {b.status}
+                            </span>
+                          </div>
+                          <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">
+                            {b.fiscalYear} · {b.period}{b.department ? ` · ${b.department.name}` : ''}
+                          </div>
+                        </div>
+                        <a
+                          href={`/api/finance/budgets/${b.id}/report`}
+                          aria-label={`Download report for ${b.name}`}
+                          className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-700 rounded-lg text-[10px] font-bold uppercase tracking-widest whitespace-nowrap"
+                        >
+                          <FileText className="w-3 h-3" />
+                          PDF
+                        </a>
+                      </div>
+                      <div className="space-y-1.5">
+                        <div className="flex items-center justify-between text-[11px]">
+                          <span className="font-bold text-slate-500">{fmtNGN(spent)} of {fmtNGN(total)}</span>
+                          <span className={`font-bold ${pct >= 90 ? 'text-rose-600' : pct >= 70 ? 'text-amber-600' : 'text-emerald-600'}`}>
+                            {pct.toFixed(1)}%
+                          </span>
+                        </div>
+                        <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
+                          <div
+                            className={`h-full rounded-full transition-all ${pct >= 90 ? 'bg-rose-500' : pct >= 70 ? 'bg-amber-500' : 'bg-emerald-500'}`}
+                            ref={(el) => { if (el) el.style.width = `${Math.min(100, pct)}%`; }}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+
+          {/* Expenditure queue */}
+          <div className="lg:col-span-2 space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <CreditCard className="w-4 h-4 text-slate-400" />
+                <h2 className="text-[12px] font-bold text-slate-500 uppercase tracking-widest">
+                  {isFinance ? 'Pending Requests' : 'My Requests'}
+                </h2>
+              </div>
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{expenditures.length}</span>
             </div>
-            <DataTable 
-              title="Funding Requests"
-              description="Real-time monitoring of operational and capital expenditure approvals."
-              data={filteredExp}
-              columns={expColumns}
-              rowActions={[
-                { 
-                  label: 'Approve', 
-                  icon: ShieldCheck, 
-                  permission: Permissions.FINANCE_APPROVE,
-                  onClick: (e: Expenditure) => approveExpenditure(e.id), 
-                  hidden: (e: Expenditure) => e.status !== 'PENDING' 
-                },
-                { 
-                  label: 'Settle Payment', 
-                  icon: Zap, 
-                  permission: Permissions.FINANCE_DISBURSE,
-                  onClick: (e: Expenditure) => payExpenditure(e.id), 
-                  hidden: (e: Expenditure) => e.status !== 'APPROVED' 
-                },
-                { 
-                  label: 'Reject', 
-                  icon: Trash2, 
-                  permission: Permissions.FINANCE_APPROVE,
-                  onClick: (e: Expenditure) => rejectExpenditure(e.id, 'Administrative Denial'), 
-                  variant: 'danger', 
-                  hidden: (e: Expenditure) => e.status !== 'PENDING' 
-                }
-              ]}
-            />
-         </div>
-      </div>
 
-      {/* Project Funding Surface */}
-      <div className="space-y-6">
-         <div className="flex items-center gap-2 px-2">
-            <Briefcase className="w-4 h-4 text-slate-400" />
-            <h2 className="text-[12px] font-bold text-slate-400 uppercase tracking-widest">Project Funding Status</h2>
-         </div>
-         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {filteredProjects.map(proj => {
-               const pct = (proj.utilized / proj.allocation) * 100;
-               return (
-                  <div key={proj.id} className="bg-white p-6 rounded-[24px] border border-slate-200 shadow-sm hover:shadow-md transition-all group">
-                     <div className="flex justify-between items-start mb-6">
-                        <div className="w-12 h-12 rounded-xl bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-600">
-                           <Target className="w-6 h-6" />
+            {expenditures.length === 0 ? (
+              <div className="p-8 bg-white border border-slate-200 rounded-[20px] text-center text-[13px] text-slate-500">
+                {isFinance ? 'No requests in your queue.' : 'You have no expenditure requests in flight.'}
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {expenditures.map(e => {
+                  const canApprove = isFinance && e.status === 'SUBMITTED' && checkPermission(Permissions.FINANCE_APPROVE as any).allowed;
+                  const canReject  = isFinance && e.status === 'SUBMITTED' && checkPermission(Permissions.FINANCE_APPROVE as any).allowed;
+                  const canDisburse = isFinance && e.status === 'APPROVED' && checkPermission(Permissions.FINANCE_DISBURSE as any).allowed;
+                  return (
+                    <div key={e.id} className="bg-white border border-slate-200 rounded-[20px] p-4 space-y-3">
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0">
+                          <div className="text-[13px] font-bold text-slate-900 truncate">{e.description}</div>
+                          <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">
+                            {e.budget.name}{e.category ? ` · ${e.category.name}` : ''}{e.vendor ? ` · ${e.vendor}` : ''}
+                          </div>
                         </div>
-                        <div className={`px-2.5 py-0.5 rounded text-[8px] font-bold uppercase tracking-widest border ${
-                           proj.status === 'FUNDED' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-indigo-50 text-indigo-600 border-indigo-100'
-                        }`}>
-                           {proj.status}
-                        </div>
-                     </div>
-                     <div className="space-y-1 mb-6">
-                        <h4 className="text-[15px] font-bold text-slate-900 tracking-tight leading-none">{proj.projectName}</h4>
-                        <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">{proj.hub}</p>
-                     </div>
-                     <div className="space-y-4">
-                        <div className="flex items-center justify-between">
-                           <span className="text-[9px] font-bold text-slate-300 uppercase tracking-widest">Utilization</span>
-                           <span className="text-[10px] font-black text-slate-900">{formatCurrency(proj.utilized)} / {formatCurrency(proj.allocation)}</span>
-                        </div>
-                        <div className="h-1.5 w-full bg-slate-50 rounded-full overflow-hidden border border-slate-100">
-                           <div 
-                             className="h-full bg-slate-900 rounded-full transition-all duration-1000" 
-                             style={{ width: `${pct}%` }} 
-                           />
-                        </div>
-                     </div>
-                  </div>
-               );
-            })}
-         </div>
-      </div>
+                        <span className={`inline-flex px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-widest border whitespace-nowrap ${EXPENDITURE_TONE[e.status] ?? EXPENDITURE_TONE.DRAFT}`}>
+                          {e.status}
+                        </span>
+                      </div>
 
-      {/* Modals */}
-      <ExpenditureSubmitModal isOpen={isExpOpen} onClose={() => setIsExpOpen(false)} />
-      <AllocateProjectFundingModal isOpen={isProjOpen} onClose={() => setIsProjOpen(false)} />
+                      <div className="flex items-center justify-between">
+                        <EmployeeChip
+                          employeeId={e.requestedBy.id}
+                          name={`${e.requestedBy.firstName} ${e.requestedBy.lastName}`}
+                          sublabel={fmtDate(e.createdAt)}
+                          size="sm"
+                        />
+                        <span className="text-[14px] font-black text-slate-900 whitespace-nowrap">{fmtNGN(e.amount)}</span>
+                      </div>
 
+                      {rejectingId === e.id ? (
+                        <div className="space-y-2 pt-2 border-t border-slate-100">
+                          <input
+                            value={rejectReason}
+                            onChange={(ev) => setRejectReason(ev.target.value)}
+                            placeholder="Reason for rejection (visible to requester)"
+                            aria-label="Rejection reason"
+                            className="w-full h-9 bg-slate-50 border border-slate-200 rounded-lg px-3 text-[12px] outline-none focus:border-rose-500"
+                          />
+                          <div className="flex gap-2">
+                            <button type="button" onClick={() => { setRejectingId(null); setRejectReason(''); }}
+                              disabled={busyId === e.id}
+                              className="flex-1 h-9 bg-white border border-slate-200 text-slate-700 rounded-lg text-[10px] font-bold uppercase tracking-widest disabled:opacity-60">
+                              Cancel
+                            </button>
+                            <button type="button"
+                              onClick={() => transition(e.id, 'REJECT_FINANCE', rejectReason.trim() || undefined)}
+                              disabled={busyId === e.id || !rejectReason.trim()}
+                              className="flex-1 h-9 bg-rose-600 hover:bg-rose-700 text-white rounded-lg text-[10px] font-bold uppercase tracking-widest disabled:opacity-60">
+                              {busyId === e.id ? 'Rejecting…' : 'Reject'}
+                            </button>
+                          </div>
+                        </div>
+                      ) : (canApprove || canReject || canDisburse) && (
+                        <div className="flex gap-2 pt-2 border-t border-slate-100">
+                          {canApprove && (
+                            <button type="button"
+                              onClick={() => transition(e.id, 'APPROVE_FINANCE')}
+                              disabled={busyId === e.id}
+                              className="flex-1 h-9 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-[10px] font-bold uppercase tracking-widest disabled:opacity-60">
+                              Approve
+                            </button>
+                          )}
+                          {canDisburse && (
+                            <button type="button"
+                              onClick={() => transition(e.id, 'DISBURSE')}
+                              disabled={busyId === e.id}
+                              className="flex-1 h-9 bg-slate-900 hover:bg-black text-white rounded-lg text-[10px] font-bold uppercase tracking-widest disabled:opacity-60">
+                              Disburse
+                            </button>
+                          )}
+                          {canReject && (
+                            <button type="button"
+                              onClick={() => setRejectingId(e.id)}
+                              disabled={busyId === e.id}
+                              className="px-4 h-9 bg-white border border-slate-200 text-rose-600 hover:bg-rose-50 rounded-lg text-[10px] font-bold uppercase tracking-widest disabled:opacity-60">
+                              Reject
+                            </button>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        </div>
+
+        <ExpenditureSubmitModal
+          isOpen={submitOpen}
+          onClose={() => setSubmitOpen(false)}
+          onSubmitted={() => { refreshExp(); refreshBudgets(); }}
+        />
       </div>
     </RouteGuard>
   );
