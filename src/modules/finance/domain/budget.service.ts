@@ -40,9 +40,38 @@ export async function createBudget(input: CreateBudgetInput) {
 }
 
 export async function activateBudget(budgetId: string, approvedById: string) {
-  return prisma.budget.update({
-    where: { id: budgetId },
-    data: { status: 'ACTIVE', approvedById, approvedAt: new Date() },
+  // Only DRAFT → ACTIVE. updateMany with state guard so concurrent
+  // requests don't both succeed and trample the approver attribution.
+  const result = await prisma.budget.updateMany({
+    where: { id: budgetId, status: 'DRAFT' },
+    data:  { status: 'ACTIVE', approvedById, approvedAt: new Date() },
+  });
+  if (result.count === 0) {
+    throw new Error('Budget is not in DRAFT state and cannot be activated.');
+  }
+  return prisma.budget.findUniqueOrThrow({
+    where:   { id: budgetId },
+    include: { department: { select: { id: true, name: true, code: true } } },
+  });
+}
+
+/**
+ * ACTIVE → CLOSED. Once closed, no new expenditures can be submitted
+ * against the budget — the submit endpoint refuses non-ACTIVE budgets.
+ * Closing is the explicit "this period is over" signal; the budget row
+ * stays around for audit.
+ */
+export async function closeBudget(budgetId: string) {
+  const result = await prisma.budget.updateMany({
+    where: { id: budgetId, status: 'ACTIVE' },
+    data:  { status: 'CLOSED' },
+  });
+  if (result.count === 0) {
+    throw new Error('Budget is not ACTIVE and cannot be closed.');
+  }
+  return prisma.budget.findUniqueOrThrow({
+    where:   { id: budgetId },
+    include: { department: { select: { id: true, name: true, code: true } } },
   });
 }
 
