@@ -34,6 +34,8 @@ import { useApi } from '@/lib/api/use-api';
 import { apiMutate } from '@/lib/api/fetcher';
 import { Select } from '@/components/forms/Select';
 import { useEmployeeProfile } from '@/context/EmployeeProfileContext';
+import { useConfirm } from '@/components/common/ConfirmDialog';
+import { useToast } from '@/components/common/ToastContext';
 
 interface ProfilePayload {
   id: string;
@@ -1819,15 +1821,23 @@ function DocumentRow({
   onDeleted: () => void;
 }) {
   const [deleting, setDeleting] = useState(false);
+  const confirm = useConfirm();
+  const { addToast } = useToast();
 
   const handleDelete = async () => {
-    if (!confirm(`Delete "${doc.fileName}"? This cannot be undone.`)) return;
+    const ok = await confirm({
+      title:        `Delete "${doc.fileName}"?`,
+      message:      'This cannot be undone.',
+      confirmLabel: 'Delete',
+      tone:         'danger',
+    });
+    if (!ok) return;
     setDeleting(true);
     try {
       await apiMutate(`/api/employees/${employeeId}/documents/${doc.id}`, 'DELETE');
       onDeleted();
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Could not delete document');
+      addToast(err instanceof Error ? err.message : 'Could not delete document', 'ERROR');
     } finally {
       setDeleting(false);
     }

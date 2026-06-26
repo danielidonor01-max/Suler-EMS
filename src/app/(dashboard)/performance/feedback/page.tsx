@@ -11,6 +11,8 @@ import { useAccess } from '@/context/AccessContext';
 import { MetricCard } from '@/components/dashboard/MetricCard';
 import { EmployeeChip } from '@/components/employees/EmployeeChip';
 import { Modal } from '@/components/common/Modal';
+import { useConfirm } from '@/components/common/ConfirmDialog';
+import { useToast } from '@/components/common/ToastContext';
 
 interface FeedbackRow {
   id: string;
@@ -210,15 +212,22 @@ function FeedbackCard({
 }) {
   const tone = STATUS_TONE[row.status] ?? STATUS_TONE.PENDING;
   const hasResponse = row.status === 'SUBMITTED';
+  const confirm = useConfirm();
+  const { addToast } = useToast();
 
   const handleWithdraw = async () => {
-    if (!confirm('Withdraw this feedback request?')) return;
+    const ok = await confirm({
+      title:        'Withdraw this feedback request?',
+      message:      'The reviewer will no longer see it in their queue.',
+      confirmLabel: 'Withdraw',
+      tone:         'danger',
+    });
+    if (!ok) return;
     try {
       await apiMutate(`/api/performance/feedback/${row.id}`, 'DELETE');
       onChanged();
     } catch (err) {
-      // eslint-disable-next-line no-alert
-      alert(err instanceof Error ? err.message : 'Withdraw failed');
+      addToast(err instanceof Error ? err.message : 'Withdraw failed', 'ERROR');
     }
   };
 

@@ -357,6 +357,38 @@ async function main() {
   }
   console.log('✓ Hubs: Lagos, Abuja, Port Harcourt (linked to departments)');
 
+  // ── Default WorkSites ──
+  // One geo-fence per hub so a freshly-seeded environment immediately
+  // enforces the clock-in radius. Coordinates roughly target each city's
+  // primary commercial district. HR is expected to refine these (or
+  // create more sites per hub) via /attendance/sites once they know
+  // where their actual offices sit.
+  const hubByCodeForSites = await prisma.hub.findMany({ select: { id: true, code: true } });
+  const hubIdMap = Object.fromEntries(hubByCodeForSites.map(h => [h.code, h.id]));
+
+  const workSiteSeed = [
+    { name: 'Lagos HQ',         hubCode: 'HUB-01', address: 'Victoria Island, Lagos',  lat: 6.4281,  lng: 3.4216,  radiusMeters: 250 },
+    { name: 'Abuja Office',     hubCode: 'HUB-02', address: 'Central Business District, Abuja', lat: 9.0578, lng: 7.4951, radiusMeters: 250 },
+    { name: 'Port Harcourt Yard', hubCode: 'HUB-03', address: 'GRA Phase II, Port Harcourt', lat: 4.8472, lng: 7.0498, radiusMeters: 300 },
+  ];
+
+  for (const site of workSiteSeed) {
+    await prisma.workSite.upsert({
+      where: { name: site.name },
+      update: {
+        address: site.address, lat: site.lat, lng: site.lng,
+        radiusMeters: site.radiusMeters, isActive: true,
+        hubId: hubIdMap[site.hubCode] ?? null,
+      },
+      create: {
+        name: site.name, address: site.address, lat: site.lat, lng: site.lng,
+        radiusMeters: site.radiusMeters, isActive: true,
+        hubId: hubIdMap[site.hubCode] ?? null,
+      },
+    });
+  }
+  console.log('✓ WorkSites: Lagos HQ, Abuja Office, Port Harcourt Yard (geo-fence enforcement enabled)');
+
   // ── Starter Teams ──
   // Three canonical teams matching the seed departments. Each team's
   // manager is the same person who manages the parent hub / department.

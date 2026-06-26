@@ -8,9 +8,12 @@ import {
 import { useApi } from '@/lib/api/use-api';
 import { apiMutate } from '@/lib/api/fetcher';
 import { Modal } from '@/components/common/Modal';
+import { useConfirm } from '@/components/common/ConfirmDialog';
 import { MetricCard } from '@/components/dashboard/MetricCard';
 import { RouteGuard } from '@/components/common/RouteGuard';
 import Link from 'next/link';
+import { Select } from '@/components/forms/Select';
+import { DatePicker } from '@/components/forms/DatePicker';
 
 interface CycleRow {
   id: string;
@@ -58,6 +61,7 @@ function CyclesInner() {
   const [createOpen, setCreateOpen] = useState(false);
   const [assigning, setAssigning] = useState<CycleRow | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const confirm = useConfirm();
 
   const stats = {
     open:    cycles.filter(c => c.status === 'OPEN').length,
@@ -67,7 +71,13 @@ function CyclesInner() {
   };
 
   const openCycle = async (cycle: CycleRow) => {
-    if (!confirm(`Open "${cycle.name}" for review? Reviewers will see assigned reviews in their queue.`)) return;
+    const ok = await confirm({
+      title:        `Open "${cycle.name}" for review?`,
+      message:      'Reviewers will see assigned reviews in their queue immediately.',
+      confirmLabel: 'Open',
+      tone:         'warning',
+    });
+    if (!ok) return;
     try {
       await apiMutate(`/api/performance/cycles/${cycle.id}`, 'PATCH', { status: 'OPEN' });
       await refresh();
@@ -77,7 +87,13 @@ function CyclesInner() {
   };
 
   const closeCycle = async (cycle: CycleRow) => {
-    if (!confirm(`Close "${cycle.name}"? No further submissions or acknowledgments will be possible.`)) return;
+    const ok = await confirm({
+      title:        `Close "${cycle.name}"?`,
+      message:      'No further submissions or acknowledgments will be possible after closing.',
+      confirmLabel: 'Close',
+      tone:         'warning',
+    });
+    if (!ok) return;
     try {
       await apiMutate(`/api/performance/cycles/${cycle.id}`, 'PATCH', { status: 'CLOSED' });
       await refresh();
@@ -87,7 +103,13 @@ function CyclesInner() {
   };
 
   const deleteCycle = async (cycle: CycleRow) => {
-    if (!confirm(`Delete "${cycle.name}" and all ${cycle.reviewCount} reviews under it? Cannot be undone.`)) return;
+    const ok = await confirm({
+      title:        `Delete "${cycle.name}"?`,
+      message:      `All ${cycle.reviewCount} review${cycle.reviewCount === 1 ? '' : 's'} under it will be removed. Cannot be undone.`,
+      confirmLabel: 'Delete',
+      tone:         'danger',
+    });
+    if (!ok) return;
     try {
       await apiMutate(`/api/performance/cycles/${cycle.id}`, 'DELETE');
       await refresh();
@@ -360,52 +382,34 @@ function CreateCycleModal({
           />
         </div>
         <div className="grid grid-cols-2 gap-4">
-          <div className="space-y-1.5">
-            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Type</label>
-            <select
-              value={type}
-              onChange={(e) => setType(e.target.value as any)}
-              aria-label="Type"
-              className="w-full h-[44px] bg-slate-50 border border-slate-200 rounded-xl px-3 text-[13px] font-bold outline-none focus:border-indigo-500"
-            >
-              <option value="QUARTERLY">Quarterly</option>
-              <option value="ANNUAL">Annual</option>
-              <option value="MID_YEAR">Mid-Year</option>
-              <option value="AD_HOC">Ad-Hoc</option>
-            </select>
-          </div>
-          <div className="space-y-1.5">
-            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Due Date (optional)</label>
-            <input
-              type="date"
-              value={dueDate}
-              onChange={(e) => setDueDate(e.target.value)}
-              aria-label="Due date"
-              className="w-full h-[44px] bg-slate-50 border border-slate-200 rounded-xl px-3 text-[13px] font-medium outline-none focus:border-indigo-500"
-            />
-          </div>
+          <Select
+            label="Type"
+            value={type}
+            onChange={(val) => setType(val as any)}
+            options={[
+              { label: 'Quarterly', value: 'QUARTERLY' },
+              { label: 'Annual', value: 'ANNUAL' },
+              { label: 'Mid-Year', value: 'MID_YEAR' },
+              { label: 'Ad-Hoc', value: 'AD_HOC' }
+            ]}
+          />
+          <DatePicker
+            label="Due Date (optional)"
+            value={dueDate}
+            onChange={setDueDate}
+          />
         </div>
         <div className="grid grid-cols-2 gap-4">
-          <div className="space-y-1.5">
-            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Start Date</label>
-            <input
-              type="date" required
-              value={startDate}
-              onChange={(e) => setStartDate(e.target.value)}
-              aria-label="Start date"
-              className="w-full h-[44px] bg-slate-50 border border-slate-200 rounded-xl px-3 text-[13px] font-medium outline-none focus:border-indigo-500"
-            />
-          </div>
-          <div className="space-y-1.5">
-            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">End Date</label>
-            <input
-              type="date" required
-              value={endDate}
-              onChange={(e) => setEndDate(e.target.value)}
-              aria-label="End date"
-              className="w-full h-[44px] bg-slate-50 border border-slate-200 rounded-xl px-3 text-[13px] font-medium outline-none focus:border-indigo-500"
-            />
-          </div>
+          <DatePicker
+            label="Start Date"
+            value={startDate}
+            onChange={setStartDate}
+          />
+          <DatePicker
+            label="End Date"
+            value={endDate}
+            onChange={setEndDate}
+          />
         </div>
         <div className="space-y-1.5">
           <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Description (optional)</label>

@@ -26,6 +26,7 @@ import { useCommunication } from '@/context/CommunicationContext';
 import { usePreferences } from '@/context/PreferencesContext';
 import { useRouter } from 'next/navigation';
 import { useDismiss } from '@/lib/hooks/use-dismiss';
+import { useRealtime } from '@/hooks/useRealtime';
 
 const Header = ({ onToggleSidebar }: { onToggleSidebar: () => void }) => {
   const [isCommandModalOpen, setIsCommandModalOpen] = useState(false);
@@ -37,6 +38,9 @@ const Header = ({ onToggleSidebar }: { onToggleSidebar: () => void }) => {
   const { prefs } = usePreferences();
   const router = useRouter();
   const { data: session } = useSession();
+  // Live unread notification count. Hydrates from /api/notifications on
+  // mount; increments in realtime as SSE pushes new notifications.
+  const { unreadCount } = useRealtime();
 
   const hubRef = useRef<HTMLDivElement>(null);
   const profileRef = useRef<HTMLDivElement>(null);
@@ -209,11 +213,19 @@ const Header = ({ onToggleSidebar }: { onToggleSidebar: () => void }) => {
 
           <button
              type="button"
-             aria-label="Notifications"
+             aria-label={`Notifications${unreadCount > 0 ? ` (${unreadCount} unread)` : ''}`}
              onClick={() => router.push('/notifications')}
              className="relative w-10 h-10 flex items-center justify-center rounded-[12px] text-slate-400 hover:text-slate-900 hover:bg-slate-50 transition-all"
            >
             <Bell className="w-[18px] h-[18px] stroke-[1.5px]" />
+            {unreadCount > 0 && (
+              <span
+                className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 bg-rose-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center border-2 border-white shadow-sm"
+                aria-hidden="true"
+              >
+                {unreadCount > 99 ? '99+' : unreadCount}
+              </span>
+            )}
           </button>
 
           <div className="relative" ref={profileRef}>

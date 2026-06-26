@@ -3,6 +3,7 @@
 import { SessionProvider } from "next-auth/react";
 import { SessionVersionWatcher } from "@/lib/auth/SessionVersionWatcher";
 import { ToastProvider } from "./common/ToastContext";
+import { ConfirmProvider } from "./common/ConfirmDialog";
 import { ObservabilityProvider } from "@/context/ObservabilityContext";
 import { AccessProvider } from "@/context/AccessContext";
 import { ActivityProvider } from "@/context/ActivityContext";
@@ -26,6 +27,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
       <SessionVersionWatcher />
       <PreferencesProvider>
       <ToastProvider>
+      <ConfirmProvider>
         <ObservabilityProvider>
           <AccessProvider>
             <ActivityProvider>
@@ -56,6 +58,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
             </ActivityProvider>
           </AccessProvider>
         </ObservabilityProvider>
+      </ConfirmProvider>
       </ToastProvider>
       </PreferencesProvider>
     </SessionProvider>
