@@ -44,11 +44,20 @@ export default function PayrollRegisterPage() {
   const { settings } = useSettings();
   const { addToast } = useToast();
 
+  // Real export against /api/payroll/runs/[id]/register. The endpoint
+  // refuses runs below APPROVED (DRAFT/REVIEW are previews), so we only
+  // download when the active run is at least at that gate.
   const handleExport = () => {
-    addToast('Generating Payroll Register Export...', 'INFO');
-    setTimeout(() => {
-      addToast('Payroll register exported to CSV successfully.', 'SUCCESS');
-    }, 1500);
+    if (!displayRun) {
+      addToast('No payroll run to export.', 'WARNING');
+      return;
+    }
+    const exportable = ['APPROVED', 'PROCESSED'];
+    if (!exportable.includes(displayRun.status)) {
+      addToast(`Register is only exportable after APPROVED. Current state: ${displayRun.status}.`, 'WARNING');
+      return;
+    }
+    window.location.href = `/api/payroll/runs/${displayRun.id}/register`;
   };
 
   // Access Control. Canonical role name is FINANCE_MANAGER (ARCHITECTURE.md §2).

@@ -40,7 +40,6 @@ import {
   Send,
   AlertTriangle,
   LayoutDashboard,
-  CheckSquare
 } from 'lucide-react';
 import { useAccess } from '@/context/AccessContext';
 import { Permissions } from '@/modules/auth/domain/permission.model';
@@ -95,7 +94,6 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle }) => {
     { name: 'My Profile', icon: UserCircle, href: '/profile' },
     { name: 'Messages', icon: MessageSquare, href: '/messages' },
     { name: 'Notifications', icon: Bell, href: '/notifications' },
-    { name: 'My Tasks', icon: CheckSquare, href: '/tasks' },
     { name: 'Attendance', icon: Calendar, href: '/attendance' },
     { name: 'Leave Requests', icon: Activity, href: '/leave' },
     { name: 'My Payroll', icon: Wallet, href: '/my-payroll' },

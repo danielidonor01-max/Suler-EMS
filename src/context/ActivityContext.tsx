@@ -43,15 +43,30 @@ export const ActivityProvider: React.FC<{ children: ReactNode }> = ({ children }
   const [recentActivity, setRecentActivity] = useState<ActivityItem[]>([]);
   const localIdsRef = useRef<Set<string>>(new Set());
 
-  // Simulation of presence tracking
+  // Real presence: send a heartbeat to /api/presence/heartbeat every 30s
+  // while this tab is open and update the count from the response. The
+  // server-side store is in-memory per instance (see
+  // src/lib/presence/store.ts for the multi-instance caveat); count
+  // reflects the dyno this client happens to be talking to.
   useEffect(() => {
-    const interval = setInterval(() => {
-      setPresenceCount(prev => {
-        const delta = Math.random() > 0.5 ? 1 : -1;
-        return Math.max(1, Math.min(24, prev + delta));
-      });
-    }, 10000);
-    return () => clearInterval(interval);
+    let cancelled = false;
+    async function send() {
+      try {
+        const res = await fetch('/api/presence/heartbeat', {
+          method:      'POST',
+          credentials: 'include',
+        });
+        if (!res.ok || cancelled) return;
+        const body = await res.json();
+        const count = body?.data?.presenceCount ?? body?.presenceCount;
+        if (typeof count === 'number') setPresenceCount(Math.max(1, count));
+      } catch {
+        // network blip — keep the prior count rather than spiking to 0
+      }
+    }
+    send();
+    const interval = setInterval(send, 30_000);
+    return () => { cancelled = true; clearInterval(interval); };
   }, []);
 
   // Hydrate from server-side audit feed (workflow transitions + security events).

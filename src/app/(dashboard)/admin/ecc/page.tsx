@@ -1,6 +1,7 @@
 "use client";
 
 import React from 'react';
+import Link from 'next/link';
 import { 
   ShieldCheck, 
   Activity, 
@@ -185,14 +186,16 @@ export default function ECCPage() {
               <Play className="w-[18px] h-[18px] stroke-[1.5px]" />
               Strategy Simulator
            </button>
-           <button className="bg-white border border-slate-200 text-slate-600 hover:border-slate-300 px-6 h-[44px] rounded-[12px] text-[11px] font-bold uppercase tracking-wider transition-all shadow-sm flex items-center gap-2">
+           {/* Strategic Report routes to /reports — the canonical report
+               builder. Executive Sync was a vanity affordance with no
+               backing endpoint; removed. */}
+           <Link
+             href="/reports"
+             className="bg-white border border-slate-200 text-slate-600 hover:border-slate-300 px-6 h-[44px] rounded-[12px] text-[11px] font-bold uppercase tracking-wider transition-all shadow-sm flex items-center gap-2"
+           >
               <BarChart3 className="w-[18px] h-[18px] stroke-[1.5px]" />
               Strategic Report
-           </button>
-           <button className="bg-indigo-600 hover:bg-indigo-700 text-white flex items-center gap-2 px-6 h-[44px] rounded-[12px] text-[11px] font-bold uppercase tracking-wider transition-all shadow-premium">
-              <Target className="w-[18px] h-[18px] stroke-[1.5px]" />
-              Executive Sync
-           </button>
+           </Link>
         </div>
       </div>
 

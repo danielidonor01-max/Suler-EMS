@@ -85,9 +85,21 @@ export default function IntegrationsPage() {
             <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
             <span className="text-[11px] font-bold text-emerald-700">{settings.integrations.status.filter(i => i.connected).length} Connected</span>
           </div>
-          <button className="bg-slate-900 hover:bg-black text-white flex items-center gap-2 px-6 h-[44px] rounded-xl text-[11px] font-bold uppercase tracking-wider transition-all shadow-md">
-            <Plus className="w-4 h-4" />Add Integration
-          </button>
+        </div>
+      </div>
+
+      {/* Add Integration + Configure used to live here as dead affordances;
+          there is no Integration model in Prisma and no /api/settings/
+          integrations CRUD. Configuration today is environment-variable
+          based — toggle a card to connect/disconnect, and credentials sit
+          alongside other secrets in the deploy environment. */}
+      <div className="bg-amber-50 border border-amber-100 rounded-[20px] p-5 flex items-start gap-3">
+        <div className="w-9 h-9 rounded-xl bg-white border border-amber-100 flex items-center justify-center text-amber-600 shrink-0">
+          <Plug className="w-4 h-4" />
+        </div>
+        <div className="text-[12px] text-amber-800 leading-relaxed">
+          <strong>Integration credentials are managed via environment variables.</strong>
+          {' '}Toggle a card below to enable or disable each integration. To add a brand-new integration not listed here, configure its keys in the deployment environment and the corresponding card will appear on next deploy.
         </div>
       </div>
 
@@ -142,7 +154,7 @@ export default function IntegrationsPage() {
                   </div>
                 )}
                 {integration.connected && (
-                  <button className="text-[10px] font-bold text-indigo-600 uppercase tracking-widest hover:text-indigo-700">Configure</button>
+                  <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Configured via env</span>
                 )}
               </div>
             </div>
