@@ -17,6 +17,7 @@ interface SelectProps {
   placeholder?: string;
   className?: string;
   variant?: 'standard' | 'minimal';
+  disabled?: boolean;
 }
 
 export const Select: React.FC<SelectProps> = ({ 
@@ -26,7 +27,8 @@ export const Select: React.FC<SelectProps> = ({
   onChange, 
   placeholder = "Select option...",
   className = "",
-  variant = 'standard'
+  variant = 'standard',
+  disabled = false
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [rect, setRect] = useState<DOMRect | null>(null);
@@ -34,13 +36,15 @@ export const Select: React.FC<SelectProps> = ({
   const selectedOption = options.find(opt => opt.value === value);
 
   const openDropdown = useCallback(() => {
+    if (disabled) return;
     if (triggerRef.current) {
       setRect(triggerRef.current.getBoundingClientRect());
     }
     setIsOpen(true);
-  }, []);
+  }, [disabled]);
 
   const toggleDropdown = () => {
+    if (disabled) return;
     if (isOpen) {
       setIsOpen(false);
     } else {
@@ -101,10 +105,11 @@ export const Select: React.FC<SelectProps> = ({
           ref={triggerRef}
           type="button"
           onClick={toggleDropdown}
+          disabled={disabled}
           className={`w-full bg-slate-50 border border-slate-100 rounded-xl px-5 h-[48px] flex items-center justify-between text-[13px] font-bold transition-all outline-none ${
             variant === 'minimal' ? 'h-[32px] bg-transparent border-transparent px-2 text-[11px] font-black uppercase tracking-widest text-slate-500 hover:text-slate-900' : 
             isOpen ? 'bg-white border-slate-300 ring-4 ring-slate-900/5' : 'hover:border-slate-300'
-          }`}
+          } ${disabled ? 'opacity-50 cursor-not-allowed' : ''} ${className}`}
         >
           <span className={selectedOption ? 'text-slate-900' : 'text-slate-400'}>
             {selectedOption ? selectedOption.label : placeholder}
