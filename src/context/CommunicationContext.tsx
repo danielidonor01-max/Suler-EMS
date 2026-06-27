@@ -70,7 +70,11 @@ interface CommunicationContextType {
 
 const CommunicationContext = createContext<CommunicationContextType | undefined>(undefined);
 
-const CONV_POLL_MS = 10_000;
+// Conversations refresh every 30s instead of 10s — the SSE notification
+// stream pushes new-message events, so polling here is the catch-up
+// safety net, not the primary signal. Active messages still poll fast
+// because that's the surface a user is actively watching.
+const CONV_POLL_MS = 30_000;
 const MSG_POLL_MS = 5_000;
 
 export const CommunicationProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
@@ -83,10 +87,14 @@ export const CommunicationProvider: React.FC<{ children: ReactNode }> = ({ child
   const [activeConversationId, setActiveConversationId] = useState<string | null>(null);
 
   // --- Polling: conversations + announcements ---
+  // Paused when the tab is hidden — background tabs don't need to keep
+  // pulling. Visibility-change handler fires one immediate fetch when
+  // focus returns so the inbox is fresh.
   useEffect(() => {
     if (!user) return;
     let cancelled = false;
     async function load() {
+      if (typeof document !== 'undefined' && document.visibilityState !== 'visible') return;
       try {
         const [convs, anns] = await Promise.all([
           apiFetcher<Conversation[]>('/api/communication/conversations'),
@@ -101,14 +109,24 @@ export const CommunicationProvider: React.FC<{ children: ReactNode }> = ({ child
     }
     load();
     const t = setInterval(load, CONV_POLL_MS);
-    return () => { cancelled = true; clearInterval(t); };
+    const onVisibility = () => { if (document.visibilityState === 'visible') load(); };
+    document.addEventListener('visibilitychange', onVisibility);
+    return () => {
+      cancelled = true;
+      clearInterval(t);
+      document.removeEventListener('visibilitychange', onVisibility);
+    };
   }, [user]);
 
   // --- Polling: messages for the active conversation ---
+  // Paused when hidden — no point pulling new messages into a tab the
+  // user isn't looking at; SSE pushes will catch it up when they come
+  // back, and the visibility-change handler does an immediate fetch.
   useEffect(() => {
     if (!activeConversationId) return;
     let cancelled = false;
     async function loadMessages() {
+      if (typeof document !== 'undefined' && document.visibilityState !== 'visible') return;
       try {
         const list = await apiFetcher<Message[]>(`/api/communication/conversations/${activeConversationId}/messages`);
         if (cancelled) return;
@@ -123,7 +141,13 @@ export const CommunicationProvider: React.FC<{ children: ReactNode }> = ({ child
     }
     loadMessages();
     const t = setInterval(loadMessages, MSG_POLL_MS);
-    return () => { cancelled = true; clearInterval(t); };
+    const onVisibility = () => { if (document.visibilityState === 'visible') loadMessages(); };
+    document.addEventListener('visibilitychange', onVisibility);
+    return () => {
+      cancelled = true;
+      clearInterval(t);
+      document.removeEventListener('visibilitychange', onVisibility);
+    };
   }, [activeConversationId]);
 
   // Mark conv as read locally when opened — server is also notified by the
