@@ -126,7 +126,8 @@ export const CreateTeamModal: React.FC<{ isOpen: boolean; onClose: () => void }>
           onChange={setManagerId}
           options={[
             { label: '— Unassigned —', value: '' },
-            ...employees.map(emp => ({ label: `${emp.name} (${emp.role ?? emp.designation ?? ''})`, value: emp.id })),
+            // dbId is the canonical UUID — managerId in the API is a uuid column.
+            ...employees.map(emp => ({ label: `${emp.name} (${emp.role ?? emp.designation ?? ''})`, value: emp.dbId ?? emp.id })),
           ]}
         />
         {error && (
@@ -174,11 +175,11 @@ export const AddMemberModal: React.FC<{ isOpen: boolean; onClose: () => void; te
     }
   };
 
-  // Filter to active employees not already on the team. Hub match is no
-  // longer a hard constraint — cross-hub teams are common (e.g. a global
-  // working group), so we just exclude already-on-team employees.
+  // Filter to active employees not already on the team. The team.members
+  // join carries the DB UUID; the WorkforceContext's `id` field is the
+  // display staffId, so we compare against dbId (the actual UUID).
   const memberEmployeeIds = new Set(team.members.map(m => m.employee.id));
-  const availableEmployees = employees.filter(emp => !memberEmployeeIds.has(emp.id));
+  const availableEmployees = employees.filter(emp => !memberEmployeeIds.has(emp.dbId ?? emp.id));
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="Assign Team Member" size="md">
@@ -195,7 +196,7 @@ export const AddMemberModal: React.FC<{ isOpen: boolean; onClose: () => void; te
           value={selectedMember}
           onChange={setSelectedMember}
           placeholder="Choose employee…"
-          options={availableEmployees.map(emp => ({ label: `${emp.name} (${emp.role ?? emp.designation ?? ''})`, value: emp.id }))}
+          options={availableEmployees.map(emp => ({ label: `${emp.name} (${emp.role ?? emp.designation ?? ''})`, value: emp.dbId ?? emp.id }))}
         />
         <Select
           label="Role in Team"

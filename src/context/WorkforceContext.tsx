@@ -8,7 +8,17 @@ import useSWR from 'swr';
 import { apiFetcher } from '@/lib/api/fetcher';
 
 export interface Employee {
+  /**
+   * Display-only id — usually the staffId ("SUL-001"). DO NOT send this
+   * to any API that expects an employee id; use `dbId` for that. This
+   * was a pre-existing convention; changing it would propagate UUIDs
+   * through URLs visible to users.
+   */
   id: string;
+  /** Canonical Employee UUID (DB primary key). Use for managerId, employeeId, etc. */
+  dbId?: string;
+  /** Same value as `id` when the API supplies it; kept explicit for clarity. */
+  staffId?: string;
   name: string;
   email: string;
   role: string;
@@ -161,7 +171,12 @@ export const WorkforceProvider: React.FC<{ children: ReactNode }> = ({ children 
   React.useEffect(() => {
     if (dbEmployees && !initialized) {
       setEmployees(dbEmployees.map((emp: any) => ({
+        // Display id is the staffId for backward compat — many surfaces
+        // render this as a sublabel. The canonical UUID lives on `dbId`
+        // and MUST be used wherever an API expects an employee id
+        // (managerId, employeeId, etc.).
         id: emp.staffId || emp.id,
+        staffId: emp.staffId,
         dbId: emp.id,
         name: emp.fullName || `${emp.firstName} ${emp.lastName}`,
         email: emp.email,

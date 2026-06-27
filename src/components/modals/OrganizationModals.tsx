@@ -5,6 +5,7 @@ import { Modal } from '../common/Modal';
 import { useWorkforce } from '@/context/WorkforceContext';
 import { useOrganization, Hub, Department } from '@/context/OrganizationContext';
 import { Select } from '../forms/Select';
+import { humanizeZodMessage } from '@/lib/forms/humanize-zod';
 
 // --- Hub Modals ---
 
@@ -26,7 +27,7 @@ export const CreateHubModal: React.FC<{ isOpen: boolean; onClose: () => void }> 
       onClose();
       setCode(''); setName(''); setGeography('');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not create hub');
+      setError(humanizeZodMessage(err instanceof Error ? err.message : 'Could not create hub'));
     } finally {
       setBusy(false);
     }
@@ -78,7 +79,7 @@ export const CreateHubModal: React.FC<{ isOpen: boolean; onClose: () => void }> 
               { label: 'International Liaison', value: 'International Liaison' },
             ]}
           />
-          {error && <div className="text-[12px] font-medium text-rose-600 px-1">{error}</div>}
+          {error && <div className="text-[12px] font-medium text-rose-600 px-1 whitespace-pre-line">{error}</div>}
         </div>
         <button
           type="submit"
@@ -115,7 +116,7 @@ export const EditHubModal: React.FC<{ isOpen: boolean; onClose: () => void; hub:
       });
       onClose();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not update hub');
+      setError(humanizeZodMessage(err instanceof Error ? err.message : 'Could not update hub'));
     } finally {
       setBusy(false);
     }
@@ -160,10 +161,12 @@ export const EditHubModal: React.FC<{ isOpen: boolean; onClose: () => void; hub:
             onChange={setManagerId}
             options={[
               { label: '— Unassigned —', value: '' },
-              ...employees.map(e => ({ label: e.name, value: e.id })),
+              // Use the canonical UUID — the API rejects the display
+              // staffId since managerId is a uuid column.
+              ...employees.map(e => ({ label: e.name, value: e.dbId ?? e.id })),
             ]}
           />
-          {error && <div className="text-[12px] font-medium text-rose-600 px-1">{error}</div>}
+          {error && <div className="text-[12px] font-medium text-rose-600 px-1 whitespace-pre-line">{error}</div>}
         </div>
         <button
           type="submit"
@@ -205,7 +208,7 @@ export const CreateDepartmentModal: React.FC<{ isOpen: boolean; onClose: () => v
       onClose();
       setCode(''); setName(''); setManagerId('');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not create department');
+      setError(humanizeZodMessage(err instanceof Error ? err.message : 'Could not create department'));
     } finally {
       setBusy(false);
     }
@@ -251,7 +254,9 @@ export const CreateDepartmentModal: React.FC<{ isOpen: boolean; onClose: () => v
             onChange={setManagerId}
             options={[
               { label: '— Unassigned —', value: '' },
-              ...employees.map(e => ({ label: e.name, value: e.id })),
+              // Use the canonical UUID — the API rejects the display
+              // staffId since managerId is a uuid column.
+              ...employees.map(e => ({ label: e.name, value: e.dbId ?? e.id })),
             ]}
           />
           <div className="space-y-1.5">
@@ -264,7 +269,7 @@ export const CreateDepartmentModal: React.FC<{ isOpen: boolean; onClose: () => v
               className="w-full h-[48px] bg-slate-50 border border-slate-200 rounded-xl px-4 text-[13px] font-bold outline-none focus:border-indigo-500 transition-all shadow-sm"
             />
           </div>
-          {error && <div className="text-[12px] font-medium text-rose-600 px-1">{error}</div>}
+          {error && <div className="text-[12px] font-medium text-rose-600 px-1 whitespace-pre-line">{error}</div>}
         </div>
         <button
           type="submit"
@@ -301,7 +306,7 @@ export const EditDepartmentModal: React.FC<{ isOpen: boolean; onClose: () => voi
       });
       onClose();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not update department');
+      setError(humanizeZodMessage(err instanceof Error ? err.message : 'Could not update department'));
     } finally {
       setBusy(false);
     }
@@ -335,7 +340,9 @@ export const EditDepartmentModal: React.FC<{ isOpen: boolean; onClose: () => voi
             onChange={setManagerId}
             options={[
               { label: '— Unassigned —', value: '' },
-              ...employees.map(e => ({ label: e.name, value: e.id })),
+              // Use the canonical UUID — the API rejects the display
+              // staffId since managerId is a uuid column.
+              ...employees.map(e => ({ label: e.name, value: e.dbId ?? e.id })),
             ]}
           />
           <div className="space-y-1.5">
@@ -348,7 +355,7 @@ export const EditDepartmentModal: React.FC<{ isOpen: boolean; onClose: () => voi
               className="w-full h-[48px] bg-slate-50 border border-slate-200 rounded-xl px-4 text-[13px] font-bold outline-none focus:border-indigo-500 transition-all shadow-sm"
             />
           </div>
-          {error && <div className="text-[12px] font-medium text-rose-600 px-1">{error}</div>}
+          {error && <div className="text-[12px] font-medium text-rose-600 px-1 whitespace-pre-line">{error}</div>}
         </div>
         <button
           type="submit"
