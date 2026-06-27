@@ -23,7 +23,6 @@ import { usePayroll, PayrollRun, PayrollEntry } from '@/context/PayrollContext';
 import { useOrganization } from '@/context/OrganizationContext';
 import { useWorkforce } from '@/context/WorkforceContext';
 import { useAccess } from '@/context/AccessContext';
-import { useSettings } from '@/context/SettingsContext';
 import { useToast } from '@/components/common/ToastContext';
 import { DataTable } from '@/components/tables/DataTable';
 import { PermissionGate } from '@/components/common/PermissionGate';
@@ -41,7 +40,6 @@ export default function PayrollRegisterPage() {
   const [isBulkOpen, setIsBulkOpen] = useState(false);
   const [selectedRun, setSelectedRun] = useState<PayrollRun | null>(null);
   const [activeEntry, setActiveEntry] = useState<PayrollEntry | null>(null);
-  const { settings } = useSettings();
   const { addToast } = useToast();
 
   // Real export against /api/payroll/runs/[id]/register. The endpoint
@@ -109,7 +107,11 @@ export default function PayrollRegisterPage() {
       render: (val: number) => <span className="text-[12px] font-bold text-rose-500">({formatNumber(val)})</span>
     },
     {
-      header: `Pension (${(settings.compliance.pensionEmployeeRate * 100).toFixed(0)}%)`,
+      // The percentage used to be inlined from SettingsContext, but the
+      // authoritative rate now lives in StatutoryRate (DB-backed). The
+      // exact value can vary per run via the snapshotted rate. Header
+      // stays generic; per-row totals already reflect the real number.
+      header: 'Pension',
       accessor: "pension",
       render: (val: number) => <span className="text-[12px] font-bold text-amber-600">({formatNumber(val)})</span>
     },
