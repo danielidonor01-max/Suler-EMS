@@ -130,7 +130,7 @@ export default function EmployeesPage() {
         <EmployeeChip
           employeeId={emp.id}
           name={emp.name}
-          sublabel={emp.id}
+          sublabel={emp.staffId ?? ''}
           size="md"
         />
       )
