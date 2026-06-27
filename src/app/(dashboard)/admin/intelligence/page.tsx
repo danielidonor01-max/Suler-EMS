@@ -1,37 +1,43 @@
 "use client";
 
 import React, { useState } from 'react';
-import { 
-  BrainCircuit, 
-  Target, 
-  Users, 
-  Activity, 
-  Sparkles, 
-  TrendingUp, 
-  ShieldCheck, 
+import dynamic from 'next/dynamic';
+import {
+  BrainCircuit,
+  Target,
+  Users,
+  Activity,
+  Sparkles,
+  TrendingUp,
+  ShieldCheck,
   ChevronRight,
   UserCheck,
   Zap,
   Fingerprint,
   PieChart as PieChartIcon,
-  BarChart as BarChartIcon
+  BarChart as BarChartIcon,
 } from 'lucide-react';
-import { 
-  ResponsiveContainer, 
-  RadarChart, 
-  PolarGrid, 
-  PolarAngleAxis, 
-  Radar,
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Cell,
-  PieChart,
-  Pie
-} from 'recharts';
+
+// Recharts is ~150KB gzipped. Dynamic-import the three chart components
+// so the library only loads when this page actually renders.
+// ssr:false because ResponsiveContainer measures DOM on mount.
+const CHART_SKELETON = (
+  <div className="w-full h-full flex items-center justify-center text-[12px] text-slate-400">
+    Loading chart…
+  </div>
+);
+const CapabilityRadar = dynamic<{ data: Array<{ subject: string; A: number; B: number; fullMark: number }> }>(
+  () => import('@/components/analytics/IntelligenceCharts').then(m => m.CapabilityRadar),
+  { ssr: false, loading: () => CHART_SKELETON },
+);
+const PerformanceClustersPie = dynamic<{ data: Array<{ name: string; value: number; color: string }> }>(
+  () => import('@/components/analytics/IntelligenceCharts').then(m => m.PerformanceClustersPie),
+  { ssr: false, loading: () => CHART_SKELETON },
+);
+const BehaviouralTrendsBar = dynamic<{ data: Array<{ name: string; engagement: number; responsiveness: number }> }>(
+  () => import('@/components/analytics/IntelligenceCharts').then(m => m.BehaviouralTrendsBar),
+  { ssr: false, loading: () => CHART_SKELETON },
+);
 
 // Mock Intelligence Data
 const CAPABILITY_DATA = [
@@ -119,39 +125,7 @@ export default function WorkforceIntelligenceHub() {
             </div>
 
             <div className="h-[450px] w-full relative z-10">
-               <ResponsiveContainer width="100%" height="100%">
-                <RadarChart 
-                  cx="50%" 
-                  cy="50%" 
-                  outerRadius="65%" 
-                  data={CAPABILITY_DATA}
-                  margin={{ top: 40, right: 80, bottom: 40, left: 80 }}
-                >
-                  <PolarGrid stroke="#f1f5f9" />
-                  <PolarAngleAxis 
-                    dataKey="subject" 
-                    tick={{ fill: '#94a3b8', fontSize: 10, fontWeight: 500 }} 
-                  />
-                    <Radar
-                      name="Suler Global"
-                      dataKey="A"
-                      stroke="#4f46e5"
-                      fill="#4f46e5"
-                      fillOpacity={0.4}
-                      strokeWidth={3}
-                    />
-                    <Radar
-                      name="Industry Benchmark"
-                      dataKey="B"
-                      stroke="#e2e8f0"
-                      fill="#94a3b8"
-                      fillOpacity={0.1}
-                      strokeWidth={2}
-                      strokeDasharray="4 4"
-                    />
-                    <Tooltip contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)', fontSize: '11px', fontWeight: 800 }} />
-                  </RadarChart>
-               </ResponsiveContainer>
+               <CapabilityRadar data={CAPABILITY_DATA} />
             </div>
 
             <div className="mt-8 p-6 bg-slate-50 rounded-[16px] border border-slate-100 flex items-start gap-4 relative z-10">
@@ -173,23 +147,7 @@ export default function WorkforceIntelligenceHub() {
                   </div>
 
                   <div className="h-[220px] w-full">
-                     <ResponsiveContainer width="100%" height="100%">
-                        <PieChart>
-                          <Pie
-                            data={PERFORMANCE_CLUSTERS}
-                            cx="50%"
-                            cy="50%"
-                            innerRadius={60}
-                            outerRadius={80}
-                            paddingAngle={5}
-                            dataKey="value"
-                          >
-                            {PERFORMANCE_CLUSTERS.map((entry, index) => (
-                              <Cell key={`cell-${index}`} fill={entry.color} />
-                            ))}
-                          </Pie>
-                        </PieChart>
-                     </ResponsiveContainer>
+                     <PerformanceClustersPie data={PERFORMANCE_CLUSTERS} />
                   </div>
 
                   <div className="mt-6 space-y-3">
@@ -253,39 +211,7 @@ export default function WorkforceIntelligenceHub() {
          </div>
 
          <div className="h-[350px] w-full">
-            <ResponsiveContainer width="100%" height="100%">
-               <BarChart data={BEHAVIORAL_TRENDS} margin={{ top: 20, right: 30, left: -20, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="4 4" stroke="#f1f5f9" vertical={false} />
-                  <XAxis 
-                    dataKey="name" 
-                    axisLine={false} 
-                    tickLine={false} 
-                    tick={{ fill: '#94a3b8', fontSize: 11, fontWeight: 800 }}
-                    dy={15}
-                  />
-                  <YAxis 
-                    axisLine={false} 
-                    tickLine={false} 
-                    tick={{ fill: '#94a3b8', fontSize: 11, fontWeight: 800 }}
-                  />
-                  <Tooltip 
-                    cursor={{ fill: '#f8fafc' }}
-                    contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)', fontSize: '11px', fontWeight: 800 }}
-                  />
-                  <Bar 
-                    dataKey="engagement" 
-                    fill="#6366f1" 
-                    radius={[12, 12, 4, 4]} 
-                    barSize={40}
-                  />
-                  <Bar 
-                    dataKey="responsiveness" 
-                    fill="#10b981" 
-                    radius={[12, 12, 4, 4]} 
-                    barSize={40}
-                  />
-               </BarChart>
-            </ResponsiveContainer>
+            <BehaviouralTrendsBar data={BEHAVIORAL_TRENDS} />
          </div>
 
          {/* Behavioral Detail Footer */}

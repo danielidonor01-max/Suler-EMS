@@ -1,28 +1,34 @@
 "use client";
 
 import React, { useEffect, useState } from 'react';
-import { 
-  Activity, 
-  BrainCircuit, 
-  RefreshCcw, 
-  TrendingUp, 
-  Zap, 
-  ShieldAlert, 
+import dynamic from 'next/dynamic';
+import {
+  Activity,
+  BrainCircuit,
+  RefreshCcw,
+  TrendingUp,
+  Zap,
+  ShieldAlert,
   BarChart3,
   CalendarClock,
   Sparkles,
   ArrowUpRight,
-  Target
+  Target,
 } from 'lucide-react';
-import { 
-  ResponsiveContainer, 
-  AreaChart, 
-  Area, 
-  XAxis, 
-  YAxis, 
-  CartesianGrid, 
-  Tooltip 
-} from 'recharts';
+// Recharts is heavy (~150KB gzipped). Dynamic-import the chart so the
+// library only loads when this page actually renders, not in any shared
+// bundle. ssr:false because ResponsiveContainer measures the DOM at mount.
+const ForecastingTrendChart = dynamic<{ data: Array<{ date: string; predicted: number }> }>(
+  () => import('@/components/forecasting/ForecastingTrendChart').then(m => m.ForecastingTrendChart),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="h-[350px] w-full flex items-center justify-center text-[12px] text-slate-400">
+        Loading chart…
+      </div>
+    ),
+  },
+);
 import { RecommendationFeed } from '@/modules/forecasting/components/RecommendationFeed';
 import { RiskHeatmap } from '@/modules/forecasting/components/RiskHeatmap';
 import { MetricCard } from '@/components/dashboard/MetricCard';
@@ -123,49 +129,7 @@ export default function ForecastingPage() {
             </div>
 
             <div className="h-[350px] w-full">
-              <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={data?.projections[0]?.trend || []} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                  <defs>
-                    <linearGradient id="colorNeed" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#4f46e5" stopOpacity={0.15}/>
-                      <stop offset="95%" stopColor="#4f46e5" stopOpacity={0}/>
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid strokeDasharray="4 4" stroke="#f1f5f9" vertical={false} />
-                  <XAxis 
-                    dataKey="date" 
-                    axisLine={false} 
-                    tickLine={false} 
-                    tick={{ fill: '#94a3b8', fontSize: 10, fontWeight: 700 }}
-                    tickFormatter={(val) => new Date(val).toLocaleDateString([], { weekday: 'short' })}
-                    dy={15}
-                  />
-                  <YAxis 
-                    axisLine={false} 
-                    tickLine={false} 
-                    tick={{ fill: '#94a3b8', fontSize: 10, fontWeight: 700 }}
-                  />
-                  <Tooltip 
-                    contentStyle={{ 
-                      backgroundColor: '#ffffff', 
-                      border: '1px solid #f1f5f9',
-                      borderRadius: '16px',
-                      boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)',
-                      fontSize: '11px',
-                      fontWeight: 800,
-                      padding: '12px'
-                    }}
-                  />
-                  <Area 
-                    type="monotone" 
-                    dataKey="predicted" 
-                    stroke="#4f46e5" 
-                    strokeWidth={3}
-                    fillOpacity={1} 
-                    fill="url(#colorNeed)" 
-                  />
-                </AreaChart>
-              </ResponsiveContainer>
+              <ForecastingTrendChart data={data?.projections?.[0]?.trend ?? []} />
             </div>
           </div>
 

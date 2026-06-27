@@ -1,12 +1,30 @@
 "use client";
 
 import React, { useState } from 'react';
+import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import {
   Download, RefreshCcw, BrainCircuit, TrendingUp, Activity,
   ShieldCheck, Target, Users, Zap, AlertTriangle,
 } from 'lucide-react';
-import { OperationalTrends, TrendsPoint } from '@/components/analytics/OperationalTrends';
+// Recharts is ~150KB gzipped. OperationalTrends is the only consumer on
+// this page, and it sits below the fold — dynamic-importing keeps the
+// chart library off the initial page bundle and out of first paint.
+// ssr: false because the chart's ResponsiveContainer measures the DOM
+// on mount; server-rendering it wastes bytes for a placeholder we'd
+// replace anyway.
+import { TrendsPoint } from '@/components/analytics/OperationalTrends';
+const OperationalTrends = dynamic<{ data: TrendsPoint[] }>(
+  () => import('@/components/analytics/OperationalTrends').then(m => m.OperationalTrends),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="h-[360px] w-full flex items-center justify-center text-[12px] text-slate-400">
+        Loading chart…
+      </div>
+    ),
+  },
+);
 import { WorkflowBottlenecks } from '@/components/analytics/WorkflowBottlenecks';
 import { OperationalInsights } from '@/components/analytics/OperationalInsights';
 import { MetricCard } from '@/components/dashboard/MetricCard';
