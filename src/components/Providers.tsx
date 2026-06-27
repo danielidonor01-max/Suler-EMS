@@ -1,5 +1,6 @@
 "use client";
 
+import { SWRConfig } from "swr";
 import { SessionProvider } from "next-auth/react";
 import { SessionVersionWatcher } from "@/lib/auth/SessionVersionWatcher";
 import { ToastProvider } from "./common/ToastContext";
@@ -23,6 +24,24 @@ import { IdleSessionMonitor } from "@/components/auth/IdleSessionMonitor";
 
 export function Providers({ children }: { children: React.ReactNode }) {
   return (
+    <SWRConfig
+      value={{
+        // Two GET hooks on the same URL inside this window share one
+        // request — eliminates the duplicate fetch when EmployeeChip and
+        // the profile modal both mount for the same employee.
+        dedupingInterval:    5_000,
+        // Window focus revalidation is noisy in a dashboard where users
+        // switch tabs constantly. Background polling (refreshInterval)
+        // already covers freshness for surfaces that care.
+        revalidateOnFocus:   false,
+        // Don't keep polling while the tab is in the background. Cuts
+        // request rate roughly in half on a typical multi-tab session.
+        refreshWhenHidden:   false,
+        // Reconnect revalidation stays on — useful when the user's
+        // laptop wakes from sleep.
+        revalidateOnReconnect: true,
+      }}
+    >
     <SessionProvider>
       <SessionVersionWatcher />
       <PreferencesProvider>
@@ -62,5 +81,6 @@ export function Providers({ children }: { children: React.ReactNode }) {
       </ToastProvider>
       </PreferencesProvider>
     </SessionProvider>
+    </SWRConfig>
   );
 }

@@ -48,9 +48,14 @@ export const ActivityProvider: React.FC<{ children: ReactNode }> = ({ children }
   // server-side store is in-memory per instance (see
   // src/lib/presence/store.ts for the multi-instance caveat); count
   // reflects the dyno this client happens to be talking to.
+  //
+  // Paused while the tab is hidden — a background tab doesn't need to
+  // announce its presence, and stale entries fall out of the server-
+  // side window naturally. Resumes immediately on visibility change.
   useEffect(() => {
     let cancelled = false;
     async function send() {
+      if (typeof document !== 'undefined' && document.visibilityState !== 'visible') return;
       try {
         const res = await fetch('/api/presence/heartbeat', {
           method:      'POST',
@@ -66,14 +71,25 @@ export const ActivityProvider: React.FC<{ children: ReactNode }> = ({ children }
     }
     send();
     const interval = setInterval(send, 30_000);
-    return () => { cancelled = true; clearInterval(interval); };
+    // Snap-back: as soon as the tab comes back into focus, fire one
+    // heartbeat so the count refreshes without waiting for the next tick.
+    const onVisibility = () => { if (document.visibilityState === 'visible') send(); };
+    document.addEventListener('visibilitychange', onVisibility);
+    return () => {
+      cancelled = true;
+      clearInterval(interval);
+      document.removeEventListener('visibilitychange', onVisibility);
+    };
   }, []);
 
   // Hydrate from server-side audit feed (workflow transitions + security events).
   // Local pushActivity calls are preserved by tracking their ids and merging.
+  // Paused when hidden; one snap-back fetch on focus so the feed is fresh
+  // when the user returns.
   useEffect(() => {
     let cancelled = false;
     async function loadAudit() {
+      if (typeof document !== 'undefined' && document.visibilityState !== 'visible') return;
       try {
         const res = await fetch('/api/audit/recent?limit=50', { credentials: 'include' });
         if (!res.ok) return;
@@ -93,7 +109,13 @@ export const ActivityProvider: React.FC<{ children: ReactNode }> = ({ children }
     }
     loadAudit();
     const poll = setInterval(loadAudit, 30_000);
-    return () => { cancelled = true; clearInterval(poll); };
+    const onVisibility = () => { if (document.visibilityState === 'visible') loadAudit(); };
+    document.addEventListener('visibilitychange', onVisibility);
+    return () => {
+      cancelled = true;
+      clearInterval(poll);
+      document.removeEventListener('visibilitychange', onVisibility);
+    };
   }, []);
 
   const pushActivity = useCallback((data: any) => {
