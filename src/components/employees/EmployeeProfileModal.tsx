@@ -37,7 +37,26 @@ import { useEmployeeProfile } from '@/context/EmployeeProfileContext';
 import { useConfirm } from '@/components/common/ConfirmDialog';
 import { useToast } from '@/components/common/ToastContext';
 
-interface ProfilePayload {
+/**
+ * Profile is split across two endpoints to make the modal feel snappier:
+ *
+ *   /api/employees/[id]/profile         — core (renders immediately)
+ *   /api/employees/[id]/profile/extras  — heavy panels (streams in)
+ *
+ * ProfileCore is everything above the fold: identity, employment, banking,
+ * active compensation, pending changes, org chart, capabilities.
+ *
+ * ProfileExtras is everything that can render a skeleton until it arrives:
+ * leave balances, attendance summary, performance, recent payslips,
+ * compensation history, activity timeline.
+ *
+ * ProfilePayload is the merged shape sections still consume — extras
+ * fields read from `extras ?? FALLBACK_EXTRAS` so sections can be
+ * written against the combined type and the loading state is handled
+ * at the orchestrator (the section either renders nothing on empty
+ * arrays or shows a skeleton when `extras` is still undefined).
+ */
+interface ProfileCore {
   id: string;
   staffId: string;
   firstName: string;
@@ -73,6 +92,11 @@ interface ProfilePayload {
     bankAccountNumber: string | null;
   };
 
+  /**
+   * Active salary structure only. The history list is in extras and
+   * gets merged into compensation.history at the consumer (see
+   * mergeProfile() below).
+   */
   compensation: {
     id:                 string;
     isActive:           boolean;
@@ -84,40 +108,7 @@ interface ProfilePayload {
     grossMonthly:       number;
     currency:           string;
     reason:             string | null;
-    history: Array<{
-      id:                 string;
-      isActive:           boolean;
-      effectiveDate:      string;
-      basicSalary:        number;
-      housingAllowance:   number;
-      transportAllowance: number;
-      otherAllowances:    number;
-      grossMonthly:       number;
-      currency:           string;
-      reason:             string | null;
-    }>;
   } | null;
-
-  leaveBalances: Array<{
-    typeCode:  string;
-    typeName:  string;
-    color:     string | null;
-    quota:     number;
-    used:      number;
-    remaining: number;
-  }>;
-
-  attendanceSummary: {
-    windowDays:     number;
-    present:        number;
-    late:           number;
-    absent:         number;
-    totalLogged:    number;
-    punctualityPct: number;
-    lastCheckIn:    string | null;
-    lastCheckOut:   string | null;
-    lastStatus:     string | null;
-  };
 
   pendingChangeRequests: Array<{
     id:            string;
@@ -149,6 +140,38 @@ interface ProfilePayload {
     directReportsTotal: number;
   };
 
+  capabilities: {
+    canEdit: boolean;
+    canEditSelf: boolean;
+    canViewCompliance: boolean;
+    canViewBanking: boolean;
+    canEditBanking: boolean;
+    canViewCompensation: boolean;
+  };
+}
+
+interface ProfileExtras {
+  leaveBalances: Array<{
+    typeCode:  string;
+    typeName:  string;
+    color:     string | null;
+    quota:     number;
+    used:      number;
+    remaining: number;
+  }>;
+
+  attendanceSummary: {
+    windowDays:     number;
+    present:        number;
+    late:           number;
+    absent:         number;
+    totalLogged:    number;
+    punctualityPct: number;
+    lastCheckIn:    string | null;
+    lastCheckOut:   string | null;
+    lastStatus:     string | null;
+  };
+
   recentPayslips: Array<{
     id:              string;
     period:          string;
@@ -158,6 +181,19 @@ interface ProfilePayload {
     paye:            number;
     totalDeductions: number;
     netPay:          number;
+  }>;
+
+  compensationHistory: Array<{
+    id:                 string;
+    isActive:           boolean;
+    effectiveDate:      string;
+    basicSalary:        number;
+    housingAllowance:   number;
+    transportAllowance: number;
+    otherAllowances:    number;
+    grossMonthly:       number;
+    currency:           string;
+    reason:             string | null;
   }>;
 
   activityTimeline: Array<{
@@ -201,14 +237,60 @@ interface ProfilePayload {
       }>;
     };
   };
+}
 
-  capabilities: {
-    canEdit: boolean;
-    canEditSelf: boolean;
-    canViewCompliance: boolean;
-    canViewBanking: boolean;
-    canEditBanking: boolean;
-    canViewCompensation: boolean;
+/**
+ * Combined shape passed to section components. Sections that depend on
+ * extras must check `extrasReady` (set by the orchestrator) before
+ * trusting the fields below — empty arrays are also returned while
+ * extras is in flight.
+ */
+interface ProfilePayload extends ProfileCore {
+  compensation: ProfileCore['compensation'] extends infer C
+    ? C extends null ? null
+    : (NonNullable<C> & { history: ProfileExtras['compensationHistory'] })
+    : never;
+  leaveBalances:      ProfileExtras['leaveBalances'];
+  attendanceSummary:  ProfileExtras['attendanceSummary'];
+  recentPayslips:     ProfileExtras['recentPayslips'];
+  activityTimeline:   ProfileExtras['activityTimeline'];
+  performanceSummary: ProfileExtras['performanceSummary'];
+}
+
+const EMPTY_ATTENDANCE: ProfileExtras['attendanceSummary'] = {
+  windowDays:    30,
+  present:       0,
+  late:          0,
+  absent:        0,
+  totalLogged:   0,
+  punctualityPct: 0,
+  lastCheckIn:   null,
+  lastCheckOut:  null,
+  lastStatus:    null,
+};
+
+const EMPTY_PERFORMANCE: ProfileExtras['performanceSummary'] = {
+  goals: { active: 0, completed: 0, overdue: 0, topOpen: [] },
+  kpis:  { total: 0, atRisk: [] },
+};
+
+/**
+ * Merge core + extras into the combined shape sections consume. When
+ * extras isn't loaded yet, sections that need it see empty arrays /
+ * zeroed scalars — the orchestrator separately tracks `extrasReady`
+ * and renders skeletons until the second request resolves.
+ */
+function mergeProfile(core: ProfileCore, extras: ProfileExtras | undefined): ProfilePayload {
+  return {
+    ...core,
+    compensation: core.compensation
+      ? { ...core.compensation, history: extras?.compensationHistory ?? [] }
+      : null,
+    leaveBalances:      extras?.leaveBalances     ?? [],
+    attendanceSummary:  extras?.attendanceSummary ?? EMPTY_ATTENDANCE,
+    recentPayslips:     extras?.recentPayslips    ?? [],
+    activityTimeline:   extras?.activityTimeline  ?? [],
+    performanceSummary: extras?.performanceSummary ?? EMPTY_PERFORMANCE,
   };
 }
 
@@ -219,10 +301,35 @@ interface Props {
 
 export function EmployeeProfileModal({ employeeId, onClose }: Props) {
   const isOpen = !!employeeId;
-  const { data, isLoading, refresh } = useApi<ProfilePayload>(
+
+  // Core: identity + employment + banking + active comp + pending + org.
+  // Returns ~250ms after open — the modal renders the above-the-fold
+  // sections immediately from this.
+  const { data: core, isLoading: coreLoading, refresh: refreshCore } = useApi<ProfileCore>(
     isOpen ? `/api/employees/${employeeId}/profile` : null,
     { pollMs: false },
   );
+
+  // Extras: leave + attendance + performance + payslips + history + activity.
+  // Fires in parallel with core but takes longer. The below-the-fold
+  // sections show skeletons until this resolves.
+  const { data: extras, refresh: refreshExtras } = useApi<ProfileExtras>(
+    isOpen ? `/api/employees/${employeeId}/profile/extras` : null,
+    { pollMs: false },
+  );
+
+  // Merged shape sections consume. Sections that depend on extras get
+  // empty arrays / zeroed scalars when extras isn't loaded yet — those
+  // sections check `extrasReady` (passed below) and render skeletons.
+  const profile = core ? mergeProfile(core, extras) : null;
+  const extrasReady = !!extras;
+
+  const refresh = async () => {
+    // Modal-level mutations (Save, Request Update) usually only touch
+    // core data — refresh both anyway so any panel-side change (e.g.
+    // a salary bump that's about to appear in history) shows up.
+    await Promise.all([refreshCore(), refreshExtras()]);
+  };
 
   const [mode, setMode] = useState<'view' | 'edit' | 'request'>('view');
   const [showCompliance, setShowCompliance] = useState(false);
@@ -241,12 +348,12 @@ export function EmployeeProfileModal({ employeeId, onClose }: Props) {
   }, [isOpen, employeeId]);
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Staff Profile" subtitle={data?.staffId} size="lg">
-      {!data || isLoading ? (
+    <Modal isOpen={isOpen} onClose={onClose} title="Staff Profile" subtitle={profile?.staffId} size="lg">
+      {!profile || coreLoading ? (
         <div className="p-12 text-center text-[12px] text-slate-500">Loading…</div>
       ) : mode === 'edit' ? (
         <EditForm
-          profile={data}
+          profile={profile}
           busy={busy}
           error={formError}
           success={formSuccess}
@@ -254,7 +361,7 @@ export function EmployeeProfileModal({ employeeId, onClose }: Props) {
           onSave={async (patch) => {
             setBusy(true); setFormError(null); setFormSuccess(null);
             try {
-              await apiMutate(`/api/employees/${data.id}/profile`, 'PATCH', patch);
+              await apiMutate(`/api/employees/${profile.id}/profile`, 'PATCH', patch);
               await refresh();
               setFormSuccess('Profile saved.');
               setMode('view');
@@ -267,7 +374,7 @@ export function EmployeeProfileModal({ employeeId, onClose }: Props) {
         />
       ) : mode === 'request' ? (
         <RequestForm
-          profile={data}
+          profile={profile}
           busy={busy}
           error={formError}
           success={formSuccess}
@@ -290,7 +397,8 @@ export function EmployeeProfileModal({ employeeId, onClose }: Props) {
         />
       ) : (
         <ViewBlock
-          profile={data}
+          profile={profile}
+          extrasReady={extrasReady}
           showCompliance={showCompliance}
           onToggleCompliance={() => setShowCompliance(v => !v)}
           onEdit={() => setMode('edit')}
@@ -305,9 +413,15 @@ export function EmployeeProfileModal({ employeeId, onClose }: Props) {
 // ─── View block ──────────────────────────────────────────────────────────────
 
 function ViewBlock({
-  profile, showCompliance, onToggleCompliance, onEdit, onRequest, flashSuccess,
+  profile, extrasReady, showCompliance, onToggleCompliance, onEdit, onRequest, flashSuccess,
 }: {
   profile: ProfilePayload;
+  /**
+   * True once the /extras response has resolved. Sections that depend
+   * on extras (leave balance, attendance, performance, payslips, comp
+   * history, activity timeline) show a skeleton until this flips true.
+   */
+  extrasReady: boolean;
   showCompliance: boolean;
   onToggleCompliance: () => void;
   onEdit: () => void;
@@ -461,20 +575,24 @@ function ViewBlock({
         <CompensationSection compensation={profile.compensation} />
       )}
 
-      {/* Recent payslips — only when there are any. Same gating as
-          Compensation; the API returns an empty array for non-privileged
-          viewers, so the section just collapses for them. */}
-      {profile.capabilities.canViewCompensation && profile.recentPayslips.length > 0 && (
-        <RecentPayslipsSection payslips={profile.recentPayslips} />
+      {/* Below-the-fold panels — these read from /extras. Until that
+          request resolves, render a skeleton so the layout doesn't
+          shift when the data lands. The gating-by-capability check
+          continues to apply once data arrives. */}
+      {!extrasReady ? (
+        <ExtrasSkeleton showCompensation={profile.capabilities.canViewCompensation} />
+      ) : (
+        <>
+          {profile.capabilities.canViewCompensation && profile.recentPayslips.length > 0 && (
+            <RecentPayslipsSection payslips={profile.recentPayslips} />
+          )}
+
+          <LeaveBalanceSection balances={profile.leaveBalances} />
+          <AttendanceSummarySection summary={profile.attendanceSummary} />
+
+          <PerformanceStripSection summary={profile.performanceSummary} />
+        </>
       )}
-
-      {/* Leave balances + attendance summary — paired since they're both
-          year-to-date / trailing-window snapshots of the same person. */}
-      <LeaveBalanceSection balances={profile.leaveBalances} />
-      <AttendanceSummarySection summary={profile.attendanceSummary} />
-
-      {/* Performance + KPI strip */}
-      <PerformanceStripSection summary={profile.performanceSummary} />
 
       {/* Documents */}
       <DocumentsSection
@@ -521,11 +639,32 @@ function ViewBlock({
       </div>
 
       {/* Activity timeline — last 20 events that touched this profile.
-          Empty array when caller isn't HR/owner, so the section
-          collapses without a permissions check here. */}
-      {profile.activityTimeline.length > 0 && (
+          Empty array when caller isn't HR/owner OR while extras is in
+          flight; the section just doesn't render. Once extras lands, if
+          the array is non-empty it shows. */}
+      {extrasReady && profile.activityTimeline.length > 0 && (
         <ActivityTimelineSection events={profile.activityTimeline} />
       )}
+    </div>
+  );
+}
+
+/**
+ * Skeleton block rendered in place of the below-the-fold sections while
+ * the /extras response is in flight. Matches the rough height + visual
+ * weight of the real sections so the layout doesn't shift when data
+ * arrives.
+ */
+function ExtrasSkeleton({ showCompensation }: { showCompensation: boolean }) {
+  const Row = ({ h }: { h: string }) => (
+    <div className={`${h} bg-slate-50 border border-slate-100 rounded-2xl animate-pulse`} />
+  );
+  return (
+    <div className="space-y-3">
+      {showCompensation && <Row h="h-[88px]" />}
+      <Row h="h-[140px]" />
+      <Row h="h-[120px]" />
+      <Row h="h-[160px]" />
     </div>
   );
 }
