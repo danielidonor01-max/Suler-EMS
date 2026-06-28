@@ -2,17 +2,29 @@ import { z } from 'zod';
 import prisma from '@/lib/prisma';
 import { withAuth } from '@/lib/api/with-auth';
 import { successResponse, errorResponse } from '@/lib/api-utils';
+import {
+  canEditOthers,
+  canViewCompliance,
+  canViewBanking,
+  canEditBanking,
+  canViewCompensation,
+  maskField,
+} from '@/lib/profile/permissions';
 
 /**
- * /api/employees/[id]/profile — full employee profile read + gated edit.
+ * /api/employees/[id]/profile — core profile read + gated edit.
  *
- *   GET   — full profile incl. employment + role + department + hub +
- *           compliance fields. Compliance-sensitive fields (NIN/BVN/TIN)
- *           are masked unless the caller has hr:edit or is the owner.
- *   PATCH — name + employment + compliance updates. Requires hr:edit
- *           OR settings:manage OR SUPER_ADMIN. Owners can edit a small
- *           self-service subset (phone only) — for everything else they
- *           must file a change request via /api/profile/change-requests.
+ *   GET   — identity + employment + teams + banking + active comp +
+ *           pending change requests + org chart + capabilities. The
+ *           heavy below-the-fold panels (leave balances, attendance,
+ *           performance, payslips, comp history, activity timeline) now
+ *           live at /api/employees/[id]/profile/extras so the modal
+ *           can render core sections first while extras streams in.
+ *   PATCH — name + employment + compliance + banking updates. Requires
+ *           hr:edit OR settings:manage OR SUPER_ADMIN. Owners can edit
+ *           a small self-service subset (phone + bank fields) — for
+ *           everything else they must file a change request via
+ *           /api/profile/change-requests.
  */
 
 const PatchSchema = z.object({
@@ -44,74 +56,17 @@ const PatchSchema = z.object({
 // HR being a bottleneck for every new hire's first payday.
 const SELF_SERVICEABLE = new Set(['phone', 'bankName', 'bankCode', 'bankAccountNumber']);
 
-function canEditOthers(session: { user: { role: string; permissions?: string[] } }): boolean {
-  if (session.user.role === 'SUPER_ADMIN' || session.user.role === 'HR_ADMIN') return true;
-  const perms = session.user.permissions ?? [];
-  return perms.includes('hr:edit') || perms.includes('settings:manage');
-}
-
-function canViewCompliance(session: { user: { role: string; permissions?: string[]; employeeId?: string | null } }, employeeId: string): boolean {
-  if (canEditOthers(session)) return true;
-  return session.user.employeeId === employeeId;
-}
-
-// Banking visibility: HR + owner. Account numbers are sensitive enough
-// that a generic permission like `payroll:view` shouldn't unlock them —
-// Finance reads them via the disbursement export endpoint instead.
-function canViewBanking(session: { user: { role: string; permissions?: string[]; employeeId?: string | null } }, employeeId: string): boolean {
-  if (canEditOthers(session)) return true;
-  return session.user.employeeId === employeeId;
-}
-
-function canEditBanking(session: { user: { role: string; permissions?: string[]; employeeId?: string | null } }): boolean {
-  if (canEditOthers(session)) return true;
-  return (session.user.permissions ?? []).includes('payroll:edit');
-}
-
-// Compensation visibility: HR + owner + anyone with payroll:view. Salary
-// figures are routinely needed by Finance and managers in performance
-// review prep, so the threshold is lower than for bank details.
-function canViewCompensation(session: { user: { role: string; permissions?: string[]; employeeId?: string | null } }, employeeId: string): boolean {
-  if (canEditOthers(session)) return true;
-  if ((session.user.permissions ?? []).includes('payroll:view')) return true;
-  if ((session.user.permissions ?? []).includes('payroll:edit')) return true;
-  return session.user.employeeId === employeeId;
-}
-
-function maskField(value: string | null | undefined): string | null {
-  if (!value) return null;
-  if (value.length <= 4) return '••••';
-  return `${value.slice(0, 2)}••••${value.slice(-2)}`;
-}
-
-/** Inclusive days of `req` that fall inside [windowStart, windowEnd]. */
-function clippedDays(reqStart: Date, reqEnd: Date, windowStart: Date, windowEnd: Date): number {
-  const s = reqStart > windowStart ? reqStart : windowStart;
-  const e = reqEnd   < windowEnd   ? reqEnd   : windowEnd;
-  if (e < s) return 0;
-  return Math.round((e.getTime() - s.getTime()) / 86_400_000) + 1;
-}
-
 export const GET = withAuth(async (_req, session, context) => {
   const correlationId = crypto.randomUUID();
   const { id } = (await context.params) as { id: string };
 
   try {
-    // Window helpers reused below for leave balances + attendance summary.
-    const now = new Date();
-    const yearStart = new Date(Date.UTC(now.getUTCFullYear(), 0, 1));
-    const yearEnd   = new Date(Date.UTC(now.getUTCFullYear(), 11, 31, 23, 59, 59));
-    const thirtyDaysAgo = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() - 30));
-    const todayUtc      = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 23, 59, 59));
-
     const employee = await prisma.employee.findUniqueOrThrow({
       where: { id },
       include: {
         department: {
           select: {
             id: true, code: true, name: true,
-            // Department manager → reports-to candidate. Same select shape
-            // as employee-summary so the client can reuse the chip atom.
             manager: {
               select: {
                 id: true, staffId: true, firstName: true, lastName: true, jobTitle: true,
@@ -141,8 +96,6 @@ export const GET = withAuth(async (_req, session, context) => {
             team: {
               select: {
                 id: true, code: true, name: true,
-                // Team manager → another reports-to candidate. Often the
-                // same person as department manager, deduped client-side.
                 manager: {
                   select: {
                     id: true, staffId: true, firstName: true, lastName: true, jobTitle: true,
@@ -152,9 +105,8 @@ export const GET = withAuth(async (_req, session, context) => {
             },
           },
         },
-        // Things THIS employee manages — used to compute the direct
-        // reports list. Caps on each to avoid pulling the whole org
-        // if someone manages a 200-person department.
+        // Org-chart side: things this employee manages. Each list capped
+        // at 20 so a 200-person department doesn't bloat the payload.
         hubsManaged: {
           select: {
             id: true,
@@ -192,15 +144,11 @@ export const GET = withAuth(async (_req, session, context) => {
             },
           },
         },
-        // Salary structures: pull the current active one PLUS the trailing
-        // history (most-recent first). The active one feeds the
-        // Compensation summary; the history feeds an expandable list. Cap
-        // at 6 so a long-tenure employee with many adjustments doesn't
-        // bloat the payload — older rows can be reached via the dedicated
-        // salary-structures admin page if needed.
+        // Active salary structure only — history moved to the extras
+        // endpoint where it's lazy-loaded under the expandable list.
         salaryStructures: {
-          orderBy: [{ isActive: 'desc' }, { effectiveDate: 'desc' }],
-          take:    6,
+          where:   { isActive: true },
+          take:    1,
           select: {
             id: true,
             isActive: true,
@@ -221,341 +169,23 @@ export const GET = withAuth(async (_req, session, context) => {
     const showCompensation = canViewCompensation(session as any, employee.id);
     const canEditBank      = canEditBanking(session as any);
 
-    // Leave balances + attendance summary + performance signals are
-    // batched in parallel after the employee fetch so the profile load
-    // stays a single round-trip from the client's perspective. The
-    // queries are scoped to this employee (cheap) — not the whole org.
-    const [
-      leaveTypes, approvedLeaves, attendanceCounts, lastPunch,
-      goals, kpis, pendingChangeRequests, recentPayslipsRaw,
-      changeRequestsAll, salaryStructureCreates, documentUploads, recentLeaveRequests,
-    ] = await Promise.all([
-      prisma.leaveType.findMany({
-        where:  { isActive: true },
-        orderBy: { code: 'asc' },
-        select: { code: true, name: true, color: true, quotaDays: true },
-      }),
-      prisma.leaveRequest.findMany({
-        where: {
-          employeeId: id,
-          status:     'HR_APPROVED',
-          startDate:  { lte: yearEnd },
-          endDate:    { gte: yearStart },
-        },
-        select: { type: true, startDate: true, endDate: true },
-      }),
-      prisma.attendanceRecord.groupBy({
-        by: ['status'],
-        where: {
-          employeeId: id,
-          date:       { gte: thirtyDaysAgo, lte: todayUtc },
-        },
-        _count: { _all: true },
-      }),
-      prisma.attendanceRecord.findFirst({
-        where:   { employeeId: id, checkIn: { not: null } },
-        orderBy: { date: 'desc' },
-        select:  { date: true, checkIn: true, checkOut: true, status: true },
-      }),
-      prisma.performanceGoal.findMany({
-        where:   { employeeId: id, status: { in: ['ACTIVE', 'COMPLETED'] } },
-        orderBy: { updatedAt: 'desc' },
-        take:    50,
-        select: {
-          id: true, title: true, status: true, category: true,
-          progressPercent: true, dueDate: true,
-        },
-      }),
-      prisma.performanceKPI.findMany({
-        where:   { employeeId: id, status: 'ACTIVE' },
-        orderBy: { createdAt: 'desc' },
-        take:    20,
-        select: {
-          id: true, title: true, target: true, unit: true, frequency: true,
-          measurements: {
-            orderBy: { periodStart: 'desc' },
-            take:    1,
-            select:  { actualValue: true },
-          },
-        },
-      }),
-      // Pending profile-change requests for this employee. HR sees these
-      // inline so they don't have to navigate to the Change Requests
-      // admin page to know what's in flight for the person they're
-      // looking at. Self-view also surfaces a "your pending requests"
-      // hint when the owner opens their own profile.
-      prisma.profileChangeRequest.findMany({
-        where:   { employeeId: id, status: 'PENDING' },
-        orderBy: { createdAt: 'desc' },
-        take:    10,
-        select: {
-          id: true, field: true, currentValue: true, proposedValue: true,
-          reason: true, createdAt: true,
-          requestedBy: { select: { id: true, name: true } },
-        },
-      }),
-      // Recent payslips for this employee. Filtered to PROCESSED runs
-      // only — preview entries aren't authoritative and shouldn't be
-      // confused with real pay. Cap at 6 to keep the payload small;
-      // /my-payroll is the full archive.
-      prisma.payrollEntry.findMany({
-        where:   { employeeId: id, run: { status: 'PROCESSED' } },
-        orderBy: { run: { processedAt: 'desc' } },
-        take:    6,
-        select: {
-          id: true,
-          netPay: true,
-          grossPay: true,
-          paye: true,
-          totalDeductions: true,
-          run: { select: { id: true, period: true, name: true, processedAt: true } },
-        },
-      }),
-      // Activity feed sources. Each capped at 10 — we merge + sort +
-      // slice 20 below. Pulling more would just be wasted bandwidth
-      // since the timeline only renders the head of the sorted list.
-      prisma.profileChangeRequest.findMany({
-        where:   { employeeId: id },
-        orderBy: { createdAt: 'desc' },
-        take:    10,
-        select: {
-          id: true, field: true, status: true,
-          createdAt: true, reviewedAt: true,
-          requestedBy: { select: { id: true, name: true } },
-          reviewedBy:  { select: { id: true, name: true } },
-        },
-      }),
-      prisma.salaryStructure.findMany({
-        where:   { employeeId: id },
-        orderBy: { createdAt: 'desc' },
-        take:    10,
-        select: { id: true, createdAt: true, effectiveDate: true, reason: true, changedById: true },
-      }),
-      prisma.employeeDocument.findMany({
-        where:   { employeeId: id },
-        orderBy: { createdAt: 'desc' },
-        take:    10,
-        select: {
-          id: true, kind: true, fileName: true, createdAt: true,
-          uploadedBy: { select: { id: true, name: true } },
-        },
-      }),
-      prisma.leaveRequest.findMany({
-        where:   { employeeId: id },
-        orderBy: { createdAt: 'desc' },
-        take:    10,
-        select: { id: true, type: true, status: true, createdAt: true, updatedAt: true },
-      }),
-    ]);
-
-    // Bucket approved days per leave-type code, clipped to the current
-    // calendar year (same convention as /api/leave/balances).
-    const usedByType = new Map<string, number>();
-    for (const lr of approvedLeaves) {
-      const days = clippedDays(lr.startDate, lr.endDate, yearStart, yearEnd);
-      if (days <= 0) continue;
-      usedByType.set(lr.type, (usedByType.get(lr.type) ?? 0) + days);
-    }
-
-    const leaveBalances = leaveTypes.map(lt => {
-      const used = usedByType.get(lt.code) ?? 0;
-      return {
-        typeCode:  lt.code,
-        typeName:  lt.name,
-        color:     lt.color,
-        quota:     lt.quotaDays,
-        used,
-        remaining: Math.max(0, lt.quotaDays - used),
-      };
+    // Pending change requests for this employee — used by the alert
+    // strip at the top of the modal, so it stays in core. Cheap query.
+    const pendingChangeRequests = await prisma.profileChangeRequest.findMany({
+      where:   { employeeId: id, status: 'PENDING' },
+      orderBy: { createdAt: 'desc' },
+      take:    10,
+      select: {
+        id: true, field: true, currentValue: true, proposedValue: true,
+        reason: true, createdAt: true,
+        requestedBy: { select: { id: true, name: true } },
+      },
     });
 
-    const attendanceCountsMap = new Map<string, number>();
-    for (const row of attendanceCounts) {
-      attendanceCountsMap.set(row.status, row._count._all);
-    }
-    const present = attendanceCountsMap.get('PRESENT') ?? 0;
-    const late    = attendanceCountsMap.get('LATE')    ?? 0;
-    const absent  = attendanceCountsMap.get('ABSENT')  ?? 0;
-    const totalLogged = present + late + absent;
-    const punctualityPct = totalLogged > 0
-      ? parseFloat(((present / totalLogged) * 100).toFixed(1))
-      : 0;
-
-    const attendanceSummary = {
-      windowDays:    30,
-      present,
-      late,
-      absent,
-      totalLogged,
-      punctualityPct,
-      lastCheckIn:   lastPunch?.checkIn ?? null,
-      lastCheckOut:  lastPunch?.checkOut ?? null,
-      lastStatus:    lastPunch?.status ?? null,
-    };
-
-    // Goals: derive overdue from dueDate vs now (cheaper than caching a
-    // status column for it). Counts let the strip show "3 active, 1
-    // overdue" without the client re-walking the list.
-    const goalsActive    = goals.filter(g => g.status === 'ACTIVE').length;
-    const goalsCompleted = goals.filter(g => g.status === 'COMPLETED').length;
-    const goalsOverdue   = goals.filter(g =>
-      g.status === 'ACTIVE' && g.dueDate && new Date(g.dueDate) < now
-    ).length;
-    const goalsTopOpen = goals
-      .filter(g => g.status === 'ACTIVE')
-      .slice(0, 3)
-      .map(g => ({
-        id:              g.id,
-        title:           g.title,
-        progressPercent: g.progressPercent,
-        category:        g.category,
-        dueDate:         g.dueDate,
-        isOverdue:       Boolean(g.dueDate && new Date(g.dueDate) < now),
-      }));
-
-    // KPIs: surface the most recent value's achievement % per KPI (capped
-    // 150% so an overachiever doesn't blow out the bar). Pick the three
-    // furthest from target as the at-risk list.
-    const kpiRows = kpis.map(k => {
-      const latest = k.measurements[0]?.actualValue ?? null;
-      const achievementPct = (latest != null && k.target > 0)
-        ? Math.max(0, Math.min(150, parseFloat(((latest / k.target) * 100).toFixed(1))))
-        : 0;
-      return {
-        id:             k.id,
-        title:          k.title,
-        target:         k.target,
-        unit:           k.unit,
-        frequency:      k.frequency,
-        latestValue:    latest,
-        achievementPct,
-      };
-    });
-    const kpisAtRisk = [...kpiRows]
-      .sort((a, b) => a.achievementPct - b.achievementPct)
-      .slice(0, 3);
-
-    const performanceSummary = {
-      goals: {
-        active:    goalsActive,
-        completed: goalsCompleted,
-        overdue:   goalsOverdue,
-        topOpen:   goalsTopOpen,
-      },
-      kpis: {
-        total:    kpiRows.length,
-        atRisk:   kpisAtRisk,
-      },
-    };
-
-    // ── Activity timeline ─────────────────────────────────────────
-    // Five source feeds merged into one chronological list. Cap at 20
-    // events so the modal renders an executive summary, not a forensic
-    // dump. HR/owner only — the section is gated client-side via
-    // capabilities.canEdit / canEditSelf.
-    interface ActivityEvent {
-      id:           string;
-      kind:         'CHANGE_REQUEST_CREATED' | 'CHANGE_REQUEST_REVIEWED'
-                  | 'SALARY_STRUCTURE_CREATED'
-                  | 'DOCUMENT_UPLOADED'
-                  | 'LEAVE_REQUEST_CREATED';
-      title:        string;
-      description:  string;
-      actorName:    string | null;
-      timestamp:    Date;
-      resourceId:   string;
-      resourceType: 'ProfileChangeRequest' | 'SalaryStructure' | 'EmployeeDocument' | 'LeaveRequest';
-    }
-    const events: ActivityEvent[] = [];
-
-    // Profile change requests: each row produces one creation event,
-    // plus a review event if reviewedAt is set.
-    for (const c of changeRequestsAll) {
-      events.push({
-        id:           `${c.id}-created`,
-        kind:         'CHANGE_REQUEST_CREATED',
-        title:        `Change request submitted: ${c.field}`,
-        description:  c.requestedBy?.name
-                        ? `Requested by ${c.requestedBy.name}.`
-                        : 'Requested.',
-        actorName:    c.requestedBy?.name ?? null,
-        timestamp:    c.createdAt,
-        resourceId:   c.id,
-        resourceType: 'ProfileChangeRequest',
-      });
-      if (c.reviewedAt) {
-        events.push({
-          id:           `${c.id}-reviewed`,
-          kind:         'CHANGE_REQUEST_REVIEWED',
-          title:        `Change request ${c.status.toLowerCase()}: ${c.field}`,
-          description:  c.reviewedBy?.name
-                          ? `Reviewed by ${c.reviewedBy.name}.`
-                          : 'Reviewed.',
-          actorName:    c.reviewedBy?.name ?? null,
-          timestamp:    c.reviewedAt,
-          resourceId:   c.id,
-          resourceType: 'ProfileChangeRequest',
-        });
-      }
-    }
-
-    for (const s of salaryStructureCreates) {
-      events.push({
-        id:           s.id,
-        kind:         'SALARY_STRUCTURE_CREATED',
-        title:        'New salary structure created',
-        description:  s.reason
-                        ? `Effective ${s.effectiveDate.toISOString().slice(0, 10)} — ${s.reason}`
-                        : `Effective ${s.effectiveDate.toISOString().slice(0, 10)}.`,
-        actorName:    null, // changedById isn't joined; resolved name would need a separate lookup
-        timestamp:    s.createdAt,
-        resourceId:   s.id,
-        resourceType: 'SalaryStructure',
-      });
-    }
-
-    for (const d of documentUploads) {
-      events.push({
-        id:           d.id,
-        kind:         'DOCUMENT_UPLOADED',
-        title:        `Document uploaded: ${d.fileName}`,
-        description:  d.uploadedBy?.name
-                        ? `${d.kind} · uploaded by ${d.uploadedBy.name}.`
-                        : `${d.kind}.`,
-        actorName:    d.uploadedBy?.name ?? null,
-        timestamp:    d.createdAt,
-        resourceId:   d.id,
-        resourceType: 'EmployeeDocument',
-      });
-    }
-
-    for (const lr of recentLeaveRequests) {
-      events.push({
-        id:           lr.id,
-        kind:         'LEAVE_REQUEST_CREATED',
-        title:        `Leave request submitted: ${lr.type}`,
-        description:  `Currently ${lr.status.replace(/_/g, ' ').toLowerCase()}.`,
-        actorName:    null,
-        timestamp:    lr.createdAt,
-        resourceId:   lr.id,
-        resourceType: 'LeaveRequest',
-      });
-    }
-
-    const activityTimeline = events
-      .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())
-      .slice(0, 20)
-      .map(e => ({
-        ...e,
-        timestamp: e.timestamp.toISOString(),
-      }));
-
-    // ── Org chart (reports-to + direct reports) ──────────────────
-    // Reports-to is the union of department manager + every team
-    // manager for teams this employee is in. Same person often shows
-    // up multiple times across axes — dedupe by id and tag each chip
-    // with the relationship label so the modal can show "Department
-    // manager" vs "Team lead — Engineering".
+    // ── Org chart ──────────────────────────────────────────────────
+    // Reports-to is the union of department manager + every team manager
+    // for teams this employee is in. Hub manager only surfaces as a
+    // fallback. Dedupe by id and tag each chip with the relationship.
     interface OrgChip {
       id:           string;
       staffId:      string;
@@ -581,9 +211,6 @@ export const GET = withAuth(async (_req, session, context) => {
         });
       }
     }
-    // Hub manager is the catch-all — only surface when no other
-    // reports-to was identified, since most people don't think of
-    // their hub head as their direct manager.
     const hubMgr = employee.department?.hub?.manager;
     if (reportsToMap.size === 0 && hubMgr && hubMgr.id !== id) {
       reportsToMap.set(hubMgr.id, {
@@ -592,12 +219,11 @@ export const GET = withAuth(async (_req, session, context) => {
       });
     }
 
-    // Direct reports: employees in any dept this person manages, plus
-    // members of any team they lead, plus employees in any hub's
-    // departments they manage (transitively). Dedupe by id — anyone
-    // who's in multiple groups appears once.
     const directReportsMap = new Map<string, OrgChip>();
-    const addReport = (emp: { id: string; staffId: string; firstName: string; lastName: string; jobTitle: string }, relationship: string) => {
+    const addReport = (
+      emp: { id: string; staffId: string; firstName: string; lastName: string; jobTitle: string },
+      relationship: string,
+    ) => {
       if (directReportsMap.has(emp.id)) return;
       directReportsMap.set(emp.id, { ...emp, relationship });
     };
@@ -614,10 +240,11 @@ export const GET = withAuth(async (_req, session, context) => {
     }
 
     const orgChart = {
-      reportsTo:     Array.from(reportsToMap.values()).slice(0, 6),
-      directReports: Array.from(directReportsMap.values()).slice(0, 12),
+      reportsTo:          Array.from(reportsToMap.values()).slice(0, 6),
+      directReports:      Array.from(directReportsMap.values()).slice(0, 12),
       directReportsTotal: directReportsMap.size,
     };
+
     const compliance = showCompliance
       ? {
           nin:           employee.nin,
@@ -687,74 +314,38 @@ export const GET = withAuth(async (_req, session, context) => {
         : {
             bankName:          employee.bankName,
             bankCode:          null,
-            // Show only the last 4 digits so the owner / a manager can
-            // confirm the account on file without exposing the full number
-            // to anyone with a profile-view link.
             bankAccountNumber: maskField(employee.bankAccountNumber),
           },
 
+      // Active compensation summary. The history list moved to the
+      // extras endpoint — modal renders the history toggle once that
+      // request resolves.
       compensation: (() => {
         if (!showCompensation) return null;
-        const active = employee.salaryStructures.find(s => s.isActive);
+        const active = employee.salaryStructures[0];
         if (!active) return null;
-        const summarise = (s: typeof employee.salaryStructures[number]) => {
-          const others = ((s.otherAllowances as Array<{ amount: number }> | null) ?? [])
-            .reduce((sum, a) => sum + Number(a.amount), 0);
-          const basic     = Number(s.basicSalary);
-          const housing   = Number(s.housingAllowance);
-          const transport = Number(s.transportAllowance);
-          return {
-            id:                 s.id,
-            isActive:           s.isActive,
-            effectiveDate:      s.effectiveDate,
-            basicSalary:        basic,
-            housingAllowance:   housing,
-            transportAllowance: transport,
-            otherAllowances:    others,
-            grossMonthly:       basic + housing + transport + others,
-            currency:           s.currency,
-            reason:             s.reason,
-          };
-        };
+        const others = ((active.otherAllowances as Array<{ amount: number }> | null) ?? [])
+          .reduce((sum, a) => sum + Number(a.amount), 0);
+        const basic     = Number(active.basicSalary);
+        const housing   = Number(active.housingAllowance);
+        const transport = Number(active.transportAllowance);
         return {
-          ...summarise(active),
-          // History: every structure other than the active one. Already
-          // limited to 6 by the include clause, so this is at most 5.
-          history: employee.salaryStructures.filter(s => !s.isActive).map(summarise),
+          id:                 active.id,
+          isActive:           active.isActive,
+          effectiveDate:      active.effectiveDate,
+          basicSalary:        basic,
+          housingAllowance:   housing,
+          transportAllowance: transport,
+          otherAllowances:    others,
+          grossMonthly:       basic + housing + transport + others,
+          currency:           active.currency,
+          reason:             active.reason,
         };
       })(),
 
-      leaveBalances,
-      attendanceSummary,
-      performanceSummary,
       pendingChangeRequests,
       orgChart,
 
-      // Activity timeline: HR sees everything; owners see their own
-      // profile's events. Anyone else gets an empty array — we still
-      // ship the field so the client doesn't have to special-case
-      // its absence.
-      activityTimeline: (canEditOthers(session as any) || session.user.employeeId === employee.id)
-        ? activityTimeline
-        : [],
-
-      // Recent payslips: same gating as compensation since this is
-      // earnings detail. Decimal -> number conversion happens here so
-      // the client doesn't have to know about Prisma's Decimal shape.
-      recentPayslips: showCompensation
-        ? recentPayslipsRaw.map(p => ({
-            id:              p.id,
-            period:          p.run.period,
-            runName:         p.run.name,
-            processedAt:     p.run.processedAt,
-            grossPay:        Number(p.grossPay),
-            paye:            Number(p.paye),
-            totalDeductions: Number(p.totalDeductions),
-            netPay:          Number(p.netPay),
-          }))
-        : [],
-
-      // Tells the client which UI to render (Edit form vs Request-Update form).
       capabilities: {
         canEdit:             canEditOthers(session as any),
         canEditSelf:         session.user.employeeId === employee.id,
@@ -785,8 +376,6 @@ export const PATCH = withAuth(async (req, session, context) => {
   const isOwner = session.user.employeeId === id;
   const privileged = canEditOthers(session as any);
 
-  // Non-privileged users editing themselves: only SELF_SERVICEABLE keys.
-  // Everything else needs a change request.
   if (!privileged) {
     if (!isOwner) {
       return errorResponse('FORBIDDEN', 'You can only edit your own profile', 403, correlationId);
@@ -809,8 +398,6 @@ export const PATCH = withAuth(async (req, session, context) => {
       data:  parsed.data,
     });
 
-    // Mirror the name change to the linked User row so headers + audit
-    // attributions update too. Phone-only edits leave User untouched.
     if (parsed.data.firstName || parsed.data.lastName) {
       const fullName = `${updated.firstName} ${updated.lastName}`.trim();
       await prisma.user.updateMany({
