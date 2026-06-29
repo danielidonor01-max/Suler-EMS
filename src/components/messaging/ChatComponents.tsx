@@ -17,12 +17,11 @@ import {
   ArrowLeft,
   ShieldAlert,
   MessageSquare,
-  X,
-  Lock
+  Lock,
 } from 'lucide-react';
 import { Conversation, Message, useCommunication } from '@/context/CommunicationContext';
 import { useAccess } from '@/context/AccessContext';
-import { useEscapeDismiss } from '@/lib/hooks/use-dismiss';
+import { Modal } from '@/components/common/Modal';
 import { apiFetcher } from '@/lib/api/fetcher';
 import { format } from 'date-fns';
 
@@ -44,7 +43,6 @@ function initials(name: string) {
 }
 
 function NewMessageModal({ onClose, onPick }: { onClose: () => void; onPick: (c: Contact) => void }) {
-  useEscapeDismiss(onClose, true);
   const [query, setQuery] = useState('');
   const { data: contacts, error, isLoading } = useSWR<Contact[]>('/api/communication/contacts', apiFetcher);
 
@@ -60,38 +58,27 @@ function NewMessageModal({ onClose, onPick }: { onClose: () => void; onPick: (c:
   }, [contacts, query]);
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
-      role="dialog"
-      aria-modal="true"
-      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
+    <Modal
+      isOpen
+      onClose={onClose}
+      title="New Message"
+      subtitle="Pick a teammate to start a direct conversation."
+      size="md"
     >
-      <div className="bg-white rounded-[24px] w-full max-w-[480px] shadow-premium overflow-hidden flex flex-col max-h-[80vh]">
-        <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between gap-3">
-          <div>
-            <h2 className="text-[15px] font-bold text-slate-900 tracking-tight">New Message</h2>
-            <p className="text-[11px] text-slate-500 mt-0.5">Pick a teammate to start a direct conversation.</p>
-          </div>
-          <button type="button" onClick={onClose} aria-label="Close" className="w-8 h-8 rounded-md text-slate-400 hover:bg-slate-100 flex items-center justify-center">
-            <X className="w-4 h-4" />
-          </button>
+      <div className="space-y-4">
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+          <input
+            autoFocus
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Search by name, email, staff ID, or job title…"
+            aria-label="Search contacts"
+            className="w-full h-10 pl-9 pr-3 rounded-[10px] border border-slate-200 text-[13px] text-slate-900 bg-white focus:outline-none focus:border-indigo-500"
+          />
         </div>
 
-        <div className="px-5 py-4 border-b border-slate-100">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-            <input
-              autoFocus
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search by name, email, staff ID, or job title…"
-              aria-label="Search contacts"
-              className="w-full h-10 pl-9 pr-3 rounded-[10px] border border-slate-200 text-[13px] text-slate-900 bg-white focus:outline-none focus:border-indigo-500"
-            />
-          </div>
-        </div>
-
-        <div className="flex-1 overflow-y-auto custom-scrollbar">
+        <div className="max-h-[55vh] overflow-y-auto custom-scrollbar -mx-1 px-1">
           {isLoading && <div className="px-6 py-10 text-center text-[12px] text-slate-500">Loading contacts…</div>}
           {error && <div className="px-6 py-10 text-center text-[12px] text-rose-700">{error.message}</div>}
           {!isLoading && !error && filtered.length === 0 && (
@@ -103,7 +90,7 @@ function NewMessageModal({ onClose, onPick }: { onClose: () => void; onPick: (c:
                 key={c.id}
                 type="button"
                 onClick={() => onPick(c)}
-                className="w-full px-5 py-3 flex items-center gap-3 text-left hover:bg-slate-50"
+                className="w-full px-3 py-3 flex items-center gap-2 text-left hover:bg-slate-50 rounded-lg"
               >
                 <div className="w-10 h-10 rounded-lg bg-slate-900 text-white flex items-center justify-center text-[11px] font-bold shrink-0">
                   {initials(c.name)}
@@ -124,7 +111,7 @@ function NewMessageModal({ onClose, onPick }: { onClose: () => void; onPick: (c:
           </div>
         </div>
       </div>
-    </div>
+    </Modal>
   );
 }
 

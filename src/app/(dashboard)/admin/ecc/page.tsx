@@ -159,7 +159,7 @@ export default function ECCPage() {
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 px-2">
         <div className="space-y-4">
           <div className="flex items-center gap-2.5">
-             <div className="px-2.5 py-1 bg-slate-900 text-white rounded-md text-[9px] font-bold uppercase tracking-[0.2em] flex items-center gap-1.5">
+             <div className="px-2.5 py-1 bg-slate-900 text-white rounded-md text-[9px] font-bold uppercase tracking-[0.2em] flex items-center gap-2">
                 <ShieldCheck className="w-3 h-3" />
                 Executive War Room
              </div>
@@ -240,10 +240,9 @@ export default function ECCPage() {
                  <h2 className="text-xl font-bold text-slate-900 tracking-tight leading-none">Operational Density Heatmap</h2>
                  <p className="text-[12px] font-medium text-slate-400 uppercase tracking-widest">Cross-Hub Performance Comparison</p>
               </div>
-              <button className="text-[10px] font-medium text-indigo-600 uppercase tracking-widest hover:text-indigo-700 transition-colors flex items-center gap-1.5">
-                 <Maximize2 className="w-3.5 h-3.5" />
-                 View Full Matrix
-              </button>
+              {/* "View Full Matrix" affordance removed — there is no full-matrix
+                  drill-down view, and the table below already shows the data.
+                  Live again when we build a dedicated matrix surface. */}
            </div>
 
            <div className="overflow-x-auto">
@@ -441,16 +440,17 @@ export default function ECCPage() {
             </div>
             
             <div className="flex items-center gap-4">
-               <button 
+               <button
+                 type="button"
                  onClick={() => setIsOptimizationOpen(true)}
-                 className="h-[52px] px-8 bg-slate-900 text-white rounded-[16px] text-[11px] font-bold uppercase tracking-widest hover:bg-indigo-600 transition-all shadow-premium flex items-center gap-3"
+                 className="h-[52px] px-8 bg-slate-900 text-white rounded-[16px] text-[11px] font-bold uppercase tracking-widest hover:bg-indigo-600 transition-all shadow-premium flex items-center gap-2"
                >
                   <ArrowRightLeft className="w-4 h-4" />
                   Optimize Regional Resources
                </button>
-               <button className="h-[52px] px-8 bg-white border border-slate-200 text-slate-900 rounded-[16px] text-[11px] font-bold uppercase tracking-widest hover:bg-slate-50 transition-all">
-                  Download Strategy Brief
-               </button>
+               {/* "Download Strategy Brief" removed — no backing PDF generator
+                   or report template. The Strategic Report link in the hero
+                   header routes to /reports for the real export catalogue. */}
             </div>
          </div>
 

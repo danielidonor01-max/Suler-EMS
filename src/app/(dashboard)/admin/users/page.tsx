@@ -2,10 +2,10 @@
 
 import React, { useMemo, useState } from 'react';
 import useSWR from 'swr';
-import { Search, Shield, X, AlertTriangle, Lock, UserCircle2, ChevronLeft, ChevronRight, Fingerprint, Loader2 } from 'lucide-react';
+import { Search, Shield, AlertTriangle, Lock, UserCircle2, ChevronLeft, ChevronRight, Fingerprint, Loader2 } from 'lucide-react';
 import { apiFetcher, apiMutate } from '@/lib/api/fetcher';
 import { Select } from '@/components/forms/Select';
-import { useEscapeDismiss } from '@/lib/hooks/use-dismiss';
+import { Modal } from '@/components/common/Modal';
 
 interface Role { id: string; name: string }
 interface AdminUser {
@@ -274,8 +274,6 @@ function RoleChangeModal({ user, roles, onClose, onSaved }: {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  useEscapeDismiss(() => { if (!busy) onClose(); }, true);
-
   const changed = roleId !== user.role.id;
   const isLastSuperAdminCandidate =
     user.role.name === 'SUPER_ADMIN' && roles.find(r => r.id === roleId)?.name !== 'SUPER_ADMIN';
@@ -293,81 +291,66 @@ function RoleChangeModal({ user, roles, onClose, onSaved }: {
   }
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
-      role="dialog"
-      aria-modal="true"
-      onClick={(e) => {
-        // Close only when the click landed on the backdrop itself, not on the
-        // dialog or any portal'd descendant (e.g. the Select dropdown).
-        if (e.target === e.currentTarget && !busy) onClose();
-      }}
+    <Modal
+      isOpen
+      onClose={() => { if (!busy) onClose(); }}
+      title="Modify Authority Scope"
+      subtitle={`${user.name} · ${user.email}`}
+      size="sm"
     >
-      <div className="bg-white rounded-[24px] w-full max-w-[440px] shadow-premium overflow-hidden">
-        <div className="px-6 py-5 border-b border-slate-100 flex items-center justify-between">
-          <div>
-            <h2 className="text-[16px] font-bold text-slate-900 tracking-tight">Modify Authority Scope</h2>
-            <p className="text-[11px] text-slate-400 font-bold uppercase tracking-wider mt-1">{user.name} · {user.email}</p>
+      <div className="space-y-6">
+        <div className="p-5 bg-slate-900 rounded-[20px] text-white space-y-3">
+          <div className="flex items-center gap-2">
+            <Fingerprint className="w-5 h-5 text-indigo-400" />
+            <h4 className="text-[12px] font-bold uppercase tracking-widest">IAM Authority Scope</h4>
           </div>
-          <button type="button" onClick={onClose} aria-label="Close" className="w-8 h-8 rounded-xl text-slate-400 hover:bg-slate-50 flex items-center justify-center transition-colors">
-            <X className="w-4 h-4" />
+          <p className="text-[12px] text-slate-400 leading-relaxed font-medium">
+            Modifying the role will instantly re-render the workspace for this user and affect their permission matrix.
+          </p>
+        </div>
+
+        <div className="space-y-2">
+          <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Select New Role Designation</label>
+          <Select
+            options={roles.map(r => ({ label: r.name, value: r.id }))}
+            value={roleId}
+            onChange={setRoleId}
+          />
+        </div>
+
+        {isLastSuperAdminCandidate && (
+          <div className="flex items-start gap-2 p-4 rounded-xl bg-amber-50 border border-amber-100 text-[11px] text-amber-800 leading-relaxed font-medium">
+            <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5 text-amber-600" />
+            <span>If this is the last active <span className="font-bold">SUPER_ADMIN</span>, the change will be rejected with <span className="font-mono font-bold bg-amber-100 px-1 py-0.5 rounded text-[10px]">LAST_SUPER_ADMIN_PROTECTED</span>.</span>
+          </div>
+        )}
+
+        {error && (
+          <div className="flex items-start gap-2 p-4 rounded-xl bg-rose-50 border border-rose-100 text-[11px] text-rose-700 leading-relaxed font-medium">
+            <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5 text-rose-600" />
+            <span>{error}</span>
+          </div>
+        )}
+
+        <div className="flex flex-col gap-3 pt-4 border-t border-slate-100">
+          <button
+            type="button"
+            onClick={save}
+            disabled={!changed || busy}
+            className="bg-slate-900 hover:bg-slate-950 text-white w-full h-[52px] rounded-xl text-[11px] font-bold uppercase tracking-widest transition-all shadow-lg shadow-slate-900/10 flex items-center justify-center gap-2 disabled:opacity-50"
+          >
+            {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Apply Role Mutation'}
+          </button>
+          <button
+            type="button"
+            onClick={onClose}
+            disabled={busy}
+            className="w-full h-[48px] text-[11px] font-bold uppercase tracking-widest text-slate-400 hover:text-slate-600 transition-colors"
+          >
+            Cancel
           </button>
         </div>
-
-        <div className="p-6 space-y-6">
-          <div className="p-5 bg-slate-900 rounded-[20px] text-white space-y-3">
-            <div className="flex items-center gap-3">
-               <Fingerprint className="w-5 h-5 text-indigo-400" />
-               <h4 className="text-[12px] font-bold uppercase tracking-widest">IAM Authority Scope</h4>
-            </div>
-            <p className="text-[12px] text-slate-400 leading-relaxed font-medium">
-               Modifying the role will instantly re-render the workspace for this user and affect their permission matrix.
-            </p>
-          </div>
-
-          <div className="space-y-2">
-            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Select New Role Designation</label>
-            <Select
-              options={roles.map(r => ({ label: r.name, value: r.id }))}
-              value={roleId}
-              onChange={setRoleId}
-            />
-          </div>
-
-          {isLastSuperAdminCandidate && (
-            <div className="flex items-start gap-2.5 p-4 rounded-xl bg-amber-50 border border-amber-100 text-[11px] text-amber-800 leading-relaxed font-medium">
-              <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5 text-amber-600" />
-              <span>If this is the last active <span className="font-bold">SUPER_ADMIN</span>, the change will be rejected with <span className="font-mono font-bold bg-amber-100 px-1 py-0.5 rounded text-[10px]">LAST_SUPER_ADMIN_PROTECTED</span>.</span>
-            </div>
-          )}
-
-          {error && (
-            <div className="flex items-start gap-2.5 p-4 rounded-xl bg-rose-50 border border-rose-100 text-[11px] text-rose-700 leading-relaxed font-medium">
-              <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5 text-rose-600" />
-              <span>{error}</span>
-            </div>
-          )}
-
-          <div className="flex flex-col gap-3 pt-4 border-t border-slate-100">
-            <button
-              type="button"
-              onClick={save}
-              disabled={!changed || busy}
-              className="bg-slate-900 hover:bg-slate-950 text-white w-full h-[52px] rounded-xl text-[11px] font-bold uppercase tracking-widest transition-all shadow-lg shadow-slate-900/10 flex items-center justify-center gap-2 disabled:opacity-50"
-            >
-              {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Apply Role Mutation'}
-            </button>
-            <button 
-              type="button" 
-              onClick={onClose} 
-              disabled={busy} 
-              className="w-full h-[48px] text-[11px] font-bold uppercase tracking-widest text-slate-400 hover:text-slate-600 transition-colors"
-            >
-              Cancel
-            </button>
-          </div>
-        </div>
       </div>
-    </div>
+    </Modal>
   );
 }

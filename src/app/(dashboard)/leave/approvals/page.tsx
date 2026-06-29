@@ -83,7 +83,7 @@ export default function LeaveApprovalsPage() {
           <a
             href="/api/leave/report"
             aria-label="Download leave report CSV (last 12 months)"
-            className="h-[40px] px-4 rounded-[12px] bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-[11px] font-bold uppercase tracking-widest flex items-center gap-1.5 shrink-0"
+            className="h-[40px] px-4 rounded-[12px] bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-[11px] font-bold uppercase tracking-widest flex items-center gap-2 shrink-0"
           >
             <Download className="w-3.5 h-3.5" />
             Report CSV
