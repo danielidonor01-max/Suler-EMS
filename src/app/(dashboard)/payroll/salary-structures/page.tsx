@@ -13,6 +13,7 @@ import { DatePicker } from '@/components/forms/DatePicker';
 import { EmployeeChip } from '@/components/employees/EmployeeChip';
 import { useConfirm } from '@/components/common/ConfirmDialog';
 import { useToast } from '@/components/common/ToastContext';
+import { NIGERIAN_BANKS, codeForBank } from '@/lib/banking/nigerian-banks';
 
 interface Employee {
   id: string;
@@ -59,7 +60,7 @@ export default function SalaryStructuresPage() {
   const [selected, setSelected] = useState<Employee | null>(null);
   const [createOpen, setCreateOpen] = useState(false);
 
-  const { data: employees = [] } = useApi<Employee[]>(isAdmin ? '/api/employees' : null);
+  const { data: employees = [], refresh: refreshEmployees } = useApi<Employee[]>(isAdmin ? '/api/employees' : null);
 
   // Filter by search; respect status if we get a list shape with status.
   const filtered = useMemo(() => {
@@ -150,6 +151,16 @@ export default function SalaryStructuresPage() {
         employee={selected}
         onClose={() => setSelected(null)}
         onCreate={() => setCreateOpen(true)}
+        onEmployeeUpdated={async () => {
+          // Re-fetch the employee list so the on-file bank chip in the
+          // row updates immediately, and refresh the modal's banner
+          // by re-selecting the merged employee from the new list.
+          await refreshEmployees();
+          if (selected) {
+            const fresh = (employees ?? []).find(e => e.id === selected.id);
+            if (fresh) setSelected(fresh);
+          }
+        }}
       />
       <CreateStructureModal
         employee={selected}
@@ -162,11 +173,13 @@ export default function SalaryStructuresPage() {
 }
 
 function EmployeeDetailModal({
-  employee, onClose, onCreate,
+  employee, onClose, onCreate, onEmployeeUpdated,
 }: {
   employee: Employee | null;
   onClose: () => void;
   onCreate: () => void;
+  /** Called after an inline edit (bank details) lands so the page list refreshes. */
+  onEmployeeUpdated: () => void;
 }) {
   const { data: structures = [], refresh } = useApi<SalaryStructure[]>(
     employee ? `/api/payroll/salary-structures?employeeId=${employee.id}` : null,
@@ -205,23 +218,16 @@ function EmployeeDetailModal({
     >
       <div className="space-y-6">
 
-        {/* Bank info banner */}
-        <div className={`p-4 rounded-xl border flex items-center justify-between gap-4 ${
-          employee.bankAccountNumber
-            ? 'bg-emerald-50 border-emerald-100'
-            : 'bg-rose-50 border-rose-100'
-        }`}>
-          <div>
-            <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Bank Account</div>
-            <div className="text-[13px] font-bold text-slate-900 mt-1">
-              {employee.bankAccountNumber
-                ? `${employee.bankName ?? '—'} · ${employee.bankAccountNumber}`
-                : 'Not on file — payroll disbursement will skip this employee'}
-            </div>
-          </div>
-          {!employee.bankAccountNumber && <AlertTriangle className="w-4 h-4 text-rose-500" />}
-          {employee.bankAccountNumber && <CheckCircle2 className="w-4 h-4 text-emerald-600" />}
-        </div>
+        {/* Bank info banner — inline edit so HR doesn't have to navigate
+            to the profile modal to fix the most common reason payroll
+            disbursement skips someone. */}
+        <BankBanner
+          employee={employee}
+          onSaved={async () => {
+            await onEmployeeUpdated();
+            addToast('Bank details saved.', 'SUCCESS');
+          }}
+        />
 
         {/* Active */}
         <div>
@@ -323,6 +329,139 @@ function StructureCard({
   );
 }
 
+function BankBanner({
+  employee, onSaved,
+}: {
+  employee: Employee;
+  onSaved: () => Promise<void> | void;
+}) {
+  const [editing, setEditing] = useState(false);
+  const [bankName, setBankName] = useState(employee.bankName ?? '');
+  const [account,  setAccount]  = useState(employee.bankAccountNumber ?? '');
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  // Reset local state when the modal switches to a different employee.
+  React.useEffect(() => {
+    if (editing) return;
+    setBankName(employee.bankName ?? '');
+    setAccount(employee.bankAccountNumber ?? '');
+    setError(null);
+  }, [editing, employee.id, employee.bankName, employee.bankAccountNumber]);
+
+  const hasAccount = !!employee.bankAccountNumber;
+
+  const handleSave = async () => {
+    if (account.trim() && !/^\d{10}$/.test(account.trim())) {
+      setError('Account number should be 10 digits.');
+      return;
+    }
+    setBusy(true);
+    setError(null);
+    try {
+      const derivedCode = bankName ? codeForBank(bankName) : null;
+      await apiMutate(`/api/employees/${employee.id}/profile`, 'PATCH', {
+        bankName:          bankName.trim() || null,
+        bankCode:          derivedCode,
+        bankAccountNumber: account.trim() || null,
+      });
+      setEditing(false);
+      await onSaved();
+    } catch (err: any) {
+      setError(err?.message ?? 'Could not save bank details');
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  if (!editing) {
+    return (
+      <div className={`p-4 rounded-xl border flex items-center justify-between gap-4 ${
+        hasAccount ? 'bg-emerald-50 border-emerald-100' : 'bg-rose-50 border-rose-100'
+      }`}>
+        <div>
+          <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Bank Account</div>
+          <div className="text-[13px] font-bold text-slate-900 mt-1">
+            {hasAccount
+              ? `${employee.bankName ?? '—'} · ${employee.bankAccountNumber}`
+              : 'Not on file — payroll disbursement will skip this employee'}
+          </div>
+        </div>
+        <div className="flex items-center gap-2 shrink-0">
+          {hasAccount ? (
+            <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+          ) : (
+            <AlertTriangle className="w-4 h-4 text-rose-500" />
+          )}
+          <button
+            type="button"
+            onClick={() => setEditing(true)}
+            className="px-3 h-9 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 rounded-lg text-[10px] font-bold uppercase tracking-widest flex items-center gap-2"
+          >
+            <Edit3 className="w-3 h-3" />
+            {hasAccount ? 'Edit' : 'Add'}
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="p-4 rounded-xl border border-slate-200 bg-slate-50 space-y-3">
+      <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Bank Account</div>
+      <div className="space-y-1.5">
+        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Bank Name</label>
+        <select
+          value={bankName}
+          onChange={(e) => setBankName(e.target.value)}
+          aria-label="Bank Name"
+          className="w-full h-[44px] bg-white border border-slate-200 rounded-xl px-3 text-[13px] font-medium outline-none focus:border-indigo-500"
+        >
+          <option value="">Select a bank…</option>
+          {NIGERIAN_BANKS.map(b => (
+            <option key={b.code} value={b.name}>{b.name}</option>
+          ))}
+        </select>
+      </div>
+      <div className="space-y-1.5">
+        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Account Number (10 digits)</label>
+        <input
+          value={account}
+          onChange={(e) => setAccount(e.target.value)}
+          inputMode="numeric"
+          maxLength={10}
+          aria-label="Account number"
+          className="w-full h-[44px] bg-white border border-slate-200 rounded-xl px-3 text-[13px] font-bold tracking-wider outline-none focus:border-indigo-500"
+        />
+      </div>
+      {error && (
+        <div className="flex items-start gap-2 p-3 bg-rose-50 border border-rose-100 rounded-xl">
+          <AlertTriangle className="w-4 h-4 text-rose-500 mt-0.5 shrink-0" />
+          <span className="text-[12px] font-medium text-rose-700">{error}</span>
+        </div>
+      )}
+      <div className="flex gap-2">
+        <button
+          type="button"
+          onClick={() => { setEditing(false); setError(null); }}
+          disabled={busy}
+          className="flex-1 h-10 bg-white border border-slate-200 text-slate-700 rounded-xl text-[10px] font-bold uppercase tracking-widest disabled:opacity-60"
+        >
+          Cancel
+        </button>
+        <button
+          type="button"
+          onClick={handleSave}
+          disabled={busy}
+          className="flex-1 h-10 bg-slate-900 hover:bg-black text-white rounded-xl text-[10px] font-bold uppercase tracking-widest disabled:opacity-60"
+        >
+          {busy ? 'Saving…' : 'Save'}
+        </button>
+      </div>
+    </div>
+  );
+}
+
 function KV({ label, value, bold }: { label: string; value: string; bold?: boolean }) {
   return (
     <div>
@@ -330,6 +469,15 @@ function KV({ label, value, bold }: { label: string; value: string; bold?: boole
       <div className={`text-[12px] ${bold ? 'font-black text-slate-900' : 'font-bold text-slate-700'}`}>{value}</div>
     </div>
   );
+}
+
+/** First day of next month, ISO yyyy-mm-dd. Payroll runs monthly; new
+ * comp typically takes effect at the start of the next pay period, so
+ * that's the sensible default rather than "today". */
+function firstOfNextMonth(): string {
+  const now = new Date();
+  const d = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 1));
+  return d.toISOString().slice(0, 10);
 }
 
 function CreateStructureModal({
@@ -340,7 +488,19 @@ function CreateStructureModal({
   onClose: () => void;
   onSaved: () => void;
 }) {
-  const [effectiveDate, setEffectiveDate] = useState(new Date().toISOString().slice(0, 10));
+  // Re-fetches the same URL EmployeeDetailModal already used — SWR
+  // dedup (5s window) means it's a single round-trip in practice.
+  // Used to surface a delta chip vs the current gross when entering
+  // the new structure.
+  const { data: existingStructures = [] } = useApi<SalaryStructure[]>(
+    isOpen && employee ? `/api/payroll/salary-structures?employeeId=${employee.id}` : null,
+  );
+  const currentActiveGross = useMemo(() => {
+    const active = existingStructures.find(s => s.isActive);
+    return active ? totalGross(active) : null;
+  }, [existingStructures]);
+
+  const [effectiveDate, setEffectiveDate] = useState(firstOfNextMonth());
   const [basicSalary,   setBasicSalary]   = useState<number>(0);
   const [housing,       setHousing]       = useState<number>(0);
   const [transport,     setTransport]     = useState<number>(0);
@@ -351,7 +511,7 @@ function CreateStructureModal({
 
   React.useEffect(() => {
     if (!isOpen) return;
-    setEffectiveDate(new Date().toISOString().slice(0, 10));
+    setEffectiveDate(firstOfNextMonth());
     setBasicSalary(0);
     setHousing(0);
     setTransport(0);
@@ -462,9 +622,24 @@ function CreateStructureModal({
           )}
         </div>
 
-        <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-between">
+        <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-between gap-3">
           <span className="text-[11px] font-bold text-slate-500 uppercase tracking-widest">Gross Total</span>
-          <span className="text-[18px] font-black text-slate-900">{fmtNGN(gross)}</span>
+          <div className="flex items-center gap-2">
+            <span className="text-[18px] font-black text-slate-900">{fmtNGN(gross)}</span>
+            {/* Delta chip — only when there's a prior active structure and
+                the user has entered values. Helps HR catch a typo (a
+                ₦5,000,000 raise should jump out visually) before they
+                hit Save. */}
+            {currentActiveGross != null && gross > 0 && gross !== currentActiveGross && (
+              <span className={`text-[10px] font-bold px-2 py-0.5 rounded ${
+                gross > currentActiveGross
+                  ? 'bg-emerald-100 text-emerald-700'
+                  : 'bg-rose-100 text-rose-700'
+              }`}>
+                {gross > currentActiveGross ? '+' : '−'}{fmtNGN(Math.abs(gross - currentActiveGross))}
+              </span>
+            )}
+          </div>
         </div>
 
         <Field label="Reason (optional)">
@@ -510,13 +685,21 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
 }
 
 function MoneyInput({ value, onChange, small }: { value: number; onChange: (v: number) => void; small?: boolean }) {
+  // Show empty string when the value is 0 so the user doesn't have to
+  // backspace a leading zero before typing. This is the most common
+  // complaint with raw number inputs — typing "5" with the field at
+  // "0" produces "05" which the browser then strips, leaving "5", but
+  // the cursor jumps. Treating 0 as "" sidesteps the whole dance.
   return (
     <div className="relative">
       <span className={`absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 ${small ? 'text-[11px]' : 'text-[12px]'} font-bold`}>₦</span>
       <input
-        type="number" min={0} step="1"
-        value={value}
+        type="number"
+        min={0}
+        step="1"
+        value={value === 0 ? '' : value}
         onChange={(e) => onChange(parseFloat(e.target.value) || 0)}
+        placeholder="0"
         aria-label="Amount"
         className={`w-full bg-slate-50 border border-slate-200 rounded-${small ? 'lg' : 'xl'} pl-6 pr-3 text-[13px] font-bold outline-none focus:border-indigo-500 ${small ? 'h-9 text-[12px]' : 'h-[44px]'}`}
       />
