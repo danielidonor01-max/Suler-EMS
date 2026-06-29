@@ -34,6 +34,7 @@ import { useApi } from '@/lib/api/use-api';
 import { apiMutate } from '@/lib/api/fetcher';
 import { Select } from '@/components/forms/Select';
 import { useEmployeeProfile } from '@/context/EmployeeProfileContext';
+import { NIGERIAN_BANKS, codeForBank } from '@/lib/banking/nigerian-banks';
 import { useConfirm } from '@/components/common/ConfirmDialog';
 import { useToast } from '@/components/common/ToastContext';
 
@@ -947,7 +948,6 @@ function BankingSection({ profile }: { profile: ProfilePayload }) {
   const editable = profile.capabilities.canEditBanking || profile.capabilities.canEditSelf;
   const [editing, setEditing] = useState(false);
   const [bankName,   setBankName]   = useState(profile.banking.bankName ?? '');
-  const [bankCode,   setBankCode]   = useState(profile.banking.bankCode ?? '');
   const [account,    setAccount]    = useState(profile.banking.bankAccountNumber ?? '');
   const [busy,       setBusy]       = useState(false);
   const [error,      setError]      = useState<string | null>(null);
@@ -956,18 +956,27 @@ function BankingSection({ profile }: { profile: ProfilePayload }) {
   useEffect(() => {
     if (editing) return;
     setBankName(profile.banking.bankName ?? '');
-    setBankCode(profile.banking.bankCode ?? '');
     setAccount(profile.banking.bankAccountNumber ?? '');
-  }, [editing, profile.banking.bankName, profile.banking.bankCode, profile.banking.bankAccountNumber]);
+  }, [editing, profile.banking.bankName, profile.banking.bankAccountNumber]);
 
   const handleSave = async () => {
+    // Account number should be exactly 10 digits (NUBAN). We don't
+    // strictly enforce it server-side because non-NUBAN test accounts
+    // exist, but warn the user before they hit save.
+    if (account && !/^\d{10}$/.test(account.trim())) {
+      setError('Account number should be 10 digits.');
+      return;
+    }
     setBusy(true);
     setError(null);
     try {
+      // bankCode is derived from the picked bank name (NIBSS lookup) so
+      // the user never types the code. Empty bankName clears both.
+      const derivedCode = bankName ? codeForBank(bankName) : null;
       await apiMutate(`/api/employees/${profile.id}/profile`, 'PATCH', {
-        bankName:          bankName  || null,
-        bankCode:          bankCode  || null,
-        bankAccountNumber: account   || null,
+        bankName:          bankName.trim() || null,
+        bankCode:          derivedCode,
+        bankAccountNumber: account.trim()   || null,
       });
       setEditing(false);
       setSavedFlash(true);
@@ -1013,9 +1022,6 @@ function BankingSection({ profile }: { profile: ProfilePayload }) {
               <div className="text-[13px] font-bold text-slate-900 mt-1">
                 {profile.banking.bankName ?? '—'} · {profile.banking.bankAccountNumber}
               </div>
-              {profile.banking.bankCode && (
-                <div className="text-[10px] text-slate-500 mt-0.5">NIBSS code {profile.banking.bankCode}</div>
-              )}
             </div>
             <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
           </div>
@@ -1032,9 +1038,19 @@ function BankingSection({ profile }: { profile: ProfilePayload }) {
         )
       ) : (
         <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-3">
-          <div className="grid grid-cols-2 gap-3">
-            <TextField label="Bank Name" value={bankName} onChange={setBankName} />
-            <TextField label="NIBSS Code" value={bankCode} onChange={setBankCode} />
+          <div className="space-y-1.5">
+            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Bank Name</label>
+            <select
+              value={bankName}
+              onChange={(e) => setBankName(e.target.value)}
+              aria-label="Bank Name"
+              className="w-full h-[44px] bg-slate-50 border border-slate-200 rounded-xl px-3 text-[13px] font-medium outline-none focus:border-indigo-500"
+            >
+              <option value="">Select a bank…</option>
+              {NIGERIAN_BANKS.map(b => (
+                <option key={b.code} value={b.name}>{b.name}</option>
+              ))}
+            </select>
           </div>
           <TextField label="Account Number (10 digits)" value={account} onChange={setAccount} />
           {error && <Alert tone="rose" message={error} />}
