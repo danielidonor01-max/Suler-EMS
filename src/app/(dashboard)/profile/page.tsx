@@ -9,6 +9,8 @@ import {
 } from 'lucide-react';
 import { apiFetcher, apiMutate } from '@/lib/api/fetcher';
 import { Modal } from '@/components/common/Modal';
+import { Select } from '@/components/forms/Select';
+import { MfaPanel } from '@/components/profile/MfaPanel';
 
 interface Profile {
   id: string;
@@ -17,6 +19,8 @@ interface Profile {
   isActive: boolean;
   version: number;
   lastLoginAt: string | null;
+  mfaEnabled?: boolean;
+  mfaLastUsedAt?: string | null;
   role: { id: string; name: string; permissions: Array<{ code: string; name: string }> };
   employee: {
     id: string;
@@ -250,6 +254,12 @@ export default function ProfilePage() {
           </div>
         </div>
 
+        <MfaPanel
+          enabled={Boolean(profile.mfaEnabled)}
+          lastUsedAt={profile.mfaLastUsedAt ?? null}
+          onChange={async () => { await mutate(); }}
+        />
+
         <div className="bg-white border border-slate-200 rounded-[20px] shadow-sm overflow-hidden">
           <div className="px-6 py-4 border-b border-slate-100">
             <h2 className="text-[13px] font-bold text-slate-900 tracking-tight">Session</h2>
@@ -438,24 +448,17 @@ function RequestChangeModal({
           HR will review your request and apply the change. You&apos;ll get a notification when it&apos;s actioned.
         </p>
 
-        <div className="space-y-1.5">
-          <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Field to Change</label>
-          <select
-            aria-label="Field to change"
-            value={field}
-            onChange={(e) => setField(e.target.value)}
-            className="w-full h-[44px] bg-slate-50 border border-slate-200 rounded-xl px-3 text-[13px] font-bold outline-none focus:border-indigo-500"
-          >
-            {REQUESTABLE_FIELDS.map(f => (
-              <option key={f.value} value={f.value}>{f.label}</option>
-            ))}
-          </select>
-          {currentValueHint && (
+        <Select
+          label="Field to Change"
+          value={field}
+          onChange={setField}
+          options={REQUESTABLE_FIELDS}
+        />
+        {currentValueHint && (
             <div className="text-[11px] text-slate-500 px-1">
               Current value: <span className="font-bold text-slate-700">{currentValueHint}</span>
             </div>
-          )}
-        </div>
+        )}
 
         <div className="space-y-1.5">
           <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Proposed Value (optional)</label>
