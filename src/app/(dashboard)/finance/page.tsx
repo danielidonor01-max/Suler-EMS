@@ -4,7 +4,7 @@ import React, { useMemo, useState } from 'react';
 import Link from 'next/link';
 import {
   DollarSign, Target, Activity, ShieldCheck, TrendingUp, ArrowRight,
-  Plus, Zap, PieChart, CreditCard, AlertTriangle, History, FileText,
+  Plus, Zap, PieChart, CreditCard, AlertTriangle, History, FileText, Download,
 } from 'lucide-react';
 import { useApi } from '@/lib/api/use-api';
 import { apiMutate } from '@/lib/api/fetcher';
@@ -207,13 +207,23 @@ export default function FinanceDashboard() {
                 </button>
               )}
               {isFinance && (
-                <Link
-                  href="/finance/approvals"
-                  className="bg-slate-900 hover:bg-black text-white flex items-center gap-2 px-5 h-11 rounded-xl text-[11px] font-bold uppercase tracking-wider shadow-md"
-                >
-                  Approvals Queue
-                  <ArrowRight className="w-3.5 h-3.5" />
-                </Link>
+                <>
+                  <a
+                    href="/api/finance/expenditures/export"
+                    aria-label="Download expenditures CSV (last 12 months)"
+                    className="bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 flex items-center gap-2 px-5 h-11 rounded-xl text-[11px] font-bold uppercase tracking-wider transition-all"
+                  >
+                    <Download className="w-4 h-4" />
+                    Export CSV
+                  </a>
+                  <Link
+                    href="/finance/approvals"
+                    className="bg-slate-900 hover:bg-black text-white flex items-center gap-2 px-5 h-11 rounded-xl text-[11px] font-bold uppercase tracking-wider shadow-md"
+                  >
+                    Approvals Queue
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </Link>
+                </>
               )}
             </div>
           </div>
@@ -367,12 +377,16 @@ export default function FinanceDashboard() {
                   return (
                     <div key={e.id} className="bg-white border border-slate-200 rounded-[20px] p-4 space-y-3">
                       <div className="flex items-start justify-between gap-3">
-                        <div className="min-w-0">
-                          <div className="text-[13px] font-bold text-slate-900 truncate">{e.description}</div>
+                        <Link
+                          href={`/finance/expenditures/${e.id}`}
+                          className="min-w-0 group"
+                          aria-label={`Open expenditure ${e.description}`}
+                        >
+                          <div className="text-[13px] font-bold text-slate-900 truncate group-hover:text-indigo-700 transition-colors">{e.description}</div>
                           <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">
                             {e.budget.name}{e.category ? ` · ${e.category.name}` : ''}{e.vendor ? ` · ${e.vendor}` : ''}
                           </div>
-                        </div>
+                        </Link>
                         <span className={`inline-flex px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-widest border whitespace-nowrap ${EXPENDITURE_TONE[e.status] ?? EXPENDITURE_TONE.DRAFT}`}>
                           {e.status}
                         </span>
@@ -395,8 +409,12 @@ export default function FinanceDashboard() {
                             onChange={(ev) => setRejectReason(ev.target.value)}
                             placeholder="Reason for rejection (visible to requester)"
                             aria-label="Rejection reason"
+                            minLength={5}
                             className="w-full h-9 bg-slate-50 border border-slate-200 rounded-lg px-3 text-[12px] outline-none focus:border-rose-500"
                           />
+                          {rejectReason.trim().length > 0 && rejectReason.trim().length < 5 && (
+                            <p className="text-[10px] text-rose-600">Give the requester at least 5 characters of context.</p>
+                          )}
                           <div className="flex gap-2">
                             <button type="button" onClick={() => { setRejectingId(null); setRejectReason(''); }}
                               disabled={busyId === e.id}
@@ -404,8 +422,8 @@ export default function FinanceDashboard() {
                               Cancel
                             </button>
                             <button type="button"
-                              onClick={() => transition(e.id, 'REJECT_FINANCE', rejectReason.trim() || undefined)}
-                              disabled={busyId === e.id || !rejectReason.trim()}
+                              onClick={() => transition(e.id, 'REJECT_FINANCE', rejectReason.trim())}
+                              disabled={busyId === e.id || rejectReason.trim().length < 5}
                               className="flex-1 h-9 bg-rose-600 hover:bg-rose-700 text-white rounded-lg text-[10px] font-bold uppercase tracking-widest disabled:opacity-60">
                               {busyId === e.id ? 'Rejecting…' : 'Reject'}
                             </button>
