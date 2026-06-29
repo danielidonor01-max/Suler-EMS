@@ -93,7 +93,11 @@ export default function EmployeesPage() {
     {
       label: 'View Profile',
       icon: Eye,
-      onClick: (emp: Employee) => openProfile(emp.id)
+      // WorkforceContext shapes `id` as the display staffId for back-
+      // compat with sublabels; the canonical UUID lives on `dbId`. The
+      // profile API expects the UUID — passing staffId 404s and the
+      // modal hangs in "Loading…".
+      onClick: (emp: Employee) => openProfile(emp.dbId ?? emp.id)
     },
     {
       label: 'Edit Identity',
@@ -128,7 +132,7 @@ export default function EmployeesPage() {
       accessor: "name",
       render: (_val: string, emp: Employee) => (
         <EmployeeChip
-          employeeId={emp.id}
+          employeeId={emp.dbId ?? emp.id}
           name={emp.name}
           sublabel={emp.staffId ?? ''}
           size="md"

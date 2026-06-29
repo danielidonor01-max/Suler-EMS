@@ -30,18 +30,30 @@ export interface UpdateEmployeeDTO extends Partial<CreateEmployeeDTO> {
 export interface EmployeeResponseDTO {
   id: UUID;
   staffId: string;
-  fullName: string; // Aggregated by backend
+  /** Raw name parts so per-row consumers (salary structures, bank pickers) can format them their way. */
+  firstName?: string;
+  lastName?: string;
+  /** Aggregated form, kept for any consumer still reading `fullName`. */
+  fullName: string;
   email: string;
-  departmentName: string; // Joined by backend
-  roleName: string; // Joined by backend
+  phone?: string;
+  jobTitle?: string;
+  /** Joined department object. `departmentName` retained for backwards compat. */
+  department?: { id: UUID; name: string } | null;
+  departmentName: string;
+  roleName: string;
   status: EmployeeStatusType;
   hireDate: string;
-  joinedDaysAgo: number; // Computed by backend
+  joinedDaysAgo: number;
   nin?: string;
   bvn?: string;
   tin?: string;
   grade?: string;
-  branch?: string;
+  branch?: string | null;
+  /** Bank disbursement fields — surfaced for the salary-structures + profile views. */
+  bankName?: string | null;
+  bankCode?: string | null;
+  bankAccountNumber?: string | null;
 }
 
 

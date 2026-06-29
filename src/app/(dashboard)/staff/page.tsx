@@ -152,9 +152,9 @@ export default function WorkforcePage() {
                 accessor: "name",
                 render: (val: string, row: Employee) => (
                   <EmployeeChip
-                    employeeId={row.id}
+                    employeeId={row.dbId ?? row.id}
                     name={val}
-                    sublabel={row.id}
+                    sublabel={row.staffId ?? row.id}
                     size="md"
                   />
                 )
