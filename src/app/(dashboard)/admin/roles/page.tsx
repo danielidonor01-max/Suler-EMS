@@ -4,7 +4,7 @@ import React, { useMemo, useState } from 'react';
 import useSWR from 'swr';
 import { Shield, ShieldCheck, Users, Check, X, Lock, AlertTriangle, Plus, Pencil, Trash2 } from 'lucide-react';
 import { apiFetcher, apiMutate } from '@/lib/api/fetcher';
-import { useEscapeDismiss } from '@/lib/hooks/use-dismiss';
+import { Modal } from '@/components/common/Modal';
 
 interface Permission { id: string; code: string; name: string }
 interface Role {
@@ -111,9 +111,9 @@ export default function RolesAdminPage() {
                   type="button"
                   onClick={() => setCreating(true)}
                   aria-label="Create new role"
-                  className="h-7 px-2 rounded-md bg-slate-900 hover:bg-black text-white text-[10px] font-bold uppercase tracking-widest flex items-center gap-1"
+                  className="h-9 px-3 rounded-lg bg-slate-900 hover:bg-black text-white text-[10px] font-bold uppercase tracking-widest flex items-center gap-2"
                 >
-                  <Plus className="w-3 h-3" />
+                  <Plus className="w-3.5 h-3.5" />
                   New
                 </button>
               </div>
@@ -163,23 +163,23 @@ export default function RolesAdminPage() {
                       {selectedRole._count.users} assigned
                     </div>
                     {!SYSTEM_ROLES.has(selectedRole.name) && (
-                      <div className="flex items-center gap-1.5">
+                      <div className="flex items-center gap-2">
                         <button
                           type="button"
                           onClick={() => setEditing(selectedRole)}
                           aria-label="Rename role"
-                          className="h-7 px-2 rounded-md text-slate-600 hover:bg-slate-100 text-[10px] font-bold uppercase tracking-widest flex items-center gap-1"
+                          className="h-9 px-3 rounded-lg text-slate-600 hover:bg-slate-100 text-[10px] font-bold uppercase tracking-widest flex items-center gap-2"
                         >
-                          <Pencil className="w-3 h-3" />
+                          <Pencil className="w-3.5 h-3.5" />
                           Rename
                         </button>
                         <button
                           type="button"
                           onClick={() => setDeleting(selectedRole)}
                           aria-label="Delete role"
-                          className="h-7 px-2 rounded-md text-rose-700 hover:bg-rose-50 text-[10px] font-bold uppercase tracking-widest flex items-center gap-1"
+                          className="h-9 px-3 rounded-lg text-rose-700 hover:bg-rose-50 text-[10px] font-bold uppercase tracking-widest flex items-center gap-2"
                         >
-                          <Trash2 className="w-3 h-3" />
+                          <Trash2 className="w-3.5 h-3.5" />
                           Delete
                         </button>
                       </div>
@@ -290,8 +290,6 @@ function RoleEditorModal({ mode, role, onClose, onSaved }: {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  useEscapeDismiss(() => { if (!busy) onClose(); }, true);
-
   const nameValid = /^[A-Z][A-Z0-9_]*$/.test(name) && name.length >= 2 && name.length <= 40;
 
   async function save() {
@@ -316,59 +314,56 @@ function RoleEditorModal({ mode, role, onClose, onSaved }: {
   }
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
-      role="dialog"
-      aria-modal="true"
-      onClick={(e) => { if (e.target === e.currentTarget && !busy) onClose(); }}
+    <Modal
+      isOpen
+      onClose={() => { if (!busy) onClose(); }}
+      title={mode === 'create' ? 'Create Role' : 'Rename Role'}
+      size="sm"
     >
-      <div className="bg-white rounded-[24px] w-full max-w-[440px] shadow-premium overflow-hidden">
-        <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
-          <h2 className="text-[15px] font-bold text-slate-900 tracking-tight">
-            {mode === 'create' ? 'Create Role' : 'Rename Role'}
-          </h2>
-          <button type="button" onClick={onClose} aria-label="Close" className="w-8 h-8 rounded-md text-slate-400 hover:bg-slate-100 flex items-center justify-center">
-            <X className="w-4 h-4" />
-          </button>
-        </div>
-        <div className="p-6 space-y-4">
-          <div>
-            <label className="text-[11px] font-bold text-slate-500 uppercase tracking-widest" htmlFor="role-name">Name (UPPER_SNAKE_CASE)</label>
-            <input aria-label="Name (UPPER_SNAKE_CASE)"
-              id="role-name"
-              value={name}
-              onChange={(e) => setName(e.target.value.toUpperCase())}
-              placeholder="e.g. DEPT_LEAD"
-              className={`mt-2 w-full h-[44px] px-4 rounded-[12px] border text-[13px] font-mono text-slate-900 bg-white focus:outline-none ${name && !nameValid ? 'border-rose-300 focus:border-rose-500' : 'border-slate-200 focus:border-indigo-500'}`}
-            />
-            {name && !nameValid && (
-              <p className="mt-1.5 text-[11px] text-rose-700">Must start with a letter; use only A–Z, 0–9, underscore.</p>
-            )}
-          </div>
-          <div>
-            <label className="text-[11px] font-bold text-slate-500 uppercase tracking-widest" htmlFor="role-desc">Description (optional)</label>
-            <input aria-label="Description (optional)"
-              id="role-desc"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="What this role does"
-              className="mt-2 w-full h-[44px] px-4 rounded-[12px] border border-slate-200 text-[13px] text-slate-900 bg-white focus:outline-none focus:border-indigo-500"
-            />
-          </div>
-          {mode === 'create' && (
-            <div className="flex items-start gap-2 px-3 py-2.5 rounded-[10px] bg-sky-50 border border-sky-100 text-[11px] text-sky-800">
-              <Shield className="w-4 h-4 shrink-0 mt-0.5" />
-              <span>The new role starts with <strong>zero permissions</strong>. Grant access on the matrix after creation.</span>
-            </div>
-          )}
-          {error && (
-            <div className="px-3 py-2.5 rounded-[10px] bg-rose-50 border border-rose-100 text-[11px] text-rose-700">
-              {error}
-            </div>
+      <div className="space-y-4">
+        <div>
+          <label className="text-[11px] font-bold text-slate-500 uppercase tracking-widest" htmlFor="role-name">Name (UPPER_SNAKE_CASE)</label>
+          <input
+            id="role-name"
+            aria-label="Name (UPPER_SNAKE_CASE)"
+            value={name}
+            onChange={(e) => setName(e.target.value.toUpperCase())}
+            placeholder="e.g. DEPT_LEAD"
+            className={`mt-2 w-full h-[44px] px-4 rounded-[12px] border text-[13px] font-mono text-slate-900 bg-white focus:outline-none ${name && !nameValid ? 'border-rose-300 focus:border-rose-500' : 'border-slate-200 focus:border-indigo-500'}`}
+          />
+          {name && !nameValid && (
+            <p className="mt-1.5 text-[11px] text-rose-700">Must start with a letter; use only A–Z, 0–9, underscore.</p>
           )}
         </div>
-        <div className="px-6 py-4 border-t border-slate-100 flex items-center justify-end gap-2 bg-slate-50/40">
-          <button type="button" onClick={onClose} className="h-[40px] px-4 rounded-[12px] text-[11px] font-bold uppercase tracking-widest text-slate-600 hover:bg-slate-100">
+        <div>
+          <label className="text-[11px] font-bold text-slate-500 uppercase tracking-widest" htmlFor="role-desc">Description (optional)</label>
+          <input
+            id="role-desc"
+            aria-label="Description (optional)"
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            placeholder="What this role does"
+            className="mt-2 w-full h-[44px] px-4 rounded-[12px] border border-slate-200 text-[13px] text-slate-900 bg-white focus:outline-none focus:border-indigo-500"
+          />
+        </div>
+        {mode === 'create' && (
+          <div className="flex items-start gap-2 px-3 py-2.5 rounded-[10px] bg-sky-50 border border-sky-100 text-[11px] text-sky-800">
+            <Shield className="w-4 h-4 shrink-0 mt-0.5" />
+            <span>The new role starts with <strong>zero permissions</strong>. Grant access on the matrix after creation.</span>
+          </div>
+        )}
+        {error && (
+          <div className="px-3 py-2.5 rounded-[10px] bg-rose-50 border border-rose-100 text-[11px] text-rose-700">
+            {error}
+          </div>
+        )}
+        <div className="pt-2 flex items-center justify-end gap-2">
+          <button
+            type="button"
+            onClick={onClose}
+            disabled={busy}
+            className="h-[40px] px-4 rounded-[12px] text-[11px] font-bold uppercase tracking-widest text-slate-600 hover:bg-slate-100 disabled:opacity-50"
+          >
             Cancel
           </button>
           <button
@@ -381,7 +376,7 @@ function RoleEditorModal({ mode, role, onClose, onSaved }: {
           </button>
         </div>
       </div>
-    </div>
+    </Modal>
   );
 }
 
@@ -393,8 +388,6 @@ function DeleteRoleModal({ role, onClose, onDeleted }: {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const hasUsers = role._count.users > 0;
-
-  useEscapeDismiss(() => { if (!busy) onClose(); }, true);
 
   async function confirm() {
     setBusy(true);
@@ -409,41 +402,38 @@ function DeleteRoleModal({ role, onClose, onDeleted }: {
   }
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
-      role="dialog"
-      aria-modal="true"
-      onClick={(e) => { if (e.target === e.currentTarget && !busy) onClose(); }}
+    <Modal
+      isOpen
+      onClose={() => { if (!busy) onClose(); }}
+      title="Delete Role"
+      size="sm"
     >
-      <div className="bg-white rounded-[24px] w-full max-w-[420px] shadow-premium overflow-hidden">
-        <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
-          <h2 className="text-[15px] font-bold text-rose-700 tracking-tight">Delete Role</h2>
-          <button type="button" onClick={onClose} aria-label="Close" className="w-8 h-8 rounded-md text-slate-400 hover:bg-slate-100 flex items-center justify-center">
-            <X className="w-4 h-4" />
-          </button>
-        </div>
-        <div className="p-6 space-y-4">
-          <p className="text-[13px] text-slate-700">
-            Delete <span className="font-bold font-mono">{role.name}</span>?
+      <div className="space-y-4">
+        <p className="text-[13px] text-slate-700">
+          Delete <span className="font-bold font-mono">{role.name}</span>?
+        </p>
+        {hasUsers ? (
+          <div className="flex items-start gap-2 px-3 py-2.5 rounded-[10px] bg-amber-50 border border-amber-100 text-[11px] text-amber-800">
+            <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
+            <span>
+              <strong>{role._count.users}</strong> user(s) still hold this role. Reassign them via <span className="font-mono">/admin/users</span> first — the server will reject the delete otherwise (<span className="font-mono font-bold">ROLE_IN_USE</span>).
+            </span>
+          </div>
+        ) : (
+          <p className="text-[12px] text-slate-500">
+            No users hold this role. Deletion is permanent; audit entries are preserved.
           </p>
-          {hasUsers ? (
-            <div className="flex items-start gap-2 px-3 py-2.5 rounded-[10px] bg-amber-50 border border-amber-100 text-[11px] text-amber-800">
-              <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
-              <span>
-                <strong>{role._count.users}</strong> user(s) still hold this role. Reassign them via <span className="font-mono">/admin/users</span> first — the server will reject the delete otherwise (<span className="font-mono font-bold">ROLE_IN_USE</span>).
-              </span>
-            </div>
-          ) : (
-            <p className="text-[12px] text-slate-500">
-              No users hold this role. Deletion is permanent; audit entries are preserved.
-            </p>
-          )}
-          {error && (
-            <div className="px-3 py-2.5 rounded-[10px] bg-rose-50 border border-rose-100 text-[11px] text-rose-700">{error}</div>
-          )}
-        </div>
-        <div className="px-6 py-4 border-t border-slate-100 flex items-center justify-end gap-2 bg-slate-50/40">
-          <button type="button" onClick={onClose} className="h-[40px] px-4 rounded-[12px] text-[11px] font-bold uppercase tracking-widest text-slate-600 hover:bg-slate-100">
+        )}
+        {error && (
+          <div className="px-3 py-2.5 rounded-[10px] bg-rose-50 border border-rose-100 text-[11px] text-rose-700">{error}</div>
+        )}
+        <div className="pt-2 flex items-center justify-end gap-2">
+          <button
+            type="button"
+            onClick={onClose}
+            disabled={busy}
+            className="h-[40px] px-4 rounded-[12px] text-[11px] font-bold uppercase tracking-widest text-slate-600 hover:bg-slate-100 disabled:opacity-50"
+          >
             Cancel
           </button>
           <button
@@ -456,6 +446,6 @@ function DeleteRoleModal({ role, onClose, onDeleted }: {
           </button>
         </div>
       </div>
-    </div>
+    </Modal>
   );
 }

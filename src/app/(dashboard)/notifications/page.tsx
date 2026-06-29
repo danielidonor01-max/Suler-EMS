@@ -1,16 +1,13 @@
 "use client";
 
 import React from 'react';
-import { 
-  Bell, 
-  CheckCircle2, 
-  Clock, 
-  MessageSquare, 
-  Target, 
-  ShieldCheck,
-  MoreVertical,
+import {
+  Bell,
+  CheckCircle2,
+  Clock,
+  Target,
   Activity,
-  ArrowRight
+  ArrowRight,
 } from 'lucide-react';
 import { useCommunication } from '@/context/CommunicationContext';
 import { useActivity } from '@/context/ActivityContext';
@@ -100,9 +97,9 @@ export default function NotificationsPage() {
                 </div>
               </div>
 
-              <button className="absolute top-5 right-5 p-2 text-slate-300 hover:text-slate-600 opacity-0 group-hover:opacity-100 transition-all">
-                <MoreVertical className="w-4 h-4" />
-              </button>
+              {/* Per-row action menu lived here but never had a click target.
+                  "Mark all as read" handles the only action the page needs;
+                  individual rows can be opened via View Details. */}
             </div>
           ))
         ) : (
