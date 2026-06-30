@@ -11,6 +11,8 @@ import { useAccess } from '@/context/AccessContext';
 import { MetricCard } from '@/components/dashboard/MetricCard';
 import { EmployeeChip } from '@/components/employees/EmployeeChip';
 import { Modal } from '@/components/common/Modal';
+import { Select } from '@/components/forms/Select';
+import { DatePicker } from '@/components/forms/DatePicker';
 
 interface AdminRow {
   id: string;
@@ -155,30 +157,40 @@ export default function AttendanceAdminPage() {
           <Filter className="w-4 h-4 text-slate-400" />
           <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Filters</span>
         </div>
-        <FilterInput label="From">
-          <input type="date" value={from} onChange={(e) => setFrom(e.target.value)} aria-label="From"
-            className="h-10 bg-slate-50 border border-slate-200 rounded-lg px-3 text-[12px] font-medium outline-none focus:border-indigo-500" />
-        </FilterInput>
-        <FilterInput label="To">
-          <input type="date" value={to} onChange={(e) => setTo(e.target.value)} aria-label="To"
-            className="h-10 bg-slate-50 border border-slate-200 rounded-lg px-3 text-[12px] font-medium outline-none focus:border-indigo-500" />
-        </FilterInput>
-        <FilterInput label="Status">
-          <select value={status} onChange={(e) => setStatus(e.target.value as any)} aria-label="Status"
-            className="h-10 bg-slate-50 border border-slate-200 rounded-lg px-3 text-[12px] font-medium outline-none focus:border-indigo-500">
-            <option value="">All</option>
-            <option value="PRESENT">Present</option>
-            <option value="LATE">Late</option>
-            <option value="ABSENT">Absent</option>
-          </select>
-        </FilterInput>
-        <FilterInput label="Site">
-          <select value={siteId} onChange={(e) => setSiteId(e.target.value)} aria-label="Site"
-            className="h-10 bg-slate-50 border border-slate-200 rounded-lg px-3 text-[12px] font-medium outline-none focus:border-indigo-500">
-            <option value="">Any</option>
-            {sites.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
-          </select>
-        </FilterInput>
+        <DatePicker
+          label="From"
+          value={from}
+          onChange={setFrom}
+          className="w-40"
+        />
+        <DatePicker
+          label="To"
+          value={to}
+          onChange={setTo}
+          className="w-40"
+        />
+        <Select
+          label="Status"
+          value={status}
+          onChange={(val) => setStatus(val as any)}
+          options={[
+            { label: 'All', value: '' },
+            { label: 'Present', value: 'PRESENT' },
+            { label: 'Late', value: 'LATE' },
+            { label: 'Absent', value: 'ABSENT' }
+          ]}
+          className="w-40"
+        />
+        <Select
+          label="Site"
+          value={siteId}
+          onChange={setSiteId}
+          options={[
+            { label: 'Any', value: '' },
+            ...sites.map(s => ({ label: s.name, value: s.id }))
+          ]}
+          className="w-48"
+        />
         <label className="flex items-center gap-2 h-10 text-[12px] text-slate-700 cursor-pointer">
           <input type="checkbox" checked={offSiteOnly} onChange={(e) => setOffSiteOnly(e.target.checked)}
             className="w-3.5 h-3.5 accent-indigo-600" />
@@ -378,14 +390,16 @@ function EditRecordModal({
               className="w-full h-[44px] bg-slate-50 border border-slate-200 rounded-xl px-3 text-[13px] outline-none focus:border-indigo-500" />
           </Field>
         </div>
-        <Field label="Status">
-          <select value={status} onChange={(e) => setStatus(e.target.value as any)} aria-label="Status"
-            className="w-full h-[44px] bg-slate-50 border border-slate-200 rounded-xl px-3 text-[13px] font-bold outline-none focus:border-indigo-500">
-            <option value="PRESENT">Present</option>
-            <option value="LATE">Late</option>
-            <option value="ABSENT">Absent</option>
-          </select>
-        </Field>
+        <Select
+          label="Status"
+          value={status}
+          onChange={(val) => setStatus(val as any)}
+          options={[
+            { label: 'Present', value: 'PRESENT' },
+            { label: 'Late', value: 'LATE' },
+            { label: 'Absent', value: 'ABSENT' }
+          ]}
+        />
         <Field label="Check-In Note">
           <textarea value={checkInNote} onChange={(e) => setCheckInNote(e.target.value)} rows={2}
             placeholder="Off-site reason, manager comment…"

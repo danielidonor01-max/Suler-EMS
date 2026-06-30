@@ -2,8 +2,8 @@
 
 import { Suspense, useState } from 'react';
 import { signIn } from 'next-auth/react';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { Lock, Mail, AlertCircle, Loader2, ShieldCheck, CheckCircle2 } from 'lucide-react';
+import { useSearchParams } from 'next/navigation';
+import { Lock, Mail, AlertCircle, Loader2, ShieldCheck, CheckCircle2, KeyRound, ArrowLeft } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 function LoginContent() {
@@ -15,6 +15,21 @@ function LoginContent() {
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState(error ? 'Authentication failed. Please check your credentials.' : '');
+  // MFA challenge state. Flips on when the first signIn pass returns
+  // MFA_REQUIRED — the form swaps to a 6-digit input (or backup code)
+  // while keeping email + password in memory so we can resubmit.
+  const [mfaMode, setMfaMode] = useState(false);
+  const [mfaCode, setMfaCode] = useState('');
+
+  const submitCredentials = async (codeOverride?: string) => {
+    return signIn('credentials', {
+      email,
+      password,
+      mfaCode:    codeOverride ?? '',
+      redirect:   false,
+      redirectTo: callbackUrl,
+    });
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -22,24 +37,41 @@ function LoginContent() {
     setErrorMessage('');
 
     try {
-      const result = await signIn('credentials', {
-        email,
-        password,
-        redirect: false,
-        redirectTo: callbackUrl,
-      });
+      const result = await submitCredentials(mfaMode ? mfaCode.trim() : '');
 
       if (result?.error) {
         // NextAuth v5 returns generic error codes; we deliberately do not
         // distinguish "user not found" from "wrong password" (anti-enumeration).
         // Common codes:
         //   CredentialsSignin  — bad email or password (default case)
-        //   AccessDenied        — user.isActive === false (deactivated)
-        //   Configuration       — server-side misconfig; ask admin
-        const code = result.error;
-        if (code === 'AccessDenied') {
+        //   AccessDenied       — user.isActive === false (deactivated)
+        //   Configuration      — server-side misconfig; ask admin
+        //
+        // Our custom MFA errors arrive via result.code (CredentialsSignin
+        // subclasses with a `code` field — NextAuth surfaces it as the
+        // second slot on the result).
+        const errorString = String(result.error ?? '');
+        const code = (result as { code?: string }).code ?? '';
+        const isMfaRequired = code === 'MFA_REQUIRED' || errorString.includes('MFA_REQUIRED');
+        const isMfaInvalid  = code === 'MFA_INVALID'  || errorString.includes('MFA_INVALID');
+
+        if (isMfaRequired) {
+          setMfaMode(true);
+          setMfaCode('');
+          setErrorMessage('');
+          setIsLoading(false);
+          return;
+        }
+        if (isMfaInvalid) {
+          setMfaCode('');
+          setErrorMessage('That code didn\'t match. Try again, or enter a backup code.');
+          setIsLoading(false);
+          return;
+        }
+
+        if (errorString === 'AccessDenied') {
           setErrorMessage('This account is deactivated. Contact your administrator.');
-        } else if (code === 'Configuration') {
+        } else if (errorString === 'Configuration') {
           setErrorMessage('Sign-in is temporarily unavailable. Please try again shortly.');
         } else {
           // Lockout check on the back of a failed credential attempt:
@@ -82,22 +114,76 @@ function LoginContent() {
   return (
     <div className="relative">
       <div className="mb-10">
-        <h2 className="text-2xl font-bold text-slate-900 mb-2 tracking-tight">Welcome back</h2>
-        <p className="text-slate-500 text-[13px] font-medium leading-relaxed">Sign in to your operational workspace.</p>
+        <h2 className="text-2xl font-bold text-slate-900 mb-2 tracking-tight">
+          {mfaMode ? 'Verify identity' : 'Welcome back'}
+        </h2>
+        <p className="text-slate-500 text-[13px] font-medium leading-relaxed">
+          {mfaMode
+            ? 'Enter the 6-digit code from your authenticator app, or use a backup code.'
+            : 'Sign in to your operational workspace.'}
+        </p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-8">
         {errorMessage && (
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="flex items-center gap-3 p-4 rounded-2xl bg-rose-50 border border-rose-100 text-rose-600 text-[13px] font-bold"
+            className="flex items-center gap-2 p-4 rounded-2xl bg-rose-50 border border-rose-100 text-rose-600 text-[13px] font-bold"
           >
             <AlertCircle className="w-5 h-5 shrink-0" />
             {errorMessage}
           </motion.div>
         )}
 
+        {mfaMode ? (
+          <>
+            <div className="space-y-3">
+              <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1" htmlFor="mfa-code">
+                Verification Code
+              </label>
+              <div className="relative group">
+                <KeyRound className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-300 group-focus-within:text-indigo-600 transition-colors" />
+                <input
+                  id="mfa-code"
+                  type="text"
+                  inputMode="numeric"
+                  autoComplete="one-time-code"
+                  autoFocus
+                  aria-label="Verification code"
+                  required
+                  value={mfaCode}
+                  onChange={(e) => setMfaCode(e.target.value)}
+                  placeholder="123456 or a backup code"
+                  className="w-full bg-slate-50/50 border border-slate-200 rounded-2xl py-4.5 pl-14 pr-5 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-4 focus:ring-indigo-600/5 focus:border-indigo-600 focus:bg-white transition-all text-sm font-bold tracking-wider shadow-sm"
+                />
+              </div>
+              <button
+                type="button"
+                onClick={() => { setMfaMode(false); setMfaCode(''); setErrorMessage(''); }}
+                className="inline-flex items-center gap-2 text-[10px] font-bold text-slate-400 hover:text-slate-700 uppercase tracking-widest"
+              >
+                <ArrowLeft className="w-3 h-3" />
+                Use a different account
+              </button>
+            </div>
+            <button
+              type="submit"
+              disabled={isLoading || !mfaCode.trim()}
+              className="w-full bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-100 disabled:text-slate-400 text-white font-bold text-[13px] uppercase tracking-[0.1em] py-5 rounded-2xl transition-all duration-300 shadow-xl shadow-indigo-100 active:scale-[0.98] flex items-center justify-center gap-2"
+            >
+              {isLoading ? (
+                <Loader2 className="w-5 h-5 animate-spin" />
+              ) : (
+                <>
+                  Verify
+                  <ShieldCheck className="w-5 h-5 opacity-50" />
+                </>
+              )}
+            </button>
+          </>
+        ) : (
+        <>
         <div className="space-y-3">
           <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Principal Email</label>
           <div className="relative group">
@@ -136,7 +222,7 @@ function LoginContent() {
         <button
           type="submit"
           disabled={isLoading}
-          className="w-full bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-100 disabled:text-slate-400 text-white font-bold text-[13px] uppercase tracking-[0.1em] py-5 rounded-2xl transition-all duration-300 shadow-xl shadow-indigo-100 active:scale-[0.98] flex items-center justify-center gap-3 group relative"
+          className="w-full bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-100 disabled:text-slate-400 text-white font-bold text-[13px] uppercase tracking-[0.1em] py-5 rounded-2xl transition-all duration-300 shadow-xl shadow-indigo-100 active:scale-[0.98] flex items-center justify-center gap-2 group relative"
         >
           {isLoading ? (
             <Loader2 className="w-5 h-5 animate-spin" />
@@ -147,6 +233,8 @@ function LoginContent() {
             </>
           )}
         </button>
+        </>
+        )}
       </form>
 
       {process.env.NEXT_PUBLIC_GOOGLE_SSO_ENABLED === 'true' && (
