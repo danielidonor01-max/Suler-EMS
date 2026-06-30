@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { Modal, ModalHeader, ModalBody, ModalFooter } from '@/components/modals/Modal';
 import { apiMutate } from '@/lib/api/fetcher';
 import { Select } from '@/components/forms/Select';
+import { DatePicker } from '@/components/forms/DatePicker';
 
 type LeaveType = 'ANNUAL' | 'SICK' | 'CASUAL' | 'MATERNITY' | 'PATERNITY' | 'COMPASSIONATE';
 
@@ -75,22 +76,18 @@ export function LeaveSubmitModal({ isOpen, onClose, onSubmitted }: Props) {
             />
           </div>
           <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="text-[11px] font-bold text-slate-500 uppercase tracking-widest">Start Date</label>
-              <input aria-label="Start Date"
-                type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)}
-                className="mt-2 w-full h-[44px] px-4 rounded-[12px] border border-slate-200 text-[13px] text-slate-900 bg-white focus:outline-none focus:border-indigo-500"
-                required
-              />
-            </div>
-            <div>
-              <label className="text-[11px] font-bold text-slate-500 uppercase tracking-widest">End Date</label>
-              <input aria-label="End Date"
-                type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)}
-                className="mt-2 w-full h-[44px] px-4 rounded-[12px] border border-slate-200 text-[13px] text-slate-900 bg-white focus:outline-none focus:border-indigo-500"
-                required
-              />
-            </div>
+            <DatePicker
+              label="Start Date"
+              value={startDate}
+              onChange={setStartDate}
+              className="mt-2"
+            />
+            <DatePicker
+              label="End Date"
+              value={endDate}
+              onChange={setEndDate}
+              className="mt-2"
+            />
           </div>
           <div>
             <label className="text-[11px] font-bold text-slate-500 uppercase tracking-widest">Reason</label>
