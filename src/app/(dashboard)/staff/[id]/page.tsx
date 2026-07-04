@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import { useWorkforce } from '@/context/WorkforceContext';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
+import { DocumentsPanel } from '@/components/employees/DocumentsPanel';
 
 const TABS = [
   { id: 'overview',     label: 'Overview',      icon: User },
@@ -20,6 +21,7 @@ const TABS = [
   { id: 'leave',        label: 'Leave',          icon: Clock },
   { id: 'performance',  label: 'Performance',    icon: Star },
   { id: 'tasks',        label: 'Tasks & Teams',  icon: CheckSquare },
+  { id: 'documents',    label: 'Documents',      icon: FileText },
   { id: 'audit',        label: 'Audit Timeline', icon: History },
 ];
 
@@ -433,6 +435,10 @@ export default function EmployeeProfilePage() {
       )}
 
       {/* AUDIT TIMELINE */}
+      {tab === 'documents' && (
+        <DocumentsPanel employeeId={employee.dbId ?? employee.id} />
+      )}
+
       {tab === 'audit' && (
         <div className="bg-white rounded-[20px] border border-slate-200 p-6 space-y-4">
           <h3 className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">Audit Timeline</h3>

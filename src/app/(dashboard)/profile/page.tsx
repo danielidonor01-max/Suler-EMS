@@ -11,6 +11,7 @@ import { apiFetcher, apiMutate } from '@/lib/api/fetcher';
 import { Modal } from '@/components/common/Modal';
 import { Select } from '@/components/forms/Select';
 import { MfaPanel } from '@/components/profile/MfaPanel';
+import { DocumentsPanel } from '@/components/employees/DocumentsPanel';
 
 interface Profile {
   id: string;
@@ -259,6 +260,10 @@ export default function ProfilePage() {
           lastUsedAt={profile.mfaLastUsedAt ?? null}
           onChange={async () => { await mutate(); }}
         />
+
+        {emp?.id && (
+          <DocumentsPanel employeeId={emp.id} readonly />
+        )}
 
         <div className="bg-white border border-slate-200 rounded-[20px] shadow-sm overflow-hidden">
           <div className="px-6 py-4 border-b border-slate-100">
