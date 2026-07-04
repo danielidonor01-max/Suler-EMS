@@ -13,7 +13,6 @@ import {
   ChevronRight,
   UserCheck,
   Zap,
-  Fingerprint,
   PieChart as PieChartIcon,
   BarChart as BarChartIcon,
 } from 'lucide-react';
@@ -90,16 +89,6 @@ export default function WorkforceIntelligenceHub() {
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
-           <button className="bg-white border border-slate-200 text-slate-600 hover:border-slate-300 px-6 h-[44px] rounded-[12px] text-[11px] font-bold uppercase tracking-wider transition-all shadow-sm flex items-center gap-2">
-              <PieChartIcon className="w-[18px] h-[18px] stroke-[1.5px]" />
-              Skill Registry
-           </button>
-           <button className="bg-slate-900 hover:bg-slate-800 text-white flex items-center gap-2 px-6 h-[44px] rounded-[12px] text-[11px] font-bold uppercase tracking-wider transition-all shadow-md">
-              <Fingerprint className="w-[18px] h-[18px] stroke-[1.5px]" />
-              Member Profile
-           </button>
-        </div>
       </div>
 
       {/* Intelligence Grid */}

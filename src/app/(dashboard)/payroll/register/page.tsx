@@ -8,7 +8,6 @@ import {
   ArrowRight,
   Plus,
   Trash2,
-  Edit3,
   FileText,
   Zap,
   ChevronRight,
@@ -172,7 +171,10 @@ export default function PayrollRegisterPage() {
 
            <PermissionGate permission={Permissions.PAYROLL_EDIT} showLocked>
              <button 
-               onClick={() => generateDraftRun('May 2026', currentHub)}
+               onClick={() => generateDraftRun(
+                 new Date().toLocaleString('en-US', { month: 'long', year: 'numeric' }),
+                 currentHub,
+               )}
                className="h-11 px-8 bg-slate-950 text-white rounded-xl text-[11px] font-black uppercase tracking-widest hover:bg-black transition-all flex items-center gap-2 shadow-xl shadow-slate-200"
              >
                 <Zap className="w-4 h-4" />
@@ -243,7 +245,6 @@ export default function PayrollRegisterPage() {
             columns={columns}
             rowActions={[
               { label: 'View Payslip', icon: FileText, onClick: (e: PayrollEntry) => setActiveEntry(e) },
-              { label: 'Edit Breakdown', icon: Edit3, onClick: (e: PayrollEntry) => addToast(`Opening compensation adjustments for [${e.employeeId}]`, 'INFO'), hidden: () => displayRun.status !== 'DRAFT' }
             ]}
           />
         </div>

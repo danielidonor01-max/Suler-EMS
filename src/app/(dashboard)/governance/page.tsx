@@ -5,9 +5,8 @@ import {
   ShieldCheck, 
   History, 
   Clock, 
-  User, 
-  Search, 
-  Filter,
+  User,
+  Search,
   Download,
   AlertCircle,
   CheckCircle2,
@@ -108,12 +107,6 @@ function GovernanceAuditContent() {
                     className="h-9 pl-9 pr-4 bg-white border border-slate-200 rounded-lg text-[11px] font-bold outline-none focus:border-indigo-500 w-64 transition-all"
                   />
                </div>
-               <button 
-                 onClick={() => addToast('Filtering logic initialized...', 'INFO')}
-                 className="p-2 bg-white border border-slate-200 rounded-lg text-slate-400 hover:text-slate-900"
-               >
-                  <Filter className="w-4 h-4" />
-               </button>
             </div>
           </div>
 
