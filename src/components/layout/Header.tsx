@@ -47,21 +47,16 @@ const Header = ({ onToggleSidebar }: { onToggleSidebar: () => void }) => {
   useDismiss(hubRef, () => setIsHubOpen(false), isHubOpen);
   useDismiss(profileRef, () => setIsProfileOpen(false), isProfileOpen);
 
-  const handleSignOut = async () => {
-    // Belt + suspenders: NextAuth v5 beta's signOut() sometimes fails to
-    // clear the cookie silently (cookie-path or domain mismatch on Vercel
-    // deployments). We:
-    //   1. Call signOut() which clears the cookie server-side.
-    //   2. Manually expire every cookie name NextAuth might have set —
-    //      v4 used `next-auth.session-token`, v5 uses `authjs.session-
-    //      token`, both with __Secure-/__Host- variants in production.
-    //   3. Hard-replace the URL (not push) so the dashboard isn't in
-    //      back-button history.
-    try {
-      await signOut({ redirect: false });
-    } catch {
-      /* keep going — the manual cookie clear below is the safety net */
-    }
+  const [isSigningOut, setIsSigningOut] = useState(false);
+
+  const handleSignOut = () => {
+    // Awaiting signOut() before redirecting produced a ~1 s dead window where
+    // the click looked ignored — users would re-click. Instead: clear cookies
+    // client-side immediately, kick the server call in the background, and
+    // navigate away. Even if the server call is slow the user is already gone.
+    if (isSigningOut) return;
+    setIsSigningOut(true);
+
     if (typeof document !== 'undefined') {
       const past = 'Thu, 01 Jan 1970 00:00:00 GMT';
       const names = [
@@ -78,6 +73,7 @@ const Header = ({ onToggleSidebar }: { onToggleSidebar: () => void }) => {
         document.cookie = `${n}=; expires=${past}; path=/; SameSite=Lax`;
       }
     }
+    signOut({ redirect: false }).catch(() => {});
     window.location.replace('/login');
   };
 
@@ -277,8 +273,9 @@ const Header = ({ onToggleSidebar }: { onToggleSidebar: () => void }) => {
                     <button
                       type="button"
                       role="menuitem"
+                      disabled={isSigningOut}
                       onClick={() => { setIsProfileOpen(false); handleSignOut(); }}
-                      className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all hover:bg-rose-50 text-rose-600 mt-1"
+                      className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all hover:bg-rose-50 disabled:opacity-60 text-rose-600 mt-1"
                     >
                        <LogOut className="w-4 h-4 text-rose-500" />
                        <span className="text-[12px] font-bold">Sign Out</span>
