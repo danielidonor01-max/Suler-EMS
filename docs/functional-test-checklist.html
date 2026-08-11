@@ -1,0 +1,850 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Suler EMS — Functional Test Checklist</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --primary:   #1a237e;
+      --accent:    #1565c0;
+      --success:   #1b5e20;
+      --warn:      #e65100;
+      --neutral:   #37474f;
+      --light:     #eceff1;
+      --border:    #b0bec5;
+      --text:      #212121;
+      --radius:    4px;
+      --font:      'Segoe UI', Arial, sans-serif;
+    }
+
+    body {
+      font-family: var(--font);
+      font-size: 9.5pt;
+      color: var(--text);
+      background: #fff;
+      line-height: 1.45;
+    }
+
+    @media print {
+      @page { size: A4; margin: 14mm 11mm 14mm 11mm; }
+      body { font-size: 8pt; }
+      .no-print { display: none !important; }
+      .page-break { page-break-before: always; }
+      section { page-break-inside: avoid; }
+      table { page-break-inside: auto; }
+      tr { page-break-inside: avoid; }
+      h2.module-title { page-break-after: avoid; }
+    }
+
+    .print-bar {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      background: var(--primary); color: #fff;
+      padding: 10px 20px;
+      display: flex; align-items: center; justify-content: space-between;
+      box-shadow: 0 2px 8px rgba(0,0,0,.3);
+    }
+    .print-bar h1 { font-size: 13pt; font-weight: 700; letter-spacing: .5px; }
+    .print-bar .btn-group { display: flex; gap: 10px; }
+    .print-bar button {
+      background: #fff; color: var(--primary);
+      border: none; border-radius: var(--radius);
+      padding: 7px 18px; font-size: 10pt; font-weight: 700;
+      cursor: pointer;
+    }
+    .print-bar button:hover { background: #e3f2fd; }
+
+    .wrapper { max-width: 960px; margin: 58px auto 40px; padding: 0 18px; }
+
+    /* Cover */
+    .cover {
+      border: 2.5px solid var(--primary); border-radius: 6px;
+      padding: 26px 30px 20px; margin-bottom: 26px;
+    }
+    .cover .logo { font-size: 22pt; font-weight: 800; color: var(--primary); letter-spacing: 1px; }
+    .cover .sub { font-size: 11pt; color: var(--accent); margin: 2px 0 16px; }
+    .cover table { width: 100%; border-collapse: collapse; }
+    .cover td { padding: 4px 8px; font-size: 9pt; border: 1px solid var(--border); }
+    .cover td:first-child { font-weight: 600; background: var(--light); width: 170px; }
+
+    /* Legend */
+    .legend { display: flex; gap: 14px; flex-wrap: wrap; margin-bottom: 20px; font-size: 8.5pt; align-items: center; }
+    .legend-box { width: 14px; height: 14px; border-radius: 2px; border: 1px solid var(--border); display: inline-block; vertical-align: middle; }
+    .box-pass { background: #e8f5e9; }
+    .box-fail { background: #ffebee; }
+    .box-na   { background: #f5f5f5; }
+    .box-empty{ background: #fff; }
+    .legend-item { display: flex; align-items: center; gap: 5px; }
+
+    /* Modules */
+    section { margin-bottom: 26px; }
+    h2.module-title {
+      font-size: 11pt; font-weight: 700; color: #fff;
+      background: var(--primary);
+      padding: 7px 14px; border-radius: var(--radius) var(--radius) 0 0;
+      display: flex; align-items: center; gap: 10px;
+    }
+    h2.module-title .badge {
+      background: rgba(255,255,255,.18); font-size: 7.5pt; font-weight: 600;
+      padding: 2px 8px; border-radius: 20px;
+    }
+    h3.sub-title {
+      font-size: 9pt; font-weight: 700; color: var(--accent);
+      background: #e8eaf6; padding: 5px 14px;
+      border-left: 3px solid var(--accent);
+    }
+    h4.flow-title {
+      font-size: 8.5pt; font-weight: 700; color: var(--warn);
+      margin: 8px 0 4px; border-bottom: 1px dashed var(--border); padding-bottom: 3px;
+    }
+
+    /* Tables */
+    .check-table { width: 100%; border-collapse: collapse; font-size: 8pt; }
+    .check-table thead tr { background: #e3f2fd; color: var(--primary); }
+    .check-table th { padding: 5px 8px; text-align: left; border: 1px solid var(--border); font-weight: 700; font-size: 7.5pt; }
+    .check-table td { padding: 4px 8px; border: 1px solid var(--border); vertical-align: top; }
+    .check-table tbody tr:nth-child(even) { background: #fafafa; }
+    .col-id    { width: 40px; font-weight: 600; color: var(--neutral); }
+    .col-steps { color: #455a64; }
+    .col-exp   { color: #33691e; }
+    .col-role  { width: 76px; text-align: center; }
+    .col-result{ width: 52px; text-align: center; }
+
+    .result-box {
+      display: inline-block; width: 38px; height: 14px;
+      border: 1px solid var(--border); border-radius: 2px; background: #fff;
+    }
+
+    .tag { display: inline-block; font-size: 6.5pt; font-weight: 700; padding: 1px 5px; border-radius: 10px; }
+    .tag-hr  { background: #e8eaf6; color: #3949ab; }
+    .tag-mgr { background: #e0f2f1; color: #00695c; }
+    .tag-fin { background: #fff8e1; color: #e65100; }
+    .tag-emp { background: #f3e5f5; color: #7b1fa2; }
+    .tag-sa  { background: #fce4ec; color: #c62828; }
+    .tag-any { background: #eceff1; color: #455a64; }
+
+    .note-box {
+      border-left: 4px solid var(--accent); background: #e3f2fd;
+      padding: 6px 10px; margin: 6px 0 10px; font-size: 7.5pt; color: #1a237e;
+      border-radius: 0 4px 4px 0;
+    }
+
+    /* Interconnection table */
+    .inter-table { width: 100%; border-collapse: collapse; font-size: 7.5pt; }
+    .inter-table th { background: #37474f; color: #fff; padding: 5px 9px; border: 1px solid #546e7a; }
+    .inter-table td { padding: 4px 9px; border: 1px solid var(--border); }
+    .inter-table tbody tr:nth-child(even) { background: #f5f5f5; }
+    .arrow { text-align: center; color: var(--accent); font-weight: 700; }
+
+    /* Summary table */
+    .summary-table { width: 100%; border-collapse: collapse; font-size: 9pt; }
+    .summary-table th { background: var(--primary); color: #fff; padding: 7px 10px; border: 1px solid #283593; }
+    .summary-table td { padding: 5px 10px; border: 1px solid var(--border); text-align: center; }
+    .summary-table .mod { text-align: left; font-weight: 600; }
+    .summary-table tbody tr:nth-child(even) { background: #f5f5f5; }
+
+    /* Sign-off */
+    .signoff { border: 1.5px solid var(--border); border-radius: 4px; padding: 16px 22px; margin-top: 26px; }
+    .signoff h3 { font-size: 10pt; color: var(--primary); margin-bottom: 12px; }
+    .signoff-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+    .signoff-field { border-top: 1px solid var(--border); padding-top: 6px; }
+    .signoff-field .label { font-size: 7pt; color: var(--neutral); margin-bottom: 20px; }
+  </style>
+</head>
+<body>
+
+<div class="print-bar no-print">
+  <h1>Suler EMS — Functional Test Checklist</h1>
+  <div class="btn-group">
+    <button onclick="window.print()">🖨 Print / Save as PDF</button>
+  </div>
+</div>
+
+<div class="wrapper">
+
+  <!-- COVER -->
+  <div class="cover">
+    <div class="logo">SULER EMS</div>
+    <div class="sub">Enterprise Management System — Functional Test Checklist</div>
+    <table>
+      <tr><td>Document Version</td><td>2.0</td></tr>
+      <tr><td>Test Scope</td><td>Full System — Client Pilot · 179 Tests · 15 Modules · Includes MFA, HR documents CRUD, expanded workflows</td></tr>
+      <tr><td>Environment</td><td>___________________________________________</td></tr>
+      <tr><td>Database</td><td>PostgreSQL (production seed applied — 25 demo users)</td></tr>
+      <tr><td>Test Start Date</td><td>___________________________________________</td></tr>
+      <tr><td>Test End Date</td><td>___________________________________________</td></tr>
+      <tr><td>Lead Tester</td><td>___________________________________________</td></tr>
+      <tr><td>Build / Git Commit</td><td>___________________________________________</td></tr>
+      <tr><td>Overall Result</td><td>☐ PASS &nbsp;&nbsp;&nbsp;&nbsp; ☐ FAIL &nbsp;&nbsp;&nbsp;&nbsp; ☐ PARTIAL PASS</td></tr>
+    </table>
+  </div>
+
+  <!-- LEGEND -->
+  <div class="legend">
+    <strong>Result Key:</strong>
+    <span class="legend-item"><span class="legend-box box-pass"></span> Write <em>PASS</em></span>
+    <span class="legend-item"><span class="legend-box box-fail"></span> Write <em>FAIL</em></span>
+    <span class="legend-item"><span class="legend-box box-na"></span> Write <em>N/A</em></span>
+    <span class="legend-item"><span class="legend-box box-empty"></span> Blank = untested</span>
+    &nbsp;|&nbsp;
+    <strong>Role Tags:</strong>
+    <span class="tag tag-sa">SUPER_ADMIN</span>
+    <span class="tag tag-hr">HR_ADMIN</span>
+    <span class="tag tag-mgr">MANAGER</span>
+    <span class="tag tag-fin">FINANCE_MGR</span>
+    <span class="tag tag-emp">EMPLOYEE</span>
+    <span class="tag tag-any">ANY</span>
+  </div>
+
+  <!-- ═══════════════════════════════ MODULE 01 ═══════════════════════════════ -->
+  <section>
+    <h2 class="module-title">01 · Authentication, Session &amp; MFA <span class="badge">14 tests</span></h2>
+    <h3 class="sub-title">1A — Login, Session &amp; RBAC</h3>
+    <table class="check-table">
+      <thead><tr>
+        <th class="col-id">#</th><th style="width:18%">Test Case</th>
+        <th style="width:32%">Steps</th><th style="width:22%">Expected Result</th>
+        <th class="col-role">Role</th><th class="col-result">Result</th><th>Notes / Bug #</th>
+      </tr></thead>
+      <tbody>
+        <tr><td class="col-id">01-01</td><td>Valid login</td><td>Navigate to /login. Enter valid credentials. Submit.</td><td>Redirect to /dashboard. User name in nav. JWT issued.</td><td><span class="tag tag-any">ANY</span></td><td><span class="result-box"></span></td><td></td></tr>
+        <tr><td class="col-id">01-02</td><td>Invalid credentials</td><td>Enter wrong password. Submit.</td><td>Error shown. No redirect. LoginAttempt row (success=false) written.</td><td><span class="tag tag-any">ANY</span></td><td><span class="result-box"></span></td><td></td></tr>
+        <tr><td class="col-id">01-03</td><td>Inactive account blocked</td><td>Set user isActive=false in DB. Attempt login.</td><td>"Account deactivated" error. No session created.</td><td><span class="tag tag-sa">SUPER_ADMIN</span></td><td><span class="result-box"></span></td><td></td></tr>
+        <tr><td class="col-id">01-04</td><td>Session persists on refresh</td><td>Login → hard-refresh (F5).</td><td>User remains logged in. Dashboard loads correctly.</td><td><span class="tag tag-any">ANY</span></td><td><span class="result-box"></span></td><td></td></tr>
+        <tr><td class="col-id">01-05</td><td>Logout</td><td>Click logout.</td><td>Session cleared. Redirect to /login. Back-button cannot access protected route.</td><td><span class="tag tag-any">ANY</span></td><td><span class="result-box"></span></td><td></td></tr>
+        <tr><td class="col-id">01-06</td><td>Unauthenticated redirect</td><td>Clear cookies. Navigate directly to /payroll.</td><td>Redirect to /login.</td><td>—</td><td><span class="result-box"></span></td><td></td></tr>
+        <tr><td class="col-id">01-07</td><td>Forbidden route — wrong role</td><td>Login as EMPLOYEE. Navigate to /admin/roles.</td><td>Redirect to /forbidden (403).</td><td><span class="tag tag-emp">EMPLOYEE</span></td><td><span class="result-box"></span></td><td></td></tr>
+        <tr><td class="col-id">01-08</td><td>Session version refresh after role change</td><td>Login as EMPLOYEE. SUPER_ADMIN changes role in /admin/users. Wait ≤60 s. Re-navigate.</td><td>New permissions active without re-login. User.version bump confirmed.</td><td><span class="tag tag-sa">SUPER_ADMIN</span></td><td><span class="result-box"></span></td><td></td></tr>
+      </tbody>
+    </table>
+    <h3 class="sub-title">1B — Multi-Factor Authentication (TOTP + Backup Codes)</h3>
+    <div class="note-box">TOTP per RFC 6238 (SHA-1, 30 s, 6 digits, ±1 step drift). Backup codes are bcrypt-hashed and single-use. The `mfaSecret` never leaves the server; the plaintext secret + codes are shown to the user exactly once at enrollment.</div>
+    <table class="check-table">
+      <thead><tr>
+        <th class="col-id">#</th><th style="width:18%">Test Case</th>
+        <th style="width:32%">Steps</th><th style="width:22%">Expected Result</th>
+        <th class="col-role">Role</th><th class="col-result">Result</th><th>Notes</th>
+      </tr></thead>
+      <tbody>
+        <tr><td class="col-id">01-09</td><td>Enroll MFA — start</td><td>Login. /profile → HR &amp; MFA card → "Enable 2FA". Copy chunked secret. Scan otpauth:// link with authenticator app (1Password, Google Authenticator, Authy). Save the 8 backup codes shown.</td><td>Secret + 8 codes shown once. `mfaSecret` stored server-side (mfaEnabled still false until confirm).</td><td><span class="tag tag-any">ANY</span></td><td><span class="result-box"></span></td><td></td></tr>
+        <tr><td class="col-id">01-10</td><td>Confirm enrollment</td><td>Enter the 6-digit code from the authenticator app. Click "Verify &amp; Enable".</td><td>mfaEnabled=true. Card status flips to "On" with Regenerate + Disable actions.</td><td><span class="tag tag-any">ANY</span></td><td><span class="result-box"></span></td><td></td></tr>
+        <tr><td class="col-id">01-11</td><td>Login with MFA — TOTP</td><td>Sign out. Sign in with correct email + password. Enter the current 6-digit code when prompted.</td><td>Form pivots to "Verify identity" after password. Correct TOTP → /dashboard. `mfaLastUsedAt` bumped.</td><td><span class="tag tag-any">ANY</span></td><td><span class="result-box"></span></td><td></td></tr>
+        <tr><td class="col-id">01-12</td><td>Login with MFA — backup code (single-use)</td><td>Sign out. Sign in. Enter one of the backup codes instead of a TOTP. Sign out. Sign in again. Attempt the SAME backup code.</td><td>First attempt succeeds. Second attempt fails ("code didn't match"). Consumed code removed from stored list.</td><td><span class="tag tag-any">ANY</span></td><td><span class="result-box"></span></td><td></td></tr>
+        <tr><td class="col-id">01-13</td><td>Regenerate backup codes (TOTP-only)</td><td>/profile → 2FA card → "Regenerate backup codes". Enter current TOTP.</td><td>Fresh 8-code set shown once. Old codes no longer accepted. Backup-code auth cannot trigger this endpoint.</td><td><span class="tag tag-any">ANY</span></td><td><span class="result-box"></span></td><td></td></tr>
+        <tr><td class="col-id">01-14</td><td>Disable MFA</td><td>/profile → 2FA card → "Disable 2FA". Enter current TOTP (or an unused backup code). Confirm.</td><td>All MFA columns cleared (mfaEnabled=false, secret null, backup codes null). Subsequent logins skip the MFA step.</td><td><span class="tag tag-any">ANY</span></td><td><span class="result-box"></span></td><td></td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- ═══════════════════════════════ MODULE 02 ═══════════════════════════════ -->
+  <section>
+    <h2 class="module-title">02 · Organization &amp; Structure (Admin) <span class="badge">10 tests</span></h2>
+    <h3 class="sub-title">2A — Hubs &amp; Departments</h3>
+    <table class="check-table">
+      <thead><tr>
+        <th class="col-id">#</th><th style="width:18%">Test Case</th>
+        <th style="width:32%">Steps</th><th style="width:22%">Expected Result</th>
+        <th class="col-role">Role</th><th class="col-result">Result</th><th>Notes</th>
+      </tr></thead>
+      <tbody>
+        <tr><td class="col-id">02-01</td><td>Create Hub</td><td>Go to /admin/organization. Click "Add Hub". Fill name, code, geography, category. Save.</td><td>Hub in list. Status=ACTIVE. DB row created.</td><td><span class="tag tag-sa">SUPER_ADMIN</span></td><td><span class="result-box"></span></td><td></td></tr>
+        <tr><td class="col-id">02-02</td><td>Edit Hub</td><td>Edit existing hub. Change name. Save.</td><td>Updated name reflected immediately.</td><td><span class="tag tag-sa">SUPER_ADMIN</span></td><td><span class="result-box"></span></td><td></td></tr>
+        <tr><td class="col-id">02-03</td><td>Create Department linked to Hub</td><td>Add Department. Select hub. Fill name, code. Save.</td><td>Department visible. hubId populated.</td><td><span class="tag tag-hr">HR_ADMIN</span></td><td><span class="result-box"></span></td><td></td></tr>
+        <tr><td class="col-id">02-04</td><td>Assign Department Manager</td><td>Edit department. Select employee as manager. Save.</td><td>Manager name shown. Department.managerId set.</td><td><span class="tag tag-hr">HR_ADMIN</span></td><td><span class="result-box"></span></td><td></td></tr>
+      </tbody>
+    </table>
+    <h3 class="sub-title">2B — Teams</h3>
+    <table class="check-table">
+      <thead><tr>
+        <th class="col-id">#</th><th style="width:18%">Test Case</th><th style="width:32%">Steps</th><th style="width:22%">Expected Result</th><th class="col-role">Role</th><th class="col-result">Result</th><th>Notes</th>
+      </tr></thead>
+      <tbody>
+        <tr><td class="col-id">02-05</td><td>Create Team</td><td>Add team with name, code, hub, department, manager.</td><td>Team visible. TeamMembership table ready.</td><td><span class="tag tag-hr">HR_ADMIN</span></td><td><span class="result-box"></span></td><td></td></tr>
+        <tr><td class="col-id">02-06</td><td>Add member to team</td><td>Open team → Add Member → search employee → assign role. Save.</td><td>Member in roster. TeamMembership row created.</td><td><span class="tag tag-hr">HR_ADMIN</span></td><td><span class="result-box"></span></td><td></td></tr>
+        <tr><td class="col-id">02-07</td><td>Remove member from team</td><td>Remove member. Confirm.</td><td>Member removed. TeamMembership row deleted.</td><td><span class="tag tag-hr">HR_ADMIN</span></td><td><span class="result-box"></span></td><td></td></tr>
+      </tbody>
+    </table>
+    <h3 class="sub-title">2C — Work Sites (Geo-fence)</h3>
+    <table class="check-table">
+      <thead><tr>
+        <th class="col-id">#</th><th style="width:18%">Test Case</th><th style="width:32%">Steps</th><th style="width:22%">Expected Result</th><th class="col-role">Role</th><th class="col-result">Result</th><th>Notes</th>
+      </tr></thead>
+      <tbody>
+        <tr><td class="col-id">02-08</td><td>Create Work Site</td><td>Add site with lat, lng, radiusMeters=150, hub link. Save.</td><td>WorkSite row in DB. Site appears in attendance site list.</td><td><span class="tag tag-hr">HR_ADMIN</span></td><td><span class="result-box"></span></td><td></td></tr>
+        <tr><td class="col-id">02-09</td><td>Deactivate Work Site</td><td>Toggle site inactive.</td><td>isActive=false. Not selectable for new clock-ins.</td><td><span class="tag tag-hr">HR_ADMIN</span></td><td><span class="result-box"></span></td><td></td></tr>
+        <tr><td class="col-id">02-10</td><td>Site linked to Hub filter</td><td>Create site, assign to a hub. View attendance admin hub filter.</td><td>Site visible under that hub's filter.</td><td><span class="tag tag-hr">HR_ADMIN</span></td><td><span class="result-box"></span></td><td></td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- ═══════════════════════════════ MODULE 03 ═══════════════════════════════ -->
+  <section class="page-break">
+    <h2 class="module-title">03 · Employee Management <span class="badge">14 tests</span></h2>
+    <h3 class="sub-title">3A — Core CRUD</h3>
+    <table class="check-table">
+      <thead><tr>
+        <th class="col-id">#</th><th style="width:18%">Test Case</th><th style="width:32%">Steps</th><th style="width:22%">Expected Result</th><th class="col-role">Role</th><th class="col-result">Result</th><th>Notes</th>
+      </tr></thead>
+      <tbody>
+        <tr><td class="col-id">03-01</td><td>Create employee</td><td>Go to /employees or /staff. Add employee: name, email, staffId, department, jobTitle. Save.</td><td>Employee in list. staffId unique. DB row created.</td><td><span class="tag tag-hr">HR_ADMIN</span></td><td><span class="result-box"></span></td><td></td></tr>
+        <tr><td class="col-id">03-02</td><td>Duplicate staffId rejected</td><td>Attempt to create with same staffId.</td><td>Validation error. No duplicate created.</td><td><span class="tag tag-hr">HR_ADMIN</span></td><td><span class="result-box"></span></td><td></td></tr>
+        <tr><td class="col-id">03-03</td><td>Edit core fields</td><td>Edit jobTitle and phone. Save.</td><td>Changes persist. updatedAt bumped.</td><td><span class="tag tag-hr">HR_ADMIN</span></td><td><span class="result-box"></span></td><td></td></tr>
+        <tr><td class="col-id">03-04</td><td>Nigerian compliance fields</td><td>Fill NIN, BVN, TIN, pensionNumber, nhfNumber.</td><td>All fields saved. Duplicate NIN returns error (unique constraint).</td><td><span class="tag tag-hr">HR_ADMIN</span></td><td><span class="result-box"></span></td><td></td></tr>
+        <tr><td class="col-id">03-05</td><td>Bank details</td><td>Enter bankName, bankCode (3-digit NIBSS), bankAccountNumber (10-digit NUBAN).</td><td>Fields saved. Visible on employee profile.</td><td><span class="tag tag-hr">HR_ADMIN</span></td><td><span class="result-box"></span></td><td></td></tr>
+        <tr><td class="col-id">03-06</td><td>Deactivate employee</td><td>Set status = INACTIVE.</td><td>Not in active staff list. Still findable by HR.</td><td><span class="tag tag-hr">HR_ADMIN</span></td><td><span class="result-box"></span></td><td></td></tr>
+      </tbody>
+    </table>
+    <h3 class="sub-title">3B — HR Documents (Upload / Download / Delete)</h3>
+    <div class="note-box">Backend: file bytes stored as BYTEA on EmployeeDocument (no signed-URL plumbing). Per-file cap = 4 MB. Allowed MIME: PDF, JPEG/PNG/WebP, DOC/DOCX, XLS/XLSX, TXT. Kinds: RESUME, CERTIFICATE, ID_CARD, CONTRACT, TAX_DOC, OTHER. HR sees a Documents tab on /staff/[id] with full CRUD; the employee sees a read-only card on /profile.</div>
+    <table class="check-table">
+      <thead><tr>
+        <th class="col-id">#</th><th style="width:18%">Test Case</th><th style="width:32%">Steps</th><th style="width:22%">Expected Result</th><th class="col-role">Role</th><th class="col-result">Result</th><th>Notes</th>
+      </tr></thead>
+      <tbody>
+        <tr><td class="col-id">03-07</td><td>Upload document (HR)</td><td>/staff/[id] → Documents tab. Pick kind=CONTRACT, add description "2026 employment contract", choose PDF (&lt;4 MB), upload.</td><td>EmployeeDocument row saved (BYTEA). Listed with kind chip, size, uploader name, timestamp. Green flash "Uploaded {name}".</td><td><span class="tag tag-hr">HR_ADMIN</span></td><td><span class="result-box"></span></td><td></td></tr>
+        <tr><td class="col-id">03-08</td><td>Download document</td><td>Click Download on a listed document.</td><td>Streams with original filename + mime type; Content-Disposition attachment. Content matches original.</td><td><span class="tag tag-hr">HR_ADMIN</span></td><td><span class="result-box"></span></td><td></td></tr>
+        <tr><td class="col-id">03-09</td><td>Employee sees read-only view</td><td>Login as the owning EMPLOYEE. Open /profile → HR Documents card.</td><td>Uploaded docs visible, Download works, NO upload dropzone or delete button. Empty state reads "HR will upload documents here as they become available."</td><td><span class="tag tag-emp">EMPLOYEE</span></td><td><span class="result-box"></span></td><td></td></tr>
+        <tr><td class="col-id">03-10</td><td>Delete document (HR, with confirm)</td><td>HR clicks trash icon on a document. First click shows inline "Confirm / Cancel". Click Confirm.</td><td>Row removed from list. DB row hard-deleted (no soft-delete). Deleting a docId that belongs to another employee returns 404 (deleteMany scoped by employeeId).</td><td><span class="tag tag-hr">HR_ADMIN</span></td><td><span class="result-box"></span></td><td></td></tr>
+      </tbody>
+    </table>
+    <h3 class="sub-title">3C — Profile Change Requests (Approval Workflow)</h3>
+    <div class="note-box">Flow: Employee submits → HR_ADMIN reviews → APPROVED applies field update / REJECTED discards. Terminal states: APPROVED, REJECTED, CANCELLED.</div>
+    <table class="check-table">
+      <thead><tr>
+        <th class="col-id">#</th><th style="width:18%">Test Case</th><th style="width:32%">Steps</th><th style="width:22%">Expected Result</th><th class="col-role">Role</th><th class="col-result">Result</th><th>Notes</th>
+      </tr></thead>
+      <tbody>
+        <tr><td class="col-id">03-11</td><td>Submit profile change request</td><td>Login as EMPLOYEE. Profile → "Request Change" on phone field. Enter new value + reason. Submit.</td><td>ProfileChangeRequest created (PENDING). Visible in /admin/profile-requests.</td><td><span class="tag tag-emp">EMPLOYEE</span></td><td><span class="result-box"></span></td><td></td></tr>
+        <tr><td class="col-id">03-12</td><td>HR approves change</td><td>Login as HR_ADMIN. Open request. Approve with comment.</td><td>Status → APPROVED. Employee field updated. reviewedAt set.</td><td><span class="tag tag-hr">HR_ADMIN</span></td><td><span class="result-box"></span></td><td></td></tr>
+        <tr><td class="col-id">03-13</td><td>HR rejects change</td><td>Reject request. Provide reason.</td><td>Status → REJECTED. Employee field unchanged. reviewComment stored.</td><td><span class="tag tag-hr">HR_ADMIN</span></td><td><span class="result-box"></span></td><td></td></tr>
+        <tr><td class="col-id">03-14</td><td>Terminal state irreversibility</td><td>After approving, attempt to approve again.</td><td>Action blocked. 409 INVALID_STATE_TRANSITION. No duplicate update.</td><td><span class="tag tag-hr">HR_ADMIN</span></td><td><span class="result-box"></span></td><td></td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- ═══════════════════════════════ MODULE 04 ═══════════════════════════════ -->
+  <section class="page-break">
+    <h2 class="module-title">04 · Users &amp; RBAC (Admin) <span class="badge">12 tests</span></h2>
+    <div class="note-box">System roles (SUPER_ADMIN, HR_ADMIN, FINANCE_MANAGER, MANAGER, EMPLOYEE) are protected. Their names are immutable. Their permissions are editable. Custom roles can be created/renamed/deleted.</div>
+    <h3 class="sub-title">4A — Role Management</h3>
+    <table class="check-table">
+      <thead><tr>
+        <th class="col-id">#</th><th style="width:18%">Test Case</th><th style="width:32%">Steps</th><th style="width:22%">Expected Result</th><th class="col-role">Role</th><th class="col-result">Result</th><th>Notes</th>
+      </tr></thead>
+      <tbody>
+        <tr><td class="col-id">04-01</td><td>View roles and permissions</td><td>Navigate to /admin/roles. Expand each role.</td><td>All 5 system roles visible with correct permission lists.</td><td><span class="tag tag-sa">SUPER_ADMIN</span></td><td><span class="result-box"></span></td><td></td></tr>
+        <tr><td class="col-id">04-02</td><td>Edit system role permissions</td><td>Select HR_ADMIN. Toggle a permission off. Save.</td><td>Permission removed. Affected users' sessions update within 60 s.</td><td><span class="tag tag-sa">SUPER_ADMIN</span></td><td><span class="result-box"></span></td><td></td></tr>
+        <tr><td class="col-id">04-03</td><td>Cannot rename system role</td><td>Attempt to rename "HR_ADMIN".</td><td>Field disabled or API returns 409 SYSTEM_ROLE_PROTECTED.</td><td><span class="tag tag-sa">SUPER_ADMIN</span></td><td><span class="result-box"></span></td><td></td></tr>
+        <tr><td class="col-id">04-04</td><td>Cannot delete system role</td><td>Attempt to delete "MANAGER".</td><td>Delete blocked. 409 SYSTEM_ROLE_PROTECTED returned.</td><td><span class="tag tag-sa">SUPER_ADMIN</span></td><td><span class="result-box"></span></td><td></td></tr>
+        <tr><td class="col-id">04-05</td><td>Create custom role</td><td>Click "New Role". Enter UPPER_SNAKE_CASE name. Assign permissions. Save.</td><td>Custom role created. Assignable to users.</td><td><span class="tag tag-sa">SUPER_ADMIN</span></td><td><span class="result-box"></span></td><td></td></tr>
+        <tr><td class="col-id">04-06</td><td>Delete custom role (no users)</td><td>Delete the custom role from 04-05.</td><td>Role deleted successfully.</td><td><span class="tag tag-sa">SUPER_ADMIN</span></td><td><span class="result-box"></span></td><td></td></tr>
+        <tr><td class="col-id">04-07</td><td>Cannot delete role with assigned users</td><td>Assign a user to custom role. Try to delete that role.</td><td>Deletion blocked. Error: role has active users.</td><td><span class="tag tag-sa">SUPER_ADMIN</span></td><td><span class="result-box"></span></td><td></td></tr>
+      </tbody>
+    </table>
+    <h3 class="sub-title">4B — User Management &amp; Safety Invariants</h3>
+    <table class="check-table">
+      <thead><tr>
+        <th class="col-id">#</th><th style="width:18%">Test Case</th><th style="width:32%">Steps</th><th style="width:22%">Expected Result</th><th class="col-role">Role</th><th class="col-result">Result</th><th>Notes</th>
+      </tr></thead>
+      <tbody>
+        <tr><td class="col-id">04-08</td><td>Assign user to different role</td><td>In /admin/users, open role-change modal. Select new role. Confirm.</td><td>User.roleId updated. User.version bumped. SecurityEvent written.</td><td><span class="tag tag-sa">SUPER_ADMIN</span></td><td><span class="result-box"></span></td><td></td></tr>
+        <tr><td class="col-id">04-09</td><td>Last SUPER_ADMIN cannot be downgraded [Invariant C4]</td><td>Ensure only 1 SUPER_ADMIN. Attempt to change their role to EMPLOYEE.</td><td>API returns error. Role unchanged.</td><td><span class="tag tag-sa">SUPER_ADMIN</span></td><td><span class="result-box"></span></td><td></td></tr>
+        <tr><td class="col-id">04-10</td><td>Last SUPER_ADMIN cannot be deactivated [Invariant C4]</td><td>Attempt isActive=false on sole SUPER_ADMIN.</td><td>API blocks. Error returned.</td><td><span class="tag tag-sa">SUPER_ADMIN</span></td><td><span class="result-box"></span></td><td></td></tr>
+        <tr><td class="col-id">04-11</td><td>SUPER_ADMIN cannot remove own role:manage [Invariant C3]</td><td>Edit own role. Attempt to remove role:manage.</td><td>Self-lockout prevention. API blocks the mutation.</td><td><span class="tag tag-sa">SUPER_ADMIN</span></td><td><span class="result-box"></span></td><td></td></tr>
+        <tr><td class="col-id">04-12</td><td>Create user linked to employee</td><td>Create user account. Link to existing employee via employeeId.</td><td>User.employeeId set. User logs in and sees own employee data.</td><td><span class="tag tag-sa">SUPER_ADMIN</span></td><td><span class="result-box"></span></td><td></td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- ═══════════════════════════════ MODULE 05 ═══════════════════════════════ -->
+  <section class="page-break">
+    <h2 class="module-title">05 · Leave Management <span class="badge">14 tests</span></h2>
+    <h4 class="flow-title">Two-stage workflow: SUBMITTED → MANAGER_APPROVED → APPROVED (HR) · Reject at either stage · Terminal: APPROVED, REJECTED, CANCELLED</h4>
+    <div class="note-box">All mutations go through LeaveService in a single Prisma transaction. Client never touches WorkflowInstance directly. Manager approves at stage 1; HR confirms at stage 2. Rejection at either stage requires a reason (min 5 chars).</div>
+    <h3 class="sub-title">5A — Submission</h3>
+    <table class="check-table">
+      <thead><tr>
+        <th class="col-id">#</th><th style="width:18%">Test Case</th><th style="width:32%">Steps</th><th style="width:22%">Expected Result</th><th class="col-role">Role</th><th class="col-result">Result</th><th>Notes</th>
+      </tr></thead>
+      <tbody>
+        <tr><td class="col-id">05-01</td><td>Submit leave request</td><td>Login as EMPLOYEE. Go to /leave or /tracker. New Leave Request → type=ANNUAL, dates, reason. Submit.</td><td>LeaveRequest (SUBMITTED). WorkflowInstance created. Approval queue updated.</td><td><span class="tag tag-emp">EMPLOYEE</span></td><td><span class="result-box"></span></td><td></td></tr>
+        <tr><td class="col-id">05-02</td><td>View own leave history</td><td>Check /tracker or /leave for own requests.</td><td>All submitted requests visible with current status.</td><td><span class="tag tag-emp">EMPLOYEE</span></td><td><span class="result-box"></span></td><td></td></tr>
+        <tr><td class="col-id">05-03</td><td>Cancel own SUBMITTED request</td><td>Employee clicks Cancel on a SUBMITTED request.</td><td>Status → CANCELLED. Terminal. Cannot re-open.</td><td><span class="tag tag-emp">EMPLOYEE</span></td><td><span class="result-box"></span></td><td></td></tr>
+      </tbody>
+    </table>
+    <h3 class="sub-title">5B — Approvals (two-stage)</h3>
+    <table class="check-table">
+      <thead><tr>
+        <th class="col-id">#</th><th style="width:18%">Test Case</th><th style="width:32%">Steps</th><th style="width:22%">Expected Result</th><th class="col-role">Role</th><th class="col-result">Result</th><th>Notes</th>
+      </tr></thead>
+      <tbody>
+        <tr><td class="col-id">05-04</td><td>Manager queue loads</td><td>Login as MANAGER. Go to /leave/approvals.</td><td>SUBMITTED team requests listed. Refreshes every 15 s.</td><td><span class="tag tag-mgr">MANAGER</span></td><td><span class="result-box"></span></td><td></td></tr>
+        <tr><td class="col-id">05-05</td><td>Manager approve (stage 1)</td><td>Click Approve on a SUBMITTED request.</td><td>Status → MANAGER_APPROVED. WorkflowAuditEntry (actorRole=MANAGER) written. Employee notified. Request now appears in HR queue.</td><td><span class="tag tag-mgr">MANAGER</span></td><td><span class="result-box"></span></td><td></td></tr>
+        <tr><td class="col-id">05-06</td><td>HR final approve (stage 2)</td><td>Login as HR_ADMIN. /leave/admin. Approve a MANAGER_APPROVED request from LeaveDetailsModal.</td><td>Status → APPROVED. Audit chain now has 3 rows (SUBMITTED → MANAGER_APPROVED → APPROVED).</td><td><span class="tag tag-hr">HR_ADMIN</span></td><td><span class="result-box"></span></td><td></td></tr>
+        <tr><td class="col-id">05-07</td><td>Reject with reason (any stage)</td><td>Click Reject on a SUBMITTED or MANAGER_APPROVED request. Enter reason (min 5 chars) in inline composer. Confirm.</td><td>Status → REJECTED. rejectReason stored. Empty reason blocked client-side + server-side.</td><td><span class="tag tag-hr">HR_ADMIN</span></td><td><span class="result-box"></span></td><td></td></tr>
+        <tr><td class="col-id">05-08</td><td>Double-approve blocked (idempotency)</td><td>After approving, attempt to approve again (double-click or direct API).</td><td>API returns 409 INVALID_STATE_TRANSITION. No duplicate audit entry.</td><td><span class="tag tag-hr">HR_ADMIN</span></td><td><span class="result-box"></span></td><td></td></tr>
+      </tbody>
+    </table>
+    <h3 class="sub-title">5C — Admin Console (tabs, catalogue, calendar, balances)</h3>
+    <div class="note-box">/leave/admin has four tabs: Approval Pipeline, Leave Calendar, Balance Tracker, Leave Type Catalogue. Export Registry link streams CSV.</div>
+    <table class="check-table">
+      <thead><tr>
+        <th class="col-id">#</th><th style="width:18%">Test Case</th><th style="width:32%">Steps</th><th style="width:22%">Expected Result</th><th class="col-role">Role</th><th class="col-result">Result</th><th>Notes</th>
+      </tr></thead>
+      <tbody>
+        <tr><td class="col-id">05-09</td><td>Admin filter + audit</td><td>/leave/admin → Approval Pipeline tab → filter status=APPROVED. Open one, view timeline.</td><td>Only approved requests shown. Audit chain complete with employee → manager → HR timestamps.</td><td><span class="tag tag-hr">HR_ADMIN</span></td><td><span class="result-box"></span></td><td></td></tr>
+        <tr><td class="col-id">05-10</td><td>Leave quota check</td><td>Submit leave where days exceed LeaveType.quotaDays.</td><td>Warning or block raised. Quota enforced.</td><td><span class="tag tag-emp">EMPLOYEE</span></td><td><span class="result-box"></span></td><td></td></tr>
+        <tr><td class="col-id">05-11</td><td>Leave Type catalogue CRUD</td><td>Tab 4 → "New Leave Type" → name, code, colour, quotaDays. Save. Then edit the colour. Then delete a type with no active requests.</td><td>Type appears in Types list. Edit persists. Delete succeeds. Type in use is blocked (409 or hidden).</td><td><span class="tag tag-hr">HR_ADMIN</span></td><td><span class="result-box"></span></td><td></td></tr>
+        <tr><td class="col-id">05-12</td><td>Leave Calendar overlays</td><td>Tab 2 → navigate to a month with approved leave.</td><td>Each approved day rendered with employee chip + type colour. Month navigation prev/next works.</td><td><span class="tag tag-hr">HR_ADMIN</span></td><td><span class="result-box"></span></td><td></td></tr>
+        <tr><td class="col-id">05-13</td><td>Balance Tracker</td><td>Tab 3 → pick year → search an employee.</td><td>Row shows quota, used, remaining per leave type for the year. Search filters live.</td><td><span class="tag tag-hr">HR_ADMIN</span></td><td><span class="result-box"></span></td><td></td></tr>
+        <tr><td class="col-id">05-14</td><td>Export Registry (CSV)</td><td>Click "Export Registry" on /leave/admin.</td><td>CSV streams via /api/leave/report with rows for the current filter set. Content-Disposition=attachment.</td><td><span class="tag tag-hr">HR_ADMIN</span></td><td><span class="result-box"></span></td><td></td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- ═══════════════════════════════ MODULE 06 ═══════════════════════════════ -->
+  <section class="page-break">
+    <h2 class="module-title">06 · Attendance <span class="badge">11 tests</span></h2>
+    <h3 class="sub-title">6A — Clock-In / Clock-Out</h3>
+    <table class="check-table">
+      <thead><tr>
+        <th class="col-id">#</th><th style="width:18%">Test Case</th><th style="width:32%">Steps</th><th style="width:22%">Expected Result</th><th class="col-role">Role</th><th class="col-result">Result</th><th>Notes</th>
+      </tr></thead>
+      <tbody>
+        <tr><td class="col-id">06-01</td><td>Clock-in within geo-fence</td><td>Login as EMPLOYEE. Attendance page. Grant location. Clock in from within work site radius.</td><td>AttendanceRecord (PRESENT). checkInSiteId set. checkInDistance &lt; radiusMeters.</td><td><span class="tag tag-emp">EMPLOYEE</span></td><td><span class="result-box"></span></td><td></td></tr>
+        <tr><td class="col-id">06-02</td><td>Clock-in outside geo-fence with note</td><td>Clock in from outside radius. Provide note (e.g. "Field visit — Client A").</td><td>Record created. checkInNote populated. checkInDistance &gt; radiusMeters. No hard block. Flagged for HR review.</td><td><span class="tag tag-emp">EMPLOYEE</span></td><td><span class="result-box"></span></td><td></td></tr>
+        <tr><td class="col-id">06-03</td><td>Clock-out</td><td>After clock-in, click Clock Out.</td><td>AttendanceRecord updated with checkOut time.</td><td><span class="tag tag-emp">EMPLOYEE</span></td><td><span class="result-box"></span></td><td></td></tr>
+        <tr><td class="col-id">06-04</td><td>Duplicate clock-in blocked</td><td>Try to clock in again same day without clocking out.</td><td>Error: already clocked in today. @@unique([employeeId, date]) enforced.</td><td><span class="tag tag-emp">EMPLOYEE</span></td><td><span class="result-box"></span></td><td></td></tr>
+      </tbody>
+    </table>
+    <h3 class="sub-title">6B — Admin Attendance View</h3>
+    <table class="check-table">
+      <thead><tr>
+        <th class="col-id">#</th><th style="width:18%">Test Case</th><th style="width:32%">Steps</th><th style="width:22%">Expected Result</th><th class="col-role">Role</th><th class="col-result">Result</th><th>Notes</th>
+      </tr></thead>
+      <tbody>
+        <tr><td class="col-id">06-05</td><td>Today's attendance summary</td><td>Login as HR_ADMIN. /attendance/admin. View today.</td><td>Present, absent, late counts shown. Each employee links to detail.</td><td><span class="tag tag-hr">HR_ADMIN</span></td><td><span class="result-box"></span></td><td></td></tr>
+        <tr><td class="col-id">06-06</td><td>Filter by date range</td><td>Select custom date range. Apply.</td><td>Only records in range displayed.</td><td><span class="tag tag-hr">HR_ADMIN</span></td><td><span class="result-box"></span></td><td></td></tr>
+        <tr><td class="col-id">06-07</td><td>Filter by department</td><td>Select department from dropdown. Apply.</td><td>Only that department's employees shown.</td><td><span class="tag tag-hr">HR_ADMIN</span></td><td><span class="result-box"></span></td><td></td></tr>
+        <tr><td class="col-id">06-08</td><td>Out-of-bounds records surfaced</td><td>Filter for records where checkInDistance &gt; radius AND checkInNote exists.</td><td>Out-of-bounds records identifiable. Note visible in detail.</td><td><span class="tag tag-hr">HR_ADMIN</span></td><td><span class="result-box"></span></td><td></td></tr>
+      </tbody>
+    </table>
+    <h3 class="sub-title">6C — Attendance Reconciliation (Workflow)</h3>
+    <table class="check-table">
+      <thead><tr>
+        <th class="col-id">#</th><th style="width:18%">Test Case</th><th style="width:32%">Steps</th><th style="width:22%">Expected Result</th><th class="col-role">Role</th><th class="col-result">Result</th><th>Notes</th>
+      </tr></thead>
+      <tbody>
+        <tr><td class="col-id">06-09</td><td>Submit correction request</td><td>HR initiates correction for an employee's past date. Provide requestedStatus + reason.</td><td>AttendanceReconciliation (PENDING). WorkflowInstance linked.</td><td><span class="tag tag-hr">HR_ADMIN</span></td><td><span class="result-box"></span></td><td></td></tr>
+        <tr><td class="col-id">06-10</td><td>Approve correction</td><td>Approve reconciliation in admin view.</td><td>Status → APPROVED. AttendanceRecord updated.</td><td><span class="tag tag-hr">HR_ADMIN</span></td><td><span class="result-box"></span></td><td></td></tr>
+        <tr><td class="col-id">06-11</td><td>Reject correction</td><td>Reject reconciliation.</td><td>Status → REJECTED. Original record unchanged.</td><td><span class="tag tag-hr">HR_ADMIN</span></td><td><span class="result-box"></span></td><td></td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- ═══════════════════════════════ MODULE 07 ═══════════════════════════════ -->
+  <section class="page-break">
+    <h2 class="module-title">07 · Payroll <span class="badge">23 tests</span></h2>
+    <h4 class="flow-title">Payroll Run Workflow: DRAFT → REVIEW → APPROVED → PROCESSED · Terminal: PROCESSED, CANCELLED</h4>
+    <div class="note-box">Salary inputs FROZEN at run creation (snapshot). Adjustments auto-flip PENDING→APPLIED on PROCESS in same atomic Prisma transaction. Idempotent via updateMany state guard. Two CSV exports on APPROVED / PROCESSED runs: the Register CSV (full statutory breakdown) and the NIBSS Disbursement CSV (bank rows only — employees missing bank details are skipped and reported in the X-Disbursement-Skipped response header).</div>
+    <h3 class="sub-title">7A — Salary Structures</h3>
+    <table class="check-table">
+      <thead><tr>
+        <th class="col-id">#</th><th style="width:18%">Test Case</th><th style="width:32%">Steps</th><th style="width:22%">Expected Result</th><th class="col-role">Role</th><th class="col-result">Result</th><th>Notes</th>
+      </tr></thead>
+      <tbody>
+        <tr><td class="col-id">07-01</td><td>Assign salary structure</td><td>/payroll/salary-structures. Select employee. Add: basicSalary, housingAllowance, transportAllowance, effectiveDate. Save.</td><td>SalaryStructure created (isActive=true). Previous deactivated.</td><td><span class="tag tag-hr">HR_ADMIN</span></td><td><span class="result-box"></span></td><td></td></tr>
+        <tr><td class="col-id">07-02</td><td>Add custom allowance</td><td>Add "Other Allowance" (e.g. meal ₦20,000, taxable=false).</td><td>otherAllowances JSON stored. Visible on employee salary card.</td><td><span class="tag tag-hr">HR_ADMIN</span></td><td><span class="result-box"></span></td><td></td></tr>
+        <tr><td class="col-id">07-03</td><td>Salary history maintained</td><td>Update salary (new structure). View history.</td><td>Old structure still visible (isActive=false). Historical payslips unchanged.</td><td><span class="tag tag-hr">HR_ADMIN</span></td><td><span class="result-box"></span></td><td></td></tr>
+        <tr><td class="col-id">07-04</td><td>Inline bank banner update</td><td>/payroll/salary-structures → open an employee with missing bank details. In the BankBanner card, pick a Nigerian bank, enter a 10-digit NUBAN, Save.</td><td>Employee.bankName + bankCode (derived from bank name) + bankAccountNumber persist via PATCH /api/employees/{id}/profile. Banner turns from warning to confirmed state.</td><td><span class="tag tag-hr">HR_ADMIN</span></td><td><span class="result-box"></span></td><td></td></tr>
+        <tr><td class="col-id">07-05</td><td>Delete non-active structure</td><td>Open employee → history list → delete a past (isActive=false) structure. Confirm.</td><td>Structure removed. Attempting to delete the currently active structure is blocked (409) — must supersede via new effective date.</td><td><span class="tag tag-hr">HR_ADMIN</span></td><td><span class="result-box"></span></td><td></td></tr>
+      </tbody>
+    </table>
+    <h3 class="sub-title">7B — Statutory Rates</h3>
+    <table class="check-table">
+      <thead><tr>
+        <th class="col-id">#</th><th style="width:18%">Test Case</th><th style="width:32%">Steps</th><th style="width:22%">Expected Result</th><th class="col-role">Role</th><th class="col-result">Result</th><th>Notes</th>
+      </tr></thead>
+      <tbody>
+        <tr><td class="col-id">07-06</td><td>View statutory rates</td><td>Navigate to /payroll/statutory-rates.</td><td>PAYE bands, pension (employee &amp; employer), NHF, NHIS, CRA rates visible with effectiveFrom dates.</td><td><span class="tag tag-hr">HR_ADMIN</span></td><td><span class="result-box"></span></td><td></td></tr>
+        <tr><td class="col-id">07-07</td><td>Update statutory rate</td><td>Edit a rate. Set new effectiveFrom. Save.</td><td>New rate row created. Previous set effectiveTo. Active flag updated.</td><td><span class="tag tag-sa">SUPER_ADMIN</span></td><td><span class="result-box"></span></td><td></td></tr>
+      </tbody>
+    </table>
+    <h3 class="sub-title">7C — Payroll Adjustments</h3>
+    <table class="check-table">
+      <thead><tr>
+        <th class="col-id">#</th><th style="width:18%">Test Case</th><th style="width:32%">Steps</th><th style="width:22%">Expected Result</th><th class="col-role">Role</th><th class="col-result">Result</th><th>Notes</th>
+      </tr></thead>
+      <tbody>
+        <tr><td class="col-id">07-08</td><td>Add BONUS adjustment</td><td>Add adjustment: type=BONUS, amount=₦50,000, effectivePeriod=YYYY-MM, reason.</td><td>PayrollAdjustment (PENDING). Appears in adjustment list.</td><td><span class="tag tag-hr">HR_ADMIN</span></td><td><span class="result-box"></span></td><td></td></tr>
+        <tr><td class="col-id">07-09</td><td>Add DEDUCTION adjustment</td><td>Add adjustment: type=DEDUCTION, amount=₦10,000.</td><td>Deduction (PENDING). Reduces net in run calculations.</td><td><span class="tag tag-hr">HR_ADMIN</span></td><td><span class="result-box"></span></td><td></td></tr>
+        <tr><td class="col-id">07-10</td><td>Adjustment auto-applied on PROCESS</td><td>Create PENDING adjustment for period X. Create and process payroll run for period X.</td><td>Adjustment.status → APPLIED atomically with run PROCESS. Amount in PayrollEntry.</td><td><span class="tag tag-hr">HR_ADMIN</span></td><td><span class="result-box"></span></td><td></td></tr>
+      </tbody>
+    </table>
+    <h3 class="sub-title">7D — Payroll Run Lifecycle</h3>
+    <table class="check-table">
+      <thead><tr>
+        <th class="col-id">#</th><th style="width:18%">Test Case</th><th style="width:32%">Steps</th><th style="width:22%">Expected Result</th><th class="col-role">Role</th><th class="col-result">Result</th><th>Notes</th>
+      </tr></thead>
+      <tbody>
+        <tr><td class="col-id">07-11</td><td>Create payroll run (DRAFT)</td><td>/payroll → New Run → set period (YYYY-MM), name, department. Save.</td><td>PayrollRun (DRAFT). Entries computed from active salary structures. rateSnapshot stored.</td><td><span class="tag tag-hr">HR_ADMIN</span></td><td><span class="result-box"></span></td><td></td></tr>
+        <tr><td class="col-id">07-12</td><td>PAYE calculation correctness</td><td>Open DRAFT run. Inspect PayrollEntry for known employee. Manually verify PAYE using FIRS bands.</td><td>PAYE matches expected. grossPay = basic + housing + transport + other.</td><td><span class="tag tag-hr">HR_ADMIN</span></td><td><span class="result-box"></span></td><td></td></tr>
+        <tr><td class="col-id">07-13</td><td>Submit run for review</td><td>Click "Submit for Review" on DRAFT run.</td><td>Status → REVIEW. Visible in /payroll/approvals for FINANCE_MANAGER.</td><td><span class="tag tag-hr">HR_ADMIN</span></td><td><span class="result-box"></span></td><td></td></tr>
+        <tr><td class="col-id">07-14</td><td>Finance Manager approves run</td><td>Login as FINANCE_MANAGER. /payroll/approvals. Approve run.</td><td>Status → APPROVED. WorkflowAuditEntry (actorRole=FINANCE_MANAGER).</td><td><span class="tag tag-fin">FINANCE_MGR</span></td><td><span class="result-box"></span></td><td></td></tr>
+        <tr><td class="col-id">07-15</td><td>Finance Manager rejects run</td><td>Reject a run with reason.</td><td>Status → REVIEW or REJECTED. Reason stored.</td><td><span class="tag tag-fin">FINANCE_MGR</span></td><td><span class="result-box"></span></td><td></td></tr>
+        <tr><td class="col-id">07-16</td><td>Process approved run</td><td>Click "Process" on APPROVED run.</td><td>Status → PROCESSED. All entries PROCESSED. Adjustments APPLIED. processedAt set. Idempotent (double-click safe).</td><td><span class="tag tag-hr">HR_ADMIN</span></td><td><span class="result-box"></span></td><td></td></tr>
+        <tr><td class="col-id">07-17</td><td>Run totals reconcile with entries</td><td>After processing, compare PayrollRun.totalGross vs Σ(PayrollEntry.grossPay). Repeat for net and deductions.</td><td>Totals match. Reconciliation check passes.</td><td><span class="tag tag-hr">HR_ADMIN</span></td><td><span class="result-box"></span></td><td></td></tr>
+        <tr><td class="col-id">07-18</td><td>Processed run is immutable</td><td>Attempt to edit or re-process a PROCESSED run.</td><td>All mutations return 409 INVALID_STATE_TRANSITION.</td><td><span class="tag tag-hr">HR_ADMIN</span></td><td><span class="result-box"></span></td><td></td></tr>
+        <tr><td class="col-id">07-19</td><td>Employee views payslip</td><td>Login as EMPLOYEE. /my-payroll. Select a processed period.</td><td>Payslip shows gross, PAYE, Pension, NHF, NHIS, net pay.</td><td><span class="tag tag-emp">EMPLOYEE</span></td><td><span class="result-box"></span></td><td></td></tr>
+        <tr><td class="col-id">07-20</td><td>Salary change does not affect past payslips</td><td>Update employee salary. Check previous period's PayrollEntry.</td><td>Past entry values unchanged. Snapshot isolation confirmed.</td><td><span class="tag tag-hr">HR_ADMIN</span></td><td><span class="result-box"></span></td><td></td></tr>
+        <tr><td class="col-id">07-21</td><td>Initialize Cycle defaults to current month</td><td>/payroll/register → click "Initialize Cycle" (no period picker).</td><td>A new DRAFT run is created for the current month (e.g. "June 2026"), NOT a hardcoded month. Period label matches system clock month + year.</td><td><span class="tag tag-hr">HR_ADMIN</span></td><td><span class="result-box"></span></td><td></td></tr>
+        <tr><td class="col-id">07-22</td><td>Register CSV export (APPROVED / PROCESSED)</td><td>/payroll/runs/{id} → click "Register CSV" on an APPROVED or PROCESSED run.</td><td>CSV downloads with 16 columns: Staff ID, First Name, Last Name, Email, Job Title, Department, Branch, Basic, Housing, Transport, Gross, PAYE, Pension, NHF, NHIS, Net. Blocked (403) on runs in DRAFT/REVIEW.</td><td><span class="tag tag-fin">FINANCE_MGR</span></td><td><span class="result-box"></span></td><td></td></tr>
+        <tr><td class="col-id">07-23</td><td>NIBSS Disbursement CSV (PROCESSED only)</td><td>/payroll/runs/{id} → click "Disbursement CSV" on a PROCESSED run that includes 1+ employees WITH bank details and 1+ WITHOUT bank details.</td><td>CSV columns: BankCode, AccountNumber, AccountName, Amount (2 dp NGN), Narration. Employees missing bank details are omitted from body; count returned in `X-Disbursement-Skipped` response header. Blocked on non-PROCESSED runs.</td><td><span class="tag tag-fin">FINANCE_MGR</span></td><td><span class="result-box"></span></td><td></td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- ═══════════════════════════════ MODULE 08 ═══════════════════════════════ -->
+  <section class="page-break">
+    <h2 class="module-title">08 · Finance — Budget &amp; Expenditures <span class="badge">19 tests</span></h2>
+    <h4 class="flow-title">Expenditure Workflow: DRAFT → SUBMITTED → APPROVED → DISBURSED · Terminal: DISBURSED, REJECTED, CANCELLED</h4>
+    <div class="note-box">Disbursement atomically updates Expenditure + Budget.spentAmount + BudgetCategory.spentAmount in one Prisma transaction. Budget balance pre-checked INSIDE the transaction (TOCTOU safe). Transitions fan out best-effort notifications (never roll back on notify failure). Rejection reasons must be ≥5 characters. Detail page at /finance/expenditures/[id] shows the full workflow audit timeline. Budget PDF report at /api/finance/budgets/[id]/report. Bulk CSV export at /api/finance/expenditures/export.</div>
+    <h3 class="sub-title">8A — Budgets</h3>
+    <table class="check-table">
+      <thead><tr>
+        <th class="col-id">#</th><th style="width:18%">Test Case</th><th style="width:32%">Steps</th><th style="width:22%">Expected Result</th><th class="col-role">Role</th><th class="col-result">Result</th><th>Notes</th>
+      </tr></thead>
+      <tbody>
+        <tr><td class="col-id">08-01</td><td>Create budget</td><td>/finance → New Budget → name, fiscalYear, period, totalAmount, department. Save.</td><td>Budget created (DRAFT). spentAmount=0.</td><td><span class="tag tag-fin">FINANCE_MGR</span></td><td><span class="result-box"></span></td><td></td></tr>
+        <tr><td class="col-id">08-02</td><td>Add budget categories</td><td>Add categories "Travel" (₦500k), "Equipment" (₦1.2M).</td><td>BudgetCategory rows created. Sum ≤ totalAmount.</td><td><span class="tag tag-fin">FINANCE_MGR</span></td><td><span class="result-box"></span></td><td></td></tr>
+        <tr><td class="col-id">08-03</td><td>Activate budget</td><td>Change status DRAFT → ACTIVE.</td><td>Status updated. Expenditures can now be raised against it.</td><td><span class="tag tag-fin">FINANCE_MGR</span></td><td><span class="result-box"></span></td><td></td></tr>
+        <tr><td class="col-id">08-04</td><td>Budget balance updates on disbursal</td><td>After disbursing (see 08-10), check budget.spentAmount.</td><td>Budget.spentAmount and Category.spentAmount both incremented by exact amount.</td><td><span class="tag tag-fin">FINANCE_MGR</span></td><td><span class="result-box"></span></td><td></td></tr>
+      </tbody>
+    </table>
+    <h3 class="sub-title">8B — Expenditure Submission</h3>
+    <table class="check-table">
+      <thead><tr>
+        <th class="col-id">#</th><th style="width:18%">Test Case</th><th style="width:32%">Steps</th><th style="width:22%">Expected Result</th><th class="col-role">Role</th><th class="col-result">Result</th><th>Notes</th>
+      </tr></thead>
+      <tbody>
+        <tr><td class="col-id">08-05</td><td>Submit expenditure request</td><td>/finance → New Expenditure → select active budget, category, amount, description, vendor. Submit.</td><td>Expenditure (SUBMITTED). WorkflowInstance created. Finance queue updated.</td><td><span class="tag tag-emp">EMPLOYEE</span></td><td><span class="result-box"></span></td><td></td></tr>
+        <tr><td class="col-id">08-06</td><td>Amount frozen at submission</td><td>After submitting, attempt to edit amount via API.</td><td>Amount field read-only post-submission.</td><td><span class="tag tag-fin">FINANCE_MGR</span></td><td><span class="result-box"></span></td><td></td></tr>
+        <tr><td class="col-id">08-07</td><td>Cancel own DRAFT expenditure</td><td>Cancel DRAFT before submitting.</td><td>Status → CANCELLED. Budget unaffected.</td><td><span class="tag tag-emp">EMPLOYEE</span></td><td><span class="result-box"></span></td><td></td></tr>
+      </tbody>
+    </table>
+    <h3 class="sub-title">8C — Finance Approvals</h3>
+    <table class="check-table">
+      <thead><tr>
+        <th class="col-id">#</th><th style="width:18%">Test Case</th><th style="width:32%">Steps</th><th style="width:22%">Expected Result</th><th class="col-role">Role</th><th class="col-result">Result</th><th>Notes</th>
+      </tr></thead>
+      <tbody>
+        <tr><td class="col-id">08-08</td><td>Finance approval queue loads</td><td>Login as FINANCE_MANAGER. /finance/approvals.</td><td>SUBMITTED expenditures visible. Refreshes every 15 s.</td><td><span class="tag tag-fin">FINANCE_MGR</span></td><td><span class="result-box"></span></td><td></td></tr>
+        <tr><td class="col-id">08-09</td><td>Approve expenditure</td><td>Click Approve.</td><td>Status → APPROVED. WorkflowAuditEntry written.</td><td><span class="tag tag-fin">FINANCE_MGR</span></td><td><span class="result-box"></span></td><td></td></tr>
+        <tr><td class="col-id">08-10</td><td>Disburse expenditure (atomic)</td><td>Click Disburse. Select paymentMethod.</td><td>Status → DISBURSED. Budget.spentAmount + Category.spentAmount incremented. All in one transaction. paymentDate set.</td><td><span class="tag tag-fin">FINANCE_MGR</span></td><td><span class="result-box"></span></td><td></td></tr>
+        <tr><td class="col-id">08-11</td><td>Reject expenditure with reason</td><td>Reject with reason.</td><td>Status → REJECTED. rejectReason stored. Budget unchanged.</td><td><span class="tag tag-fin">FINANCE_MGR</span></td><td><span class="result-box"></span></td><td></td></tr>
+        <tr><td class="col-id">08-12</td><td>Budget exceeded — 409</td><td>Submit expenditure exceeding remaining budget balance.</td><td>API returns 409 BUDGET_EXCEEDED. No expenditure created. Budget unchanged.</td><td><span class="tag tag-fin">FINANCE_MGR</span></td><td><span class="result-box"></span></td><td></td></tr>
+        <tr><td class="col-id">08-13</td><td>Disbursed is immutable</td><td>Attempt to disburse a DISBURSED expenditure again.</td><td>409 INVALID_STATE_TRANSITION. No duplicate budget decrement.</td><td><span class="tag tag-fin">FINANCE_MGR</span></td><td><span class="result-box"></span></td><td></td></tr>
+        <tr><td class="col-id">08-14</td><td>Finance audit trail</td><td>Open DISBURSED expenditure. View workflow history.</td><td>Full chain: DRAFT→SUBMITTED→APPROVED→DISBURSED. Actor names, roles, timestamps all recorded.</td><td><span class="tag tag-fin">FINANCE_MGR</span></td><td><span class="result-box"></span></td><td></td></tr>
+        <tr><td class="col-id">08-15</td><td>Expenditure detail page + timeline</td><td>From /finance click through to /finance/expenditures/{id}.</td><td>Page shows requester, budget, category, amount, description, vendor, and a chronological audit timeline (SUBMIT / APPROVE / REJECT / DISBURSE / CANCEL) with actor + timestamp. "Back to Finance" returns to /finance.</td><td><span class="tag tag-fin">FINANCE_MGR</span></td><td><span class="result-box"></span></td><td></td></tr>
+        <tr><td class="col-id">08-16</td><td>Rejection reason guard (≥5 chars)</td><td>Attempt to reject with an empty or 3-char reason.</td><td>Client-side + server-side block. API returns 400 VALIDATION_ERROR. State unchanged.</td><td><span class="tag tag-fin">FINANCE_MGR</span></td><td><span class="result-box"></span></td><td></td></tr>
+        <tr><td class="col-id">08-17</td><td>Notification fan-out on transitions</td><td>Submit an expenditure. Confirm Finance Managers receive an ACTION notification. Approve/Reject/Disburse. Confirm requester receives the corresponding notification.</td><td>Notifications delivered via prisma.notification.createMany. If notification write fails, the transition still succeeds (best-effort, never rollback).</td><td><span class="tag tag-fin">FINANCE_MGR</span></td><td><span class="result-box"></span></td><td></td></tr>
+        <tr><td class="col-id">08-18</td><td>Budget PDF report</td><td>/finance → open an ACTIVE budget → "Download PDF report".</td><td>GET /api/finance/budgets/{id}/report returns application/pdf. PDF includes totals, category rows with utilization, and last 10 APPROVED/DISBURSED expenditures.</td><td><span class="tag tag-fin">FINANCE_MGR</span></td><td><span class="result-box"></span></td><td></td></tr>
+        <tr><td class="col-id">08-19</td><td>Expenditure bulk CSV export</td><td>/finance → "Export CSV". Try with a from/to filter, and without (defaults to last 12 months). Cap tested at limit=50 000.</td><td>GET /api/finance/expenditures/export streams CSV with 16 columns including approvedAt / disbursedAt (from WorkflowAuditEntry) and rejectReason.</td><td><span class="tag tag-fin">FINANCE_MGR</span></td><td><span class="result-box"></span></td><td></td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- ═══════════════════════════════ MODULE 09 ═══════════════════════════════ -->
+  <section class="page-break">
+    <h2 class="module-title">09 · Performance Management <span class="badge">14 tests</span></h2>
+    <h3 class="sub-title">9A — Goals</h3>
+    <table class="check-table">
+      <thead><tr>
+        <th class="col-id">#</th><th style="width:18%">Test Case</th><th style="width:32%">Steps</th><th style="width:22%">Expected Result</th><th class="col-role">Role</th><th class="col-result">Result</th><th>Notes</th>
+      </tr></thead>
+      <tbody>
+        <tr><td class="col-id">09-01</td><td>Create personal goal</td><td>Login as EMPLOYEE. /performance → Add Goal → title, category=INDIVIDUAL, dueDate. Save.</td><td>PerformanceGoal (ACTIVE, progress=0%).</td><td><span class="tag tag-emp">EMPLOYEE</span></td><td><span class="result-box"></span></td><td></td></tr>
+        <tr><td class="col-id">09-02</td><td>Update goal progress</td><td>Open goal. Set progressPercent=50. Add notes.</td><td>Progress bar = 50%. Notes saved.</td><td><span class="tag tag-emp">EMPLOYEE</span></td><td><span class="result-box"></span></td><td></td></tr>
+        <tr><td class="col-id">09-03</td><td>Complete goal</td><td>Set progressPercent=100, status=COMPLETED.</td><td>Goal marked COMPLETED. Visible in completed list.</td><td><span class="tag tag-emp">EMPLOYEE</span></td><td><span class="result-box"></span></td><td></td></tr>
+        <tr><td class="col-id">09-04</td><td>Manager creates team goal</td><td>Login as MANAGER. Create goal: category=TEAM, assign to team member.</td><td>Goal created with correct employeeId. Visible to HR.</td><td><span class="tag tag-mgr">MANAGER</span></td><td><span class="result-box"></span></td><td></td></tr>
+      </tbody>
+    </table>
+    <h3 class="sub-title">9B — KPIs &amp; Measurements</h3>
+    <table class="check-table">
+      <thead><tr>
+        <th class="col-id">#</th><th style="width:18%">Test Case</th><th style="width:32%">Steps</th><th style="width:22%">Expected Result</th><th class="col-role">Role</th><th class="col-result">Result</th><th>Notes</th>
+      </tr></thead>
+      <tbody>
+        <tr><td class="col-id">09-05</td><td>Create KPI</td><td>/performance/kpis → Create KPI for employee: title, target=50, unit="calls", frequency=MONTHLY, startDate.</td><td>PerformanceKPI (ACTIVE).</td><td><span class="tag tag-mgr">MANAGER</span></td><td><span class="result-box"></span></td><td></td></tr>
+        <tr><td class="col-id">09-06</td><td>Record KPI measurement</td><td>Add measurement: periodStart, periodEnd, actualValue=48, notes.</td><td>KPIMeasurement created. @@unique([kpiId, periodStart]) holds.</td><td><span class="tag tag-mgr">MANAGER</span></td><td><span class="result-box"></span></td><td></td></tr>
+        <tr><td class="col-id">09-07</td><td>Duplicate period blocked</td><td>Add second measurement for same kpiId + periodStart.</td><td>Unique constraint error. One measurement per period per KPI.</td><td><span class="tag tag-mgr">MANAGER</span></td><td><span class="result-box"></span></td><td></td></tr>
+      </tbody>
+    </table>
+    <h3 class="sub-title">9C — Review Cycles &amp; Performance Reviews</h3>
+    <div class="note-box">/performance/reviews has three tabs: "To Conduct" (reviewer view), "My Reviews" (subject view), "All" (HR view). Manager saves draft as they fill, submits to lock, employee acknowledges to close the loop. Cycle assignment fans out one PerformanceReview per (cycle, employee) — @@unique enforced.</div>
+    <table class="check-table">
+      <thead><tr>
+        <th class="col-id">#</th><th style="width:18%">Test Case</th><th style="width:32%">Steps</th><th style="width:22%">Expected Result</th><th class="col-role">Role</th><th class="col-result">Result</th><th>Notes</th>
+      </tr></thead>
+      <tbody>
+        <tr><td class="col-id">09-08</td><td>Create + open review cycle</td><td>/performance/cycles → New Cycle: name, type=ANNUAL, startDate, endDate. Save. Click "Open Cycle" → assign reviewers.</td><td>ReviewCycle DRAFT → OPEN. PerformanceReview rows fan out (one per assigned employee) via POST /api/performance/cycles/{id}/assign.</td><td><span class="tag tag-hr">HR_ADMIN</span></td><td><span class="result-box"></span></td><td></td></tr>
+        <tr><td class="col-id">09-09</td><td>Manager saves draft, then submits</td><td>Login as MANAGER. /performance/reviews → "To Conduct" tab → open ReviewCard → fill overallRating + strengths + areasForGrowth + comments → "Save Draft". Reopen. Click "Submit Review".</td><td>Draft persists via PATCH /api/performance/reviews/{id}. Submit switches status → SUBMITTED, submittedAt set. Row moves off Manager's To-Conduct tab.</td><td><span class="tag tag-mgr">MANAGER</span></td><td><span class="result-box"></span></td><td></td></tr>
+        <tr><td class="col-id">09-10</td><td>Employee acknowledges review</td><td>Login as EMPLOYEE. "My Reviews" tab → open SUBMITTED review → read content → optional comment → "Acknowledge".</td><td>POST /api/performance/reviews/{id}/acknowledge. Status → ACKNOWLEDGED. employeeAcknowledgedAt set.</td><td><span class="tag tag-emp">EMPLOYEE</span></td><td><span class="result-box"></span></td><td></td></tr>
+        <tr><td class="col-id">09-11</td><td>HR "All" tab visibility</td><td>Login as HR_ADMIN. /performance/reviews → "All" tab.</td><td>Every review in every state visible (Pending, In Progress, Awaiting Ack, Done tallies match). EMPLOYEE and MANAGER cannot access "All" tab.</td><td><span class="tag tag-hr">HR_ADMIN</span></td><td><span class="result-box"></span></td><td></td></tr>
+      </tbody>
+    </table>
+    <h3 class="sub-title">9D — 360° Peer Feedback</h3>
+    <table class="check-table">
+      <thead><tr>
+        <th class="col-id">#</th><th style="width:18%">Test Case</th><th style="width:32%">Steps</th><th style="width:22%">Expected Result</th><th class="col-role">Role</th><th class="col-result">Result</th><th>Notes</th>
+      </tr></thead>
+      <tbody>
+        <tr><td class="col-id">09-12</td><td>Create peer feedback request</td><td>/performance/feedback → Create: subjectId, reviewerId, cycleId, prompt.</td><td>PeerFeedbackRequest (PENDING). Reviewer sees it in queue.</td><td><span class="tag tag-hr">HR_ADMIN</span></td><td><span class="result-box"></span></td><td></td></tr>
+        <tr><td class="col-id">09-13</td><td>Reviewer submits feedback</td><td>Login as reviewer. Open request. Fill strengths, improvements, rating (1-5). Submit.</td><td>Status → SUBMITTED. strengths, improvements, rating stored. submittedAt set.</td><td><span class="tag tag-any">ANY</span></td><td><span class="result-box"></span></td><td></td></tr>
+        <tr><td class="col-id">09-14</td><td>Duplicate feedback request blocked</td><td>Attempt second request for same (subjectId, reviewerId, cycleId).</td><td>@@unique([subjectId, reviewerId, cycleId]) blocks duplicate.</td><td><span class="tag tag-hr">HR_ADMIN</span></td><td><span class="result-box"></span></td><td></td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- ═══════════════════════════════ MODULE 10 ═══════════════════════════════ -->
+  <section class="page-break">
+    <h2 class="module-title">10 · Communication &amp; Messaging <span class="badge">10 tests</span></h2>
+    <div class="note-box">Messages poll at 5 s (open thread) / 10 s (conversation list). DMs = DIRECT classification. Broadcasts = ANNOUNCEMENT. Retention policies enforced per conversation.</div>
+    <h3 class="sub-title">10A — Direct Messages</h3>
+    <table class="check-table">
+      <thead><tr>
+        <th class="col-id">#</th><th style="width:18%">Test Case</th><th style="width:32%">Steps</th><th style="width:22%">Expected Result</th><th class="col-role">Role</th><th class="col-result">Result</th><th>Notes</th>
+      </tr></thead>
+      <tbody>
+        <tr><td class="col-id">10-01</td><td>Start new DM</td><td>Login as User A. /messages → New Message → select User B. Send first message.</td><td>Conversation (DIRECT) created. Both users are ConversationMembers. Message visible.</td><td><span class="tag tag-any">ANY</span></td><td><span class="result-box"></span></td><td></td></tr>
+        <tr><td class="col-id">10-02</td><td>Receive message via polling</td><td>Login as User B. Wait ≤10 s. Open conversation list.</td><td>New conversation from User A appears. lastMessageAt updated.</td><td><span class="tag tag-any">ANY</span></td><td><span class="result-box"></span></td><td></td></tr>
+        <tr><td class="col-id">10-03</td><td>Reply in thread</td><td>User B opens conversation. Sends a reply.</td><td>Reply visible. User A picks it up within 5 s poll.</td><td><span class="tag tag-any">ANY</span></td><td><span class="result-box"></span></td><td></td></tr>
+        <tr><td class="col-id">10-04</td><td>Unread badge count</td><td>User A receives message without opening thread.</td><td>Unread badge visible on conversation list. Clears on open.</td><td><span class="tag tag-any">ANY</span></td><td><span class="result-box"></span></td><td></td></tr>
+      </tbody>
+    </table>
+    <h3 class="sub-title">10B — Announcements</h3>
+    <table class="check-table">
+      <thead><tr>
+        <th class="col-id">#</th><th style="width:18%">Test Case</th><th style="width:32%">Steps</th><th style="width:22%">Expected Result</th><th class="col-role">Role</th><th class="col-result">Result</th><th>Notes</th>
+      </tr></thead>
+      <tbody>
+        <tr><td class="col-id">10-05</td><td>Publish global announcement</td><td>/communication → New Announcement → category=GLOBAL, title, content. Publish.</td><td>Announcement created. All active users see it.</td><td><span class="tag tag-hr">HR_ADMIN</span></td><td><span class="result-box"></span></td><td></td></tr>
+        <tr><td class="col-id">10-06</td><td>Department-scoped announcement</td><td>Create with category=DEPARTMENT, scopeId=&lt;dept ID&gt;.</td><td>Only employees in that department see the announcement.</td><td><span class="tag tag-hr">HR_ADMIN</span></td><td><span class="result-box"></span></td><td></td></tr>
+        <tr><td class="col-id">10-07</td><td>Employee acknowledges announcement</td><td>Login as EMPLOYEE. Open announcement. Click "Acknowledge".</td><td>AnnouncementAcknowledgment row created. @@unique([announcementId, userId]) prevents duplicate.</td><td><span class="tag tag-emp">EMPLOYEE</span></td><td><span class="result-box"></span></td><td></td></tr>
+        <tr><td class="col-id">10-08</td><td>Urgent announcement priority</td><td>Create announcement priority=URGENT.</td><td>Displayed prominently. Distinguishable from NORMAL.</td><td><span class="tag tag-hr">HR_ADMIN</span></td><td><span class="result-box"></span></td><td></td></tr>
+        <tr><td class="col-id">10-09</td><td>Expired announcement hidden</td><td>Set expiresAt to past date. Check employee view.</td><td>Expired announcement not visible to employees.</td><td><span class="tag tag-hr">HR_ADMIN</span></td><td><span class="result-box"></span></td><td></td></tr>
+        <tr><td class="col-id">10-10</td><td>Acknowledgment tracking by HR</td><td>HR_ADMIN views acknowledgment list for an announcement.</td><td>Shows who acknowledged and when. Unacknowledged employees identifiable.</td><td><span class="tag tag-hr">HR_ADMIN</span></td><td><span class="result-box"></span></td><td></td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- ═══════════════════════════════ MODULE 11 ═══════════════════════════════ -->
+  <section class="page-break">
+    <h2 class="module-title">11 · Analytics, Intelligence &amp; Forecasting <span class="badge">8 tests</span></h2>
+    <div class="note-box">Dashboards and KPIs poll every 30 s. Intelligence module surfaces anomaly detection, operational recommendations, and risk scores.</div>
+    <table class="check-table">
+      <thead><tr>
+        <th class="col-id">#</th><th style="width:18%">Test Case</th><th style="width:32%">Steps</th><th style="width:22%">Expected Result</th><th class="col-role">Role</th><th class="col-result">Result</th><th>Notes</th>
+      </tr></thead>
+      <tbody>
+        <tr><td class="col-id">11-01</td><td>Main dashboard loads</td><td>Login. /dashboard.</td><td>KPI widgets: headcount, attendance rate, pending approvals, payroll totals all load.</td><td><span class="tag tag-any">ANY</span></td><td><span class="result-box"></span></td><td></td></tr>
+        <tr><td class="col-id">11-02</td><td>Workforce metrics</td><td>/analytics. View headcount by department.</td><td>WorkforceMetric data rendered. Department breakdown accurate.</td><td><span class="tag tag-hr">HR_ADMIN</span></td><td><span class="result-box"></span></td><td></td></tr>
+        <tr><td class="col-id">11-03</td><td>Attendance trend charts</td><td>View attendance compliance rate over time.</td><td>AttendanceMetric data: compliance rate, late arrivals, absences, overtime visible.</td><td><span class="tag tag-hr">HR_ADMIN</span></td><td><span class="result-box"></span></td><td></td></tr>
+        <tr><td class="col-id">11-04</td><td>Workflow metrics</td><td>View workflow turnaround and rejection counts.</td><td>WorkflowMetric data shown. Bottleneck items flagged (isBottleneck=true).</td><td><span class="tag tag-hr">HR_ADMIN</span></td><td><span class="result-box"></span></td><td></td></tr>
+        <tr><td class="col-id">11-05</td><td>Anomaly detection</td><td>/admin/intelligence. View anomalies.</td><td>OperationalAnomaly records with severity, type, description. Unresolved highlighted.</td><td><span class="tag tag-sa">SUPER_ADMIN</span></td><td><span class="result-box"></span></td><td></td></tr>
+        <tr><td class="col-id">11-06</td><td>Operational recommendations</td><td>View recommendations panel.</td><td>OperationalRecommendation list: category, title, reasoning, impactScore. Can mark APPLIED or DISMISSED.</td><td><span class="tag tag-sa">SUPER_ADMIN</span></td><td><span class="result-box"></span></td><td></td></tr>
+        <tr><td class="col-id">11-07</td><td>Risk score dashboard</td><td>View risk scores.</td><td>RiskScore: burnoutRisk, complianceRisk, operationalRisk, overallScore displayed.</td><td><span class="tag tag-sa">SUPER_ADMIN</span></td><td><span class="result-box"></span></td><td></td></tr>
+        <tr><td class="col-id">11-08</td><td>Forecasting page</td><td>/forecasting.</td><td>ForecastSnapshot data for WORKFORCE and ATTENDANCE types. Trend lines visible.</td><td><span class="tag tag-hr">HR_ADMIN</span></td><td><span class="result-box"></span></td><td></td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- ═══════════════════════════════ MODULE 12 ═══════════════════════════════ -->
+  <section>
+    <h2 class="module-title">12 · Reports <span class="badge">6 tests</span></h2>
+    <div class="note-box">ReportJob lifecycle: PENDING → PROCESSING → COMPLETED / FAILED. Reports stored as BYTEA inline. Retention policies: STANDARD, LONG_TERM, PERMANENT.</div>
+    <table class="check-table">
+      <thead><tr>
+        <th class="col-id">#</th><th style="width:18%">Test Case</th><th style="width:32%">Steps</th><th style="width:22%">Expected Result</th><th class="col-role">Role</th><th class="col-result">Result</th><th>Notes</th>
+      </tr></thead>
+      <tbody>
+        <tr><td class="col-id">12-01</td><td>Generate workforce headcount report</td><td>/reports → type=WORKFORCE_HEADCOUNT → date range → Generate.</td><td>ReportJob PENDING → COMPLETED. File downloadable. Data accurate.</td><td><span class="tag tag-hr">HR_ADMIN</span></td><td><span class="result-box"></span></td><td></td></tr>
+        <tr><td class="col-id">12-02</td><td>Generate leave balance report</td><td>type=LEAVE_BALANCE. Generate.</td><td>Per-employee leave quota vs used days included.</td><td><span class="tag tag-hr">HR_ADMIN</span></td><td><span class="result-box"></span></td><td></td></tr>
+        <tr><td class="col-id">12-03</td><td>Generate audit log report</td><td>type=AUDIT_LOG → scope + date range. Generate.</td><td>WorkflowAuditEntry records exported as CSV or PDF.</td><td><span class="tag tag-sa">SUPER_ADMIN</span></td><td><span class="result-box"></span></td><td></td></tr>
+        <tr><td class="col-id">12-04</td><td>Download generated report</td><td>Click download on COMPLETED report job.</td><td>File downloads. fileName and mimeType correct. Content valid.</td><td><span class="tag tag-hr">HR_ADMIN</span></td><td><span class="result-box"></span></td><td></td></tr>
+        <tr><td class="col-id">12-05</td><td>Report expiry</td><td>Check reports past expiresAt date.</td><td>Status → EXPIRED. Download unavailable.</td><td><span class="tag tag-hr">HR_ADMIN</span></td><td><span class="result-box"></span></td><td></td></tr>
+        <tr><td class="col-id">12-06</td><td>Report access restricted</td><td>Login as EMPLOYEE. Attempt to access audit log report.</td><td>403 Forbidden. Sensitive reports gated by role.</td><td><span class="tag tag-emp">EMPLOYEE</span></td><td><span class="result-box"></span></td><td></td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- ═══════════════════════════════ MODULE 13 ═══════════════════════════════ -->
+  <section class="page-break">
+    <h2 class="module-title">13 · Governance, Security &amp; Audit <span class="badge">8 tests</span></h2>
+    <div class="note-box">Audit feed polls every 30 s. SecurityEvents written for every significant auth/permission event. Governance page shows immutable audit registry.</div>
+    <table class="check-table">
+      <thead><tr>
+        <th class="col-id">#</th><th style="width:18%">Test Case</th><th style="width:32%">Steps</th><th style="width:22%">Expected Result</th><th class="col-role">Role</th><th class="col-result">Result</th><th>Notes</th>
+      </tr></thead>
+      <tbody>
+        <tr><td class="col-id">13-01</td><td>Governance audit registry</td><td>/governance. View audit registry.</td><td>WorkflowAuditEntry and SecurityEvent records in chronological order. No edit controls (immutable).</td><td><span class="tag tag-sa">SUPER_ADMIN</span></td><td><span class="result-box"></span></td><td></td></tr>
+        <tr><td class="col-id">13-02</td><td>Login audit trail</td><td>Perform success and failure logins. View /governance → SecurityEvents.</td><td>LOGIN_SUCCESS and LOGIN_FAILURE events with IP, timestamp, userAgent.</td><td><span class="tag tag-sa">SUPER_ADMIN</span></td><td><span class="result-box"></span></td><td></td></tr>
+        <tr><td class="col-id">13-03</td><td>Permission change audit</td><td>Change a role's permissions. Check SecurityEvents.</td><td>SecurityEvent (PERMISSION_CHANGE) with actor, grant/revoke details in metadata.</td><td><span class="tag tag-sa">SUPER_ADMIN</span></td><td><span class="result-box"></span></td><td></td></tr>
+        <tr><td class="col-id">13-04</td><td>Permission denied event logged</td><td>EMPLOYEE accesses /admin/roles (forbidden).</td><td>SecurityEvent PERMISSION_DENIED logged. UI shows /forbidden.</td><td><span class="tag tag-emp">EMPLOYEE</span></td><td><span class="result-box"></span></td><td></td></tr>
+        <tr><td class="col-id">13-05</td><td>Security settings</td><td>/settings/security. View password policy, session settings.</td><td>SystemSetting (category=SECURITY) values displayed. Editable by SUPER_ADMIN.</td><td><span class="tag tag-sa">SUPER_ADMIN</span></td><td><span class="result-box"></span></td><td></td></tr>
+        <tr><td class="col-id">13-06</td><td>Compliance settings</td><td>/settings/compliance. View statutory compliance flags.</td><td>SystemSetting (category=COMPLIANCE) displayed. Changes persisted to DB.</td><td><span class="tag tag-sa">SUPER_ADMIN</span></td><td><span class="result-box"></span></td><td></td></tr>
+        <tr><td class="col-id">13-07</td><td>Data backup creation</td><td>/settings/data → Trigger system backup.</td><td>Backup row created (COMPLETED). sizeBytes, rowCount, tablesIncluded populated.</td><td><span class="tag tag-sa">SUPER_ADMIN</span></td><td><span class="result-box"></span></td><td></td></tr>
+        <tr><td class="col-id">13-08</td><td>Audit search by actor/type</td><td>In /governance, search by actor name or event type.</td><td>Results filtered correctly. Context-aware search returns relevant entries.</td><td><span class="tag tag-sa">SUPER_ADMIN</span></td><td><span class="result-box"></span></td><td></td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- ═══════════════════════════════ MODULE 14 ═══════════════════════════════ -->
+  <section>
+    <h2 class="module-title">14 · Notifications &amp; Preferences <span class="badge">6 tests</span></h2>
+    <table class="check-table">
+      <thead><tr>
+        <th class="col-id">#</th><th style="width:18%">Test Case</th><th style="width:32%">Steps</th><th style="width:22%">Expected Result</th><th class="col-role">Role</th><th class="col-result">Result</th><th>Notes</th>
+      </tr></thead>
+      <tbody>
+        <tr><td class="col-id">14-01</td><td>Workflow notification delivered</td><td>Submit leave request. Check approving manager's notifications.</td><td>Notification (type=ACTION, category=WORKFLOW) appears. resourceId links to LeaveRequest.</td><td><span class="tag tag-mgr">MANAGER</span></td><td><span class="result-box"></span></td><td></td></tr>
+        <tr><td class="col-id">14-02</td><td>Mark notification as read</td><td>Open notification panel. Click on unread notification.</td><td>status → READ. readAt set. Unread count decrements.</td><td><span class="tag tag-any">ANY</span></td><td><span class="result-box"></span></td><td></td></tr>
+        <tr><td class="col-id">14-03</td><td>Dismiss notification</td><td>Click dismiss/archive.</td><td>status → DISMISSED or ARCHIVED. Removed from active list.</td><td><span class="tag tag-any">ANY</span></td><td><span class="result-box"></span></td><td></td></tr>
+        <tr><td class="col-id">14-04</td><td>Security notification on suspicious event</td><td>Trigger multiple failed logins. Check SUPER_ADMIN notifications.</td><td>SecurityAlert notification raised (category=SECURITY, priority=HIGH or URGENT).</td><td><span class="tag tag-sa">SUPER_ADMIN</span></td><td><span class="result-box"></span></td><td></td></tr>
+        <tr><td class="col-id">14-05</td><td>User notification preferences</td><td>/preferences → toggle inApp, email, workflowAlerts. Save.</td><td>NotificationPreference row updated. Settings respected on next event.</td><td><span class="tag tag-any">ANY</span></td><td><span class="result-box"></span></td><td></td></tr>
+        <tr><td class="col-id">14-06</td><td>Notification priority ordering</td><td>Generate URGENT and LOW priority notifications. View panel.</td><td>URGENT at top or with prominent indicator. LOW beneath.</td><td><span class="tag tag-any">ANY</span></td><td><span class="result-box"></span></td><td></td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- ═══════════════════════════════ MODULE 15 ═══════════════════════════════ -->
+  <section class="page-break">
+    <h2 class="module-title">15 · Cross-Module Interconnections &amp; E2E Flows <span class="badge">10 tests</span></h2>
+    <div class="note-box">These tests verify data flows <em>across</em> module boundaries. Each one would fail silently if module wiring is broken.</div>
+
+    <table class="inter-table" style="margin-bottom:14px;">
+      <thead><tr><th>Source Module</th><th class="arrow">→</th><th>Target Module</th><th>Key Integration Point</th></tr></thead>
+      <tbody>
+        <tr><td>Employee / Salary Structure</td><td class="arrow">→</td><td>Payroll Run</td><td>Active SalaryStructure snapshot frozen into PayrollEntry at run creation</td></tr>
+        <tr><td>Leave Approval (Workflow Engine)</td><td class="arrow">→</td><td>Notifications</td><td>WorkflowEngine emits Notification to employee on state change</td></tr>
+        <tr><td>Expenditure DISBURSE</td><td class="arrow">→</td><td>Budget</td><td>Atomic: Expenditure.DISBURSED + Budget.spentAmount++ + Category.spentAmount++ in same Prisma tx</td></tr>
+        <tr><td>Payroll Run PROCESS</td><td class="arrow">→</td><td>PayrollAdjustments</td><td>Atomic: Adjustment.PENDING → APPLIED in same tx as run PROCESSED</td></tr>
+        <tr><td>Role Permission Change</td><td class="arrow">→</td><td>Active Sessions</td><td>User.version bump → 60 s poll → JWT refresh (no forced re-login)</td></tr>
+        <tr><td>Attendance Clock-In</td><td class="arrow">→</td><td>WorkSite geo-fence</td><td>Geo-fence match writes checkInSiteId + checkInDistance on AttendanceRecord</td></tr>
+        <tr><td>Employee Create</td><td class="arrow">→</td><td>User Account</td><td>Employee linked to User via employeeId for login access</td></tr>
+        <tr><td>Department</td><td class="arrow">→</td><td>Payroll Run scope</td><td>PayrollRun.departmentId scopes entries to that department's employees</td></tr>
+        <tr><td>Review Cycle OPEN</td><td class="arrow">→</td><td>Peer Feedback</td><td>PeerFeedbackRequest.cycleId links to open ReviewCycle</td></tr>
+        <tr><td>All Workflow Transitions</td><td class="arrow">→</td><td>Governance Page</td><td>WorkflowAuditEntry written for every state change; visible in immutable registry</td></tr>
+      </tbody>
+    </table>
+
+    <table class="check-table">
+      <thead><tr>
+        <th class="col-id">#</th><th style="width:16%">E2E Test Case</th>
+        <th style="width:36%">Full Flow Steps</th><th style="width:22%">Expected Result</th>
+        <th class="col-role">Role</th><th class="col-result">Result</th><th>Notes</th>
+      </tr></thead>
+      <tbody>
+        <tr><td class="col-id">15-01</td><td>Full payroll run E2E</td><td>1. HR creates employee + salary structure. 2. HR adds BONUS adjustment. 3. HR creates DRAFT run. 4. HR submits (→REVIEW). 5. FINANCE_MGR approves (→APPROVED). 6. HR processes (→PROCESSED). 7. Employee views payslip on /my-payroll.</td><td>Payslip: correct gross, PAYE, pension, net. Adjustment reflected. Run totals reconcile. All states in audit.</td><td><span class="tag tag-hr">HR_ADMIN</span></td><td><span class="result-box"></span></td><td></td></tr>
+        <tr><td class="col-id">15-02</td><td>Full leave request E2E</td><td>1. Employee submits ANNUAL leave (5 days). 2. Manager sees notification. 3. Manager approves in /leave/approvals. 4. Employee notified. 5. Leave shows APPROVED in tracker.</td><td>All state transitions logged. Notifications delivered. Tracker accurate.</td><td><span class="tag tag-emp">EMPLOYEE</span></td><td><span class="result-box"></span></td><td></td></tr>
+        <tr><td class="col-id">15-03</td><td>Full expenditure disbursal E2E</td><td>1. Employee raises expenditure against ACTIVE budget (Travel category). 2. FINANCE_MGR approves. 3. FINANCE_MGR disburses (BANK_TRANSFER). 4. Check Budget + Category spentAmounts.</td><td>Budget incremented atomically. No partial state. Full audit trail.</td><td><span class="tag tag-fin">FINANCE_MGR</span></td><td><span class="result-box"></span></td><td></td></tr>
+        <tr><td class="col-id">15-04</td><td>RBAC permission propagation</td><td>1. User A logged in as EMPLOYEE. 2. SUPER_ADMIN grants new permission via /admin/roles. 3. Wait ≤60 s. 4. User A navigates to newly permitted route without re-login.</td><td>User A sees previously forbidden route. No forced logout. User.version bumped, JWT refreshed.</td><td><span class="tag tag-sa">SUPER_ADMIN</span></td><td><span class="result-box"></span></td><td></td></tr>
+        <tr><td class="col-id">15-05</td><td>Payroll snapshot isolation</td><td>1. Process payroll run for period X. 2. Update employee salary (new SalaryStructure). 3. Check period X PayrollEntry.</td><td>Period X values unchanged. New salary applies only to future runs.</td><td><span class="tag tag-hr">HR_ADMIN</span></td><td><span class="result-box"></span></td><td></td></tr>
+        <tr><td class="col-id">15-06</td><td>Department-scoped payroll</td><td>1. Create department-scoped payroll run. 2. Verify only employees in that department have PayrollEntries.</td><td>entryCount matches employees in department with active salaries.</td><td><span class="tag tag-hr">HR_ADMIN</span></td><td><span class="result-box"></span></td><td></td></tr>
+        <tr><td class="col-id">15-07</td><td>Workflow audit trail — end-to-end</td><td>After completing 15-01 to 15-03, navigate to /governance. Search each resource ID.</td><td>Full WorkflowAuditEntry chain for each resource. fromState→toState correct. No missing steps.</td><td><span class="tag tag-sa">SUPER_ADMIN</span></td><td><span class="result-box"></span></td><td></td></tr>
+        <tr><td class="col-id">15-08</td><td>Communication → workflow context</td><td>After leave approval, check if a WORKFLOW-classified conversation exists linked to the LeaveRequest ID.</td><td>Conversation linked via resourceId=LeaveRequestId, resourceType="LeaveRequest" if implemented. Otherwise N/A.</td><td><span class="tag tag-hr">HR_ADMIN</span></td><td><span class="result-box"></span></td><td></td></tr>
+        <tr><td class="col-id">15-09</td><td>Performance review → cycle link</td><td>Open cycle. Create reviews for 3 employees. Close cycle. Inspect rows.</td><td>All PerformanceReview rows have correct cycleId. @@unique([cycleId, employeeId]) blocks duplicates.</td><td><span class="tag tag-hr">HR_ADMIN</span></td><td><span class="result-box"></span></td><td></td></tr>
+        <tr><td class="col-id">15-10</td><td>New user → employee → payslip</td><td>1. Create employee (no user account). 2. Create user, link employeeId. 3. Login as that user. 4. /my-payroll.</td><td>User sees own payslips only. No cross-employee data leak.</td><td><span class="tag tag-sa">SUPER_ADMIN</span></td><td><span class="result-box"></span></td><td></td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- ═══════════════════════════════ SUMMARY ═══════════════════════════════ -->
+  <section class="page-break">
+    <h2 class="module-title">📊 Test Execution Summary</h2>
+    <br/>
+    <table class="summary-table">
+      <thead><tr>
+        <th style="text-align:left;">Module</th>
+        <th>Total</th><th>Passed</th><th>Failed</th><th>N/A</th><th>Not Run</th><th>Pass %</th>
+      </tr></thead>
+      <tbody>
+        <tr><td class="mod">01 · Authentication, Session &amp; MFA</td><td>14</td><td></td><td></td><td></td><td></td><td></td></tr>
+        <tr><td class="mod">02 · Organization &amp; Structure</td><td>10</td><td></td><td></td><td></td><td></td><td></td></tr>
+        <tr><td class="mod">03 · Employee Management</td><td>14</td><td></td><td></td><td></td><td></td><td></td></tr>
+        <tr><td class="mod">04 · Users &amp; RBAC</td><td>12</td><td></td><td></td><td></td><td></td><td></td></tr>
+        <tr><td class="mod">05 · Leave Management</td><td>14</td><td></td><td></td><td></td><td></td><td></td></tr>
+        <tr><td class="mod">06 · Attendance</td><td>11</td><td></td><td></td><td></td><td></td><td></td></tr>
+        <tr><td class="mod">07 · Payroll</td><td>23</td><td></td><td></td><td></td><td></td><td></td></tr>
+        <tr><td class="mod">08 · Finance — Budget &amp; Expenditures</td><td>19</td><td></td><td></td><td></td><td></td><td></td></tr>
+        <tr><td class="mod">09 · Performance Management</td><td>14</td><td></td><td></td><td></td><td></td><td></td></tr>
+        <tr><td class="mod">10 · Communication &amp; Messaging</td><td>10</td><td></td><td></td><td></td><td></td><td></td></tr>
+        <tr><td class="mod">11 · Analytics, Intelligence &amp; Forecasting</td><td>8</td><td></td><td></td><td></td><td></td><td></td></tr>
+        <tr><td class="mod">12 · Reports</td><td>6</td><td></td><td></td><td></td><td></td><td></td></tr>
+        <tr><td class="mod">13 · Governance, Security &amp; Audit</td><td>8</td><td></td><td></td><td></td><td></td><td></td></tr>
+        <tr><td class="mod">14 · Notifications &amp; Preferences</td><td>6</td><td></td><td></td><td></td><td></td><td></td></tr>
+        <tr><td class="mod">15 · Cross-Module E2E Flows</td><td>10</td><td></td><td></td><td></td><td></td><td></td></tr>
+        <tr style="font-weight:700; background:#e3f2fd;">
+          <td class="mod">TOTAL</td><td>179</td><td></td><td></td><td></td><td></td><td></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <br/><br/>
+    <h2 class="module-title">🐛 Defect Log</h2>
+    <br/>
+    <table class="check-table">
+      <thead><tr>
+        <th style="width:55px;">Defect #</th>
+        <th style="width:55px;">Test ID</th>
+        <th>Description</th>
+        <th style="width:78px;">Severity<br/><small>P1/P2/P3/P4</small></th>
+        <th style="width:90px;">Assigned To</th>
+        <th style="width:75px;">Status</th>
+        <th style="width:75px;">Resolved Date</th>
+      </tr></thead>
+      <tbody>
+        <tr><td>DEF-001</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+        <tr><td>DEF-002</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+        <tr><td>DEF-003</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+        <tr><td>DEF-004</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+        <tr><td>DEF-005</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+        <tr><td>DEF-006</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+        <tr><td>DEF-007</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+        <tr><td>DEF-008</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+      </tbody>
+    </table>
+
+    <!-- SIGN-OFF -->
+    <div class="signoff">
+      <h3>✅ Sign-Off &amp; Certification</h3>
+      <p style="font-size:8pt; color:#546e7a; margin-bottom:14px;">
+        By signing below, each party certifies that the Suler EMS has been functionally tested against this checklist,
+        all PASS results verified, all FAIL items triaged, and the system is approved for the stated environment.
+      </p>
+      <div class="signoff-grid">
+        <div class="signoff-field">
+          <div class="label">Lead Tester &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</div>
+          <div class="label">Date: ______________________</div>
+        </div>
+        <div class="signoff-field">
+          <div class="label">Technical Lead / Developer &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</div>
+          <div class="label">Date: ______________________</div>
+        </div>
+        <div class="signoff-field">
+          <div class="label">Product Owner / Stakeholder &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</div>
+          <div class="label">Date: ______________________</div>
+        </div>
+      </div>
+      <br/>
+      <div style="font-size:7.5pt; color:#90a4ae; text-align:center;">
+        Suler EMS · Functional Test Checklist v2.0 · 2026-06-30 · Client Pilot · 179 Tests · 15 Modules
+      </div>
+    </div>
+  </section>
+
+</div>
+</body>
+</html>

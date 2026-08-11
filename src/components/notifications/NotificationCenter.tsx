@@ -49,6 +49,22 @@ export function NotificationCenter() {
     }
   };
 
+  const dismiss = async (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    // Optimistic — remove from local state immediately, roll back on failure
+    // so the click never looks dead. The server's DISMISSED status also drops
+    // it from the next fetch anyway.
+    const prev = notifications;
+    setNotifications(notifications.filter(n => n.id !== id));
+    try {
+      const res = await fetch(`/api/notifications/${id}/dismiss`, { method: 'POST' });
+      if (!res.ok) throw new Error('dismiss failed');
+    } catch (err) {
+      console.error('Failed to dismiss', err);
+      setNotifications(prev);
+    }
+  };
+
   const getIcon = (type: string) => {
     switch (type) {
       case 'SUCCESS': return <CheckCircle2 className="w-4 h-4 text-emerald-500" />;
@@ -113,18 +129,26 @@ export function NotificationCenter() {
                 ) : (
                   <div className="space-y-1">
                     {notifications.map((n) => (
-                      <div 
+                      <div
                         key={n.id}
                         onClick={() => markAsRead(n.id)}
-                        className={`p-4 rounded-2xl cursor-pointer transition-all hover:bg-slate-50 relative ${n.status !== 'READ' ? 'bg-indigo-50/50' : ''}`}
+                        className={`group p-4 rounded-2xl cursor-pointer transition-all hover:bg-slate-50 relative ${n.status !== 'READ' ? 'bg-indigo-50/50' : ''}`}
                       >
+                        <button
+                          type="button"
+                          aria-label="Dismiss notification"
+                          onClick={(e) => dismiss(n.id, e)}
+                          className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity w-6 h-6 rounded-md bg-white border border-slate-200 hover:border-rose-300 hover:text-rose-600 text-slate-400 flex items-center justify-center"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
                         <div className="flex gap-4">
                           <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 border transition-colors ${
                             n.status !== 'READ' ? 'bg-white border-indigo-100 shadow-sm' : 'bg-slate-50 border-slate-100'
                           }`}>
                             {getIcon(n.type)}
                           </div>
-                          <div className="flex-1 min-w-0">
+                          <div className="flex-1 min-w-0 pr-6">
                             <div className="flex items-center justify-between mb-1">
                               <p className={`text-[13px] font-bold truncate ${n.status !== 'READ' ? 'text-slate-900' : 'text-slate-500'}`}>
                                 {n.title}

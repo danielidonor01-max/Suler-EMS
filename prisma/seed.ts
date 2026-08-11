@@ -54,6 +54,8 @@ const ALL_PERMISSIONS = [
   { code: 'data:backup',      name: 'Backup Data' },
   { code: 'data:restore',     name: 'Restore Data' },
   { code: 'settings:manage',  name: 'Manage Settings' },
+  { code: 'hr:edit',          name: 'Manage HR Records (Depts, Teams, Sites, Leave Types, Docs)' },
+  { code: 'notification:manage', name: 'Manage Own Notifications' },
   { code: 'communication:broadcast', name: 'Publish Announcements / Broadcasts' },
   { code: 'reports:generate', name: 'Generate Reports' },
   { code: 'analytics:view',   name: 'View Analytics' },
@@ -64,13 +66,15 @@ const ROLE_PERMISSIONS: Record<string, string[]> = {
   SUPER_ADMIN: ALL_PERMISSIONS.map(p => p.code),
   HR_ADMIN: [
     'workforce:view', 'workforce:create', 'workforce:edit',
+    'hr:edit',                                    // orgs, teams, sites, leave types, docs
     'leave:view', 'leave:approve',
     'attendance:view', 'attendance:manage',
-    'payroll:view',
+    'payroll:view', 'payroll:edit',               // draft runs, adjustments
     'audit:view',
     'analytics:view',
     'reports:generate',
     'communication:broadcast',
+    'notification:manage',
   ],
   FINANCE_MANAGER: [
     'payroll:view', 'payroll:edit', 'payroll:approve', 'payroll:process',
@@ -80,6 +84,7 @@ const ROLE_PERMISSIONS: Record<string, string[]> = {
     'reports:generate',
     'data:export',
     'communication:broadcast',
+    'notification:manage',
   ],
   MANAGER: [
     'workforce:view',
@@ -88,12 +93,14 @@ const ROLE_PERMISSIONS: Record<string, string[]> = {
     'analytics:view',
     'reports:generate',
     'finance:view',
+    'notification:manage',
   ],
   EMPLOYEE: [
     'leave:view', 'leave:submit',
     'attendance:view',
     'workforce:view',
     'finance:view',
+    'notification:manage',
   ],
 };
 

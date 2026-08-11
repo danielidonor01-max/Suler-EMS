@@ -1,9 +1,9 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Activity, Plus, Calendar } from 'lucide-react';
+import { Activity, Plus, Calendar, X } from 'lucide-react';
 import useSWR from 'swr';
-import { apiFetcher } from '@/lib/api/fetcher';
+import { apiFetcher, apiMutate } from '@/lib/api/fetcher';
 import { LeaveSubmitModal } from '@/components/leave/LeaveSubmitModal';
 
 interface LeaveRequestRow {
@@ -38,6 +38,22 @@ export default function MyLeavePage() {
     { refreshInterval: 30_000 }
   );
   const [showModal, setShowModal] = useState(false);
+  const [cancellingId, setCancellingId] = useState<string | null>(null);
+
+  const canCancel = (status: string) => status === 'DRAFT' || status === 'SUBMITTED';
+
+  async function cancelRequest(id: string) {
+    setCancellingId(id);
+    try {
+      await apiMutate(`/api/leave/requests/${id}/transition`, 'PATCH', { action: 'CANCEL' });
+      await mutate();
+    } catch (err) {
+      // Surface at row-level via optimistic revert (mutate re-fetches).
+      await mutate();
+    } finally {
+      setCancellingId(null);
+    }
+  }
 
   const requests = data ?? [];
   const pendingCount = requests.filter(r => ['SUBMITTED', 'MANAGER_APPROVED'].includes(r.status)).length;
@@ -99,6 +115,7 @@ export default function MyLeavePage() {
                   <th className="px-6 py-4 text-[11px] font-bold text-slate-500 uppercase tracking-widest">Days</th>
                   <th className="px-6 py-4 text-[11px] font-bold text-slate-500 uppercase tracking-widest">Reason</th>
                   <th className="px-6 py-4 text-[11px] font-bold text-slate-500 uppercase tracking-widest">Status</th>
+                  <th className="px-6 py-4 text-[11px] font-bold text-slate-500 uppercase tracking-widest text-right">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
@@ -115,6 +132,21 @@ export default function MyLeavePage() {
                       <span className={`inline-flex items-center px-2 py-1 rounded-md text-[10px] font-bold uppercase tracking-widest ${STATUS_STYLES[r.status] ?? 'bg-slate-100 text-slate-600'}`}>
                         {r.status.replace('_', ' ')}
                       </span>
+                    </td>
+                    <td className="px-6 py-4 text-right">
+                      {canCancel(r.status) ? (
+                        <button
+                          type="button"
+                          onClick={() => cancelRequest(r.id)}
+                          disabled={cancellingId === r.id}
+                          className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md border border-slate-200 text-[10px] font-bold uppercase tracking-widest text-slate-600 hover:text-rose-600 hover:border-rose-200 hover:bg-rose-50 disabled:opacity-50"
+                        >
+                          <X className="w-3 h-3" />
+                          {cancellingId === r.id ? 'Cancelling…' : 'Cancel'}
+                        </button>
+                      ) : (
+                        <span className="text-[10px] text-slate-300 uppercase tracking-widest">—</span>
+                      )}
                     </td>
                   </tr>
                 ))}

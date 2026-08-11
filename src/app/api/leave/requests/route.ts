@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import prisma from '@/lib/prisma';
 import { withAuth } from '@/lib/api/with-auth';
 import { successResponse, errorResponse } from '@/lib/api-utils';
 import { listLeaveRequests, submitLeave, LeaveType, LeaveStatus } from '@/modules/leave/domain/leave.service';
@@ -42,6 +43,7 @@ export const GET = withAuth(async (req, session) => {
   const states = status ? (status.split(',') as LeaveStatus[]) : undefined;
 
   let employeeId: string | undefined;
+  let teamEmployeeIds: string[] | undefined;
   if (scope === 'mine') {
     employeeId = session.user.employeeId;
     if (!employeeId) {
@@ -52,13 +54,45 @@ export const GET = withAuth(async (req, session) => {
     if (!['MANAGER', 'HR_ADMIN', 'SUPER_ADMIN'].includes(session.user.role)) {
       return errorResponse('FORBIDDEN', 'Team scope requires manager/HR role', 403, correlationId);
     }
+    // For MANAGER: resolve the actual team = employees in any department the
+    // caller manages + members of any team they lead. HR/SUPER_ADMIN see all
+    // (empty filter). If the manager doesn't manage anything, they still see
+    // an empty list rather than an error — makes the UI graceful.
+    if (session.user.role === 'MANAGER' && session.user.employeeId) {
+      // Three ways a MANAGER's team is defined in this schema:
+      //   1. Department.managerId — the department's line manager
+      //   2. Team.managerId       — team lead
+      //   3. Hub.managerId        — the regional/hub head (indirect via
+      //                             each department's hubId)
+      // Take the union so a manager sees everyone below them regardless
+      // of which relationship the org has recorded.
+      const [managedDepts, ledTeams, managedHubs] = await Promise.all([
+        prisma.department.findMany({
+          where:  { managerId: session.user.employeeId },
+          select: { employees: { select: { id: true } } },
+        }),
+        prisma.team.findMany({
+          where:  { managerId: session.user.employeeId },
+          select: { members: { select: { employeeId: true } } },
+        }),
+        prisma.hub.findMany({
+          where:  { managerId: session.user.employeeId },
+          select: { departments: { select: { employees: { select: { id: true } } } } },
+        }),
+      ]);
+      const ids = new Set<string>();
+      managedDepts.forEach(d => d.employees.forEach(e => ids.add(e.id)));
+      ledTeams.forEach(t => t.members.forEach(m => ids.add(m.employeeId)));
+      managedHubs.forEach(h => h.departments.forEach(d => d.employees.forEach(e => ids.add(e.id))));
+      teamEmployeeIds = Array.from(ids);
+    }
   } else {
     if (!['HR_ADMIN', 'SUPER_ADMIN'].includes(session.user.role)) {
       return errorResponse('FORBIDDEN', 'Full scope requires HR/admin role', 403, correlationId);
     }
   }
 
-  const requests = await listLeaveRequests({ employeeId, states, limit });
+  const requests = await listLeaveRequests({ employeeId, employeeIds: teamEmployeeIds, states, limit });
   return successResponse(requests, correlationId);
 });
 
