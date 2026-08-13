@@ -231,20 +231,16 @@ export const DataTable: React.FC<DataTableProps> = ({
       {filters && filters.length > 0 && (
         <div className="flex flex-wrap items-center gap-2 px-1">
           {filters.map(def => (
-            <label key={def.key} className="flex items-center gap-2 bg-white border border-slate-200 rounded-xl px-3 py-1.5 shadow-sm">
+            <div key={def.key} className="flex items-center gap-2 bg-white border border-slate-200 rounded-xl px-3 py-0.5 shadow-sm">
               <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{def.label}</span>
-              <select
-                aria-label={`Filter by ${def.label}`}
+              <Select
+                variant="minimal"
                 value={filterValues[def.key] ?? ''}
-                onChange={(e) => setFilter(def.key, e.target.value)}
-                className="bg-transparent text-[12px] font-bold text-slate-900 outline-none cursor-pointer pr-1"
-              >
-                <option value="">All</option>
-                {def.options.map(opt => (
-                  <option key={opt.value} value={opt.value}>{opt.label}</option>
-                ))}
-              </select>
-            </label>
+                onChange={(val) => setFilter(def.key, val)}
+                options={[{ label: 'All', value: '' }, ...def.options]}
+                className="w-28"
+              />
+            </div>
           ))}
           {activeFilterCount > 0 && (
             <button

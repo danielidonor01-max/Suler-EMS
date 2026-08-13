@@ -23,7 +23,7 @@ const PatchSchema = z.object({
 });
 
 function requireSettingsManage(perms: string[]): boolean {
-  return perms.includes('settings:manage');
+  return perms.includes('settings:manage') || perms.includes('hr:edit');
 }
 
 export const PATCH = withAuth(async (req, session, context) => {

@@ -29,7 +29,7 @@ const CreateSchema = z.object({
 });
 
 function requireSettingsManage(perms: string[]): boolean {
-  return perms.includes('settings:manage');
+  return perms.includes('settings:manage') || perms.includes('hr:edit');
 }
 
 export const GET = withAuth(async (_req, _session) => {

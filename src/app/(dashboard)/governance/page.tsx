@@ -5,9 +5,8 @@ import {
   ShieldCheck, 
   History, 
   Clock, 
-  User, 
-  Search, 
-  Filter,
+  User,
+  Search,
   Download,
   AlertCircle,
   CheckCircle2,
@@ -108,12 +107,6 @@ function GovernanceAuditContent() {
                     className="h-9 pl-9 pr-4 bg-white border border-slate-200 rounded-lg text-[11px] font-bold outline-none focus:border-indigo-500 w-64 transition-all"
                   />
                </div>
-               <button 
-                 onClick={() => addToast('Filtering logic initialized...', 'INFO')}
-                 className="p-2 bg-white border border-slate-200 rounded-lg text-slate-400 hover:text-slate-900"
-               >
-                  <Filter className="w-4 h-4" />
-               </button>
             </div>
           </div>
 
@@ -151,16 +144,6 @@ function GovernanceAuditContent() {
                         </div>
                       </div>
                     </div>
-                    {log.metadata && Object.keys(log.metadata).length > 0 && (
-                      <details className="opacity-0 group-hover:opacity-100 focus-within:opacity-100 open:opacity-100 transition-opacity">
-                        <summary className="cursor-pointer px-3 py-1.5 bg-white border border-slate-200 text-slate-500 rounded-md text-[9px] font-black uppercase tracking-widest hover:text-indigo-600 hover:border-indigo-200 list-none">
-                          View Metadata
-                        </summary>
-                        <pre className="mt-2 p-3 bg-slate-50 border border-slate-100 rounded-lg text-[10px] text-slate-700 font-mono whitespace-pre-wrap break-all max-w-md max-h-48 overflow-auto">
-{JSON.stringify(log.metadata, null, 2)}
-                        </pre>
-                      </details>
-                    )}
                   </div>
                 </div>
               ))

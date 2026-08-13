@@ -6,10 +6,11 @@ import {
   User, Briefcase, Banknote, Calendar, Activity, Star,
   CheckSquare, FileText, History, MapPin, Mail, Phone,
   Building2, Shield, ChevronLeft, TrendingUp, Clock,
-  Heart, AlertCircle, CreditCard, Users, Award, MessageSquare, Plus
+  Heart, AlertCircle, CreditCard, Users, Award, MessageSquare
 } from 'lucide-react';
 import { useWorkforce } from '@/context/WorkforceContext';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
+import { DocumentsPanel } from '@/components/employees/DocumentsPanel';
 
 const TABS = [
   { id: 'overview',     label: 'Overview',      icon: User },
@@ -20,6 +21,7 @@ const TABS = [
   { id: 'leave',        label: 'Leave',          icon: Clock },
   { id: 'performance',  label: 'Performance',    icon: Star },
   { id: 'tasks',        label: 'Tasks & Teams',  icon: CheckSquare },
+  { id: 'documents',    label: 'Documents',      icon: FileText },
   { id: 'audit',        label: 'Audit Timeline', icon: History },
 ];
 
@@ -158,9 +160,6 @@ export default function EmployeeProfilePage() {
                className="h-11 px-6 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-[11px] font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-2"
              >
                 <MessageSquare className="w-3.5 h-3.5" /> Message Employee
-             </button>
-             <button className="h-11 px-6 bg-white border border-slate-200 hover:bg-slate-50 text-slate-600 rounded-xl text-[11px] font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-2">
-                <Plus className="w-3.5 h-3.5" /> Assign Task
              </button>
           </div>
         </div>
@@ -436,6 +435,10 @@ export default function EmployeeProfilePage() {
       )}
 
       {/* AUDIT TIMELINE */}
+      {tab === 'documents' && (
+        <DocumentsPanel employeeId={employee.dbId ?? employee.id} />
+      )}
+
       {tab === 'audit' && (
         <div className="bg-white rounded-[20px] border border-slate-200 p-6 space-y-4">
           <h3 className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">Audit Timeline</h3>

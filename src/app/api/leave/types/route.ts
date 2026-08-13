@@ -23,7 +23,7 @@ const CreateSchema = z.object({
 });
 
 function requireSettingsManage(perms: string[]): boolean {
-  return perms.includes('settings:manage');
+  return perms.includes('settings:manage') || perms.includes('hr:edit');
 }
 
 // Canonical defaults — seeded on first GET if the catalogue is empty.

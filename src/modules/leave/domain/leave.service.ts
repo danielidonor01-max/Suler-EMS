@@ -159,6 +159,8 @@ export async function transitionLeave(input: TransitionLeaveInput) {
 
 export interface ListLeaveFilter {
   employeeId?: string;
+  /** Restrict to a set of employees (e.g. a manager's team). Empty array → no results. */
+  employeeIds?: string[];
   /** When set, returns requests whose workflow instance is in any of these states. */
   states?: LeaveStatus[];
   /** When true, includes audit history. Off by default to keep payloads small. */
@@ -167,9 +169,16 @@ export interface ListLeaveFilter {
 }
 
 export async function listLeaveRequests(filter: ListLeaveFilter = {}) {
+  // employeeIds explicitly === [] means "the caller has an empty team" — return
+  // nothing rather than everything. Falsy (undefined) means "no team filter".
+  if (filter.employeeIds && filter.employeeIds.length === 0) return [];
+
   return prisma.leaveRequest.findMany({
     where: {
       ...(filter.employeeId ? { employeeId: filter.employeeId } : {}),
+      ...(filter.employeeIds && filter.employeeIds.length
+        ? { employeeId: { in: filter.employeeIds } }
+        : {}),
       ...(filter.states && filter.states.length ? { status: { in: filter.states } } : {}),
     },
     orderBy: { createdAt: 'desc' },

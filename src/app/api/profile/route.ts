@@ -28,6 +28,8 @@ export const GET = withAuth(async (_req, session) => {
         isActive: true,
         version: true,
         lastLoginAt: true,
+        mfaEnabled: true,
+        mfaLastUsedAt: true,
         role: { select: { id: true, name: true, permissions: { select: { code: true, name: true } } } },
         employee: {
           select: {

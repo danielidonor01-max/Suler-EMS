@@ -45,6 +45,21 @@ model User {
   isActive               Boolean                 @default(true)
   version                Int                     @default(1)
   lastLoginAt            DateTime?
+
+  // --- MFA (TOTP) ---
+  // mfaEnabled flips true only after the user proves they have the
+  // secret (entered a valid TOTP from their auth app). mfaSecret is the
+  // raw base32 token shared with the user's authenticator; if leaked,
+  // anyone who can also crack the password owns the account, so the
+  // column must stay scoped to the User row and never log out.
+  // mfaBackupCodes is a JSON array of bcrypt hashes — one per
+  // un-used recovery code. Codes are removed from the array as they
+  // are spent (single-use).
+  mfaEnabled         Boolean   @default(false)
+  mfaSecret          String?
+  mfaSecretConfirmed DateTime?
+  mfaBackupCodes     Json?
+  mfaLastUsedAt      DateTime?
   // Per-user UI preferences (theme, notification toggles, email digest, etc.).
   // Stored as Json so the shape can evolve without migrations. Authoritative
   // copy lives here; the client also caches in localStorage for instant

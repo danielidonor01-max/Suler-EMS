@@ -16,6 +16,7 @@ import { apiMutate } from '@/lib/api/fetcher';
 import { LeaveDetailsModal } from '@/components/leave/LeaveDetailsModal';
 import { EmployeeChip } from '@/components/employees/EmployeeChip';
 import { useDismiss } from '@/lib/hooks/use-dismiss';
+import { Select } from '@/components/forms/Select';
 
 // ─── Tabs ─────────────────────────────────────────────────────────────────────
 const TABS = ['Approval Pipeline', 'Leave Calendar', 'Balance Tracker', 'Leave Types'];
@@ -628,19 +629,12 @@ function LeaveTypeFormModal({
               className="w-full h-[48px] bg-slate-50 border border-slate-200 rounded-xl px-4 text-[13px] font-bold outline-none focus:border-indigo-500"
             />
           </div>
-          <div className="space-y-1.5">
-            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Colour</label>
-            <select
-              aria-label="Colour"
-              value={color}
-              onChange={(e) => setColor(e.target.value)}
-              className="w-full h-[48px] bg-slate-50 border border-slate-200 rounded-xl px-4 text-[13px] font-bold outline-none focus:border-indigo-500"
-            >
-              {Object.entries(COLOR_TOKENS).map(([token, p]) => (
-                <option key={token} value={token}>{p.label}</option>
-              ))}
-            </select>
-          </div>
+          <Select
+            label="Colour"
+            value={color}
+            onChange={setColor}
+            options={Object.entries(COLOR_TOKENS).map(([token, p]) => ({ label: p.label, value: token }))}
+          />
         </div>
 
         <div className="space-y-1.5">
@@ -1026,16 +1020,13 @@ function BalanceTrackerTab() {
             aria-label="Search employee"
             className="h-9 bg-slate-50 border border-slate-200 rounded-xl px-3 text-[12px] outline-none focus:border-indigo-300 w-[200px]"
           />
-          <select
-            value={year}
-            onChange={(e) => setYear(Number(e.target.value))}
-            aria-label="Year"
-            className="h-9 bg-slate-50 border border-slate-200 rounded-xl px-3 text-[12px] font-bold outline-none focus:border-indigo-300"
-          >
-            {[currentYear - 1, currentYear, currentYear + 1].map(y => (
-              <option key={y} value={y}>{y}</option>
-            ))}
-          </select>
+          <Select
+            variant="minimal"
+            value={String(year)}
+            onChange={(val) => setYear(Number(val))}
+            options={[currentYear - 1, currentYear, currentYear + 1].map(y => ({ label: String(y), value: String(y) }))}
+            className="w-24"
+          />
         </div>
       </div>
 

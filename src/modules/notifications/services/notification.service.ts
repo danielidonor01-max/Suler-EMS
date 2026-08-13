@@ -43,17 +43,41 @@ export class NotificationService {
   }
 
   /**
-   * Mark a notification as read (Lifecycle Transition)
+   * Mark a notification as read (Lifecycle Transition).
+   *
+   * Scoped to the calling user — updateMany with the userId guard so a
+   * guessed notificationId can't be used to mark someone else's
+   * notifications as read. If the row doesn't belong to the caller,
+   * count===0 and we return a NOT_FOUND (not 500) to the caller.
    */
-  static async markAsRead(notificationId: UUID): Promise<Result<boolean>> {
+  static async markAsRead(notificationId: UUID, userId: UUID): Promise<Result<boolean>> {
     try {
-      await prisma.notification.update({
-        where: { id: notificationId },
-        data: { 
-          status: 'READ',
-          readAt: new Date()
-        }
+      const result = await prisma.notification.updateMany({
+        where: { id: notificationId, userId },
+        data: { status: 'READ', readAt: new Date() },
       });
+      if (result.count === 0) {
+        return { success: false, error: { code: 'NOT_FOUND', message: 'Notification not found' } };
+      }
+      return { success: true, data: true };
+    } catch (err: any) {
+      return { success: false, error: { code: 'UPDATE_ERROR', message: err.message } };
+    }
+  }
+
+  /**
+   * Dismiss (archive) a notification — hides it from the active feed.
+   * Same userId-scoped guard as markAsRead.
+   */
+  static async dismiss(notificationId: UUID, userId: UUID): Promise<Result<boolean>> {
+    try {
+      const result = await prisma.notification.updateMany({
+        where: { id: notificationId, userId },
+        data: { status: 'DISMISSED' },
+      });
+      if (result.count === 0) {
+        return { success: false, error: { code: 'NOT_FOUND', message: 'Notification not found' } };
+      }
       return { success: true, data: true };
     } catch (err: any) {
       return { success: false, error: { code: 'UPDATE_ERROR', message: err.message } };

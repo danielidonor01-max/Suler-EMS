@@ -11,7 +11,7 @@ import { successResponse, errorResponse } from '@/lib/api-utils';
  */
 
 function requireSettingsManage(perms: string[]): boolean {
-  return perms.includes('settings:manage');
+  return perms.includes('settings:manage') || perms.includes('hr:edit');
 }
 
 export const DELETE = withAuth(async (_req, session, context) => {

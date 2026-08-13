@@ -1,10 +1,23 @@
-import NextAuth from "next-auth";
+import NextAuth, { CredentialsSignin } from "next-auth";
 import Credentials from 'next-auth/providers/credentials';
 import Google from 'next-auth/providers/google';
 import prisma from '@/lib/prisma';
 import { PasswordService } from './password.service';
 import { AuthService } from './auth.service';
 import { evaluateLockout } from './lockout.service';
+import { verifyTotp, consumeBackupCode } from './mfa.service';
+
+/**
+ * Thrown from authorize() when the password was correct but MFA is
+ * required. Surfaced to the client as `result.code === 'MFA_REQUIRED'`
+ * so the login form can swap to the 6-digit input.
+ */
+class MfaRequiredError extends CredentialsSignin {
+  code = 'MFA_REQUIRED';
+}
+class MfaInvalidError extends CredentialsSignin {
+  code = 'MFA_INVALID';
+}
 
 /**
  * Google OAuth is enabled only when both env vars are set. This lets
@@ -105,6 +118,47 @@ export const {
               correlationId
             });
             return null;
+          }
+
+          // ── MFA challenge step ─────────────────────────────────────
+          // Password was good. If the user has MFA enabled, the second
+          // factor is required before we mint a session. The client
+          // submits `mfaCode` on the second pass — first pass without
+          // it gets MFA_REQUIRED back and pivots the form.
+          if (user.mfaEnabled && user.mfaSecret) {
+            const mfaCode = typeof credentials.mfaCode === 'string' ? credentials.mfaCode.trim() : '';
+            if (!mfaCode) {
+              throw new MfaRequiredError();
+            }
+            let mfaOk = verifyTotp(user.mfaSecret, mfaCode);
+            if (!mfaOk) {
+              // Try the supplied code as a backup code. Single-use —
+              // on match we persist the trimmed list so the same code
+              // can't be replayed.
+              const stored = (user.mfaBackupCodes as string[] | null) ?? [];
+              const result = await consumeBackupCode(stored, mfaCode);
+              if (result.match) {
+                mfaOk = true;
+                await prisma.user.update({
+                  where: { id: user.id },
+                  data:  { mfaBackupCodes: result.remaining as any },
+                });
+              }
+            }
+            if (!mfaOk) {
+              await AuthService.recordSecurityEvent({
+                type: 'LOGIN_FAILURE',
+                userId: user.id,
+                description: 'Login failed: MFA code invalid',
+                metadata: { email },
+                correlationId,
+              }).catch(() => {});
+              throw new MfaInvalidError();
+            }
+            await prisma.user.update({
+              where: { id: user.id },
+              data:  { mfaLastUsedAt: new Date() },
+            }).catch(() => {});
           }
 
           // SUCCESS
