@@ -187,6 +187,13 @@ export const {
             version: user.version,
           };
         } catch (error: any) {
+          // MfaRequiredError / MfaInvalidError are CONTROL FLOW, not
+          // failures — they must escape authorize() so NextAuth surfaces
+          // their `code` to the login page (which pivots to the 6-digit
+          // input on MFA_REQUIRED). Swallowing them here locked every
+          // MFA-enrolled account out: the client only ever saw a generic
+          // CredentialsSignin and never showed the code prompt.
+          if (error instanceof CredentialsSignin) throw error;
           console.error('[AUTH ERROR]', error);
           return null;
         }
