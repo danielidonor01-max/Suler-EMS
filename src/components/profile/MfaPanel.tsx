@@ -5,6 +5,7 @@ import {
   Smartphone, ShieldCheck, ShieldOff, RefreshCw, Copy, CheckCircle2,
   AlertTriangle, KeyRound, Loader2,
 } from 'lucide-react';
+import { QRCodeSVG } from 'qrcode.react';
 import { apiMutate } from '@/lib/api/fetcher';
 import { Modal } from '@/components/common/Modal';
 
@@ -168,31 +169,48 @@ export function MfaPanel({ enabled, lastUsedAt, onChange }: Props) {
         {enrolling && (
           <div className="space-y-5">
             <div className="text-[12px] text-slate-500 leading-relaxed">
-              <strong className="text-slate-900">Step 1.</strong> Add this secret to your authenticator app. Tap the link on mobile to deep-link, or type it manually.
+              <strong className="text-slate-900">Step 1.</strong> Open Google Authenticator (or 1Password / Authy) on your phone and scan this QR code.
             </div>
 
-            <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 space-y-2">
-              <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Secret (manual entry)</div>
-              <div className="flex items-center gap-2">
-                <code className="text-[12px] font-mono font-bold text-slate-900 tracking-widest break-all flex-1">
-                  {enrolling.secretChunked}
-                </code>
-                <button
-                  type="button"
-                  onClick={() => copy('secret', enrolling.secret)}
-                  className="inline-flex items-center gap-1 px-2 py-1 text-[10px] font-bold text-slate-600 hover:text-slate-900 hover:bg-white rounded uppercase tracking-widest"
-                >
-                  {copied === 'secret' ? <CheckCircle2 className="w-3 h-3 text-emerald-600" /> : <Copy className="w-3 h-3" />}
-                  {copied === 'secret' ? 'Copied' : 'Copy'}
-                </button>
+            <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 flex flex-col sm:flex-row gap-5 items-center sm:items-start">
+              {/* QR rendered locally as SVG — the secret never leaves this
+                  page. White quiet-zone card keeps camera contrast reliable. */}
+              <div className="bg-white p-3 rounded-lg border border-slate-200 shrink-0">
+                <QRCodeSVG
+                  value={enrolling.otpauthUrl}
+                  size={176}
+                  level="M"
+                  marginSize={0}
+                  aria-label="MFA enrollment QR code"
+                />
               </div>
-              <a
-                href={enrolling.otpauthUrl}
-                className="inline-flex items-center gap-1.5 text-[10px] font-bold text-indigo-600 hover:underline uppercase tracking-widest"
-              >
-                <Smartphone className="w-3 h-3" />
-                Open in authenticator (mobile)
-              </a>
+              <div className="space-y-3 min-w-0 flex-1 self-stretch flex flex-col justify-center">
+                <div>
+                  <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">
+                    Can't scan? Enter this key manually
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <code className="text-[12px] font-mono font-bold text-slate-900 tracking-widest break-all flex-1">
+                      {enrolling.secretChunked}
+                    </code>
+                    <button
+                      type="button"
+                      onClick={() => copy('secret', enrolling.secret)}
+                      className="inline-flex items-center gap-1 px-2 py-1 text-[10px] font-bold text-slate-600 hover:text-slate-900 hover:bg-white rounded uppercase tracking-widest shrink-0"
+                    >
+                      {copied === 'secret' ? <CheckCircle2 className="w-3 h-3 text-emerald-600" /> : <Copy className="w-3 h-3" />}
+                      {copied === 'secret' ? 'Copied' : 'Copy'}
+                    </button>
+                  </div>
+                </div>
+                <a
+                  href={enrolling.otpauthUrl}
+                  className="inline-flex items-center gap-1.5 text-[10px] font-bold text-indigo-600 hover:underline uppercase tracking-widest"
+                >
+                  <Smartphone className="w-3 h-3" />
+                  On this device? Open in authenticator
+                </a>
+              </div>
             </div>
 
             <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 space-y-2">
