@@ -100,7 +100,10 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle }) => {
     { name: 'Workforce Registry', icon: Building2, href: '/employees', permission: Permissions.WORKFORCE_VIEW },
     { name: 'Team Management', icon: Users, href: '/team', permission: Permissions.WORKFORCE_VIEW },
     { name: 'Attendance Admin', icon: Calendar, href: '/attendance/admin', permission: Permissions.ATTENDANCE_VIEW },
-    { name: 'Work Sites', icon: MapPin, href: '/attendance/sites', permission: Permissions.SETTINGS_MANAGE },
+    // hr:edit (not settings:manage) so HR_ADMIN can reach the org surfaces
+    // they administer — SUPER_ADMIN bypasses permission checks anyway.
+    { name: 'Work Sites', icon: MapPin, href: '/attendance/sites', permission: Permissions.HR_EDIT },
+    { name: 'Organization', icon: Building2, href: '/admin/organization', permission: Permissions.HR_EDIT },
     { name: 'Leave Admin', icon: Activity, href: '/leave/admin', permission: Permissions.LEAVE_VIEW },
   ].filter(m => !m.permission || checkPermission(m.permission as any).allowed);
 
@@ -113,7 +116,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle }) => {
 
   const governanceModules = [
     { name: 'Command Center', icon: Cpu, href: '/admin/ecc', permission: Permissions.COMMAND_CENTER_VIEW },
-    { name: 'Organization', icon: Building2, href: '/admin/organization', permission: Permissions.SETTINGS_MANAGE },
+    // Organization moved to Operations (hr:edit) — HR administers it daily.
     { name: 'Roles & Permissions', icon: ShieldCheck, href: '/admin/roles', permission: Permissions.ROLE_MANAGE },
     { name: 'Users', icon: UserCircle, href: '/admin/users', permission: Permissions.ROLE_MANAGE },
     { name: 'Profile Requests', icon: Send, href: '/admin/profile-requests', permission: Permissions.WORKFORCE_EDIT },

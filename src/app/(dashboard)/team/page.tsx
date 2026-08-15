@@ -146,7 +146,7 @@ export default function TeamsPage() {
            columns={teamColumns}
            rowActions={[
              { label: 'Team Chat', icon: MessageSquare, onClick: (team: Team) => router.push(`/messages?id=${team.id}&name=${encodeURIComponent(team.name)}&type=GROUP`) },
-             { label: 'Add Member', icon: UserPlus, onClick: (team: Team) => { setSelectedTeam(team); setIsAddMemberOpen(true); } },
+             { label: 'Manage Roster', icon: UserPlus, onClick: (team: Team) => { setSelectedTeam(team); setIsAddMemberOpen(true); } },
              { label: 'Dissolve Team', icon: Trash2, onClick: (team: Team) => deleteTeam(team.id), variant: 'danger' }
            ]}
          />

@@ -148,79 +148,206 @@ export const CreateTeamModal: React.FC<{ isOpen: boolean; onClose: () => void }>
   );
 };
 
+/**
+ * Manage Roster — bulk add + remove in one surface.
+ *
+ * Replaces the old one-at-a-time AddMemberModal: HR picks any number of
+ * employees via checkboxes (with live search), adds them in a single
+ * action, and removes existing members inline. The POST endpoint is
+ * idempotent per member, so the bulk add is a straightforward fan-out.
+ */
 export const AddMemberModal: React.FC<{ isOpen: boolean; onClose: () => void; team: Team }> = ({ isOpen, onClose, team }) => {
-  const { addMemberToTeam } = useTeams();
+  const { teams, addMemberToTeam, removeMemberFromTeam } = useTeams();
   const { employees } = useWorkforce();
-  const [selectedMember, setSelectedMember] = useState('');
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [search, setSearch] = useState('');
   const [role, setRole] = useState<'Contributor' | 'Lead'>('Contributor');
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [removingId, setRemovingId] = useState<string | null>(null);
+
+  // Re-read the team from context so the roster live-updates after each
+  // add/remove (the `team` prop is a snapshot from when the modal opened).
+  const liveTeam = teams.find(t => t.id === team.id) ?? team;
 
   React.useEffect(() => {
-    if (isOpen) { setSelectedMember(''); setRole('Contributor'); setError(null); }
+    if (isOpen) { setSelectedIds(new Set()); setSearch(''); setRole('Contributor'); setError(null); }
   }, [isOpen, team.id]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!selectedMember) return;
+  const toggle = (id: string) => {
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  };
+
+  const handleBulkAdd = async () => {
+    if (selectedIds.size === 0) return;
     setError(null);
     setBusy(true);
-    try {
-      await addMemberToTeam(team.id, selectedMember, role);
-      onClose();
-    } catch (err: any) {
-      setError(err?.message ?? 'Could not add member');
-    } finally {
-      setBusy(false);
+    const failed: string[] = [];
+    for (const employeeId of selectedIds) {
+      try {
+        await addMemberToTeam(liveTeam.id, employeeId, role);
+      } catch {
+        failed.push(employeeId);
+      }
+    }
+    setBusy(false);
+    if (failed.length > 0) {
+      setError(`${failed.length} member${failed.length === 1 ? '' : 's'} could not be added. They may already be on the roster.`);
+      setSelectedIds(new Set(failed));
+    } else {
+      setSelectedIds(new Set());
     }
   };
 
-  // Filter to active employees not already on the team. The team.members
-  // join carries the DB UUID; the WorkforceContext's `id` field is the
-  // display staffId, so we compare against dbId (the actual UUID).
-  const memberEmployeeIds = new Set(team.members.map(m => m.employee.id));
-  const availableEmployees = employees.filter(emp => !memberEmployeeIds.has(emp.dbId ?? emp.id));
+  const handleRemove = async (employeeId: string) => {
+    setError(null);
+    setRemovingId(employeeId);
+    try {
+      await removeMemberFromTeam(liveTeam.id, employeeId);
+    } catch (err: any) {
+      setError(err?.message ?? 'Could not remove member');
+    } finally {
+      setRemovingId(null);
+    }
+  };
+
+  // Available = active employees not already on the roster. team.members
+  // carries DB UUIDs; WorkforceContext `id` is the display staffId, so
+  // compare against dbId (the actual UUID).
+  const memberEmployeeIds = new Set(liveTeam.members.map(m => m.employee.id));
+  const availableEmployees = employees
+    .filter(emp => !memberEmployeeIds.has(emp.dbId ?? emp.id))
+    .filter(emp => !search.trim() || emp.name.toLowerCase().includes(search.trim().toLowerCase()));
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Assign Team Member" size="md">
-      <form onSubmit={handleSubmit} className="space-y-5">
-        <div className="p-4 bg-slate-50 border border-slate-100 rounded-xl">
-          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Target Team</p>
-          <h4 className="text-[14px] font-bold text-slate-900">{team.name}</h4>
-          {team.hub && (
-            <p className="text-[11px] text-slate-500 mt-1">Hub: {team.hub.name}</p>
+    <Modal isOpen={isOpen} onClose={onClose} title="Manage Roster" subtitle={liveTeam.name} size="lg">
+      <div className="space-y-6">
+
+        {/* ── Current members ─────────────────────────────────────────── */}
+        <div>
+          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">
+            Current Members ({liveTeam.members.length})
+          </p>
+          {liveTeam.members.length === 0 ? (
+            <div className="p-4 bg-slate-50 border border-dashed border-slate-200 rounded-xl text-center text-[12px] text-slate-400">
+              No members yet — select personnel below to build the roster.
+            </div>
+          ) : (
+            <div className="border border-slate-200 rounded-xl divide-y divide-slate-100 max-h-[180px] overflow-y-auto">
+              {liveTeam.members.map(m => (
+                <div key={m.membershipId} className="flex items-center gap-3 px-4 py-2.5">
+                  <div className="flex-1 min-w-0">
+                    <span className="text-[13px] font-bold text-slate-900 truncate block">{m.employee.name}</span>
+                    <span className="text-[10px] text-slate-400 uppercase tracking-widest">
+                      {m.role ?? 'Contributor'} · {m.employee.staffId}
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => handleRemove(m.employee.id)}
+                    disabled={removingId === m.employee.id}
+                    aria-label={`Remove ${m.employee.name} from team`}
+                    className="px-2.5 py-1 rounded-md border border-slate-200 text-[10px] font-bold uppercase tracking-widest text-slate-500 hover:text-rose-600 hover:border-rose-200 hover:bg-rose-50 disabled:opacity-50"
+                  >
+                    {removingId === m.employee.id ? 'Removing…' : 'Remove'}
+                  </button>
+                </div>
+              ))}
+            </div>
           )}
         </div>
-        <Select
-          label="Select Personnel"
-          value={selectedMember}
-          onChange={setSelectedMember}
-          placeholder="Choose employee…"
-          options={availableEmployees.map(emp => ({ label: `${emp.name} (${emp.role ?? emp.designation ?? ''})`, value: emp.dbId ?? emp.id }))}
-        />
-        <Select
-          label="Role in Team"
-          value={role}
-          onChange={(v: string) => setRole(v === 'Lead' ? 'Lead' : 'Contributor')}
-          options={[
-            { label: 'Contributor', value: 'Contributor' },
-            { label: 'Lead',        value: 'Lead' },
-          ]}
-        />
+
+        {/* ── Bulk add ────────────────────────────────────────────────── */}
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+              Add Personnel {selectedIds.size > 0 && <span className="text-indigo-600">— {selectedIds.size} selected</span>}
+            </p>
+            <div className="w-[160px]">
+              <Select
+                label=""
+                value={role}
+                onChange={(v: string) => setRole(v === 'Lead' ? 'Lead' : 'Contributor')}
+                options={[
+                  { label: 'As Contributor', value: 'Contributor' },
+                  { label: 'As Lead',        value: 'Lead' },
+                ]}
+              />
+            </div>
+          </div>
+          <input
+            type="text"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search employees…"
+            className="w-full h-[40px] bg-slate-50 border border-slate-200 rounded-xl px-4 text-[13px] outline-none focus:border-indigo-500 transition-all"
+          />
+          <div className="border border-slate-200 rounded-xl divide-y divide-slate-100 max-h-[220px] overflow-y-auto">
+            {availableEmployees.length === 0 ? (
+              <div className="p-4 text-center text-[12px] text-slate-400">
+                {search ? 'No employees match your search.' : 'Everyone is already on this team.'}
+              </div>
+            ) : (
+              availableEmployees.map(emp => {
+                const id = emp.dbId ?? emp.id;
+                const checked = selectedIds.has(id);
+                return (
+                  <label
+                    key={id}
+                    className={`flex items-center gap-3 px-4 py-2.5 cursor-pointer transition-colors ${checked ? 'bg-indigo-50/60' : 'hover:bg-slate-50'}`}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={checked}
+                      onChange={() => toggle(id)}
+                      className="w-4 h-4 accent-indigo-600 shrink-0"
+                    />
+                    <div className="flex-1 min-w-0">
+                      <span className="text-[13px] font-bold text-slate-900 truncate block">{emp.name}</span>
+                      <span className="text-[10px] text-slate-400 uppercase tracking-widest">
+                        {emp.role ?? emp.designation ?? '—'}
+                      </span>
+                    </div>
+                  </label>
+                );
+              })
+            )}
+          </div>
+        </div>
+
         {error && (
           <div className="flex items-start gap-2 p-3 bg-rose-50 border border-rose-100 rounded-xl">
             <AlertTriangle className="w-4 h-4 text-rose-500 mt-0.5 shrink-0" />
             <span className="text-[12px] font-medium text-rose-700 leading-relaxed">{error}</span>
           </div>
         )}
-        <button
-          type="submit"
-          disabled={busy || !selectedMember}
-          className="w-full h-12 bg-slate-950 text-white rounded-xl text-xs font-black uppercase tracking-widest hover:bg-black transition-all shadow-md disabled:opacity-60"
-        >
-          {busy ? 'Adding…' : 'Add to Roster'}
-        </button>
-      </form>
+
+        <div className="flex gap-3">
+          <button
+            type="button"
+            onClick={handleBulkAdd}
+            disabled={busy || selectedIds.size === 0}
+            className="flex-1 h-12 bg-slate-950 text-white rounded-xl text-xs font-black uppercase tracking-widest hover:bg-black transition-all shadow-md disabled:opacity-60"
+          >
+            {busy
+              ? `Adding ${selectedIds.size}…`
+              : selectedIds.size > 0
+                ? `Add ${selectedIds.size} to Roster`
+                : 'Add to Roster'}
+          </button>
+          <button
+            type="button"
+            onClick={onClose}
+            className="px-6 h-12 text-[11px] font-bold uppercase tracking-widest text-slate-500 hover:text-slate-900"
+          >
+            Done
+          </button>
+        </div>
+      </div>
     </Modal>
   );
 };

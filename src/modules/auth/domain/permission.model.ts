@@ -90,6 +90,12 @@ export const Permissions = {
   // Settings
   SETTINGS_MANAGE: 'settings:manage',
 
+  // HR org management (departments, teams, work sites, leave types, docs)
+  HR_EDIT: 'hr:edit',
+
+  // Own-notification lifecycle (read / dismiss)
+  NOTIFICATION_MANAGE: 'notification:manage',
+
   // Communication
   COMMUNICATION_BROADCAST: 'communication:broadcast',
 

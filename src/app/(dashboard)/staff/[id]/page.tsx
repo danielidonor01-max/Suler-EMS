@@ -6,11 +6,17 @@ import {
   User, Briefcase, Banknote, Calendar, Activity, Star,
   CheckSquare, FileText, History, MapPin, Mail, Phone,
   Building2, Shield, ChevronLeft, TrendingUp, Clock,
-  Heart, AlertCircle, CreditCard, Users, Award, MessageSquare
+  Heart, AlertCircle, CreditCard, Users, Award, MessageSquare, Pencil
 } from 'lucide-react';
+import useSWR from 'swr';
+import Link from 'next/link';
 import { useWorkforce } from '@/context/WorkforceContext';
+import { useAccess } from '@/context/AccessContext';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
+import { apiFetcher } from '@/lib/api/fetcher';
 import { DocumentsPanel } from '@/components/employees/DocumentsPanel';
+import { EditEmployeeModal } from '@/components/modals/WorkforceModals';
+import { Permissions } from '@/modules/auth/domain/permission.model';
 
 const TABS = [
   { id: 'overview',     label: 'Overview',      icon: User },
@@ -79,9 +85,29 @@ export default function EmployeeProfilePage() {
   const params = useParams();
   const router = useRouter();
   const { employees } = useWorkforce();
+  const { checkPermission } = useAccess();
   const [tab, setTab] = useState('overview');
+  const [editOpen, setEditOpen] = useState(false);
 
-  const employee = employees.find(e => e.id === params.id);
+  // Accept both the display staffId (/staff/SUL-EMP-001) and the canonical
+  // DB UUID — chips and row actions across the app pass the UUID.
+  const routeId = decodeURIComponent(String(params.id ?? ''));
+  const employee = employees.find(e => e.id === routeId || e.dbId === routeId);
+
+  const canEdit = checkPermission(Permissions.WORKFORCE_EDIT).allowed;
+
+  // Pending profile-change requests for THIS employee. scope=all is
+  // HR-gated server-side, so only fetch when the viewer can act on them.
+  const { data: allRequests = [] } = useSWR<Array<{
+    id: string; status: string; field: string;
+    employee: { id: string };
+  }>>(
+    canEdit ? '/api/profile/change-requests?scope=all' : null,
+    apiFetcher,
+  );
+  const pendingChanges = allRequests.filter(
+    r => r.status === 'PENDING' && employee && r.employee?.id === (employee.dbId ?? employee.id),
+  );
 
   if (!employee) {
     return (
@@ -155,15 +181,42 @@ export default function EmployeeProfilePage() {
 
           {/* Actions */}
           <div className="flex flex-col gap-2 shrink-0">
-             <button 
+             {canEdit && (
+               <button
+                 onClick={() => setEditOpen(true)}
+                 className="h-11 px-6 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-[11px] font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-2"
+               >
+                  <Pencil className="w-3.5 h-3.5" /> Edit Profile
+               </button>
+             )}
+             <button
                onClick={() => router.push(`/messages?id=${employee.id}&name=${encodeURIComponent(employee.name)}`)}
-               className="h-11 px-6 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-[11px] font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-2"
+               className={`h-11 px-6 rounded-xl text-[11px] font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-2 ${
+                 canEdit
+                   ? 'bg-white border border-slate-200 hover:bg-slate-50 text-slate-600'
+                   : 'bg-slate-900 hover:bg-slate-800 text-white'
+               }`}
              >
                 <MessageSquare className="w-3.5 h-3.5" /> Message Employee
              </button>
           </div>
         </div>
       </div>
+
+      {/* ── Pending change requests (HR view) ─────────────────────────────── */}
+      {pendingChanges.length > 0 && (
+        <Link
+          href="/admin/profile-requests"
+          className="flex items-center gap-3 px-5 py-4 bg-amber-50 border border-amber-200 rounded-2xl hover:border-amber-300 transition-colors"
+        >
+          <AlertCircle className="w-5 h-5 text-amber-600 shrink-0" />
+          <span className="flex-1 text-[13px] font-bold text-amber-800">
+            {pendingChanges.length} pending change request{pendingChanges.length === 1 ? '' : 's'} awaiting HR review
+            <span className="font-medium text-amber-700"> — {pendingChanges.map(r => r.field).join(', ')}</span>
+          </span>
+          <span className="text-[10px] font-bold text-amber-700 uppercase tracking-widest shrink-0">Review all →</span>
+        </Link>
+      )}
 
       {/* ── Tab Bar ──────────────────────────────────────────────────────── */}
       <div className="flex items-center gap-1 overflow-x-auto pb-1 no-scrollbar">
@@ -461,6 +514,15 @@ export default function EmployeeProfilePage() {
             ))}
           </div>
         </div>
+      )}
+
+      {/* ── Edit Profile (same modal the workforce registry uses) ─────────── */}
+      {canEdit && (
+        <EditEmployeeModal
+          isOpen={editOpen}
+          onClose={() => setEditOpen(false)}
+          employee={employee}
+        />
       )}
 
     </div>
