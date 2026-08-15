@@ -2,7 +2,8 @@
 
 import React, { useRef, useState } from 'react';
 import Link from 'next/link';
-import { useSession, signOut } from 'next-auth/react';
+import { useSession } from 'next-auth/react';
+import { signOutAction } from '@/lib/auth/sign-out.action';
 import {
   Bell,
   ChevronDown,
@@ -50,24 +51,23 @@ const Header = ({ onToggleSidebar }: { onToggleSidebar: () => void }) => {
   const [isSigningOut, setIsSigningOut] = useState(false);
 
   const handleSignOut = async () => {
-    // The session cookie is HttpOnly — client-side document.cookie clearing
-    // cannot remove it, only the signOut() server round-trip can. And
-    // navigating away immediately ABORTS that in-flight request, leaving the
-    // session alive; proxy.ts then bounces /login back to /dashboard and the
-    // click looks ignored (the "have to click sign out twice" bug).
-    //
-    // So: block on signOut() until the server has actually cleared the
-    // cookie, and cover the wait with a full-screen "Signing out…" overlay
-    // (rendered below) so the click never looks dead.
+    // Sign out through a SERVER ACTION, not the next-auth/react client
+    // fetch — the client fetch didn't reliably clear the CHUNKED session
+    // cookie (authjs.session-token.0/.1; our JWT carries the permissions
+    // array and exceeds 4 KB). A surviving chunk kept the session alive and
+    // proxy.ts bounced /login straight back to the dashboard. The server
+    // action expires every chunk via Set-Cookie on its response — see
+    // sign-out.action.ts. The wait is covered by the "Signing out…"
+    // overlay rendered below.
     if (isSigningOut) return;
     setIsSigningOut(true);
     try {
-      await signOut({ redirect: false });
+      await signOutAction();
     } catch {
       // Retry once — a transient network blip here would otherwise strand
       // the user in a logged-in state they just asked to leave.
       try {
-        await signOut({ redirect: false });
+        await signOutAction();
       } catch {
         /* fall through — worst case proxy bounces us back and the UI resets */
       }

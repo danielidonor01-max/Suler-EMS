@@ -16,7 +16,8 @@
  */
 
 import { useEffect, useRef, useState } from 'react';
-import { useSession, signOut } from 'next-auth/react';
+import { useSession } from 'next-auth/react';
+import { signOutAction } from '@/lib/auth/sign-out.action';
 import { AlertTriangle, Clock } from 'lucide-react';
 import { Modal } from '../common/Modal';
 
@@ -96,7 +97,9 @@ export function IdleSessionMonitor() {
 
       if (remaining <= 0) {
         setWarningOpen(false);
-        signOut({ callbackUrl: '/login?reason=idle' });
+        // Server action so chunked session cookies are fully cleared —
+        // same fix as the header/sidebar sign-out (see sign-out.action.ts).
+        signOutAction().finally(() => window.location.replace('/login?reason=idle'));
         return;
       }
       if (remaining <= warnMs) {
@@ -157,7 +160,7 @@ export function IdleSessionMonitor() {
         <div className="flex gap-2">
           <button
             type="button"
-            onClick={() => signOut({ callbackUrl: '/login' })}
+            onClick={() => signOutAction().finally(() => window.location.replace('/login'))}
             className="flex-1 h-11 bg-white border border-slate-200 text-slate-700 rounded-xl text-[11px] font-bold uppercase tracking-widest"
           >
             Sign Out Now

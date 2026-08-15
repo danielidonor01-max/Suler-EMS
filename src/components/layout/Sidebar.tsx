@@ -3,8 +3,8 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { signOut } from 'next-auth/react';
 import { useSession } from 'next-auth/react';
+import { signOutAction } from '@/lib/auth/sign-out.action';
 import { Modal } from '@/components/common/Modal';
 import { 
   Building2, 
@@ -57,32 +57,24 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle }) => {
   const [isSigningOut, setIsSigningOut] = useState(false);
 
   const handleSignOut = async () => {
+    if (isSigningOut) return;
     setIsSigningOut(true);
-    // Belt + suspenders: NextAuth v5 beta sometimes fails to clear the
-    // session cookie silently. We:
-    //   1. Call signOut() (clears server-side).
-    //   2. Manually expire every cookie NextAuth might have set
-    //      (v4/v5 + __Secure-/__Host- variants).
-    //   3. Hard-replace the URL so back-button can't return to dashboard.
+    // Sign out through a SERVER ACTION, not the next-auth/react client
+    // fetch. Our JWT is big enough that Auth.js chunks the session cookie
+    // (authjs.session-token.0/.1), and the v5-beta client signOut() didn't
+    // reliably clear every chunk — a survivor kept the session alive, so
+    // "Terminating Session" closed the modal and the page just refreshed
+    // back into the dashboard. The server action expires all chunks via
+    // Set-Cookie on its response; see sign-out.action.ts. One retry for
+    // transient network failures, then hard-replace so back-button can't
+    // return to the dashboard.
     try {
-      await signOut({ redirect: false });
+      await signOutAction();
     } catch {
-      /* keep going — manual cookie clear below is the safety net */
-    }
-    if (typeof document !== 'undefined') {
-      const past = 'Thu, 01 Jan 1970 00:00:00 GMT';
-      const names = [
-        'next-auth.session-token',
-        '__Secure-next-auth.session-token',
-        '__Host-next-auth.session-token',
-        'authjs.session-token',
-        '__Secure-authjs.session-token',
-        '__Host-authjs.session-token',
-        'next-auth.csrf-token',
-        'authjs.csrf-token',
-      ];
-      for (const n of names) {
-        document.cookie = `${n}=; expires=${past}; path=/; SameSite=Lax`;
+      try {
+        await signOutAction();
+      } catch {
+        /* fall through — proxy will bounce us back if the session survives */
       }
     }
     window.location.replace('/login');
