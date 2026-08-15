@@ -49,31 +49,29 @@ const Header = ({ onToggleSidebar }: { onToggleSidebar: () => void }) => {
 
   const [isSigningOut, setIsSigningOut] = useState(false);
 
-  const handleSignOut = () => {
-    // Awaiting signOut() before redirecting produced a ~1 s dead window where
-    // the click looked ignored — users would re-click. Instead: clear cookies
-    // client-side immediately, kick the server call in the background, and
-    // navigate away. Even if the server call is slow the user is already gone.
+  const handleSignOut = async () => {
+    // The session cookie is HttpOnly — client-side document.cookie clearing
+    // cannot remove it, only the signOut() server round-trip can. And
+    // navigating away immediately ABORTS that in-flight request, leaving the
+    // session alive; proxy.ts then bounces /login back to /dashboard and the
+    // click looks ignored (the "have to click sign out twice" bug).
+    //
+    // So: block on signOut() until the server has actually cleared the
+    // cookie, and cover the wait with a full-screen "Signing out…" overlay
+    // (rendered below) so the click never looks dead.
     if (isSigningOut) return;
     setIsSigningOut(true);
-
-    if (typeof document !== 'undefined') {
-      const past = 'Thu, 01 Jan 1970 00:00:00 GMT';
-      const names = [
-        'next-auth.session-token',
-        '__Secure-next-auth.session-token',
-        '__Host-next-auth.session-token',
-        'authjs.session-token',
-        '__Secure-authjs.session-token',
-        '__Host-authjs.session-token',
-        'next-auth.csrf-token',
-        'authjs.csrf-token',
-      ];
-      for (const n of names) {
-        document.cookie = `${n}=; expires=${past}; path=/; SameSite=Lax`;
+    try {
+      await signOut({ redirect: false });
+    } catch {
+      // Retry once — a transient network blip here would otherwise strand
+      // the user in a logged-in state they just asked to leave.
+      try {
+        await signOut({ redirect: false });
+      } catch {
+        /* fall through — worst case proxy bounces us back and the UI resets */
       }
     }
-    signOut({ redirect: false }).catch(() => {});
     window.location.replace('/login');
   };
 
@@ -288,6 +286,19 @@ const Header = ({ onToggleSidebar }: { onToggleSidebar: () => void }) => {
       </div>
 
       <GlobalCommandModal isOpen={isCommandModalOpen} onClose={() => setIsCommandModalOpen(false)} />
+
+      {/* Full-screen cover while the sign-out round-trip completes. The
+          dropdown closes on click, so without this the ~0.5–1 s server wait
+          reads as a dead click. */}
+      {isSigningOut && (
+        <div className="fixed inset-0 z-[200] bg-white/85 backdrop-blur-sm flex flex-col items-center justify-center gap-4">
+          <svg className="w-8 h-8 animate-spin text-slate-900" fill="none" viewBox="0 0 24 24">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+          </svg>
+          <span className="text-[11px] font-bold uppercase tracking-widest text-slate-500">Signing out…</span>
+        </div>
+      )}
     </header>
   );
 };
